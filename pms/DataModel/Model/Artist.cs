@@ -17,7 +17,7 @@ namespace pms.DataModel.Model
 		{
 			get
 			{
-				return ItemType.ARTIST.ItemTypeId;
+				return ItemType.ARTIST.getItemTypeId();
 			}
 		}
 
@@ -306,7 +306,7 @@ namespace pms.DataModel.Model
 			var anArtist = new Artist(artistName);
 
 			// if not, create it.
-			if (anArtist.ArtistId == null)
+			if (anArtist.ArtistId == 0)
 			{
 				anArtist = null;
 				if (_insertArtist(artistName))
@@ -319,7 +319,7 @@ namespace pms.DataModel.Model
 			return anArtist;
 		}
 
-		public static List<Artist> allArtists()
+		public List<Artist> allArtists()
 		{
 			var artists = new List<Artist>();
 
@@ -330,7 +330,7 @@ namespace pms.DataModel.Model
 			{
 				conn = Database.getDbConnection();
 
-				string query = string.Format("SELECT * FROM artist LEFT JOIN item_type_id = {0} AND item_id = artist_id");
+				string query = string.Format("SELECT * FROM artist LEFT JOIN item_type_id = {0} AND item_id = artist_id", ItemTypeId);
 
 				var q = new SqlCeCommand(query);
 				q.Connection = conn;

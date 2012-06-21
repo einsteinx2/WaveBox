@@ -5,7 +5,8 @@ using System.Text;
 
 namespace pms.DataModel.Model
 {
-	public class FileType
+	public enum FileType
 	{
+		//MP3 = (0, "MPEG Layer III", "MPEG-1 Layer 3")
 	}
 }
