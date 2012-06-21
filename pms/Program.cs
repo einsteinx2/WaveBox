@@ -30,7 +30,6 @@ namespace pms
 			//} while (result2.Read());
 
 			var settings = Settings.Instance;
-			settings._populateMediaFolders();
 
 			var http = new PmsHttpServer(8080);
 			http.listen();

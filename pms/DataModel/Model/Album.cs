@@ -30,8 +30,8 @@ namespace pms.DataModel.Model
 			}
 		}
 
-		private string _albumId;
-		public string AlbumId
+		private int _albumId;
+		public int AlbumId
 		{
 			get
 			{
@@ -107,6 +107,11 @@ namespace pms.DataModel.Model
 			_albumId = reader.GetInt32(1);
 			_albumName = reader.GetString(2);
 			_artId = reader.GetInt32(3);
+		}
+
+		public static int CompareAlbumsByName(Album x, Album y)
+		{
+			return StringComparer.OrdinalIgnoreCase.Compare(x.AlbumName, y.AlbumName);
 		}
 	}
 }

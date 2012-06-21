@@ -214,7 +214,7 @@ namespace pms.DataModel.Model
 
 		public List<Album> listOfAlbums()
 		{
-			List<Album> albums = new List<Album>();
+			var albums = new List<Album>();
 
 			SqlCeConnection conn = null;
 			SqlCeDataReader reader = null;
@@ -246,14 +246,14 @@ namespace pms.DataModel.Model
 				Database.close(conn, reader);
 			}
 
-			// TODO: Sortin!
+			albums.Sort(Album.CompareAlbumsByName);
 
 			return albums;
 		}
 
 		public List<Song> listOfSongs()
 		{
-			List<Song> albums = new List<Song>();
+			var songs = new List<Song>();
 
 
 			SqlCeConnection conn = null;
@@ -261,6 +261,23 @@ namespace pms.DataModel.Model
 
 			try
 			{
+				conn = Database.getDbConnection();
+
+				string query = "SELECT song.*, artist.artist_name, album.album_name FROM song " +
+					string.Format("LEFT JOIN item_type_art ON item_type_art.item_type_id = {0} AND item_id = song_id ", new Song().ItemTypeId) +
+					string.Format("LEFT JOIN artist ON song_artist_id = artist_id ") +
+					string.Format("LEFT JOIN album ON song_album_id = album_id ") +
+					string.Format("WHERE song_artist_id = {0}", ArtistId);
+
+				var q = new SqlCeCommand(query);
+				q.Connection = conn;
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				while (reader.Read())
+				{
+					songs.Add(new Song(reader));
+				}
 			}
 
 			catch (Exception e)
@@ -273,29 +290,77 @@ namespace pms.DataModel.Model
 				Database.close(conn, reader);
 			}
 
-			return new List<Song>();
+			songs.Sort(Song.CompareSongsByDiscAndTrack);
+
+			return songs;
 		}
 
 		public static Artist artistForName(string artistName)
 		{
-			return new Artist();
+			if (artistName == null || artistName == "")
+			{
+				return new Artist();
+			}
+
+			// check to see if the artist exists
+			var anArtist = new Artist(artistName);
+
+			// if not, create it.
+			if (anArtist.ArtistId == null)
+			{
+				anArtist = null;
+				if (_insertArtist(artistName))
+				{
+					anArtist = artistForName(artistName);
+				}
+			}
+
+			// then return the artist object retrieved or created.
+			return anArtist;
 		}
 
 		public static List<Artist> allArtists()
 		{
-			return new List<Artist>();
-		}
+			var artists = new List<Artist>();
 
-		static int compareAlbumsByName(Album x, Album y)
-		{
-			if(x.AlbumName == y.AlbumName) return 0;
-			if (x.AlbumName == null)
+			SqlCeConnection conn = null;
+			SqlCeDataReader reader = null;
+
+			try
 			{
-				if (y.AlbumName == null)
+				conn = Database.getDbConnection();
+
+				string query = string.Format("SELECT * FROM artist LEFT JOIN item_type_id = {0} AND item_id = artist_id");
+
+				var q = new SqlCeCommand(query);
+				q.Connection = conn;
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				while (reader.Read())
 				{
-					return 0;
+					artists.Add(new Artist(reader));
 				}
 			}
+
+			catch (Exception e)
+			{
+				Console.WriteLine(e.ToString());
+			}
+
+			finally
+			{
+				Database.close(conn, reader);
+			}
+
+			artists.Sort(Artist.CompareArtistsByName);
+
+			return artists;
+		}
+
+		public static int CompareArtistsByName(Artist x, Artist y)
+		{
+			return StringComparer.OrdinalIgnoreCase.Compare(x.ArtistName, y.ArtistName);
 		}
 	}
 }
