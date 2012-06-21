@@ -7,6 +7,13 @@ namespace pms.DataModel.Model
 {
 	public class Song
 	{
+		public int ItemTypeId
+		{
+			get
+			{
+				return ItemType.SONG.getItemTypeId();
+			}
+		}
 		// stub!
 		public static int CompareSongsByDiscAndTrack(Song x, Song y)
 		{
