@@ -143,16 +143,66 @@ namespace pms.DataModel.Model
 
 		public Folder(string path)
 		{
+			SqlCeConnection conn = null;
+			SqlCeDataReader reader = null;
+
 			if (path == null || path == "")
 			{
 				return;
 			}
 
 			_folderPath = path;
+			_folderName = Path.GetFileName(path);
 
-			_folderPath = File.g
+
+			try
+			{
+				conn = Database.getDbConnection();
+
+				string query = null;
+
+				if (isMediaFolder())
+				{
+				}
+
+				else
+				{
+				}
+			}
+
+			catch (Exception e)
+			{
+				Console.WriteLine(e.ToString());
+			}
+
+			finally
+			{
+				Database.close(conn, reader);
+			}
 		}
 
+		bool isMediaFolder()
+		{
+			Folder mFolder = mediaFolder();
 
+			if (mFolder != null)
+			{
+				return true;
+			}
+			else return false;
+		}
+
+		private Folder mediaFolder()
+		{
+			foreach (Folder mediaFolder in Folder.mediaFolders())
+			{
+				if (FolderPath.StartsWith(mediaFolder.FolderPath))
+				{
+					return mediaFolder;
+				}
+			}
+
+			return null;
+		}
 	}
 }
