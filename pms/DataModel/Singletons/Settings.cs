@@ -13,7 +13,7 @@ namespace pms.DataModel.Singletons
 		private static Settings instance;
 		public static string SETTINGS_PATH = "res/pms.conf";
 		private static List<Folder> _mediaFolders;
-		public static List<Folder> mediaFolders
+		public static List<Folder> MediaFolders
 		{
 			get
 			{
@@ -46,7 +46,7 @@ namespace pms.DataModel.Singletons
 
 		private static void _parseSettings()
 		{
-			
+			_mediaFolders = _populateMediaFolders();
 		}
 
 		private static void _settingsSetup()
@@ -72,21 +72,22 @@ namespace pms.DataModel.Singletons
 			}
 		}
 
-		public List<Folder> _populateMediaFolders()
+		private static List<Folder> _populateMediaFolders()
 		{
+			var folders = new List<Folder>();
 			StreamReader reader = new StreamReader("pms.conf");
-			string omg = reader.ReadToEnd();
+			string configFile = reader.ReadToEnd();
 
-			string prop, value;
+			dynamic json = JsonConvert.DeserializeObject(configFile);
 
-			dynamic asdf = JsonConvert.DeserializeObject(omg);
+			Console.WriteLine(json.mediaFolders);
 
-			Console.WriteLine(asdf.mediaFolders);
+			foreach (var mediaF in json.mediaFolders)
+			{
+				folders.Add(new Folder(mediaF));
+			}
 
-			
-
-			
-			return new List<Folder>();
+			return folders;
 		}
 		
 	}

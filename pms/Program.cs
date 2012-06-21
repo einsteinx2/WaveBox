@@ -13,14 +13,15 @@ namespace pms
 	{
 		static void Main(string[] args)
 		{
-			//var conn = new SqlCeConnection("DataSource = \"pms.sdf\"");
+			var conn = new SqlCeConnection("DataSource = \"pms.sdf\"");
 			//conn.Open();
-			//var query = new SqlCeCommand("insert into artist (artist_name) values('omg')", conn);
+			var query = new SqlCeCommand("insert into artist (artist_name) values('omg')", conn);
 			//var result = query.ExecuteNonQuery();
 
-			//query = new SqlCeCommand("select * from artist");
-			//query.Connection = conn;
-			//var result2 = query.ExecuteReader();
+			query = new SqlCeCommand("select * from artist");
+			query.Connection = conn;
+			SqlCeDataReader result2 = query.ExecuteReader();
+			
 
 			//result2.Read();
 			//do
