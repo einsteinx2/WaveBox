@@ -90,6 +90,7 @@
     <Compile Include="DataModel\Model\MediaItemType.cs" />
     <Compile Include="DataModel\Model\Playlist.cs" />
     <Compile Include="DataModel\Model\Song.cs" />
+    <Compile Include="DataModel\Model\User.cs" />
     <Compile Include="DataModel\Model\Video.cs" />
     <Compile Include="DataModel\Singletons\Database.cs" />
     <Compile Include="DataModel\Singletons\FileManager.cs" />
