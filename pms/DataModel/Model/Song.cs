@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Data.SqlServerCe;
+using pms.DataModel.Model;
+using pms.DataModel.Singletons;
+using TagLib;
 
 namespace pms.DataModel.Model
 {
 	public class Song : MediaItem
 	{
-		public int ItemTypeId
+		new public int ItemTypeId
 		{
 			get
 			{
@@ -113,12 +116,87 @@ namespace pms.DataModel.Model
 
 		public Song(int songId)
 		{
+			SqlCeConnection conn = null;
+			SqlCeDataReader reader = null;
+
+			try
+			{
+				conn = Database.getDbConnection();
+
+				string query =  string.Format("SELECT song.*, item_type_art.art_id, artist.artist_name, album.album_name FROM song ") + 
+								string.Format("LEFT JOIN item_type_art ON item_type_art.item_type_id = {0} AND item_id = song_id ", ItemTypeId) +
+								string.Format("LEFT JOIN artist ON song_artist_id = artist.artist_id ") +
+								string.Format("LEFT JOIN album ON song_album_id = album.album_id ") +
+								string.Format("WHERE song_id = {0}", songId);
+
+				var q = new SqlCeCommand(query);
+				q.Connection = conn;
+				q.Prepare();
+				reader = q.ExecuteResultSet(ResultSetOptions.None);
+
+				if (reader.Read())
+				{
+					_setPropertiesFromQueryResult(reader);
+				}
+			}
+
+			catch (Exception e)
+			{
+				Console.WriteLine(e.ToString());
+			}
+
+			finally
+			{
+				Database.close(conn, reader);
+			}
+		}
+
+		public Song(TagLib.File file, int folderId)
+		{
+			var tag = file.GetTag(TagTypes.AllTags);
+			_folderId = folderId;
+
+			try
+			{
+				var artist = Artist.artistForName(tag.FirstPerformer);
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e.ToString());
+			}
 		}
 
 		public Song(SqlCeDataReader reader)
 		{
+			_setPropertiesFromQueryResult(reader);
 		}
 
+		private void _setPropertiesFromQueryResult(SqlCeDataReader reader)
+		{
+			try
+			{
+				_itemId = reader.GetInt32(reader.GetOrdinal("song_id"));
+				_folderId = reader.GetInt32(reader.GetOrdinal("song_folder_id"));
+				_artistId = reader.GetInt32(reader.GetOrdinal("song_artist_id"));
+				_artistName = reader.GetString(reader.GetOrdinal("artist_name"));
+				_albumId = reader.GetInt32(reader.GetOrdinal("song_album_id"));
+				_albumName = reader.GetString(reader.GetOrdinal("album_name"));
+				_fileType = FileType.fileTypeForId(reader.GetInt32(reader.GetOrdinal("song_file_type_id")));
+				_songName = reader.GetString(reader.GetOrdinal("song_name"));
+				_trackNumber = reader.GetInt32(reader.GetOrdinal("song_track_num"));
+				_discNumber = reader.GetInt32(reader.GetOrdinal("song_disc_num"));
+				_duration = reader.GetInt32(reader.GetOrdinal("song_duration"));
+				_bitrate = reader.GetInt64(reader.GetOrdinal("song_bitrate"));
+				_fileSize = reader.GetInt64(reader.GetOrdinal("song_file_size"));
+				_lastModified = reader.GetInt64(reader.GetOrdinal("song_last_modified"));
+				_fileName = reader.GetString(reader.GetOrdinal("song_file_name"));
+				_artId = reader.GetInt32(reader.GetOrdinal("art_id"));
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e.ToString());
+			}
+		}
 
 		// stub!
 		public static int CompareSongsByDiscAndTrack(Song x, Song y)
