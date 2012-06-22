@@ -5,6 +5,8 @@ using System.Text;
 using System.Data.SqlServerCe;
 using pms.DataModel.Singletons;
 using pms.DataModel.Model;
+using System.Data.SqlServerCe;
+using System.Data.SqlTypes;
 using System.IO;
 
 namespace pms.DataModel.Model
@@ -144,6 +146,7 @@ namespace pms.DataModel.Model
 		public Folder(string path)
 		{
 			SqlCeConnection conn = null;
+			SqlCeCommand q = null;
 			SqlCeDataReader reader = null;
 
 			if (path == null || path == "")
@@ -158,15 +161,26 @@ namespace pms.DataModel.Model
 			try
 			{
 				conn = Database.getDbConnection();
-
 				string query = null;
 
 				if (isMediaFolder())
 				{
+					query = string.Format("SELECT folder_id FROM folder WHERE folder_name = {0} AND parent_folder_id IS NULL", _folderName);
 				}
 
 				else
 				{
+					query = string.Format("SELECT folder_id FROM folder WHERE folder_name = '{0}' AND parent_folder_id = {1}", _folderName, _parentFolderId);
+				}
+
+				q = new SqlCeCommand(query);
+				q.Connection = conn;
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				if (reader.Read())
+				{
+					_folderId = reader.GetInt32(0);
 				}
 			}
 
@@ -179,6 +193,95 @@ namespace pms.DataModel.Model
 			{
 				Database.close(conn, reader);
 			}
+		}
+
+		public Folder parentFolder()
+		{
+			return new Folder(ParentFolderId);
+		}
+
+
+
+		public void scan()
+		{
+			// TO DO: scanning!  yay!
+		}
+
+		public List<Song> listOfSongs()
+		{
+			var songs = new List<Song>();
+
+			SqlCeConnection conn = null;
+			SqlCeDataReader reader = null;
+
+			try
+			{
+				conn = Database.getDbConnection();
+
+				string query = string.Format("SELECT song.*, item_type_art.art_id, artist.artist_name, album.album_name FROM song ") +
+								string.Format("LEFT JOIN item_type_art ON item_type_art.item_type_id = {0} AND item_id = song_id ", new Song().ItemTypeId) +
+								string.Format("LEFT JOIN artist ON song_artist_id = artist.artist_id ") +
+								string.Format("LEFT JOIN album ON song_album_id = album.album_id ") +
+								string.Format("WHERE song_folder_id = {0}", FolderId);
+
+				var q = new SqlCeCommand(query);
+				q.Connection = conn;
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				if (reader.Read())
+				{
+					songs.Add(new Song(reader));
+				}
+			}
+
+			catch (Exception e)
+			{
+				Console.WriteLine(e.ToString());
+			}
+
+			finally
+			{
+				Database.close(conn, reader);
+			}
+
+			return songs;
+		}
+
+		public List<Folder> listOfSubFolders()
+		{
+			var folders = new List<Folder>();
+
+			SqlCeConnection conn = null;
+			SqlCeDataReader reader = null;
+
+			try
+			{
+				conn = Database.getDbConnection();
+
+				string query = string.Format("SELECT * FROM folder WHERE parent_folder_id = {0}", FolderId);
+				var q = new SqlCeCommand(query);
+				q.Connection = conn;
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				if (reader.Read())
+				{
+					folders.Add(new Folder(reader.GetInt32(0)));
+				}
+			}
+
+			catch (Exception e)
+			{
+				Console.WriteLine(e.ToString());
+			}
+
+			finally
+			{
+				Database.close(conn, reader);
+			}
+
+			return folders;
 		}
 
 		bool isMediaFolder()
@@ -203,6 +306,101 @@ namespace pms.DataModel.Model
 			}
 
 			return null;
+		}
+
+		public void addToDatabase()
+		{
+			SqlCeConnection conn = null;
+			SqlCeDataReader reader = null;
+			string query;
+			int affected;
+
+			try
+			{
+				Folder mf = mediaFolder();
+
+				if (mf == null)
+				{
+					query = string.Format("INSERT INTO folder (folder_name, folder_path, parent_folder_id) VALUES ('{0}', {1}, {2})", FolderName, FolderId, ParentFolderId);
+				}
+
+				else query = string.Format("INSERT INTO folder (folder_name, folder_path, parent_folder_id, folder_media_folder_id) VALUES ('{0}', {1}, {2}, {3})", FolderName, FolderId, ParentFolderId, mf.FolderId);
+
+				conn = Database.getDbConnection();
+
+				var q = new SqlCeCommand(query);
+				q.Connection = conn;
+				q.Prepare();
+				affected = q.ExecuteNonQuery();
+
+				// get the id of the previous insert.  weird.
+				q.CommandText = "SELECT @@IDENTITY";
+				FolderId = Convert.ToInt32((SqlDecimal)q.ExecuteScalar());
+			}
+
+			catch (Exception e)
+			{
+				Console.WriteLine(e.ToString());
+			}
+
+			finally
+			{
+				Database.close(conn, reader);
+			}
+		}
+
+		public static List<Folder> mediaFolders()
+		{
+			var folders = new List<Folder>();
+			SqlCeConnection conn = null;
+			SqlCeDataReader reader = null;
+
+			try
+			{
+				conn = Database.getDbConnection();
+
+				string query = "SELECT * FROM folder WHERE parent_folder_id IS NULL";
+
+				var q = new SqlCeCommand(query);
+				q.Connection = conn;
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				while (reader.Read())
+				{
+					folders.Add(new Folder(reader.GetInt32(0)));
+				}
+			}
+
+			catch (Exception e)
+			{
+				Console.WriteLine(e.ToString());
+			}
+
+			finally
+			{
+				Database.close(conn, reader);
+			}
+
+			return folders;
+		}
+
+		public static List<Folder> topLevelFolders()
+		{
+			var folders = new List<Folder>();
+
+			foreach (Folder mediaFolder in mediaFolders())
+			{
+				folders.AddRange(mediaFolder.listOfSubFolders());
+			}
+
+			folders.Sort(CompareFolderByName);
+			return folders;
+		}
+
+		public static int CompareFolderByName(Folder x, Folder y)
+		{
+			return StringComparer.OrdinalIgnoreCase.Compare(x.FolderName, y.FolderName);
 		}
 	}
 }
