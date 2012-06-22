@@ -5,7 +5,10 @@ using System.Text;
 
 namespace pms.DataModel.Model
 {
-	public class MediaItemType
+	public enum MediaItemType
 	{
+		MEDIA_ITEM_TYPE_SONG,
+		MEDIA_ITEM_TYPE_VIDEO,
+		MEDIA_ITEM_TYPE_IMAGE
 	}
 }
