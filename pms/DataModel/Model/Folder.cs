@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Data.SqlServerCe;
+using System.Data.SqlTypes;
 using pms.DataModel.Singletons;
 using pms.DataModel.Model;
-using System.Data.SqlServerCe;
-using System.Data.SqlTypes;
 using System.IO;
 
 namespace pms.DataModel.Model

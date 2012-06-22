@@ -20,7 +20,7 @@ namespace pms.ApiHandler.Handlers
 		public void process()
 		{
 			Console.WriteLine("Test: Great success!");
-			_sh.outputStream.Write("Test: Not implemented yet.");
+			_sh.outputStream.Write("<html><img src=\"http://files.sharenator.com/trollface-s800x600-183735.jpg\"></html>");
 		}
 	}
 }

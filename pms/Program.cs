@@ -13,27 +13,38 @@ namespace pms
 	{
 		static void Main(string[] args)
 		{
-			var conn = new SqlCeConnection("DataSource = \"pms.sdf\"");
-			//conn.Open();
-			var query = new SqlCeCommand("insert into artist (artist_name) values('omg')", conn);
-			//var result = query.ExecuteNonQuery();
-
-			query = new SqlCeCommand("select * from artist");
-			query.Connection = conn;
-			SqlCeDataReader result2 = query.ExecuteReader();
-			
-
-			//result2.Read();
-			//do
-			//{
-			//    Console.WriteLine("{0} : {1}", result2.GetInt32(0), result2.GetString(1));
-			//} while (result2.Read());
-
+			int httpPort = 8080;
+			// instantiate singletons
 			var settings = Settings.Instance;
+			var database = Database.Instance;
 
-			var http = new PmsHttpServer(8080);
-			http.listen();
+			// start http server
+			Console.Write("Starting HTTP server... ");
+			try
+			{
+				var http = new PmsHttpServer(httpPort);
+				Console.WriteLine("done.");
+				http.listen();
+			}
 
+			catch (System.Net.Sockets.SocketException e)
+			{
+				if (e.SocketErrorCode.ToString() == "AddressAlreadyInUse")
+				{
+					Console.WriteLine("ERROR: Socket already in use.  Ensure that PMS is not already running.");
+				}
+
+				else Console.WriteLine("ERROR: " + e.Message);
+				Environment.Exit(-1);
+			}
+
+			catch (Exception e)
+			{
+				Console.WriteLine(e.ToString());
+				Environment.Exit(-1);
+			}
+
+			// sleep the main thread so we can go about handling api calls and stuff on other threads.
 			Thread.Sleep(Timeout.Infinite);
 		}
 	}
