@@ -320,10 +320,10 @@ namespace pms.DataModel.Model
 
 				if (mf == null)
 				{
-					query = string.Format("INSERT INTO folder (folder_name, folder_path, parent_folder_id) VALUES ('{0}', {1}, {2})", FolderName, FolderId, ParentFolderId);
+					query = string.Format("INSERT INTO folder (folder_name, folder_path, parent_folder_id) VALUES ('{0}', '{1}', {2})", FolderName, FolderPath, ParentFolderId);
 				}
 
-				else query = string.Format("INSERT INTO folder (folder_name, folder_path, parent_folder_id, folder_media_folder_id) VALUES ('{0}', {1}, {2}, {3})", FolderName, FolderId, ParentFolderId, mf.FolderId);
+				else query = string.Format("INSERT INTO folder (folder_name, folder_path, parent_folder_id, folder_media_folder_id) VALUES ('{0}', '{1}', {2}, {3})", FolderName, FolderPath, ParentFolderId, mf.FolderId);
 
 				conn = Database.getDbConnection();
 
@@ -334,7 +334,11 @@ namespace pms.DataModel.Model
 
 				// get the id of the previous insert.  weird.
 				q.CommandText = "SELECT @@IDENTITY";
-				FolderId = Convert.ToInt32((SqlDecimal)q.ExecuteScalar());
+				var thing = (SqlDecimal)q.ExecuteScalar();
+				var thing1 = thing.ToString();
+				var thing2 = Convert.ToInt32(thing1);
+				FolderId = thing2;
+				//FolderId = Convert.ToInt32(((SqlDecimal)q.ExecuteScalar()).ToString());
 			}
 
 			catch (Exception e)

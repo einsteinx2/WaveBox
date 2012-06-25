@@ -22,7 +22,7 @@ namespace pms.DataModel.Model
     {
         public static FileType fileTypeForTagSharpString(this FileType ft, string audioFormatString)
         {
-            if (audioFormatString == "MPEG Layer III" || audioFormatString == "MPEG-1 Layer 3") return FileType.MP3;
+            if (audioFormatString == "MPEG Layer III" || audioFormatString == "MPEG Version 1 Audio, Layer 3") return FileType.MP3;
             else if (audioFormatString == "Advanced Audio Coding" || audioFormatString == "AAC") return FileType.AAC;
             else if (audioFormatString == "Ogg Vorbis" || audioFormatString == "OGG") return FileType.OGG;
             else if (audioFormatString == "Free Lossless Audio Codec" || audioFormatString == "FLAC 16 bits") return FileType.FLAC16;

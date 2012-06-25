@@ -18,6 +18,9 @@ namespace pms
 			var settings = Settings.Instance;
 			var database = Database.Instance;
 
+			Console.WriteLine("Scanning and shit...");
+			var filemanager = FileManager.Instance;
+
 			// start http server
 			Console.Write("Starting HTTP server... ");
 			try

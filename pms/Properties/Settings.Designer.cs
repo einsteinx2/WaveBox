@@ -26,7 +26,7 @@ namespace pms.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]
-        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=|DataDirectory|\\res\\pms.sdf")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=|DataDirectory|\\pms.sdf")]
         public string pmsConnectionString {
             get {
                 return ((string)(this["pmsConnectionString"]));

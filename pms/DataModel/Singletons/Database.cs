@@ -28,17 +28,25 @@ namespace pms.DataModel.Singletons
 
 		public static SqlCeConnection getDbConnection()
 		{
-			return new SqlCeConnection("DataSource = \"pms.sdf\"");
+			var dbconn = new SqlCeConnection("DataSource = \"pms.sdf\"");
+			dbconn.Open();
+
+			while ((dbconn.State == System.Data.ConnectionState.Closed))
+			{
+				dbconn.Open();
+			}
+
+			return dbconn;
 		}
 
 		public static void close(SqlCeConnection c, SqlCeDataReader r)
 		{
-			if (!(c.State == System.Data.ConnectionState.Closed))
+			if (!(c == null) && !(c.State == System.Data.ConnectionState.Closed))
 			{
 				c.Close();
 			}
 
-			if (!r.IsClosed)
+			if (!(r == null) && !r.IsClosed)
 			{
 				r.Close();
 			}

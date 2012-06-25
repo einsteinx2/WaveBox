@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Data.SqlServerCe;
+using System.Data.SqlTypes;
 using pms.DataModel.Singletons;
 using pms.DataModel.Model;
 using System.Security.Cryptography;
@@ -13,8 +14,8 @@ namespace pms.DataModel.Model
 {
 	public class CoverArt
 	{
-		public const string ART_PATH = "C:/tmp/pms/art/";
-		public const string TMP_ART_PATH = "C:/tmp/pms/art/tmp/";
+		public const string ART_PATH = "art/";
+		public const string TMP_ART_PATH = "art/tmp/";
 
 		/// <summary>
 		/// Properties
@@ -144,28 +145,36 @@ namespace pms.DataModel.Model
                             Database.close(conn, reader);
                         }
 
-                        string query1 = string.Format("INSERT INTO art (adler_hash) VALUES ({0})", _adlerHash);
+						try
+						{
+							var conn1 = Database.getDbConnection();
+							var q1 = new SqlCeCommand("INSERT INTO art (adler_hash) VALUES (@stuff)");
+							q1.Connection = conn1;
+							q1.Parameters.AddWithValue("@stuff", _adlerHash);
+							q1.Prepare();
+							int result = q1.ExecuteNonQuery();
 
-                        var q1 = new SqlCeCommand(query);
-                        q1.Connection = conn;
-                        q1.Prepare();
-                        int result = q1.ExecuteNonQuery();
+							if (result < 1)
+							{
+								Console.WriteLine("Something went wrong with the art insert: ");
+							}
 
-                        if (result < 1)
-                        {
-                            Console.WriteLine("Something went wrong with the art insert");
-                        }
+							try
+							{
+								q1.CommandText = "SELECT @@IDENTITY";
+								_artId = Convert.ToInt32(((SqlDecimal)q1.ExecuteScalar()).ToString());
+							}
 
-                        try
-                        {
-                            q1.CommandText = "SELECT @@IDENTITY";
-                            _artId = Convert.ToInt32(q1.ExecuteScalar());
-                        }
+							catch (Exception e)
+							{
+								Console.WriteLine("\r\n\r\nGetting identity: " + e.ToString() + "\r\n\r\n");
+							}
+						}
 
-                        catch (Exception e)
-                        {
-                            Console.WriteLine("Getting identity: " + e.ToString());
-                        }
+						catch (SqlCeException e)
+						{
+							Console.WriteLine("\r\n\r\n" + e.Message + "\r\n\r\n");
+						}
                     }
                 }
 

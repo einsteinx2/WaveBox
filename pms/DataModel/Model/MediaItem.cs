@@ -89,8 +89,8 @@ namespace pms.DataModel.Model
 			}
 		}
 
-		protected int _duration;
-		public int Duration
+		protected long _duration;
+		public long Duration
 		{
 			get
 			{
@@ -169,9 +169,10 @@ namespace pms.DataModel.Model
 
 		public static bool fileNeedsUpdating(FileInfo file)
 		{
+			Console.WriteLine("Checking to see if file needs updating: " + file.Name);
 			int folderId = new Folder(file.Directory.ToString()).FolderId;
 			string fileName = file.Name;
-			long lastModified = Convert.ToInt64(file.LastWriteTime);
+			long lastModified = Convert.ToInt64(file.LastWriteTime.Ticks);
 			bool needsUpdating = true;
 
 			SqlCeConnection conn = null;
@@ -181,7 +182,7 @@ namespace pms.DataModel.Model
 			{
 				conn = Database.getDbConnection();
 
-				string query = string.Format("SELECT COUNT(*) AS count FROM song WHERE song_folder_id = {0} AND song_file_name = {1} ANd song_last_modified = {2}",
+				string query = string.Format("SELECT COUNT(*) AS count FROM song WHERE song_folder_id = {0} AND song_file_name = '{1}' AND song_last_modified = {2}",
 					folderId, fileName, lastModified);
 
 				var q = new SqlCeCommand(query);
@@ -191,7 +192,7 @@ namespace pms.DataModel.Model
 
 				if (reader.Read())
 				{
-					if (reader.GetInt32(0) >= 1)
+					if (reader.GetInt32(reader.GetOrdinal("count")) >= 1)
 					{
 						needsUpdating = false;
 					}

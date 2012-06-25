@@ -125,11 +125,12 @@ namespace pms.DataModel.Model
 			try
 			{
 				conn = Database.getDbConnection();
-				string query = string.Format("SELECT * FROM artist LEFT JOIN item_type_art ON item_type_id = {0} AND item_id = artist_id WHERE artist_name = ?", 
-					ItemTypeId, artistName);
 
-				var q = new SqlCeCommand(query);
+
+				var q = new SqlCeCommand("SELECT * FROM artist LEFT JOIN item_type_art ON item_type_id = @itemtypeid AND item_id = artist_id WHERE artist_name = @artistname");
 				q.Connection = conn;
+				q.Parameters.AddWithValue("@itemtypeid", (int)ItemTypeId);
+				q.Parameters.AddWithValue("@artistname", artistName);
 				q.Prepare();
 				reader = q.ExecuteReader();
 
@@ -160,14 +161,14 @@ namespace pms.DataModel.Model
 		{
 			try
 			{
-				_artistId = reader.GetInt32(0);
-				_artistName = reader.GetString(1);
-				_artId = reader.GetInt32(2);
+				_artistId = reader.GetInt32(reader.GetOrdinal("artist_id"));
+				_artistName = reader.GetString(reader.GetOrdinal("artist_name"));
+				//_artId = reader.GetInt32(reader.GetOrdinal("art_id"));
 			}
 
-			catch (Exception e)
+			catch (SqlCeException e)
 			{
-				Console.WriteLine(e.ToString());
+				if (e.InnerException.ToString() == "SqlNullValueException") { }
 			}
 		}
 
@@ -180,10 +181,10 @@ namespace pms.DataModel.Model
 			try
 			{
 				conn = Database.getDbConnection();
-				string query = string.Format("INSERT INTO artist (artist_name) VALUES ({0})", artistName);
 
-				var q = new SqlCeCommand(query);
+				var q = new SqlCeCommand("INSERT INTO artist (artist_name) VALUES (@artistname)");
 				q.Connection = conn;
+				q.Parameters.AddWithValue("@artistname", artistName);
 				q.Prepare();
 				int affected = q.ExecuteNonQuery();
 
@@ -330,7 +331,7 @@ namespace pms.DataModel.Model
 			{
 				conn = Database.getDbConnection();
 
-				string query = string.Format("SELECT * FROM artist LEFT JOIN item_type_id = {0} AND item_id = artist_id", ItemTypeId);
+				string query = string.Format("SELECT * FROM artist LEFT JOIN item_type_art ON item_type_id = {0} AND item_id = artist_id", ItemTypeId);
 
 				var q = new SqlCeCommand(query);
 				q.Connection = conn;

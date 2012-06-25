@@ -117,7 +117,7 @@
   <ItemGroup>
     <Content Include="lib\Newtonsoft.Json.dll" />
     <Content Include="lib\taglib-sharp.dll" />
-    <Content Include="res\pms.sdf">
+    <Content Include="pms.sdf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

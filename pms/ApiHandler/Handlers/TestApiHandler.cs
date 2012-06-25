@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Bend.Util;
+using pms.DataModel.Model;
 
 namespace pms.ApiHandler.Handlers
 {
@@ -20,7 +21,13 @@ namespace pms.ApiHandler.Handlers
 		public void process()
 		{
 			Console.WriteLine("Test: Great success!");
-			_sh.outputStream.Write("<html><img src=\"http://files.sharenator.com/trollface-s800x600-183735.jpg\"></html>");
+
+			var a = new Artist();
+
+			foreach (var g in a.allArtists())
+			{
+				Console.WriteLine(g.ArtistName + " " + g.ArtistId);
+			}
 		}
 	}
 }

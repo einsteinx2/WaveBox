@@ -111,6 +111,19 @@ namespace pms.DataModel.Model
 			}
 		}
 
+		private int _releaseYear;
+		public int ReleaseYear
+		{
+			get
+			{
+				return _releaseYear;
+			}
+			set
+			{
+				_releaseYear = value;
+			}
+		}
+
 		public Song()
 		{
 		}
@@ -156,7 +169,7 @@ namespace pms.DataModel.Model
 		{
             var file = TagLib.File.Create(fsFile.FullName);
 
-			var tag = file.GetTag(TagTypes.AllTags);
+			var tag = file.Tag;
             var lol = file.Properties.Codecs;
 			_folderId = folderId;
 
@@ -198,6 +211,7 @@ namespace pms.DataModel.Model
                 if (a != null)
                 {
                     _fileType = FileType.fileTypeForTagSharpString(a.Description);
+					
                 }
             }
 
@@ -228,10 +242,19 @@ namespace pms.DataModel.Model
                 _discNumber = 0;
             }
 
-            _duration = Convert.ToInt32(file.Properties.Duration);
+			try
+			{
+				_releaseYear = Convert.ToInt32(tag.Disc);
+			}
+			catch
+			{
+				_releaseYear = 0;
+			}
+
+            _duration = Convert.ToInt64(file.Properties.Duration.Ticks);
             _bitrate = file.Properties.AudioBitrate;
             _fileSize = fsFile.Length;
-            _lastModified = Convert.ToInt32(fsFile.LastWriteTime);
+            _lastModified = Convert.ToInt64(fsFile.LastWriteTime.Ticks);
             _fileName = fsFile.Name;
 
             var art = new CoverArt(fsFile);
@@ -262,11 +285,54 @@ namespace pms.DataModel.Model
 				_fileSize = reader.GetInt64(reader.GetOrdinal("song_file_size"));
 				_lastModified = reader.GetInt64(reader.GetOrdinal("song_last_modified"));
 				_fileName = reader.GetString(reader.GetOrdinal("song_file_name"));
+				_releaseYear = reader.GetInt32(reader.GetOrdinal("song_release_year"));
 				_artId = reader.GetInt32(reader.GetOrdinal("art_id"));
 			}
 			catch (Exception e)
 			{
 				Console.WriteLine(e.ToString());
+			}
+		}
+
+		public void updateDatabase()
+		{
+			SqlCeConnection conn = null;
+			SqlCeDataReader reader = null;
+
+			try
+			{
+				conn = Database.getDbConnection();
+
+				var q = new SqlCeCommand("INSERT INTO song (song_folder_id, song_artist_id, song_album_id, song_file_type_id, song_name, song_track_num, song_disc_num, song_duration, song_bitrate, song_file_size, song_last_modified, song_file_name, song_release_year)" + 
+										 "VALUES (@folderid, @artistid, @albumid, @filetype, @songname, @tracknum, @discnum, @duration, @bitrate, @filesize, @lastmod, @filename, @releaseyear)");
+				q.Connection = conn;
+				q.Parameters.AddWithValue("@folderid", FolderId);
+				q.Parameters.AddWithValue("@artistid", ArtistId);
+				q.Parameters.AddWithValue("@albumid", AlbumId);
+				q.Parameters.AddWithValue("@filetype", (int)FileType);
+				q.Parameters.AddWithValue("@songname", SongName);
+				q.Parameters.AddWithValue("@tracknum", TrackNumber);
+				q.Parameters.AddWithValue("@discnum", DiscNumber);
+				q.Parameters.AddWithValue("@duration", Duration);
+				q.Parameters.AddWithValue("@bitrate", Bitrate);
+				q.Parameters.AddWithValue("@filesize", FileSize);
+				q.Parameters.AddWithValue("@lastmod", LastModified);
+				q.Parameters.AddWithValue("@filename", FileName);
+				q.Parameters.AddWithValue("@releaseyear", ReleaseYear);
+
+				q.Prepare();
+				q.ExecuteNonQuery();
+
+			}
+
+			catch (Exception e)
+			{
+				Console.WriteLine(e.ToString());
+			}
+
+			finally
+			{
+				Database.close(conn, reader);
 			}
 		}
 

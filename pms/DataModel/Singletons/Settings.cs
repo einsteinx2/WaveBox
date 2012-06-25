@@ -70,6 +70,8 @@ namespace pms.DataModel.Singletons
 					Console.WriteLine(e.ToString());
 				}
 			}
+
+			reload();
 		}
 
 		private static List<Folder> _populateMediaFolders()
@@ -80,12 +82,14 @@ namespace pms.DataModel.Singletons
 
 			dynamic json = JsonConvert.DeserializeObject(configFile);
 
-			Console.WriteLine(json.mediaFolders);
+			Console.WriteLine(json.mediaFolders + "\r\n");
 
-			foreach (var mediaF in json.mediaFolders)
+			for (int i = 0; i < json.mediaFolders.Count; i++)
 			{
-				folders.Add(new Folder(mediaF));
+				folders.Add(new Folder(json.mediaFolders[i].ToString()));
 			}
+
+
 
 			return folders;
 		}
