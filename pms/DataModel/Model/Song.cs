@@ -5,6 +5,7 @@ using System.Text;
 using System.Data.SqlServerCe;
 using pms.DataModel.Model;
 using pms.DataModel.Singletons;
+using System.IO;
 using TagLib;
 
 namespace pms.DataModel.Model
@@ -151,19 +152,90 @@ namespace pms.DataModel.Model
 			}
 		}
 
-		public Song(TagLib.File file, int folderId)
+		public Song(System.IO.FileInfo fsFile, int folderId)
 		{
+            var file = TagLib.File.Create(fsFile.FullName);
+
 			var tag = file.GetTag(TagTypes.AllTags);
+            var lol = file.Properties.Codecs;
 			_folderId = folderId;
 
 			try
 			{
 				var artist = Artist.artistForName(tag.FirstPerformer);
+                _artistId = artist.ArtistId;
+                _artistName = artist.ArtistName;
 			}
-			catch (Exception e)
+			catch
 			{
-				Console.WriteLine(e.ToString());
+                _artistId = 0;
+                _artistName = null;
 			}
+
+            try
+            {
+                var album = Album.albumForName(tag.Album);
+                _albumId = album.AlbumId;
+                _albumName = album.AlbumName;
+            }
+            catch
+            {
+                _albumId = 0;
+                _albumName = null;
+            }
+
+            _fileType = FileType.UNKNOWN;
+            foreach (ICodec codec in file.Properties.Codecs)
+            {
+                IAudioCodec a = null;
+                try
+                {
+                    a = (IAudioCodec)codec;
+                }
+                catch
+                { }
+
+                if (a != null)
+                {
+                    _fileType = FileType.fileTypeForTagSharpString(a.Description);
+                }
+            }
+
+            try
+            {
+                _songName = tag.Title;
+            }
+            catch
+            {
+                _songName = null;
+            }
+
+            try
+            {
+                _trackNumber = Convert.ToInt32(tag.Track);
+            }
+            catch
+            {
+                _trackNumber = 0;
+            }
+
+            try
+            {
+                _discNumber = Convert.ToInt32(tag.Disc);
+            }
+            catch
+            {
+                _discNumber = 0;
+            }
+
+            _duration = Convert.ToInt32(file.Properties.Duration);
+            _bitrate = file.Properties.AudioBitrate;
+            _fileSize = fsFile.Length;
+            _lastModified = Convert.ToInt32(fsFile.LastWriteTime);
+            _fileName = fsFile.Name;
+
+            var art = new CoverArt(fsFile);
+
 		}
 
 		public Song(SqlCeDataReader reader)

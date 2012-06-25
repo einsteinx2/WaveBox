@@ -16,3 +16,4 @@ C:\Users\Justin\Desktop\pms\pms\bin\Debug\Newtonsoft.Json.dll
 C:\Users\Justin\Desktop\pms\pms\obj\x86\Debug\ResolveAssemblyReference.cache
 C:\Users\Justin\Desktop\pms\pms\obj\x86\Debug\pms.exe
 C:\Users\Justin\Desktop\pms\pms\obj\x86\Debug\pms.pdb
+C:\Users\Justin\Desktop\pms\pms\bin\Debug\taglib-sharp.dll

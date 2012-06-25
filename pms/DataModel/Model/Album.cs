@@ -101,6 +101,11 @@ namespace pms.DataModel.Model
 
 		}
 
+        public static Album albumForName(string albumName)
+        {
+            return new Album();
+        }
+
 		private void _setPropertiesFromQueryResult(SqlCeDataReader reader)
 		{
 			_artistId = reader.GetInt32(0);
