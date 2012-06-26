@@ -311,23 +311,31 @@ namespace pms.DataModel.Model
 		{
 			SqlCeConnection conn = null;
 			SqlCeDataReader reader = null;
-			string query;
 			int affected;
 
 			try
 			{
 				Folder mf = mediaFolder();
+				conn = Database.getDbConnection();
+				var q = new SqlCeCommand();
 
 				if (mf == null)
 				{
-					query = string.Format("INSERT INTO folder (folder_name, folder_path, parent_folder_id) VALUES ('{0}', '{1}', {2})", FolderName, FolderPath, ParentFolderId);
+					q.CommandText = "INSERT INTO folder (folder_name, folder_path, parent_folder_id) VALUES (@foldername, @folderpath, @parentfolderid)";
+					q.Parameters.AddWithValue("@foldername", FolderName);
+					q.Parameters.AddWithValue("@folderpath", FolderPath);
+					q.Parameters.AddWithValue("@parentfolderid", ParentFolderId);
 				}
 
-				else query = string.Format("INSERT INTO folder (folder_name, folder_path, parent_folder_id, folder_media_folder_id) VALUES ('{0}', '{1}', {2}, {3})", FolderName, FolderPath, ParentFolderId, mf.FolderId);
+				else
+				{
+					q.CommandText = "INSERT INTO folder (folder_name, folder_path, parent_folder_id, folder_media_folder_id) VALUES (@foldername, @folderpath, @parentfolderid, @folderid)";
+					q.Parameters.AddWithValue("@foldername", FolderName);
+					q.Parameters.AddWithValue("@folderpath", FolderPath);
+					q.Parameters.AddWithValue("@parentfolderid", ParentFolderId);
+					q.Parameters.AddWithValue("@folderid", mf.FolderId);
+				}
 
-				conn = Database.getDbConnection();
-
-				var q = new SqlCeCommand(query);
 				q.Connection = conn;
 				q.Prepare();
 				affected = q.ExecuteNonQuery();
@@ -362,7 +370,7 @@ namespace pms.DataModel.Model
 			{
 				conn = Database.getDbConnection();
 
-				string query = "SELECT * FROM folder WHERE parent_folder_id IS NULL";
+				string query = "SELECT * FROM folder WHERE parent_folder_id = null";
 
 				var q = new SqlCeCommand(query);
 				q.Connection = conn;

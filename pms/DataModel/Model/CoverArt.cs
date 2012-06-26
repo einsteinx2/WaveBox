@@ -71,10 +71,9 @@ namespace pms.DataModel.Model
 			{
 				conn = Database.getDbConnection();
 
-				string query = string.Format("SELECT * FROM art WHERE art_id = {0}", artId);
-
-				var q = new SqlCeCommand(query);
+				var q = new SqlCeCommand("SELECT * FROM art WHERE art_id = @artid");
 				q.Connection = conn;
+				q.Parameters.AddWithValue("@artid", ArtId);
 				q.Prepare();
 				reader = q.ExecuteReader();
 
@@ -112,10 +111,9 @@ namespace pms.DataModel.Model
                 {
                     conn = Database.getDbConnection();
 
-                    string query = string.Format("SELECT * FROM art WHERE adler_hash = {0}", _adlerHash);
-
-                    var q = new SqlCeCommand(query);
+                    var q = new SqlCeCommand("SELECT * FROM art WHERE adler_hash = @adlerhash");
                     q.Connection = conn;
+					q.Parameters.AddWithValue("@adlerhash", AdlerHash);
                     q.Prepare();
                     reader = q.ExecuteReader();
 
@@ -148,9 +146,9 @@ namespace pms.DataModel.Model
 						try
 						{
 							var conn1 = Database.getDbConnection();
-							var q1 = new SqlCeCommand("INSERT INTO art (adler_hash) VALUES (@stuff)");
+							var q1 = new SqlCeCommand("INSERT INTO art (adler_hash) VALUES (@adlerhash)");
 							q1.Connection = conn1;
-							q1.Parameters.AddWithValue("@stuff", _adlerHash);
+							q1.Parameters.AddWithValue("@adlerhash", AdlerHash);
 							q1.Prepare();
 							int result = q1.ExecuteNonQuery();
 

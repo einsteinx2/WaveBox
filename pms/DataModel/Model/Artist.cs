@@ -85,11 +85,10 @@ namespace pms.DataModel.Model
 			{
 				conn = Database.getDbConnection();
 
-				string query = string.Format("SELECT * FROM artist LEFT JOIN item_type_art ON item_type_art.item_type_id = {0} AND item_id = artist_id WHERE artist_id = {1}",
-					ItemTypeId, artistId);
-
-				var q = new SqlCeCommand(query);
+				var q = new SqlCeCommand("SELECT * FROM artist LEFT JOIN item_type_art ON item_type_art.item_type_id = @itemtypeid AND item_id = artist_id WHERE artist_id = @artistid");
 				q.Connection = conn;
+				q.Parameters.AddWithValue("@itemtypeid", ItemTypeId);
+				q.Parameters.AddWithValue("@artistid", ArtistId);
 				q.Prepare();
 				reader = q.ExecuteReader();
 
@@ -223,11 +222,11 @@ namespace pms.DataModel.Model
 			try
 			{
 				conn = Database.getDbConnection();
-				string query = string.Format("SELECT * FROM album LEFT JOIN item_type_art ON item_type_id = {0} AND item_id = album_id WHERE artist_id = {1}",
-					ItemTypeId, ArtistId);
 
-				var q = new SqlCeCommand(query);
+				var q = new SqlCeCommand("SELECT * FROM album LEFT JOIN item_type_art ON item_type_id = @itemtypeid AND item_id = album_id WHERE artist_id = @artistid");
 				q.Connection = conn;
+				q.Parameters.AddWithValue("@itemtypeid", ItemTypeId);
+				q.Parameters.AddWithValue("@artistid", ArtistId);
 				q.Prepare();
 				reader = q.ExecuteReader();
 
@@ -264,14 +263,14 @@ namespace pms.DataModel.Model
 			{
 				conn = Database.getDbConnection();
 
-				string query = "SELECT song.*, artist.artist_name, album.album_name FROM song " +
-					string.Format("LEFT JOIN item_type_art ON item_type_art.item_type_id = {0} AND item_id = song_id ", new Song().ItemTypeId) +
-					string.Format("LEFT JOIN artist ON song_artist_id = artist_id ") +
-					string.Format("LEFT JOIN album ON song_album_id = album_id ") +
-					string.Format("WHERE song_artist_id = {0}", ArtistId);
-
-				var q = new SqlCeCommand(query);
+				var q = new SqlCeCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " + 
+										 "LEFT JOIN item_type_art ON item_type_art.item_type_id = @itemtypeid AND item_id = song_id " +
+										 "LEFT JOIN artist ON song_artist_id = artist_id " +
+										 "LEFT JOIN album ON song_album_id = album_id " +
+										 "WHERE song_artist_id = @artistid");
 				q.Connection = conn;
+				q.Parameters.AddWithValue("@itemtypeid", ItemTypeId);
+				q.Parameters.AddWithValue("@artistid", ArtistId);
 				q.Prepare();
 				reader = q.ExecuteReader();
 
@@ -331,10 +330,9 @@ namespace pms.DataModel.Model
 			{
 				conn = Database.getDbConnection();
 
-				string query = string.Format("SELECT * FROM artist LEFT JOIN item_type_art ON item_type_id = {0} AND item_id = artist_id", ItemTypeId);
-
-				var q = new SqlCeCommand(query);
+				var q = new SqlCeCommand("SELECT * FROM artist LEFT JOIN item_type_art ON item_type_id = @itemtypeid AND item_id = artist_id");
 				q.Connection = conn;
+				q.Parameters.AddWithValue("@itemtypeid", ItemTypeId);
 				q.Prepare();
 				reader = q.ExecuteReader();
 

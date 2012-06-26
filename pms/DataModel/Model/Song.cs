@@ -137,14 +137,14 @@ namespace pms.DataModel.Model
 			{
 				conn = Database.getDbConnection();
 
-				string query =  string.Format("SELECT song.*, item_type_art.art_id, artist.artist_name, album.album_name FROM song ") + 
-								string.Format("LEFT JOIN item_type_art ON item_type_art.item_type_id = {0} AND item_id = song_id ", ItemTypeId) +
-								string.Format("LEFT JOIN artist ON song_artist_id = artist.artist_id ") +
-								string.Format("LEFT JOIN album ON song_album_id = album.album_id ") +
-								string.Format("WHERE song_id = {0}", songId);
-
-				var q = new SqlCeCommand(query);
+				var q = new SqlCeCommand("SELECT song.*, item_type_art.art_id, artist.artist_name, album.album_name FROM song " +
+										 "LEFT JOIN item_type_art ON item_type_art.item_type_id = @itemtypeid AND item_id = song_id " +
+										 "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
+										 "LEFT JOIN album ON song_album_id = album.album_id " +
+										 "WHERE song_id = @songid");
 				q.Connection = conn;
+				q.Parameters.AddWithValue("@itemtypeid", ItemTypeId);
+				q.Parameters.AddWithValue("@songid", songId);
 				q.Prepare();
 				reader = q.ExecuteResultSet(ResultSetOptions.None);
 
@@ -281,7 +281,7 @@ namespace pms.DataModel.Model
 				_trackNumber = reader.GetInt32(reader.GetOrdinal("song_track_num"));
 				_discNumber = reader.GetInt32(reader.GetOrdinal("song_disc_num"));
 				_duration = reader.GetInt32(reader.GetOrdinal("song_duration"));
-				_bitrate = reader.GetInt64(reader.GetOrdinal("song_bitrate"));
+				_bitrate = reader.GetInt32(reader.GetOrdinal("song_bitrate"));
 				_fileSize = reader.GetInt64(reader.GetOrdinal("song_file_size"));
 				_lastModified = reader.GetInt64(reader.GetOrdinal("song_last_modified"));
 				_fileName = reader.GetString(reader.GetOrdinal("song_file_name"));

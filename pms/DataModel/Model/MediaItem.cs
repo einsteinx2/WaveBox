@@ -103,8 +103,8 @@ namespace pms.DataModel.Model
 			}
 		}
 
-		protected long _bitrate;
-		public long Bitrate
+		protected int _bitrate;
+		public int Bitrate
 		{
 			get
 			{
@@ -169,7 +169,7 @@ namespace pms.DataModel.Model
 
 		public static bool fileNeedsUpdating(FileInfo file)
 		{
-			Console.WriteLine("Checking to see if file needs updating: " + file.Name);
+			//Console.WriteLine("Checking to see if file needs updating: " + file.Name);
 			int folderId = new Folder(file.Directory.ToString()).FolderId;
 			string fileName = file.Name;
 			long lastModified = Convert.ToInt64(file.LastWriteTime.Ticks);
@@ -182,11 +182,11 @@ namespace pms.DataModel.Model
 			{
 				conn = Database.getDbConnection();
 
-				string query = string.Format("SELECT COUNT(*) AS count FROM song WHERE song_folder_id = {0} AND song_file_name = '{1}' AND song_last_modified = {2}",
-					folderId, fileName, lastModified);
-
-				var q = new SqlCeCommand(query);
+				var q = new SqlCeCommand("SELECT COUNT(*) AS count FROM song WHERE song_folder_id = @folderid AND song_file_name = @filename AND song_last_modified = @lastmod");
 				q.Connection = conn;
+				q.Parameters.AddWithValue("@folderid", folderId);
+				q.Parameters.AddWithValue("@filename", fileName);
+				q.Parameters.AddWithValue("@lastmod", lastModified);
 				q.Prepare();
 				reader = q.ExecuteReader();
 

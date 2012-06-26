@@ -7,6 +7,7 @@ using pms.DataModel.Singletons;
 using System.IO;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using System.Threading.Tasks;
 using TagLib;
 
 namespace pms.DataModel.FolderScanning
@@ -61,46 +62,47 @@ namespace pms.DataModel.FolderScanning
 					topFolder = new Folder(topFile.FullName);
 					Console.WriteLine("scanning " + topFolder.FolderName + "  id: " + topFolder.FolderId);
 
-					foreach (var subfolder in Directory.GetDirectories(topFile.FullName))
-					{
-						if (!(subfolder.Contains(".AppleDouble")))
-						{
-							var folder = new Folder(subfolder);
-
-							// if the folder isn't already in the database, add it.
-							if (folder.FolderId == 0)
-							{
-								folder.addToDatabase();
-							}
-							processFolder(subfolder);
-						}
-					}
-
-					//Parallel.ForEach(Directory.GetDirectories(topFile.FullName), currentFile =>
+					//foreach (var subfolder in Directory.GetDirectories(topFile.FullName))
+					//{
+					//    if (!(subfolder.Contains(".AppleDouble")))
 					//    {
-					//        if (!(currentFile.Contains(".AppleDouble")))
+					//        var folder = new Folder(subfolder);
+
+					//        // if the folder isn't already in the database, add it.
+					//        if (folder.FolderId == 0)
 					//        {
-					//            var folder = new Folder(currentFile);
-
-					//            // if the folder isn't already in the database, add it.
-					//            if (folder.FolderId == 0)
-					//            {
-					//                folder.addToDatabase();
-					//            }
-					//            processFolder(currentFile);
+					//            folder.addToDatabase();
 					//        }
-					//    });
-					foreach (var subfile in Directory.GetFiles(topFile.FullName))
-					{
-						// if the subfile is a directory...
-						processFile(new FileInfo(subfile), topFolder.FolderId);
-						//Console.WriteLine(subfile);
-					}
+					//        processFolder(subfolder);
+					//    }
+					//}
 
-					//Parallel.ForEach(Directory.GetFiles(topFile.FullName), currentFile =>
-					//    {
-					//        processFile(new FileInfo(currentFile), topFolder.FolderId);
-					//    });
+					Parallel.ForEach(Directory.GetDirectories(topFile.FullName), currentFile =>
+						{
+							if (!(currentFile.Contains(".AppleDouble")))
+							{
+								var folder = new Folder(currentFile);
+
+								// if the folder isn't already in the database, add it.
+								if (folder.FolderId == 0)
+								{
+									folder.addToDatabase();
+								}
+								processFolder(currentFile);
+							}
+						});
+
+					//foreach (var subfile in Directory.GetFiles(topFile.FullName))
+					//{
+					//    // if the subfile is a directory...
+					//    processFile(new FileInfo(subfile), topFolder.FolderId);
+					//    //Console.WriteLine(subfile);
+					//}
+
+					Parallel.ForEach(Directory.GetFiles(topFile.FullName), currentFile =>
+						{
+							processFile(new FileInfo(currentFile), topFolder.FolderId);
+						});
 
 
 					
