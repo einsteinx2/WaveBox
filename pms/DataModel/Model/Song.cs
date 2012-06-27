@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Data.SqlServerCe;
-using pms.DataModel.Model;
-using pms.DataModel.Singletons;
+using MediaFerry.DataModel.Model;
+using MediaFerry.DataModel.Singletons;
 using System.IO;
 using TagLib;
+using System.Diagnostics;
 
-namespace pms.DataModel.Model
+namespace MediaFerry.DataModel.Model
 {
 	public class Song : MediaItem
 	{
@@ -135,23 +136,26 @@ namespace pms.DataModel.Model
 
 			try
 			{
-				conn = Database.getDbConnection();
-
 				var q = new SqlCeCommand("SELECT song.*, item_type_art.art_id, artist.artist_name, album.album_name FROM song " +
 										 "LEFT JOIN item_type_art ON item_type_art.item_type_id = @itemtypeid AND item_id = song_id " +
 										 "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
 										 "LEFT JOIN album ON song_album_id = album.album_id " +
 										 "WHERE song_id = @songid");
-				q.Connection = conn;
 				q.Parameters.AddWithValue("@itemtypeid", ItemTypeId);
 				q.Parameters.AddWithValue("@songid", songId);
+
+				Database.dblock.WaitOne();
+				conn = Database.getDbConnection();
+				q.Connection = conn;
 				q.Prepare();
-				reader = q.ExecuteResultSet(ResultSetOptions.None);
+				reader = q.ExecuteReader();
 
 				if (reader.Read())
 				{
 					_setPropertiesFromQueryResult(reader);
 				}
+
+				reader.Close();
 			}
 
 			catch (Exception e)
@@ -161,6 +165,7 @@ namespace pms.DataModel.Model
 
 			finally
 			{
+				Database.dblock.ReleaseMutex();
 				Database.close(conn, reader);
 			}
 		}
@@ -301,16 +306,25 @@ namespace pms.DataModel.Model
 
 			try
 			{
-				conn = Database.getDbConnection();
+				var sw = new Stopwatch();
 
+				sw.Start();
 				var q = new SqlCeCommand("INSERT INTO song (song_folder_id, song_artist_id, song_album_id, song_file_type_id, song_name, song_track_num, song_disc_num, song_duration, song_bitrate, song_file_size, song_last_modified, song_file_name, song_release_year)" + 
 										 "VALUES (@folderid, @artistid, @albumid, @filetype, @songname, @tracknum, @discnum, @duration, @bitrate, @filesize, @lastmod, @filename, @releaseyear)");
-				q.Connection = conn;
+				sw.Stop();
+				//Console.WriteLine("\tNew sql command: {0} ms", sw.ElapsedMilliseconds);
+				sw.Reset();
+
+				sw.Start();
 				q.Parameters.AddWithValue("@folderid", FolderId);
 				q.Parameters.AddWithValue("@artistid", ArtistId);
 				q.Parameters.AddWithValue("@albumid", AlbumId);
 				q.Parameters.AddWithValue("@filetype", (int)FileType);
-				q.Parameters.AddWithValue("@songname", SongName);
+
+				if (SongName == null)
+					q.Parameters.AddWithValue("@songname", DBNull.Value);
+				else q.Parameters.AddWithValue("@songname", SongName);
+
 				q.Parameters.AddWithValue("@tracknum", TrackNumber);
 				q.Parameters.AddWithValue("@discnum", DiscNumber);
 				q.Parameters.AddWithValue("@duration", Duration);
@@ -319,10 +333,31 @@ namespace pms.DataModel.Model
 				q.Parameters.AddWithValue("@lastmod", LastModified);
 				q.Parameters.AddWithValue("@filename", FileName);
 				q.Parameters.AddWithValue("@releaseyear", ReleaseYear);
+				sw.Stop();
+				//Console.WriteLine("\tAdd parameters: {0} ms", sw.ElapsedMilliseconds);
+				sw.Reset();
 
+				sw.Start();
+				Database.dblock.WaitOne();
+				conn = Database.getDbConnection();
+				sw.Stop();
+				//Console.WriteLine("\tGet DB connection: {0} ms", sw.ElapsedMilliseconds);
+				sw.Reset();
+
+				q.Connection = conn;
+
+				sw.Start();
 				q.Prepare();
-				q.ExecuteNonQuery();
+				sw.Stop();
+				//Console.WriteLine("\tPrepare statement: {0} ms", sw.ElapsedMilliseconds);
+				sw.Reset();
 
+				sw.Start();
+				q.ExecuteNonQuery();
+				sw.Stop();
+				//Console.WriteLine("\tExecute insert: {0} ms", sw.ElapsedMilliseconds);
+				sw.Reset();
+				return;
 			}
 
 			catch (Exception e)
@@ -332,6 +367,7 @@ namespace pms.DataModel.Model
 
 			finally
 			{
+				Database.dblock.ReleaseMutex();
 				Database.close(conn, reader);
 			}
 		}

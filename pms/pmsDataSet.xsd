@@ -4,7 +4,7 @@
     <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
       <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
         <Connections>
-          <Connection AppSettingsObjectName="Settings" AppSettingsPropertyName="pmsConnectionString" ConnectionStringObject="" IsAppSettingsProperty="true" Modifier="Assembly" Name="pmsConnectionString (Settings)" ParameterPrefix="@" PropertyReference="ApplicationSettings.pms.Properties.Settings.GlobalReference.Default.pmsConnectionString" Provider="Microsoft.SqlServerCe.Client.3.5" />
+          <Connection AppSettingsObjectName="Settings" AppSettingsPropertyName="pmsConnectionString" ConnectionStringObject="" IsAppSettingsProperty="true" Modifier="Assembly" Name="pmsConnectionString (Settings)" ParameterPrefix="@" PropertyReference="ApplicationSettings.MediaFerry.Properties.Settings.GlobalReference.Default.pmsConnectionString" Provider="Microsoft.SqlServerCe.Client.3.5" />
         </Connections>
         <Tables />
         <Sources />

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Bend.Util;
 
-namespace pms.ApiHandler.Handlers
+namespace MediaFerry.ApiHandler.Handlers
 {
 	class ErrorApiHandler : IApiHandler
 	{

@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Data.SqlServerCe;
+using MediaFerry.DataModel.Singletons;
 
-namespace pms.DataModel.Model
+namespace MediaFerry.DataModel.Model
 {
 	public class Album
 	{
@@ -98,6 +99,83 @@ namespace pms.DataModel.Model
 
 		public Album(int albumId)
 		{
+			SqlCeConnection conn = null;
+			SqlCeDataReader result = null;
+
+			try
+			{
+				var q = new SqlCeCommand("SELECT * FROM album LEFT JOIN item_type_art ON item_type_art.item_type_id = @itemtypeid AND album_id = @albumid");
+				q.Parameters.AddWithValue("@itemtypeid", ItemTypeId);
+				q.Parameters.AddWithValue("@albumid", albumId);
+
+				Database.dblock.WaitOne();
+				conn = Database.getDbConnection();
+				q.Connection = conn;
+				q.Prepare();
+				result = q.ExecuteReader();
+
+				if (result.Read())
+				{
+					_setPropertiesFromQueryResult(result);
+				}
+
+				result.Close();
+			}
+
+			catch (Exception e)
+			{
+				Console.WriteLine(e.ToString());
+			}
+
+			finally
+			{
+				Database.dblock.ReleaseMutex();
+				Database.close(conn, result);
+			}
+		}
+
+		public Album(string albumName)
+		{
+			if (albumName == null || albumName == "")
+			{
+				return;
+			}
+
+			AlbumName = albumName;
+
+			SqlCeConnection conn = null;
+			SqlCeDataReader result = null;
+
+			try
+			{
+				var q = new SqlCeCommand("SELECT * FROM album LEFT JOIN item_type_art ON item_type_id = @itemtypeid AND item_id = album_id WHERE album_name  = @albumname");
+				q.Parameters.AddWithValue("@itemtypeid", ItemTypeId);
+				q.Parameters.AddWithValue("@albumname", AlbumName);
+
+				Database.dblock.WaitOne();
+				conn = Database.getDbConnection();
+				q.Connection = conn;
+				q.Prepare();
+				result = q.ExecuteReader();
+
+				if (result.Read())
+				{
+					_setPropertiesFromQueryResult(result);
+				}
+
+				result.Close();
+			}
+
+			catch (Exception e)
+			{
+				Console.WriteLine(e.ToString());
+			}
+
+			finally
+			{
+				Database.dblock.ReleaseMutex();
+				Database.close(conn, result);
+			}
 
 		}
 

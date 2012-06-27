@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using pms.DataModel.Model;
+using MediaFerry.DataModel.Model;
 using Newtonsoft.Json;
 using System.IO;
 
-namespace pms.DataModel.Singletons
+namespace MediaFerry.DataModel.Singletons
 {
 	public class Settings
 	{

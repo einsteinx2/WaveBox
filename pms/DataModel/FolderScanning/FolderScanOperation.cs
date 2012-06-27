@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using pms.DataModel.Model;
-using pms.DataModel.Singletons;
+using MediaFerry.DataModel.Model;
+using MediaFerry.DataModel.Singletons;
 using System.IO;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using System.Threading.Tasks;
+using System.Diagnostics;
 using TagLib;
 
-namespace pms.DataModel.FolderScanning
+namespace MediaFerry.DataModel.FolderScanning
 {
 	class FolderScanOperation : ScanOperation
 	{
@@ -60,7 +60,7 @@ namespace pms.DataModel.FolderScanning
 				if ((topFile.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
 				{
 					topFolder = new Folder(topFile.FullName);
-					Console.WriteLine("scanning " + topFolder.FolderName + "  id: " + topFolder.FolderId);
+					//Console.WriteLine("scanning " + topFolder.FolderName + "  id: " + topFolder.FolderId);
 
 					//foreach (var subfolder in Directory.GetDirectories(topFile.FullName))
 					//{
@@ -111,7 +111,7 @@ namespace pms.DataModel.FolderScanning
 
 			catch (DirectoryNotFoundException e)
 			{
-				Console.WriteLine("Directory does not exist. " + e.InnerException);
+				Console.WriteLine(folderPath + ": Directory does not exist. " + e.InnerException);
 			}
 			catch (Exception e)
 			{
@@ -132,18 +132,33 @@ namespace pms.DataModel.FolderScanning
 					return;
 				}
 
+
 				if (MediaItem.fileNeedsUpdating(file))
 				{
 					Console.WriteLine("File needs updating: " + file.Name);
+					var sw = new Stopwatch();
+					sw.Start();
 					TagLib.File f = null;
 					try
 					{
 						f = TagLib.File.Create(file.FullName);
 					}
+
+					catch (TagLib.CorruptFileException e)
+					{
+						e.ToString();
+						Console.WriteLine(file.Name + " has a corrupt tag and will not be inserted.");
+						return;
+					}
+
 					catch (Exception e)
 					{
 						Console.WriteLine("Error processing file: " + e.ToString());
 					}
+					sw.Stop();
+					//Console.WriteLine("Get tag: {0} ms", sw.ElapsedMilliseconds);
+
+					sw.Reset();
 
 					if (f == null)
 					{
@@ -153,8 +168,16 @@ namespace pms.DataModel.FolderScanning
 					else
 					{
 						// It's a song!  Do yo thang.
+						sw.Start();
 						var song = new Song(file, folderId);
+						sw.Stop();
+						//Console.WriteLine("Create new song object: {0} ms", sw.ElapsedMilliseconds);
+
+						sw.Reset();
+						sw.Start();
 						song.updateDatabase();
+						sw.Stop();
+						//Console.WriteLine("Update database: {0} ms", sw.ElapsedMilliseconds);
 					}
 				}
 			}

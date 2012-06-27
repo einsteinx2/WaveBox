@@ -5,9 +5,10 @@ using System.Text;
 using System.Data.SqlServerCe;
 using Bend.Util;
 using System.Threading;
-using pms.DataModel.Singletons;
+using MediaFerry.DataModel.Singletons;
+using System.Diagnostics;
 
-namespace pms
+namespace MediaFerry
 {
 	class Program
 	{
@@ -15,11 +16,15 @@ namespace pms
 		{
 			int httpPort = 8080;
 			// instantiate singletons
-			var settings = Settings.Instance;
 			var database = Database.Instance;
+			var settings = Settings.Instance;
 
+			var sw = new Stopwatch();
 			Console.WriteLine("Scanning and shit...");
+			sw.Start();
 			var filemanager = FileManager.Instance;
+			sw.Stop();
+			Console.WriteLine("Scan took {0} seconds", sw.ElapsedMilliseconds / 1000);
 
 			// start http server
 			Console.Write("Starting HTTP server... ");

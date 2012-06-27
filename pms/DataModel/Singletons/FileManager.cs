@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using pms.DataModel.Singletons;
-using pms.DataModel.Model;
+using MediaFerry.DataModel.Singletons;
+using MediaFerry.DataModel.Model;
 
-namespace pms.DataModel.Singletons
+namespace MediaFerry.DataModel.Singletons
 {
 	class FileManager
 	{

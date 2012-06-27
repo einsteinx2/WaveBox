@@ -3,12 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Data.SqlServerCe;
+using System.Threading;
 
-namespace pms.DataModel.Singletons
+
+namespace MediaFerry.DataModel.Singletons
 {
 	class Database
 	{
 		private static Database instance;
+		public static Mutex dblock;
+		private static SqlCeConnection dbconn;
 		public static Database Instance
 		{
 			get
@@ -16,6 +20,7 @@ namespace pms.DataModel.Singletons
 				if (instance == null)
 				{
 					instance = new Database();
+					dblock = new Mutex();
 				}
 
 				return instance;
@@ -28,8 +33,10 @@ namespace pms.DataModel.Singletons
 
 		public static SqlCeConnection getDbConnection()
 		{
-			var dbconn = new SqlCeConnection("DataSource = \"pms.sdf\"");
-			dbconn.Open();
+			if (dbconn == null)
+			{
+				dbconn = new SqlCeConnection("DataSource = \"pms.sdf\"");
+			}
 
 			while ((dbconn.State == System.Data.ConnectionState.Closed))
 			{
@@ -43,7 +50,7 @@ namespace pms.DataModel.Singletons
 		{
 			if (!(c == null) && !(c.State == System.Data.ConnectionState.Closed))
 			{
-				c.Close();
+				//c.Close();
 			}
 
 			if (!(r == null) && !r.IsClosed)

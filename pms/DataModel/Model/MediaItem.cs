@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Data.SqlServerCe;
-using pms.DataModel.Model;
-using pms.DataModel.Singletons;
+using MediaFerry.DataModel.Model;
+using MediaFerry.DataModel.Singletons;
+using System.Diagnostics;
 
-namespace pms.DataModel.Model
+namespace MediaFerry.DataModel.Model
 {
 	public class MediaItem
 	{
@@ -169,34 +170,51 @@ namespace pms.DataModel.Model
 
 		public static bool fileNeedsUpdating(FileInfo file)
 		{
+			//var sw = new Stopwatch();
+			//sw.Start();
 			//Console.WriteLine("Checking to see if file needs updating: " + file.Name);
 			int folderId = new Folder(file.Directory.ToString()).FolderId;
 			string fileName = file.Name;
 			long lastModified = Convert.ToInt64(file.LastWriteTime.Ticks);
 			bool needsUpdating = true;
+			//sw.Stop();
+
+			//Console.WriteLine("Get file information: {0} ms", sw.ElapsedMilliseconds);
+			//sw.Reset();
 
 			SqlCeConnection conn = null;
 			SqlCeDataReader reader = null;
 
 			try
 			{
-				conn = Database.getDbConnection();
-
+				//sw.Start();
 				var q = new SqlCeCommand("SELECT COUNT(*) AS count FROM song WHERE song_folder_id = @folderid AND song_file_name = @filename AND song_last_modified = @lastmod");
-				q.Connection = conn;
 				q.Parameters.AddWithValue("@folderid", folderId);
 				q.Parameters.AddWithValue("@filename", fileName);
 				q.Parameters.AddWithValue("@lastmod", lastModified);
-				q.Prepare();
-				reader = q.ExecuteReader();
+				//sw.Stop();
+				//Console.WriteLine("Add parameters: {0} ms", sw.ElapsedMilliseconds);
+				//sw.Reset();
 
-				if (reader.Read())
+				//sw.Start();
+				Database.dblock.WaitOne();
+				conn = Database.getDbConnection();
+				//sw.Stop();
+				//Console.WriteLine("Get db connection: {0} ms", sw.ElapsedMilliseconds);
+				//sw.Reset();
+
+				//sw.Start();
+				q.Connection = conn;
+				q.Prepare();
+				int i = (int)q.ExecuteScalar();
+
+				if (i >= 1)
 				{
-					if (reader.GetInt32(reader.GetOrdinal("count")) >= 1)
-					{
-						needsUpdating = false;
-					}
+					needsUpdating = false;
 				}
+				//sw.Stop();
+				//Console.WriteLine("Do query: {0} ms; count is {1}", sw.ElapsedMilliseconds, i);
+				//sw.Reset();
 			}
 
 			catch (Exception e)
@@ -206,6 +224,7 @@ namespace pms.DataModel.Model
 
 			finally
 			{
+				Database.dblock.ReleaseMutex();
 				Database.close(conn, reader);
 			}
 			return needsUpdating;

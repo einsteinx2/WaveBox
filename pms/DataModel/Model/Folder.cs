@@ -4,11 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Data.SqlServerCe;
 using System.Data.SqlTypes;
-using pms.DataModel.Singletons;
-using pms.DataModel.Model;
+using MediaFerry.DataModel.Singletons;
+using MediaFerry.DataModel.Model;
+using System.Diagnostics;
 using System.IO;
 
-namespace pms.DataModel.Model
+namespace MediaFerry.DataModel.Model
 {
 	public class Folder
 	{
@@ -109,14 +110,16 @@ namespace pms.DataModel.Model
 			{
 				conn = Database.getDbConnection();
 
-				string query =  string.Format("SELECT folder.*, item_type_art.art_id FROM folder ") +
-								string.Format("LEFT JOIN song ON song_folder_id = folder_id ") +
-								string.Format("LEFT JOIN item_type_art ON item_type_art.item_type_id = {0} AND item_id = song_id ", new Song().ItemTypeId) +
-								string.Format("WHERE folder_id = {0} ", folderId) +
-								string.Format("GROUP BY folder_id, item_type_art.art_id");
+				var q = new SqlCeCommand("SELECT folder.*, item_type_art.art_id FROM folder " +
+										 "LEFT JOIN song ON song_folder_id = folder_id " +
+										 "LEFT JOIN item_type_art ON item_type_art.item_type_id = @itemtypeid AND item_id = song_id " +
+										 "WHERE folder_id = @folderid " +
+										 "GROUP BY folder_id, item_type_art.art_id");
 
-				var q = new SqlCeCommand(query);
+				Database.dblock.WaitOne();
 				q.Connection = conn;
+				q.Parameters.AddWithValue("@itemtypeid", new Song().ItemTypeId);
+				q.Parameters.AddWithValue("@folderid", folderId);
 				q.Prepare();
 				reader = q.ExecuteReader();
 
@@ -138,6 +141,7 @@ namespace pms.DataModel.Model
 
 			finally
 			{
+				Database.dblock.ReleaseMutex();
 				Database.close(conn, reader);
 			}
 		}
@@ -159,20 +163,23 @@ namespace pms.DataModel.Model
 
 			try
 			{
-				conn = Database.getDbConnection();
-				string query = null;
+				q = new SqlCeCommand();
 
 				if (isMediaFolder())
 				{
-					query = string.Format("SELECT folder_id FROM folder WHERE folder_name = {0} AND parent_folder_id IS NULL", _folderName);
+					q.CommandText = "SELECT folder_id FROM folder WHERE folder_name = @foldername AND parent_folder_id IS NULL";
+					q.Parameters.AddWithValue("@foldername", FolderName);
 				}
 
 				else
 				{
-					query = string.Format("SELECT folder_id FROM folder WHERE folder_name = '{0}' AND parent_folder_id = {1}", _folderName, _parentFolderId);
+					q.CommandText = "SELECT folder_id FROM folder WHERE folder_name = @foldername AND parent_folder_id = @parentfolderid";
+					q.Parameters.AddWithValue("@foldername", FolderName);
+					q.Parameters.AddWithValue("@parentfolderid", ParentFolderId);
 				}
 
-				q = new SqlCeCommand(query);
+				Database.dblock.WaitOne();
+				conn = Database.getDbConnection();
 				q.Connection = conn;
 				q.Prepare();
 				reader = q.ExecuteReader();
@@ -181,6 +188,8 @@ namespace pms.DataModel.Model
 				{
 					_folderId = reader.GetInt32(0);
 				}
+
+				reader.Close();
 			}
 
 			catch (Exception e)
@@ -190,6 +199,7 @@ namespace pms.DataModel.Model
 
 			finally
 			{
+				Database.dblock.ReleaseMutex();
 				Database.close(conn, reader);
 			}
 		}
@@ -215,15 +225,17 @@ namespace pms.DataModel.Model
 
 			try
 			{
+				var q = new SqlCeCommand("SELECT song.*, item_type_art.art_id, artist.artist_name, album.album_name FROM song " +
+										 "LEFT JOIN item_type_art ON item_type_art.item_type_id = @itemtypeid AND item_id = song_id " +
+										 "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
+										 "LEFT JOIN album ON song_album_id = album.album_id " +
+										 "WHERE song_folder_id = @folderid");
+
+				q.Parameters.AddWithValue("@itemtypeid", new Song().ItemTypeId);
+				q.Parameters.AddWithValue("@folderid", FolderId);
+
+				Database.dblock.WaitOne();
 				conn = Database.getDbConnection();
-
-				string query = string.Format("SELECT song.*, item_type_art.art_id, artist.artist_name, album.album_name FROM song ") +
-								string.Format("LEFT JOIN item_type_art ON item_type_art.item_type_id = {0} AND item_id = song_id ", new Song().ItemTypeId) +
-								string.Format("LEFT JOIN artist ON song_artist_id = artist.artist_id ") +
-								string.Format("LEFT JOIN album ON song_album_id = album.album_id ") +
-								string.Format("WHERE song_folder_id = {0}", FolderId);
-
-				var q = new SqlCeCommand(query);
 				q.Connection = conn;
 				q.Prepare();
 				reader = q.ExecuteReader();
@@ -232,6 +244,8 @@ namespace pms.DataModel.Model
 				{
 					songs.Add(new Song(reader));
 				}
+
+				reader.Close();
 			}
 
 			catch (Exception e)
@@ -241,6 +255,7 @@ namespace pms.DataModel.Model
 
 			finally
 			{
+				Database.dblock.ReleaseMutex();
 				Database.close(conn, reader);
 			}
 
@@ -256,10 +271,11 @@ namespace pms.DataModel.Model
 
 			try
 			{
-				conn = Database.getDbConnection();
+				var q = new SqlCeCommand("SELECT * FROM folder WHERE parent_folder_id = @folderid");
+				q.Parameters.AddWithValue("@folderid", FolderId);
 
-				string query = string.Format("SELECT * FROM folder WHERE parent_folder_id = {0}", FolderId);
-				var q = new SqlCeCommand(query);
+				Database.dblock.WaitOne();
+				conn = Database.getDbConnection();
 				q.Connection = conn;
 				q.Prepare();
 				reader = q.ExecuteReader();
@@ -268,6 +284,8 @@ namespace pms.DataModel.Model
 				{
 					folders.Add(new Folder(reader.GetInt32(0)));
 				}
+
+				reader.Close();
 			}
 
 			catch (Exception e)
@@ -277,6 +295,7 @@ namespace pms.DataModel.Model
 
 			finally
 			{
+				Database.dblock.ReleaseMutex();
 				Database.close(conn, reader);
 			}
 
@@ -316,7 +335,6 @@ namespace pms.DataModel.Model
 			try
 			{
 				Folder mf = mediaFolder();
-				conn = Database.getDbConnection();
 				var q = new SqlCeCommand();
 
 				if (mf == null)
@@ -336,16 +354,15 @@ namespace pms.DataModel.Model
 					q.Parameters.AddWithValue("@folderid", mf.FolderId);
 				}
 
+				Database.dblock.WaitOne();
+				conn = Database.getDbConnection();
 				q.Connection = conn;
 				q.Prepare();
 				affected = q.ExecuteNonQuery();
 
 				// get the id of the previous insert.  weird.
 				q.CommandText = "SELECT @@IDENTITY";
-				var thing = (SqlDecimal)q.ExecuteScalar();
-				var thing1 = thing.ToString();
-				var thing2 = Convert.ToInt32(thing1);
-				FolderId = thing2;
+				FolderId = Convert.ToInt32(q.ExecuteScalar().ToString());
 				//FolderId = Convert.ToInt32(((SqlDecimal)q.ExecuteScalar()).ToString());
 			}
 
@@ -356,6 +373,7 @@ namespace pms.DataModel.Model
 
 			finally
 			{
+				Database.dblock.ReleaseMutex();
 				Database.close(conn, reader);
 			}
 		}
@@ -368,11 +386,11 @@ namespace pms.DataModel.Model
 
 			try
 			{
-				conn = Database.getDbConnection();
-
 				string query = "SELECT * FROM folder WHERE parent_folder_id = null";
-
 				var q = new SqlCeCommand(query);
+
+				Database.dblock.WaitOne();
+				conn = Database.getDbConnection();
 				q.Connection = conn;
 				q.Prepare();
 				reader = q.ExecuteReader();
@@ -381,6 +399,8 @@ namespace pms.DataModel.Model
 				{
 					folders.Add(new Folder(reader.GetInt32(0)));
 				}
+
+				reader.Close();
 			}
 
 			catch (Exception e)
@@ -390,6 +410,7 @@ namespace pms.DataModel.Model
 
 			finally
 			{
+				Database.dblock.ReleaseMutex();
 				Database.close(conn, reader);
 			}
 

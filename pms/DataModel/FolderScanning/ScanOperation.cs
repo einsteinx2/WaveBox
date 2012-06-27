@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-namespace pms.DataModel.FolderScanning
+namespace MediaFerry.DataModel.FolderScanning
 {
 	abstract class ScanOperation
 	{

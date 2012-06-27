@@ -5,12 +5,12 @@ using System.Text;
 using System.IO;
 using System.Data.SqlServerCe;
 using System.Data.SqlTypes;
-using pms.DataModel.Singletons;
-using pms.DataModel.Model;
+using MediaFerry.DataModel.Singletons;
+using MediaFerry.DataModel.Model;
 using System.Security.Cryptography;
 using TagLib;
 
-namespace pms.DataModel.Model
+namespace MediaFerry.DataModel.Model
 {
 	public class CoverArt
 	{
@@ -69,11 +69,13 @@ namespace pms.DataModel.Model
 
 			try
 			{
-				conn = Database.getDbConnection();
-
 				var q = new SqlCeCommand("SELECT * FROM art WHERE art_id = @artid");
-				q.Connection = conn;
+
 				q.Parameters.AddWithValue("@artid", ArtId);
+
+				Database.dblock.WaitOne();
+				conn = Database.getDbConnection();
+				q.Connection = conn;
 				q.Prepare();
 				reader = q.ExecuteReader();
 
@@ -82,6 +84,9 @@ namespace pms.DataModel.Model
 					_artId = reader.GetInt32(0);
 					_adlerHash = reader.GetInt64(1);
 				}
+
+				reader.Close();
+				Database.dblock.ReleaseMutex();
 			}
 
 			catch (Exception e)
@@ -95,60 +100,66 @@ namespace pms.DataModel.Model
 			}
 		}
 
-        public CoverArt(FileInfo af)
-        {
-            var file = TagLib.File.Create(af.FullName);
-            if (file.Tag.Pictures.Length > 0)
-            {
-                var data = file.Tag.Pictures[0].Data.Data;
-                var md5 = new MD5CryptoServiceProvider();
-                _adlerHash = BitConverter.ToInt64(md5.ComputeHash(data), 0);
+		public CoverArt(FileInfo af)
+		{
+			var file = TagLib.File.Create(af.FullName);
+			if (file.Tag.Pictures.Length > 0)
+			{
+				var data = file.Tag.Pictures[0].Data.Data;
+				var md5 = new MD5CryptoServiceProvider();
+				_adlerHash = BitConverter.ToInt64(md5.ComputeHash(data), 0);
 
-                SqlCeConnection conn = null;
-                SqlCeDataReader reader = null;
+				SqlCeConnection conn = null;
+				SqlCeDataReader reader = null;
 
-                try
-                {
-                    conn = Database.getDbConnection();
-
-                    var q = new SqlCeCommand("SELECT * FROM art WHERE adler_hash = @adlerhash");
-                    q.Connection = conn;
+				try
+				{
+					var q = new SqlCeCommand("SELECT * FROM art WHERE adler_hash = @adlerhash");
 					q.Parameters.AddWithValue("@adlerhash", AdlerHash);
-                    q.Prepare();
-                    reader = q.ExecuteReader();
 
-                    if (reader.Read())
-                    {
-                        // the art is already in the database
-                        _artId = reader.GetInt32(reader.GetOrdinal("art_id"));
-                    }
+					Database.dblock.WaitOne();
+					conn = Database.getDbConnection();
+					q.Connection = conn;
+					q.Prepare();
+					reader = q.ExecuteReader();
 
-                    // the art is not already in the database
-                    else
-                    {
-                        try
-                        {
-                            var writer = new StreamWriter(ART_PATH + _adlerHash);
-                            writer.Write(file.Tag.Pictures[0].Data.Data);
-                            writer.Close();
-                        }
+					if (reader.Read())
+					{
+						// the art is already in the database
+						_artId = reader.GetInt32(reader.GetOrdinal("art_id"));
+						Database.dblock.ReleaseMutex();
+					}
 
-                        catch (Exception e)
-                        {
-                            Console.WriteLine(e.ToString());
-                        }
+					// the art is not already in the database
+					else
+					{
+						Database.dblock.ReleaseMutex();
+						try
+						{
+							var writer = new StreamWriter(ART_PATH + _adlerHash);
+							writer.Write(file.Tag.Pictures[0].Data.Data);
+							writer.Close();
+						}
 
-                        finally
-                        {
-                            Database.close(conn, reader);
-                        }
+						catch (Exception e)
+						{
+							Console.WriteLine(e.ToString());
+						}
+
+						finally
+						{
+							Database.close(conn, reader);
+						}
 
 						try
 						{
-							var conn1 = Database.getDbConnection();
 							var q1 = new SqlCeCommand("INSERT INTO art (adler_hash) VALUES (@adlerhash)");
-							q1.Connection = conn1;
+
 							q1.Parameters.AddWithValue("@adlerhash", AdlerHash);
+
+							Database.dblock.WaitOne();
+							var conn1 = Database.getDbConnection();
+							q1.Connection = conn1;
 							q1.Prepare();
 							int result = q1.ExecuteNonQuery();
 
@@ -160,12 +171,17 @@ namespace pms.DataModel.Model
 							try
 							{
 								q1.CommandText = "SELECT @@IDENTITY";
-								_artId = Convert.ToInt32(((SqlDecimal)q1.ExecuteScalar()).ToString());
+								_artId = Convert.ToInt32((q1.ExecuteScalar()).ToString());
 							}
 
 							catch (Exception e)
 							{
 								Console.WriteLine("\r\n\r\nGetting identity: " + e.ToString() + "\r\n\r\n");
+							}
+
+							finally
+							{
+								Database.dblock.ReleaseMutex();
 							}
 						}
 
@@ -173,19 +189,20 @@ namespace pms.DataModel.Model
 						{
 							Console.WriteLine("\r\n\r\n" + e.Message + "\r\n\r\n");
 						}
-                    }
-                }
+					}
+				}
 
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.ToString());
-                }
+				catch (Exception e)
+				{
+					Console.WriteLine(e.ToString());
+				}
 
-                finally
-                {
-                    Database.close(conn, reader);
-                }
-            }
-        }
+				finally
+				{
+
+					Database.close(conn, reader);
+				}
+			}
+		}
 	}
 }

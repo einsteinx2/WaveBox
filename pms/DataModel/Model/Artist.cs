@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Data.SqlServerCe;
-using pms.DataModel.Singletons;
+using MediaFerry.DataModel.Singletons;
 
-namespace pms.DataModel.Model
+namespace MediaFerry.DataModel.Model
 {
 	public class Artist
 	{
@@ -83,6 +83,7 @@ namespace pms.DataModel.Model
 
 			try
 			{
+				Database.dblock.WaitOne();
 				conn = Database.getDbConnection();
 
 				var q = new SqlCeCommand("SELECT * FROM artist LEFT JOIN item_type_art ON item_type_art.item_type_id = @itemtypeid AND item_id = artist_id WHERE artist_id = @artistid");
@@ -107,6 +108,7 @@ namespace pms.DataModel.Model
 
 			finally
 			{
+				Database.dblock.ReleaseMutex();
 				Database.close(conn, reader);
 			}
 		}
@@ -123,9 +125,8 @@ namespace pms.DataModel.Model
 
 			try
 			{
+				Database.dblock.WaitOne();
 				conn = Database.getDbConnection();
-
-
 				var q = new SqlCeCommand("SELECT * FROM artist LEFT JOIN item_type_art ON item_type_id = @itemtypeid AND item_id = artist_id WHERE artist_name = @artistname");
 				q.Connection = conn;
 				q.Parameters.AddWithValue("@itemtypeid", (int)ItemTypeId);
@@ -148,6 +149,7 @@ namespace pms.DataModel.Model
 
 			finally
 			{
+				Database.dblock.ReleaseMutex();
 				Database.close(conn, reader);
 			}
 		}
@@ -179,8 +181,8 @@ namespace pms.DataModel.Model
 
 			try
 			{
+				Database.dblock.WaitOne();
 				conn = Database.getDbConnection();
-
 				var q = new SqlCeCommand("INSERT INTO artist (artist_name) VALUES (@artistname)");
 				q.Connection = conn;
 				q.Parameters.AddWithValue("@artistname", artistName);
@@ -202,6 +204,7 @@ namespace pms.DataModel.Model
 
 			finally
 			{
+				Database.dblock.ReleaseMutex();
 				Database.close(conn, reader);
 			}
 
@@ -221,8 +224,8 @@ namespace pms.DataModel.Model
 
 			try
 			{
+				Database.dblock.WaitOne();
 				conn = Database.getDbConnection();
-
 				var q = new SqlCeCommand("SELECT * FROM album LEFT JOIN item_type_art ON item_type_id = @itemtypeid AND item_id = album_id WHERE artist_id = @artistid");
 				q.Connection = conn;
 				q.Parameters.AddWithValue("@itemtypeid", ItemTypeId);
@@ -243,6 +246,7 @@ namespace pms.DataModel.Model
 
 			finally
 			{
+				Database.dblock.ReleaseMutex();
 				Database.close(conn, reader);
 			}
 
@@ -261,16 +265,18 @@ namespace pms.DataModel.Model
 
 			try
 			{
-				conn = Database.getDbConnection();
-
 				var q = new SqlCeCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " + 
 										 "LEFT JOIN item_type_art ON item_type_art.item_type_id = @itemtypeid AND item_id = song_id " +
 										 "LEFT JOIN artist ON song_artist_id = artist_id " +
 										 "LEFT JOIN album ON song_album_id = album_id " +
 										 "WHERE song_artist_id = @artistid");
-				q.Connection = conn;
+
 				q.Parameters.AddWithValue("@itemtypeid", ItemTypeId);
 				q.Parameters.AddWithValue("@artistid", ArtistId);
+
+				Database.dblock.WaitOne();
+				conn = Database.getDbConnection();
+				q.Connection = conn;
 				q.Prepare();
 				reader = q.ExecuteReader();
 
@@ -278,6 +284,8 @@ namespace pms.DataModel.Model
 				{
 					songs.Add(new Song(reader));
 				}
+
+				reader.Close();
 			}
 
 			catch (Exception e)
@@ -287,6 +295,7 @@ namespace pms.DataModel.Model
 
 			finally
 			{
+				Database.dblock.ReleaseMutex();
 				Database.close(conn, reader);
 			}
 
@@ -324,22 +333,25 @@ namespace pms.DataModel.Model
 			var artists = new List<Artist>();
 
 			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
+			SqlCeDataReader result = null;
 
 			try
 			{
-				conn = Database.getDbConnection();
-
 				var q = new SqlCeCommand("SELECT * FROM artist LEFT JOIN item_type_art ON item_type_id = @itemtypeid AND item_id = artist_id");
-				q.Connection = conn;
 				q.Parameters.AddWithValue("@itemtypeid", ItemTypeId);
-				q.Prepare();
-				reader = q.ExecuteReader();
 
-				while (reader.Read())
+				Database.dblock.WaitOne();
+				conn = Database.getDbConnection();
+				q.Connection = conn;
+				q.Prepare();
+				result = q.ExecuteReader();
+
+				while (result.Read())
 				{
-					artists.Add(new Artist(reader));
+					artists.Add(new Artist(result));
 				}
+
+				result.Close();
 			}
 
 			catch (Exception e)
@@ -349,7 +361,8 @@ namespace pms.DataModel.Model
 
 			finally
 			{
-				Database.close(conn, reader);
+				Database.dblock.ReleaseMutex();
+				Database.close(conn, result);
 			}
 
 			artists.Sort(Artist.CompareArtistsByName);

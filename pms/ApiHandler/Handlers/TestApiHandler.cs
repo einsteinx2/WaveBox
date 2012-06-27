@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Bend.Util;
-using pms.DataModel.Model;
+using MediaFerry.DataModel.Model;
 
-namespace pms.ApiHandler.Handlers
+namespace MediaFerry.ApiHandler.Handlers
 {
 	class TestApiHandler : IApiHandler
 	{

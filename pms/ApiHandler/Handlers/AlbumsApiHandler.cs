@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using pms.ApiHandler;
+using MediaFerry.ApiHandler;
 using Bend.Util;
 
-namespace pms.ApiHandler.Handlers
+namespace MediaFerry.ApiHandler.Handlers
 {
 	class AlbumsApiHandler : IApiHandler
 	{
