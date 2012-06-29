@@ -12,6 +12,16 @@ namespace MediaFerry.DataModel.Singletons
 	{
 		private static Settings instance;
 		public static string SETTINGS_PATH = "res/pms.conf";
+
+		private double _version = 1.0;
+		public double Version
+		{
+			get
+			{
+				return _version;
+			}
+		}
+
 		private static List<Folder> _mediaFolders;
 		public static List<Folder> MediaFolders
 		{
@@ -77,6 +87,7 @@ namespace MediaFerry.DataModel.Singletons
 		private static List<Folder> _populateMediaFolders()
 		{
 			var folders = new List<Folder>();
+			Folder mf = null;
 			StreamReader reader = new StreamReader("pms.conf");
 			string configFile = reader.ReadToEnd();
 
@@ -86,7 +97,12 @@ namespace MediaFerry.DataModel.Singletons
 
 			for (int i = 0; i < json.mediaFolders.Count; i++)
 			{
-				folders.Add(new Folder(json.mediaFolders[i].ToString()));
+				mf = new Folder(json.mediaFolders[i].ToString());
+				if (mf.FolderId == 0)
+				{
+					mf.addToDatabase(true);
+				}
+				folders.Add(mf);
 			}
 
 

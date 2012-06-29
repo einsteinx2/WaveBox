@@ -6,7 +6,6 @@ using System.Data.SqlServerCe;
 using System.Data.SqlTypes;
 using MediaFerry.DataModel.Singletons;
 using MediaFerry.DataModel.Model;
-using System.Diagnostics;
 using System.IO;
 
 namespace MediaFerry.DataModel.Model
@@ -113,10 +112,9 @@ namespace MediaFerry.DataModel.Model
 				var q = new SqlCeCommand("SELECT folder.*, item_type_art.art_id FROM folder " +
 										 "LEFT JOIN song ON song_folder_id = folder_id " +
 										 "LEFT JOIN item_type_art ON item_type_art.item_type_id = @itemtypeid AND item_id = song_id " +
-										 "WHERE folder_id = @folderid " +
-										 "GROUP BY folder_id, item_type_art.art_id");
+										 "WHERE folder_id = @folderid ");
 
-				Database.dblock.WaitOne();
+				Database.dbLock.WaitOne();
 				q.Connection = conn;
 				q.Parameters.AddWithValue("@itemtypeid", new Song().ItemTypeId);
 				q.Parameters.AddWithValue("@folderid", folderId);
@@ -125,12 +123,17 @@ namespace MediaFerry.DataModel.Model
 
 				if (reader.Read())
 				{
-					_folderId = reader.GetInt32(0);
-					_folderName = reader.GetString(1);
-					_folderPath = reader.GetString(2);
-					_parentFolderId = reader.GetInt32(3);
-					_mediaFolderId = reader.GetInt32(4);
-					_artId = reader.GetInt32(5);
+					_folderId = reader.GetInt32(reader.GetOrdinal("folder_id"));
+					_folderName = reader.GetString(reader.GetOrdinal("folder_name"));
+					_folderPath = reader.GetString(reader.GetOrdinal("folder_path"));
+					if(reader.GetValue(reader.GetOrdinal("parent_folder_id")) == DBNull.Value)
+						_parentFolderId = 0;
+					else _parentFolderId = reader.GetInt32(reader.GetOrdinal("parent_folder_id"));
+					_mediaFolderId = reader.GetInt32(reader.GetOrdinal("folder_media_folder_id"));
+
+					if (reader.GetValue(reader.GetOrdinal("art_id")) == DBNull.Value)
+						_artId = 0;
+					else _artId = reader.GetInt32(reader.GetOrdinal("art_id"));
 				}
 			}
 
@@ -141,7 +144,15 @@ namespace MediaFerry.DataModel.Model
 
 			finally
 			{
-				Database.dblock.ReleaseMutex();
+				try
+				{
+					Database.dbLock.ReleaseMutex();
+				}
+
+				catch (Exception e)
+				{
+					Console.WriteLine(e.ToString());
+				}
 				Database.close(conn, reader);
 			}
 		}
@@ -160,12 +171,19 @@ namespace MediaFerry.DataModel.Model
 			_folderPath = path;
 			_folderName = Path.GetFileName(path);
 
+			foreach (Folder mf in mediaFolders())
+			{
+				if (path.Contains(mf.FolderPath))
+				{
+					MediaFolderId = mf.FolderId;
+				}
+			}
 
 			try
 			{
 				q = new SqlCeCommand();
 
-				if (isMediaFolder())
+				if (isMediaFolder() || Settings.MediaFolders == null)
 				{
 					q.CommandText = "SELECT folder_id FROM folder WHERE folder_name = @foldername AND parent_folder_id IS NULL";
 					q.Parameters.AddWithValue("@foldername", FolderName);
@@ -175,10 +193,10 @@ namespace MediaFerry.DataModel.Model
 				{
 					q.CommandText = "SELECT folder_id FROM folder WHERE folder_name = @foldername AND parent_folder_id = @parentfolderid";
 					q.Parameters.AddWithValue("@foldername", FolderName);
-					q.Parameters.AddWithValue("@parentfolderid", ParentFolderId);
+					q.Parameters.AddWithValue("@parentfolderid", _getParentFolderId(FolderPath));
 				}
 
-				Database.dblock.WaitOne();
+				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();
 				q.Connection = conn;
 				q.Prepare();
@@ -199,7 +217,15 @@ namespace MediaFerry.DataModel.Model
 
 			finally
 			{
-				Database.dblock.ReleaseMutex();
+				try
+				{
+					Database.dbLock.ReleaseMutex();
+				}
+
+				catch (Exception e)
+				{
+					Console.WriteLine(e.ToString());
+				}
 				Database.close(conn, reader);
 			}
 		}
@@ -234,7 +260,7 @@ namespace MediaFerry.DataModel.Model
 				q.Parameters.AddWithValue("@itemtypeid", new Song().ItemTypeId);
 				q.Parameters.AddWithValue("@folderid", FolderId);
 
-				Database.dblock.WaitOne();
+				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();
 				q.Connection = conn;
 				q.Prepare();
@@ -255,7 +281,15 @@ namespace MediaFerry.DataModel.Model
 
 			finally
 			{
-				Database.dblock.ReleaseMutex();
+				try
+				{
+					Database.dbLock.ReleaseMutex();
+				}
+
+				catch (Exception e)
+				{
+					Console.WriteLine(e.ToString());
+				}
 				Database.close(conn, reader);
 			}
 
@@ -271,16 +305,16 @@ namespace MediaFerry.DataModel.Model
 
 			try
 			{
-				var q = new SqlCeCommand("SELECT * FROM folder WHERE parent_folder_id = @folderid");
+				var q = new SqlCeCommand("SELECT folder_id FROM folder WHERE parent_folder_id = @folderid");
 				q.Parameters.AddWithValue("@folderid", FolderId);
 
-				Database.dblock.WaitOne();
+				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();
 				q.Connection = conn;
 				q.Prepare();
 				reader = q.ExecuteReader();
 
-				if (reader.Read())
+				while (reader.Read())
 				{
 					folders.Add(new Folder(reader.GetInt32(0)));
 				}
@@ -295,7 +329,15 @@ namespace MediaFerry.DataModel.Model
 
 			finally
 			{
-				Database.dblock.ReleaseMutex();
+				try
+				{
+					Database.dbLock.ReleaseMutex();
+				}
+
+				catch (Exception e)
+				{
+					Console.WriteLine(e.ToString());
+				}
 				Database.close(conn, reader);
 			}
 
@@ -317,7 +359,7 @@ namespace MediaFerry.DataModel.Model
 		{
 			foreach (Folder mediaFolder in Folder.mediaFolders())
 			{
-				if (FolderPath.StartsWith(mediaFolder.FolderPath))
+				if (FolderPath == mediaFolder.FolderPath)
 				{
 					return mediaFolder;
 				}
@@ -326,35 +368,31 @@ namespace MediaFerry.DataModel.Model
 			return null;
 		}
 
-		public void addToDatabase()
+		public void addToDatabase(bool mediaf)
 		{
+
 			SqlCeConnection conn = null;
 			SqlCeDataReader reader = null;
 			int affected;
 
 			try
 			{
-				Folder mf = mediaFolder();
 				var q = new SqlCeCommand();
 
-				if (mf == null)
-				{
-					q.CommandText = "INSERT INTO folder (folder_name, folder_path, parent_folder_id) VALUES (@foldername, @folderpath, @parentfolderid)";
-					q.Parameters.AddWithValue("@foldername", FolderName);
-					q.Parameters.AddWithValue("@folderpath", FolderPath);
-					q.Parameters.AddWithValue("@parentfolderid", ParentFolderId);
-				}
 
-				else
+				q.CommandText = "INSERT INTO folder (folder_name, folder_path, parent_folder_id, folder_media_folder_id) VALUES (@foldername, @folderpath, @parentfolderid, @folderid)";
+				q.Parameters.AddWithValue("@foldername", FolderName);
+				q.Parameters.AddWithValue("@folderpath", FolderPath);
+				if (mediaf == true)
+					q.Parameters.AddWithValue("@parentfolderid", DBNull.Value);
+				else 
 				{
-					q.CommandText = "INSERT INTO folder (folder_name, folder_path, parent_folder_id, folder_media_folder_id) VALUES (@foldername, @folderpath, @parentfolderid, @folderid)";
-					q.Parameters.AddWithValue("@foldername", FolderName);
-					q.Parameters.AddWithValue("@folderpath", FolderPath);
-					q.Parameters.AddWithValue("@parentfolderid", ParentFolderId);
-					q.Parameters.AddWithValue("@folderid", mf.FolderId);
+					q.Parameters.AddWithValue("@parentfolderid", _getParentFolderId(FolderPath));
 				}
+				q.Parameters.AddWithValue("@folderid", MediaFolderId);
 
-				Database.dblock.WaitOne();
+
+				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();
 				q.Connection = conn;
 				q.Prepare();
@@ -373,34 +411,37 @@ namespace MediaFerry.DataModel.Model
 
 			finally
 			{
-				Database.dblock.ReleaseMutex();
+				try
+				{
+					Database.dbLock.ReleaseMutex();
+				}
+
+				catch (Exception e)
+				{
+					Console.WriteLine(e.ToString());
+				}
 				Database.close(conn, reader);
 			}
 		}
 
-		public static List<Folder> mediaFolders()
+		private int _getParentFolderId(string path)
 		{
-			var folders = new List<Folder>();
+			string parentFolderPath = Directory.GetParent(path).FullName;
+
 			SqlCeConnection conn = null;
 			SqlCeDataReader reader = null;
+			int pFolderId = 0;
 
 			try
 			{
-				string query = "SELECT * FROM folder WHERE parent_folder_id = null";
-				var q = new SqlCeCommand(query);
+				var q = new SqlCeCommand("SELECT folder_id FROM folder WHERE folder_path = @folderpath");
+				q.Parameters.AddWithValue("@folderpath", parentFolderPath);
 
-				Database.dblock.WaitOne();
+				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();
 				q.Connection = conn;
 				q.Prepare();
-				reader = q.ExecuteReader();
-
-				while (reader.Read())
-				{
-					folders.Add(new Folder(reader.GetInt32(0)));
-				}
-
-				reader.Close();
+				pFolderId = (int)q.ExecuteScalar();
 			}
 
 			catch (Exception e)
@@ -410,9 +451,70 @@ namespace MediaFerry.DataModel.Model
 
 			finally
 			{
-				Database.dblock.ReleaseMutex();
+				try
+				{
+					Database.dbLock.ReleaseMutex();
+				}
+
+				catch (Exception e)
+				{
+					Console.WriteLine(e.ToString());
+				}
 				Database.close(conn, reader);
 			}
+
+			return pFolderId;
+		}
+
+		public static List<Folder> mediaFolders()
+		{
+			var folders = new List<Folder>();
+			SqlCeConnection conn = null;
+			SqlCeDataReader reader = null;
+
+			if (Settings.MediaFolders == null)
+			{
+
+				try
+				{
+					var q = new SqlCeCommand("SELECT * FROM folder WHERE parent_folder_id IS NULL");
+					//q.Parameters.AddWithValue("@nullvalue", DBNull.Value);
+
+					Database.dbLock.WaitOne();
+					conn = Database.getDbConnection();
+					q.Connection = conn;
+					q.Prepare();
+					reader = q.ExecuteReader();
+
+					while (reader.Read())
+					{
+						folders.Add(new Folder(reader.GetInt32(reader.GetOrdinal("folder_id"))));
+					}
+
+					reader.Close();
+				}
+
+				catch (Exception e)
+				{
+					Console.WriteLine(e.ToString());
+				}
+
+				finally
+				{
+					try
+					{
+						Database.dbLock.ReleaseMutex();
+					}
+
+					catch (Exception e)
+					{
+						Console.WriteLine(e.ToString());
+					}
+					Database.close(conn, reader);
+				}
+			}
+
+			else return Settings.MediaFolders;
 
 			return folders;
 		}

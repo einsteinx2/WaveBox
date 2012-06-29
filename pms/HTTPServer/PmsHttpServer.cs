@@ -21,12 +21,11 @@ namespace Bend.Util
 
 		public override void handlePOSTRequest(HttpProcessor p, StreamReader inputData)
 		{
-			Console.WriteLine("POST request: {0}", p.http_url);
-			string data = inputData.ReadToEnd();
+			string data = p.http_url + "?" + inputData.ReadToEnd();
+			Console.WriteLine("POST request: {0}", data);
 
-			p.outputStream.WriteLine("<html><body><h1>test server</h1>");
-			p.outputStream.WriteLine("<a href=/test>return</a><p>");
-			p.outputStream.WriteLine("postbody: <pre>{0}</pre>", data);
+			var apiHandler = ApiHandlerFactory.createRestHandler(data, p);
+			apiHandler.process();
 		}
 	}
 }

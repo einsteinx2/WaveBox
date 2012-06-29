@@ -83,7 +83,7 @@ namespace MediaFerry.DataModel.Model
 
 			try
 			{
-				Database.dblock.WaitOne();
+				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();
 
 				var q = new SqlCeCommand("SELECT * FROM artist LEFT JOIN item_type_art ON item_type_art.item_type_id = @itemtypeid AND item_id = artist_id WHERE artist_id = @artistid");
@@ -108,7 +108,15 @@ namespace MediaFerry.DataModel.Model
 
 			finally
 			{
-				Database.dblock.ReleaseMutex();
+				try
+				{
+					Database.dbLock.ReleaseMutex();
+				}
+
+				catch (Exception e)
+				{
+					Console.WriteLine(e.ToString());
+				}
 				Database.close(conn, reader);
 			}
 		}
@@ -125,7 +133,7 @@ namespace MediaFerry.DataModel.Model
 
 			try
 			{
-				Database.dblock.WaitOne();
+				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();
 				var q = new SqlCeCommand("SELECT * FROM artist LEFT JOIN item_type_art ON item_type_id = @itemtypeid AND item_id = artist_id WHERE artist_name = @artistname");
 				q.Connection = conn;
@@ -149,7 +157,15 @@ namespace MediaFerry.DataModel.Model
 
 			finally
 			{
-				Database.dblock.ReleaseMutex();
+				try
+				{
+					Database.dbLock.ReleaseMutex();
+				}
+
+				catch (Exception e)
+				{
+					Console.WriteLine(e.ToString());
+				}
 				Database.close(conn, reader);
 			}
 		}
@@ -181,7 +197,7 @@ namespace MediaFerry.DataModel.Model
 
 			try
 			{
-				Database.dblock.WaitOne();
+				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();
 				var q = new SqlCeCommand("INSERT INTO artist (artist_name) VALUES (@artistname)");
 				q.Connection = conn;
@@ -204,7 +220,15 @@ namespace MediaFerry.DataModel.Model
 
 			finally
 			{
-				Database.dblock.ReleaseMutex();
+				try
+				{
+					Database.dbLock.ReleaseMutex();
+				}
+
+				catch (Exception e)
+				{
+					Console.WriteLine(e.ToString());
+				}
 				Database.close(conn, reader);
 			}
 
@@ -224,7 +248,7 @@ namespace MediaFerry.DataModel.Model
 
 			try
 			{
-				Database.dblock.WaitOne();
+				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();
 				var q = new SqlCeCommand("SELECT * FROM album LEFT JOIN item_type_art ON item_type_id = @itemtypeid AND item_id = album_id WHERE artist_id = @artistid");
 				q.Connection = conn;
@@ -246,7 +270,15 @@ namespace MediaFerry.DataModel.Model
 
 			finally
 			{
-				Database.dblock.ReleaseMutex();
+				try
+				{
+					Database.dbLock.ReleaseMutex();
+				}
+
+				catch (Exception e)
+				{
+					Console.WriteLine(e.ToString());
+				}
 				Database.close(conn, reader);
 			}
 
@@ -274,7 +306,7 @@ namespace MediaFerry.DataModel.Model
 				q.Parameters.AddWithValue("@itemtypeid", ItemTypeId);
 				q.Parameters.AddWithValue("@artistid", ArtistId);
 
-				Database.dblock.WaitOne();
+				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();
 				q.Connection = conn;
 				q.Prepare();
@@ -295,7 +327,15 @@ namespace MediaFerry.DataModel.Model
 
 			finally
 			{
-				Database.dblock.ReleaseMutex();
+				try
+				{
+					Database.dbLock.ReleaseMutex();
+				}
+
+				catch (Exception e)
+				{
+					Console.WriteLine(e.ToString());
+				}
 				Database.close(conn, reader);
 			}
 
@@ -340,7 +380,7 @@ namespace MediaFerry.DataModel.Model
 				var q = new SqlCeCommand("SELECT * FROM artist LEFT JOIN item_type_art ON item_type_id = @itemtypeid AND item_id = artist_id");
 				q.Parameters.AddWithValue("@itemtypeid", ItemTypeId);
 
-				Database.dblock.WaitOne();
+				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();
 				q.Connection = conn;
 				q.Prepare();
@@ -361,7 +401,15 @@ namespace MediaFerry.DataModel.Model
 
 			finally
 			{
-				Database.dblock.ReleaseMutex();
+				try
+				{
+					Database.dbLock.ReleaseMutex();
+				}
+
+				catch (Exception e)
+				{
+					Console.WriteLine(e.ToString());
+				}
 				Database.close(conn, result);
 			}
 

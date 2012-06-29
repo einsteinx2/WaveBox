@@ -73,7 +73,7 @@ namespace MediaFerry.DataModel.Model
 
 				q.Parameters.AddWithValue("@artid", ArtId);
 
-				Database.dblock.WaitOne();
+				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();
 				q.Connection = conn;
 				q.Prepare();
@@ -86,7 +86,7 @@ namespace MediaFerry.DataModel.Model
 				}
 
 				reader.Close();
-				Database.dblock.ReleaseMutex();
+				Database.dbLock.ReleaseMutex();
 			}
 
 			catch (Exception e)
@@ -117,7 +117,7 @@ namespace MediaFerry.DataModel.Model
 					var q = new SqlCeCommand("SELECT * FROM art WHERE adler_hash = @adlerhash");
 					q.Parameters.AddWithValue("@adlerhash", AdlerHash);
 
-					Database.dblock.WaitOne();
+					Database.dbLock.WaitOne();
 					conn = Database.getDbConnection();
 					q.Connection = conn;
 					q.Prepare();
@@ -127,13 +127,29 @@ namespace MediaFerry.DataModel.Model
 					{
 						// the art is already in the database
 						_artId = reader.GetInt32(reader.GetOrdinal("art_id"));
-						Database.dblock.ReleaseMutex();
+						try
+						{
+							Database.dbLock.ReleaseMutex();
+						}
+
+						catch (Exception e)
+						{
+							Console.WriteLine(e.ToString());
+						}
 					}
 
 					// the art is not already in the database
 					else
 					{
-						Database.dblock.ReleaseMutex();
+						try
+						{
+							Database.dbLock.ReleaseMutex();
+						}
+
+						catch (Exception e)
+						{
+							Console.WriteLine(e.ToString());
+						}
 						try
 						{
 							var writer = new StreamWriter(ART_PATH + _adlerHash);
@@ -157,7 +173,7 @@ namespace MediaFerry.DataModel.Model
 
 							q1.Parameters.AddWithValue("@adlerhash", AdlerHash);
 
-							Database.dblock.WaitOne();
+							Database.dbLock.WaitOne();
 							var conn1 = Database.getDbConnection();
 							q1.Connection = conn1;
 							q1.Prepare();
@@ -181,7 +197,15 @@ namespace MediaFerry.DataModel.Model
 
 							finally
 							{
-								Database.dblock.ReleaseMutex();
+								try
+								{
+									Database.dbLock.ReleaseMutex();
+								}
+
+								catch (Exception e)
+								{
+									Console.WriteLine(e.ToString());
+								}
 							}
 						}
 

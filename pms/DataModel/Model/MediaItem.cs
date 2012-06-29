@@ -197,7 +197,7 @@ namespace MediaFerry.DataModel.Model
 				//sw.Reset();
 
 				//sw.Start();
-				Database.dblock.WaitOne();
+				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();
 				//sw.Stop();
 				//Console.WriteLine("Get db connection: {0} ms", sw.ElapsedMilliseconds);
@@ -224,7 +224,7 @@ namespace MediaFerry.DataModel.Model
 
 			finally
 			{
-				Database.dblock.ReleaseMutex();
+				Database.dbLock.ReleaseMutex();
 				Database.close(conn, reader);
 			}
 			return needsUpdating;

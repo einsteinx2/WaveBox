@@ -11,7 +11,7 @@ namespace MediaFerry.DataModel.Singletons
 	class Database
 	{
 		private static Database instance;
-		public static Mutex dblock;
+		public static Mutex dbLock;
 		private static SqlCeConnection dbconn;
 		public static Database Instance
 		{
@@ -20,7 +20,7 @@ namespace MediaFerry.DataModel.Singletons
 				if (instance == null)
 				{
 					instance = new Database();
-					dblock = new Mutex();
+					dbLock = new Mutex();
 				}
 
 				return instance;

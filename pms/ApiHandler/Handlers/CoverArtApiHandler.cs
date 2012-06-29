@@ -19,6 +19,8 @@ namespace MediaFerry.ApiHandler.Handlers
 
 		public void process()
 		{
+
+
 			Console.WriteLine("CoverArt: Not implemented yet.");
 			_sh.outputStream.Write("CoverArt: Not implemented yet.");
 		}

@@ -12,7 +12,7 @@ namespace MediaFerry.ApiHandler
 		public UriWrapper(string uri)
 		{
 			Console.WriteLine("uri: {0}", uri);
-			_uriParts = _removeEmptyElements(uri.Split('/'));
+			_uriParts = _removeEmptyElements(uri.Split(new char[]{'/', '?'}));
 		}
 
 		public string getUriPart(int index)

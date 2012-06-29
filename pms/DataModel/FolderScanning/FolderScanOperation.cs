@@ -50,10 +50,17 @@ namespace MediaFerry.DataModel.FolderScanning
 				return;
 			}
 
-			var topFile = new FileInfo(folderPath);
+			FileInfo topFile;
 
 			try
 			{
+				topFile = new FileInfo(folderPath);
+
+				if (topFile.Directory.Exists == false)
+				{
+					return;
+				}
+
 				Folder topFolder;
 
 				// if the file is a directory
@@ -71,7 +78,7 @@ namespace MediaFerry.DataModel.FolderScanning
 					//        // if the folder isn't already in the database, add it.
 					//        if (folder.FolderId == 0)
 					//        {
-					//            folder.addToDatabase();
+					//            folder.addToDatabase(false);
 					//        }
 					//        processFolder(subfolder);
 					//    }
@@ -86,7 +93,7 @@ namespace MediaFerry.DataModel.FolderScanning
 								// if the folder isn't already in the database, add it.
 								if (folder.FolderId == 0)
 								{
-									folder.addToDatabase();
+									folder.addToDatabase(false);
 								}
 								processFolder(currentFile);
 							}
@@ -105,17 +112,26 @@ namespace MediaFerry.DataModel.FolderScanning
 						});
 
 
-					
+
 				}
+			}
+
+			catch (FileNotFoundException e)
+			{
+				Console.WriteLine("\t" + folderPath + ": Directory does not exist. " + e.InnerException);
 			}
 
 			catch (DirectoryNotFoundException e)
 			{
-				Console.WriteLine(folderPath + ": Directory does not exist. " + e.InnerException);
+				Console.WriteLine("\t" + folderPath + ": Directory does not exist. " + e.InnerException);
+			}
+			catch (IOException e)
+			{
+				Console.WriteLine("\t" + folderPath + ": " + e.Message);
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("Error checking to see if the file was a directory: " + e.ToString());
+				Console.WriteLine("\t" + "Error checking to see if the file was a directory: " + e.ToString());
 			}
 		}
 

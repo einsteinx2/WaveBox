@@ -7,7 +7,6 @@ using MediaFerry.DataModel.Model;
 using MediaFerry.DataModel.Singletons;
 using System.IO;
 using TagLib;
-using System.Diagnostics;
 
 namespace MediaFerry.DataModel.Model
 {
@@ -144,7 +143,7 @@ namespace MediaFerry.DataModel.Model
 				q.Parameters.AddWithValue("@itemtypeid", ItemTypeId);
 				q.Parameters.AddWithValue("@songid", songId);
 
-				Database.dblock.WaitOne();
+				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();
 				q.Connection = conn;
 				q.Prepare();
@@ -165,7 +164,7 @@ namespace MediaFerry.DataModel.Model
 
 			finally
 			{
-				Database.dblock.ReleaseMutex();
+				Database.dbLock.ReleaseMutex();
 				Database.close(conn, reader);
 			}
 		}
@@ -192,7 +191,7 @@ namespace MediaFerry.DataModel.Model
 
             try
             {
-                var album = Album.albumForName(tag.Album);
+                var album = Album.albumForName(tag.Album, ArtistId);
                 _albumId = album.AlbumId;
                 _albumName = album.AlbumName;
             }
@@ -202,23 +201,11 @@ namespace MediaFerry.DataModel.Model
                 _albumName = null;
             }
 
-            _fileType = FileType.UNKNOWN;
-            foreach (ICodec codec in file.Properties.Codecs)
-            {
-                IAudioCodec a = null;
-                try
-                {
-                    a = (IAudioCodec)codec;
-                }
-                catch
-                { }
+			_fileType = FileType.fileTypeForTagSharpString(file.Properties.Description);
 
-                if (a != null)
-                {
-                    _fileType = FileType.fileTypeForTagSharpString(a.Description);
-					
-                }
-            }
+			if (FileType == FileType.UNKNOWN)
+				Console.WriteLine("Unknown file type!");
+
 
             try
             {
@@ -306,16 +293,9 @@ namespace MediaFerry.DataModel.Model
 
 			try
 			{
-				var sw = new Stopwatch();
-
-				sw.Start();
 				var q = new SqlCeCommand("INSERT INTO song (song_folder_id, song_artist_id, song_album_id, song_file_type_id, song_name, song_track_num, song_disc_num, song_duration, song_bitrate, song_file_size, song_last_modified, song_file_name, song_release_year)" + 
 										 "VALUES (@folderid, @artistid, @albumid, @filetype, @songname, @tracknum, @discnum, @duration, @bitrate, @filesize, @lastmod, @filename, @releaseyear)");
-				sw.Stop();
-				//Console.WriteLine("\tNew sql command: {0} ms", sw.ElapsedMilliseconds);
-				sw.Reset();
 
-				sw.Start();
 				q.Parameters.AddWithValue("@folderid", FolderId);
 				q.Parameters.AddWithValue("@artistid", ArtistId);
 				q.Parameters.AddWithValue("@albumid", AlbumId);
@@ -333,30 +313,19 @@ namespace MediaFerry.DataModel.Model
 				q.Parameters.AddWithValue("@lastmod", LastModified);
 				q.Parameters.AddWithValue("@filename", FileName);
 				q.Parameters.AddWithValue("@releaseyear", ReleaseYear);
-				sw.Stop();
-				//Console.WriteLine("\tAdd parameters: {0} ms", sw.ElapsedMilliseconds);
-				sw.Reset();
 
-				sw.Start();
-				Database.dblock.WaitOne();
+				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();
-				sw.Stop();
-				//Console.WriteLine("\tGet DB connection: {0} ms", sw.ElapsedMilliseconds);
-				sw.Reset();
 
 				q.Connection = conn;
-
-				sw.Start();
 				q.Prepare();
-				sw.Stop();
-				//Console.WriteLine("\tPrepare statement: {0} ms", sw.ElapsedMilliseconds);
-				sw.Reset();
+				int ins = q.ExecuteNonQuery();
 
-				sw.Start();
-				q.ExecuteNonQuery();
-				sw.Stop();
-				//Console.WriteLine("\tExecute insert: {0} ms", sw.ElapsedMilliseconds);
-				sw.Reset();
+				if (ins < 1)
+				{
+					Console.WriteLine("Problem!"); 
+				}
+
 				return;
 			}
 
@@ -367,7 +336,7 @@ namespace MediaFerry.DataModel.Model
 
 			finally
 			{
-				Database.dblock.ReleaseMutex();
+				Database.dbLock.ReleaseMutex();
 				Database.close(conn, reader);
 			}
 		}
