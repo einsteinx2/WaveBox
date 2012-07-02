@@ -4,11 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Data.SqlServerCe;
 using MediaFerry.DataModel.Singletons;
+using Newtonsoft.Json;
 
 namespace MediaFerry.DataModel.Model
 {
 	public class Album
 	{
+		[JsonProperty("itemTypeId")]
 		public int ItemTypeId
 		{
 			get
@@ -18,6 +20,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		private int _artistId;
+		[JsonProperty("artistId")]
 		public int ArtistId
 		{
 			get
@@ -32,6 +35,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		private int _albumId;
+		[JsonProperty("albumId")]
 		public int AlbumId
 		{
 			get
@@ -46,6 +50,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		private string _albumName;
+		[JsonProperty("albumName")]
 		public string AlbumName
 		{
 			get
@@ -60,6 +65,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		private int _releaseYear;
+		[JsonProperty("releaseYear")]
 		public int ReleaseYear
 		{
 			get
@@ -74,6 +80,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		private int _artId;
+		[JsonProperty("artId")]
 		public int ArtId
 		{
 			get
@@ -104,7 +111,7 @@ namespace MediaFerry.DataModel.Model
 
 			try
 			{
-				var q = new SqlCeCommand("SELECT * FROM album LEFT JOIN item_type_art ON item_type_art.item_type_id = @itemtypeid AND album_id = @albumid");
+				var q = new SqlCeCommand("SELECT * FROM album LEFT JOIN item_type_art ON item_type_art.item_type_id = @itemtypeid AND album_id = @albumid WHERE album_id = @albumid");
 				q.Parameters.AddWithValue("@itemtypeid", ItemTypeId);
 				q.Parameters.AddWithValue("@albumid", albumId);
 

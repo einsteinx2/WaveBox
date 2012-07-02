@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Data.SqlServerCe;
 using MediaFerry.DataModel.Singletons;
+using Newtonsoft.Json;
 
 namespace MediaFerry.DataModel.Model
 {
@@ -13,6 +14,7 @@ namespace MediaFerry.DataModel.Model
 		/// Properties
 		/// </summary>
 		/// 
+		[JsonProperty("itemTypeId")]
 		public int ItemTypeId
 		{
 			get
@@ -22,6 +24,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		private int _artistId;
+		[JsonProperty("artistId")]
 		public int ArtistId
 		{
 			get
@@ -36,6 +39,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		private string _artistName;
+		[JsonProperty("artistName")]
 		public string ArtistName
 		{
 			get
@@ -50,6 +54,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		private int _artId;
+		[JsonProperty("artId")]
 		public int ArtId
 		{
 			get
@@ -89,7 +94,7 @@ namespace MediaFerry.DataModel.Model
 				var q = new SqlCeCommand("SELECT * FROM artist LEFT JOIN item_type_art ON item_type_art.item_type_id = @itemtypeid AND item_id = artist_id WHERE artist_id = @artistid");
 				q.Connection = conn;
 				q.Parameters.AddWithValue("@itemtypeid", ItemTypeId);
-				q.Parameters.AddWithValue("@artistid", ArtistId);
+				q.Parameters.AddWithValue("@artistid", artistId);
 				q.Prepare();
 				reader = q.ExecuteReader();
 

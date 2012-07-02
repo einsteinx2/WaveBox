@@ -21,11 +21,20 @@ namespace MediaFerry.ApiHandler.Handlers
 
 		public void process()
 		{
-			Console.WriteLine("Artists: Only the ALL ARTISTS call has been implemented!");
-			var a = new Artist();
+			List<Artist> listOfArtists = new List<Artist>();
+			string json = "";
 
-			string json = JsonConvert.SerializeObject(new TestResponse(null, a.allArtists()), Formatting.None);
-			_sh.outputStream.WriteLine(json);
+			if (_uriW.getUriPart(2) == null)
+			{
+				listOfArtists = new Artist().allArtists();
+			}
+			else
+			{
+				listOfArtists.Add(new Artist(Convert.ToInt32(_uriW.getUriPart(2))));
+			}
+
+			json = JsonConvert.SerializeObject(new ArtistsResponse(null, listOfArtists), Formatting.None);
+			PmsHttpServer.sendJson(_sh, json);
 		}
 	}
 

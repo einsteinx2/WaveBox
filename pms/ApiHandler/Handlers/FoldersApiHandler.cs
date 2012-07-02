@@ -21,10 +21,20 @@ namespace MediaFerry.ApiHandler.Handlers
 
 		public void process()
 		{
-			Console.WriteLine("Artists: Only the ALL ALBUMS call has been implemented!");
+			List<Folder> listOfFolders = new List<Folder>();
+			string json = "";
 
-			string json = JsonConvert.SerializeObject(new FoldersResponse(null, Folder.topLevelFolders()), Formatting.None);
-			_sh.outputStream.WriteLine(json);
+			if (_uriW.getUriPart(2) == null)
+			{
+				listOfFolders = Folder.topLevelFolders();
+			}
+			else
+			{
+				listOfFolders = new Folder(Convert.ToInt32(_uriW.getUriPart(2))).listOfSubFolders();
+			}
+
+			json = JsonConvert.SerializeObject(new FoldersResponse(null, listOfFolders), Formatting.None);
+			PmsHttpServer.sendJson(_sh, json);
 		}
 	}
 

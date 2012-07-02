@@ -9,6 +9,7 @@ using MediaFerry.DataModel.Singletons;
 using MediaFerry.DataModel.Model;
 using System.Security.Cryptography;
 using TagLib;
+using Newtonsoft.Json;
 
 namespace MediaFerry.DataModel.Model
 {
@@ -22,6 +23,7 @@ namespace MediaFerry.DataModel.Model
 		/// </summary>
 
 		private int _artId;
+		[JsonProperty("artId")]
 		public int ArtId
 		{
 			get
@@ -36,6 +38,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		private long _adlerHash;
+		[JsonProperty("adlerHash")]
 		public long AdlerHash
 		{
 			get

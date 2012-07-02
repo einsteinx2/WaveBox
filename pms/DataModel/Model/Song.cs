@@ -7,11 +7,13 @@ using MediaFerry.DataModel.Model;
 using MediaFerry.DataModel.Singletons;
 using System.IO;
 using TagLib;
+using Newtonsoft.Json;
 
 namespace MediaFerry.DataModel.Model
 {
 	public class Song : MediaItem
 	{
+		[JsonProperty("itemTypeId")]
 		new public int ItemTypeId
 		{
 			get
@@ -21,6 +23,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		private int _artistId;
+		[JsonProperty("artistId")]
 		public int ArtistId
 		{
 			get
@@ -34,6 +37,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		private string _artistName;
+		[JsonProperty("artistName")]
 		public string ArtistName
 		{
 			get
@@ -47,6 +51,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		private int _albumId;
+		[JsonProperty("albumId")]
 		public int AlbumId
 		{
 			get
@@ -60,6 +65,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		private string _albumName;
+		[JsonProperty("albumName")]
 		public string AlbumName
 		{
 			get
@@ -73,6 +79,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		private string _songName;
+		[JsonProperty("songName")]
 		public string SongName
 		{
 			get
@@ -86,6 +93,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		private int _trackNumber;
+		[JsonProperty("trackNumber")]
 		public int TrackNumber
 		{
 			get
@@ -99,6 +107,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		private int _discNumber;
+		[JsonProperty("discNumber")]
 		public int DiscNumber
 		{
 			get
@@ -112,6 +121,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		private int _releaseYear;
+		[JsonProperty("releaseYear")]
 		public int ReleaseYear
 		{
 			get
@@ -265,20 +275,31 @@ namespace MediaFerry.DataModel.Model
 				_itemId = reader.GetInt32(reader.GetOrdinal("song_id"));
 				_folderId = reader.GetInt32(reader.GetOrdinal("song_folder_id"));
 				_artistId = reader.GetInt32(reader.GetOrdinal("song_artist_id"));
-				_artistName = reader.GetString(reader.GetOrdinal("artist_name"));
+
+				if (reader.GetValue(reader.GetOrdinal("artist_name")) == DBNull.Value) _artistName = "";
+				else _artistName = reader.GetString(reader.GetOrdinal("artist_name"));
+
 				_albumId = reader.GetInt32(reader.GetOrdinal("song_album_id"));
-				_albumName = reader.GetString(reader.GetOrdinal("album_name"));
+
+				if (reader.GetValue(reader.GetOrdinal("album_name")) == DBNull.Value) _albumName = "";
+				else _albumName = reader.GetString(reader.GetOrdinal("album_name"));
+
 				_fileType = FileType.fileTypeForId(reader.GetInt32(reader.GetOrdinal("song_file_type_id")));
-				_songName = reader.GetString(reader.GetOrdinal("song_name"));
+
+				if (reader.GetValue(reader.GetOrdinal("song_name")) == DBNull.Value) _songName = "";
+				else _songName = reader.GetString(reader.GetOrdinal("song_name"));
+
 				_trackNumber = reader.GetInt32(reader.GetOrdinal("song_track_num"));
 				_discNumber = reader.GetInt32(reader.GetOrdinal("song_disc_num"));
-				_duration = reader.GetInt32(reader.GetOrdinal("song_duration"));
+				_duration = reader.GetInt64(reader.GetOrdinal("song_duration"));
 				_bitrate = reader.GetInt32(reader.GetOrdinal("song_bitrate"));
 				_fileSize = reader.GetInt64(reader.GetOrdinal("song_file_size"));
 				_lastModified = reader.GetInt64(reader.GetOrdinal("song_last_modified"));
 				_fileName = reader.GetString(reader.GetOrdinal("song_file_name"));
 				_releaseYear = reader.GetInt32(reader.GetOrdinal("song_release_year"));
-				_artId = reader.GetInt32(reader.GetOrdinal("art_id"));
+
+				if (reader.GetValue(reader.GetOrdinal("art_id")) == DBNull.Value) _artId = 0;
+				else _artId = reader.GetInt32(reader.GetOrdinal("art_id"));
 			}
 			catch (Exception e)
 			{
@@ -339,6 +360,48 @@ namespace MediaFerry.DataModel.Model
 				Database.dbLock.ReleaseMutex();
 				Database.close(conn, reader);
 			}
+		}
+
+		public static List<Song> allSongs()
+		{
+			var allsongs = new List<Song>();
+			SqlCeConnection conn = null;
+			SqlCeDataReader reader = null;
+
+			try
+			{
+				var q = new SqlCeCommand("SELECT song.*, item_type_art.art_id, artist.artist_name, album.album_name FROM song " +
+										 "LEFT JOIN item_type_art ON item_type_art.item_type_id = @itemtypeid AND item_id = song_id " +
+										 "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
+										 "LEFT JOIN album ON song_album_id = album.album_id ");
+				q.Parameters.AddWithValue("@itemtypeid", new Song().ItemTypeId);
+
+				Database.dbLock.WaitOne();
+				conn = Database.getDbConnection();
+				q.Connection = conn;
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				while (reader.Read())
+				{
+					allsongs.Add(new Song(reader));
+				}
+
+				reader.Close();
+			}
+
+			catch (Exception e)
+			{
+				Console.WriteLine(e.ToString());
+			}
+
+			finally
+			{
+				Database.dbLock.ReleaseMutex();
+				Database.close(conn, reader);
+			}
+
+			return allsongs;
 		}
 
 		// stub!

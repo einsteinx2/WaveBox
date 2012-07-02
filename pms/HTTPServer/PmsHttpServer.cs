@@ -27,5 +27,13 @@ namespace Bend.Util
 			var apiHandler = ApiHandlerFactory.createRestHandler(data, p);
 			apiHandler.process();
 		}
+
+		public static void sendJson(HttpProcessor _sh, string json)
+		{
+			_sh.httpHeaders.Remove("Content-Type");
+			_sh.httpHeaders.Add("Content-Type", "application/json; charset=UTF-8");
+
+			_sh.outputStream.Write(json);
+		}
 	}
 }

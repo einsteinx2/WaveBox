@@ -7,6 +7,7 @@ using System.Data.SqlServerCe;
 using MediaFerry.DataModel.Model;
 using MediaFerry.DataModel.Singletons;
 using System.Diagnostics;
+using Newtonsoft.Json;
 
 namespace MediaFerry.DataModel.Model
 {
@@ -21,6 +22,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		protected MediaItemType _mediaItemType;
+		[JsonProperty("mediaItemType")]
 		public MediaItemType MediaItemType
 		{
 			get
@@ -35,6 +37,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		protected int _itemId;
+		[JsonProperty("itemId")]
 		public int ItemId
 		{
 			get
@@ -49,6 +52,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		protected int _artId;
+		[JsonProperty("artId")]
 		public int ArtId
 		{
 			get
@@ -63,6 +67,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		protected int _folderId;
+		[JsonProperty("folderId")]
 		public int FolderId
 		{
 			get
@@ -77,6 +82,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		protected FileType _fileType;
+		[JsonProperty("fileType")]
 		public FileType FileType
 		{
 			get
@@ -91,6 +97,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		protected long _duration;
+		[JsonProperty("duration")]
 		public long Duration
 		{
 			get
@@ -105,6 +112,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		protected int _bitrate;
+		[JsonProperty("bitrate")]
 		public int Bitrate
 		{
 			get
@@ -119,6 +127,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		protected long _fileSize;
+		[JsonProperty("fileSize")]
 		public long FileSize
 		{
 			get
@@ -133,6 +142,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		protected long _lastModified;
+		[JsonProperty("lastModified")]
 		public long LastModified
 		{
 			get
@@ -147,6 +157,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		protected string _fileName;
+		[JsonProperty("fileName")]
 		public string FileName
 		{
 			get

@@ -22,10 +22,20 @@ namespace MediaFerry.ApiHandler.Handlers
 
 		public void process()
 		{
-			Console.WriteLine("Artists: Only the ALL ALBUMS call has been implemented!");
+			List<Album> listToReturn = new List<Album>();
+			string json;
 
-			string json = JsonConvert.SerializeObject(new AlbumsResponse(null, Album.allAlbums()), Formatting.None);
-			_sh.outputStream.WriteLine(json);
+			if (_uriW.getUriPart(2) == null)
+			{
+				listToReturn = Album.allAlbums();
+			}
+
+			else listToReturn.Add(new Album(int.Parse(_uriW.getUriPart(2))));
+
+			json = JsonConvert.SerializeObject(new AlbumsResponse(null, listToReturn), Formatting.None);
+
+
+			PmsHttpServer.sendJson(_sh, json);
 		}
 	}
 

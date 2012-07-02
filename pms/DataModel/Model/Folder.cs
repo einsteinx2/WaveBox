@@ -6,6 +6,7 @@ using System.Data.SqlServerCe;
 using System.Data.SqlTypes;
 using MediaFerry.DataModel.Singletons;
 using MediaFerry.DataModel.Model;
+using Newtonsoft.Json;
 using System.IO;
 
 namespace MediaFerry.DataModel.Model
@@ -13,6 +14,7 @@ namespace MediaFerry.DataModel.Model
 	public class Folder
 	{
 		private int _folderId;
+		[JsonProperty("folderId")]
 		public int FolderId
 		{
 			get
@@ -27,6 +29,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		private string _folderName;
+		[JsonProperty("folderName")]
 		public string FolderName
 		{
 			get
@@ -41,6 +44,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		private int _parentFolderId;
+		[JsonProperty("parentFolderId")]
 		public int ParentFolderId
 		{
 			get
@@ -55,6 +59,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		private int _mediaFolderId;
+		[JsonProperty("mediaFolderId")]
 		public int MediaFolderId
 		{
 			get
@@ -69,6 +74,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		private string _folderPath;
+		[JsonProperty("folderPath")]
 		public string FolderPath
 		{
 			get
@@ -83,6 +89,7 @@ namespace MediaFerry.DataModel.Model
 		}
 
 		private int _artId;
+		[JsonProperty("artId")]
 		public int ArtId
 		{
 			get
