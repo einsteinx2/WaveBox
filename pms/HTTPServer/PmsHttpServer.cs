@@ -5,6 +5,7 @@ using System.Text;
 using System.IO;
 using MediaFerry.ApiHandler;
 using System.Threading;
+using System.Diagnostics;
 
 namespace Bend.Util
 {
@@ -65,26 +66,45 @@ namespace Bend.Util
 
 			byte[] buf = new byte[8192];
 			int bytesRead;
-			int bytesWritten = 0;
+			long bytesWritten = 0;
 			int offset = startOffset;
 			var lol = new System.IO.StreamWriter(Console.OpenStandardOutput());
 			var stream = _sh.outputStream.BaseStream;
+			int sinceLastReport = 0;
+			var sw = new Stopwatch();
 
+			if (_sh.httpHeaders.ContainsKey("Range"))
+			{
+				fs.Seek((int)_sh.httpHeaders["Range"], SeekOrigin.Begin);
+				Console.WriteLine("[SENDFILE] Connection retried.  Resuming from {0}", fs.Position);
+				bytesWritten = fs.Position;
+			}
+
+			sw.Start();
 			while((bytesRead = fs.Read(buf, offset, 8192)) != 0)
 			{
 				stream.Write(buf, 0, 8192);
 				bytesWritten += bytesRead;
 				//offset += 8192;
-				lol.WriteLine(fsinfo.Name + ": [ {0} / {1} ] written to output stream", bytesWritten, fileLength, fs.Position);
-				lol.Flush();
+
+				if (sw.ElapsedMilliseconds > 1000)
+				{
+					lol.WriteLine("[SENDFILE] " + fsinfo.Name + ": [ {0} / {1} | {2:F1}% | {3:F1} Mbps ]", bytesWritten, fileLength, (Convert.ToDouble(bytesWritten) / Convert.ToDouble(fileLength)) * 100,(((double)(sinceLastReport * 8) / 1024) / 1024) / (double)(sw.ElapsedMilliseconds / 1000));
+					lol.Flush();
+					sinceLastReport = 0;
+					sw.Restart();
+				}
+
+				else sinceLastReport += bytesRead;
 
 				if(bytesWritten == fileLength)
 				{
-					Console.WriteLine("reached eof.  breaking.");
+					Console.WriteLine("[SENDFILE] " + fsinfo.Name + ": Done.");
 					lol.Flush();
 					break;
 				}
 			}
+			sw.Stop();
 			//_sh.writeFailure
 		}
 	}

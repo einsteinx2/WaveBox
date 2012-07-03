@@ -30,6 +30,9 @@ namespace Bend.Util {
 
 		public HttpProcessor(TcpClient s, HttpServer srv) {
 			this.socket = s;
+			//Console.WriteLine("Send timeout: " + s.SendTimeout);
+			//s.SendTimeout = -1;
+			//Console.WriteLine("Send timeout after: " + s.SendTimeout);
 			this.srv = srv;
 		}
 		

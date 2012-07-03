@@ -1,0 +1,12 @@
+C:\Users\Justin\Desktop\pms3\pms\bin\Debug\pms.sdf
+C:\Users\Justin\Desktop\pms3\pms\bin\Debug\pms.exe
+C:\Users\Justin\Desktop\pms3\pms\bin\Debug\pms.pdb
+C:\Users\Justin\Desktop\pms3\pms\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Justin\Desktop\pms3\pms\bin\Debug\taglib-sharp.dll
+C:\Users\Justin\Desktop\pms3\pms\bin\Debug\res\pms.conf
+C:\Users\Justin\Desktop\pms3\pms\bin\Debug\pms.exe.config
+C:\Users\Justin\Desktop\pms3\pms\bin\Debug\Bass.Net.dll
+C:\Users\Justin\Desktop\pms3\pms\bin\Debug\Bass.Net.xml
+C:\Users\Justin\Desktop\pms3\pms\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Users\Justin\Desktop\pms3\pms\obj\x86\Debug\pms.exe
+C:\Users\Justin\Desktop\pms3\pms\obj\x86\Debug\pms.pdb

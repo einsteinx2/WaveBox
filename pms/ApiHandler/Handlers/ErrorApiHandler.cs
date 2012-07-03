@@ -19,8 +19,8 @@ namespace MediaFerry.ApiHandler.Handlers
 
 		public void process()
 		{
-			Console.WriteLine("Error: Not implemented yet.");
-			_sh.outputStream.Write("Error: Not implemented yet.");
+			Console.WriteLine("Error: INVALID API CALL");
+			_sh.outputStream.Write("Error: INVALID API CALL");
 		}
 	}
 }

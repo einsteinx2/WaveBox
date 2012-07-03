@@ -243,33 +243,253 @@ namespace MediaFerry.DataModel.Model
 
 		public void _updateProperties(int itemsAdded, int durationAdded)
 		{
+			// update playlist count
+			int playlistCount = PlaylistCount;
+			PlaylistCount = playlistCount + itemsAdded;
+
+			// update last update time
+			LastUpdateTime = ((DateTime.Now.Ticks / 10) - (new DateTime(1970, 1, 1).Ticks / 10));	// correct?
+
+			// update playlist duration
+			int playlistDuration = PlaylistDuration;
+			PlaylistDuration = (playlistDuration + durationAdded);
 		}
 
 		public void _updateDatabase()
 		{
+			SqlCeConnection conn = null;
+			SqlCeDataReader reader = null;
+
+			try
+			{
+				var q = new SqlCeCommand("INSERT INTO playlist VALUES (@playlistid, @playlistname, @playlistcount, @playlistduration, @md5, @lastupdate");
+				q.Parameters.AddWithValue("@playlistid", PlaylistId);
+				q.Parameters.AddWithValue("@playlistname", PlaylistName);
+				q.Parameters.AddWithValue("@playlistcount", PlaylistCount);
+				q.Parameters.AddWithValue("@playlistduration", PlaylistDuration);
+				q.Parameters.AddWithValue("@md5", Md5Hash);
+				q.Parameters.AddWithValue("@lastupdate", LastUpdateTime);
+
+				Database.dbLock.WaitOne();
+				conn = Database.getDbConnection();
+				q.Connection = conn;
+				q.Prepare();
+				q.ExecuteNonQuery();
+			}
+
+			catch (Exception e)
+			{
+				Console.WriteLine(e.ToString());
+			}
+
+			finally
+			{
+				Database.dbLock.ReleaseMutex();
+				Database.close(conn, reader);
+			}
 		}
 
 		public int indexOfMediaItem(MediaItem item)
 		{
-			return 1;
+			SqlCeConnection conn = null;
+			SqlCeDataReader reader = null;
+			int index = 0;
+
+			try
+			{
+				var q = new SqlCeCommand("SELECT item_position FROM playlist_item " + 
+										 "WHERE playlist_id = @playlistid AND item_type_id = @itemtypeid " + 
+										 "ORDER BY item_position LIMIT 1");
+				q.Parameters.AddWithValue("@playlistid", PlaylistId);
+				q.Parameters.AddWithValue("@itemid", item.ItemId);
+				q.Parameters.AddWithValue("@itemtypeid", item.ItemTypeId);
+
+				Database.dbLock.WaitOne();
+				conn = Database.getDbConnection();
+				q.Connection = conn;
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				if (reader.Read())
+				{
+					index = reader.GetInt32(reader.GetOrdinal("item_position"));
+				}
+			}
+
+			catch (Exception e)
+			{
+				Console.WriteLine(e.ToString());
+			}
+
+			finally
+			{
+				Database.dbLock.ReleaseMutex();
+				Database.close(conn, reader);
+			}
+
+			return index;
 		}
 
 		public MediaItem mediaItemAtIndex(int index)
 		{
-			return new MediaItem();
+			SqlCeConnection conn = null;
+			SqlCeDataReader reader = null;
+			MediaItem item = null;
+
+			try
+			{
+				var q = new SqlCeCommand("SELECT * FROM playlist_item WHERE playlist_id = @playlistid AND item_position = @itemposition");
+				q.Parameters.AddWithValue("@playlistid", PlaylistId);
+				q.Parameters.AddWithValue("@itemposition", index);
+
+				Database.dbLock.WaitOne();
+				conn = Database.getDbConnection();
+				q.Connection = conn;
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				if (reader.Read())
+				{
+					var itemid = reader.GetInt32(reader.GetOrdinal("item_id"));
+					switch (reader.GetInt32(reader.GetOrdinal("item_type_id")))
+					{
+						case (int)ItemType.SONG:
+							item = new Song(itemid);
+							break;
+
+						case (int)ItemType.VIDEO:
+							// nothing for now
+							break;
+
+						default: break;
+					}
+				}
+			}
+
+			catch (Exception e)
+			{
+				Console.WriteLine(e.ToString());
+			}
+
+			finally
+			{
+				Database.dbLock.ReleaseMutex();
+				Database.close(conn, reader);
+			}
+
+			return item;
 		}
 
 		public List<MediaItem> listOfMediaItems()
 		{
-			return new List<MediaItem>();
+			SqlCeConnection conn = null;
+			SqlCeDataReader reader = null;
+			List<MediaItem> items = new List<MediaItem>();
+
+			try
+			{
+				var q = new SqlCeCommand("SELECT * FROM playlist_item WHERE playlist_id = @playlistid ORDER BY item_position");
+				q.Parameters.AddWithValue("@playlistid", PlaylistId);
+
+				Database.dbLock.WaitOne();
+				conn = Database.getDbConnection();
+				q.Connection = conn;
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				while (reader.Read())
+				{
+					var itemid = reader.GetInt32(reader.GetOrdinal("item_id"));
+					switch (reader.GetInt32(reader.GetOrdinal("item_type_id")))
+					{
+						case (int)ItemType.SONG:
+							items.Add(new Song(itemid));
+							break;
+
+						case (int)ItemType.VIDEO:
+							// nothing for now
+							break;
+
+						default: break;
+					}
+				}
+			}
+
+			catch (Exception e)
+			{
+				Console.WriteLine(e.ToString());
+			}
+
+			finally
+			{
+				Database.dbLock.ReleaseMutex();
+				Database.close(conn, reader);
+			}
+
+			return items;
 		}
 
 		public void removeMediaItem(MediaItem item)
 		{
+			removeMediaItemAtIndex(indexOfMediaItem(item));
+		}
+
+		public void removeMediaItems(List<MediaItem> items)
+		{
+			var indexes = new List<int>();
+			if (PlaylistId == null || items == null)
+			{
+				return;
+			}
+
+			foreach (MediaItem item in items)
+			{
+				indexes.Add(item.ItemId);
+			}
+
+			removeMediaItemAtIndexes(indexes);
 		}
 
 		public void removeMediaItemAtIndex(int index)
 		{
+			if (PlaylistId == null)
+			{
+				return;
+			}
+
+			SqlCeConnection conn = null;
+			SqlCeDataReader reader = null;
+
+			try
+			{
+				var q = new SqlCeCommand("DELETE FROM playlist_item WHERE playlist_id = @playlistid AND item_position = @itemposition");
+				q.Parameters.AddWithValue("@playlistid", PlaylistId);
+				q.Parameters.AddWithValue("@itemposition", index);
+
+				Database.dbLock.WaitOne();
+				conn = Database.getDbConnection();
+				q.Connection = conn;
+				q.Prepare();
+				q.ExecuteNonQuery();
+
+				q.CommandText =  "UPDATE playlist_item SET item_position = item_position - 1";
+				q.CommandText += "WHERE playlist_id = @playlistid AND item_position > @item_position";
+				q.Parameters.AddWithValue("@playlistid", PlaylistId);
+				q.Parameters.AddWithValue("@itemposition", index);
+				q.Prepare();
+				q.ExecuteNonQuery();
+			}
+
+			catch (Exception e)
+			{
+				Console.WriteLine(e.ToString());
+			}
+
+			finally
+			{
+				Database.dbLock.ReleaseMutex();
+				Database.close(conn, reader);
+			}
 		}
 
 		public void removeMediaItemAtIndexes(List<int> indexes)
