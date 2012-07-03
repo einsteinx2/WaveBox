@@ -96,9 +96,9 @@ namespace MediaFerry.DataModel.Model
 			}
 		}
 
-		protected long _duration;
+		protected int _duration;
 		[JsonProperty("duration")]
-		public long Duration
+		public int Duration
 		{
 			get
 			{

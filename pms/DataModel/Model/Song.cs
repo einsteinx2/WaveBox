@@ -253,7 +253,7 @@ namespace MediaFerry.DataModel.Model
 				_releaseYear = 0;
 			}
 
-            _duration = Convert.ToInt64(file.Properties.Duration.Ticks);
+            _duration = Convert.ToInt32(file.Properties.Duration.TotalSeconds);
             _bitrate = file.Properties.AudioBitrate;
             _fileSize = fsFile.Length;
             _lastModified = Convert.ToInt64(fsFile.LastWriteTime.Ticks);
@@ -291,7 +291,7 @@ namespace MediaFerry.DataModel.Model
 
 				_trackNumber = reader.GetInt32(reader.GetOrdinal("song_track_num"));
 				_discNumber = reader.GetInt32(reader.GetOrdinal("song_disc_num"));
-				_duration = reader.GetInt64(reader.GetOrdinal("song_duration"));
+				_duration = reader.GetInt32(reader.GetOrdinal("song_duration"));
 				_bitrate = reader.GetInt32(reader.GetOrdinal("song_bitrate"));
 				_fileSize = reader.GetInt64(reader.GetOrdinal("song_file_size"));
 				_lastModified = reader.GetInt64(reader.GetOrdinal("song_last_modified"));
@@ -305,6 +305,11 @@ namespace MediaFerry.DataModel.Model
 			{
 				Console.WriteLine(e.ToString());
 			}
+		}
+
+		public FileStream file()
+		{
+			return new FileStream(new Folder(FolderId).FolderPath + Path.DirectorySeparatorChar + FileName, FileMode.Open, FileAccess.Read);
 		}
 
 		public void updateDatabase()

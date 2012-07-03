@@ -273,7 +273,7 @@ namespace MediaFerry.DataModel.Model
 				q.Prepare();
 				reader = q.ExecuteReader();
 
-				if (reader.Read())
+				while (reader.Read())
 				{
 					songs.Add(new Song(reader));
 				}

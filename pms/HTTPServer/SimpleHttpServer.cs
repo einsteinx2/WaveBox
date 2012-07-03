@@ -67,7 +67,16 @@ namespace Bend.Util {
 				Console.WriteLine("Exception: " + e.ToString());
 				writeFailure();
 			}
-			outputStream.Flush();
+
+			try
+			{
+				outputStream.Flush();
+			}
+
+			catch (Exception e)
+			{
+				Console.WriteLine(e.ToString());
+			}
 			// bs.Flush(); // flush any remaining output
 			inputStream = null; outputStream = null; // bs = null;
 			socket.Close();             
@@ -159,7 +168,7 @@ namespace Bend.Util {
 
 		public void writeSuccess() {
 			outputStream.WriteLine("HTTP/1.0 200 OK");            
-			outputStream.WriteLine("Content-Type: text/html");
+			outputStream.WriteLine("Content-Type: application/json");
 			outputStream.WriteLine("Connection: close");
 			outputStream.WriteLine("");
 		}
@@ -186,6 +195,7 @@ namespace Bend.Util {
 			listener.Start();
 			while (is_active) {                
 				TcpClient s = listener.AcceptTcpClient();
+				//TcpClient d = listener.BeginAcceptTcpClient
 				HttpProcessor processor = new HttpProcessor(s, this);
 				Thread thread = new Thread(new ThreadStart(processor.process));
 				thread.Start();

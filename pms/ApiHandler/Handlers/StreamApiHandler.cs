@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using MediaFerry.DataModel.Model;
+using System.IO;
 using Bend.Util;
 
 namespace MediaFerry.ApiHandler.Handlers
@@ -19,8 +21,21 @@ namespace MediaFerry.ApiHandler.Handlers
 
 		public void process()
 		{
-			Console.WriteLine("Stream: Not implemented yet.");
-			_sh.outputStream.Write("Stream: Not implemented yet.");
+			if (_uriW.getUriPart(2) != null)
+			{
+				try
+				{
+					// this will really be a mediaitem object, but it's just a song for now.
+					var song = new Song(Convert.ToInt32(_uriW.getUriPart(2)));
+					var fs = song.file();
+					PmsHttpServer.sendFile(_sh, fs, 0);
+				}
+
+				catch (Exception e)
+				{
+					Console.WriteLine(e.ToString());
+				}
+			}
 		}
 	}
 }
