@@ -24,7 +24,7 @@ namespace Bend.Util
 		public override void handlePOSTRequest(HttpProcessor p, StreamReader inputData)
 		{
 			string data = p.http_url + "?" + inputData.ReadToEnd();
-			Console.WriteLine("POST request: {0}", data);
+			Console.WriteLine("[HTTPSERVER] POST request: {0}", data);
 
 			var apiHandler = ApiHandlerFactory.createRestHandler(data, p);
 			apiHandler.process();
@@ -55,7 +55,7 @@ namespace Bend.Util
 
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[SENDFILE] " + e.ToString());
 			}
 
 			// new http header object

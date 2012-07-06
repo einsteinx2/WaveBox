@@ -133,7 +133,7 @@ namespace MediaFerry.DataModel.Model
 					_folderId = reader.GetInt32(reader.GetOrdinal("folder_id"));
 					_folderName = reader.GetString(reader.GetOrdinal("folder_name"));
 					_folderPath = reader.GetString(reader.GetOrdinal("folder_path"));
-					if(reader.GetValue(reader.GetOrdinal("parent_folder_id")) == DBNull.Value)
+					if (reader.GetValue(reader.GetOrdinal("parent_folder_id")) == DBNull.Value)
 						_parentFolderId = 0;
 					else _parentFolderId = reader.GetInt32(reader.GetOrdinal("parent_folder_id"));
 					_mediaFolderId = reader.GetInt32(reader.GetOrdinal("folder_media_folder_id"));
@@ -146,7 +146,7 @@ namespace MediaFerry.DataModel.Model
 
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[FOLDER] " + e.ToString());
 			}
 
 			finally
@@ -158,7 +158,7 @@ namespace MediaFerry.DataModel.Model
 
 				catch (Exception e)
 				{
-					Console.WriteLine(e.ToString());
+					Console.WriteLine("[FOLDER] " + e.ToString());
 				}
 				Database.close(conn, reader);
 			}
@@ -219,7 +219,7 @@ namespace MediaFerry.DataModel.Model
 
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[FOLDER] " + e.ToString());
 			}
 
 			finally
@@ -231,7 +231,7 @@ namespace MediaFerry.DataModel.Model
 
 				catch (Exception e)
 				{
-					Console.WriteLine(e.ToString());
+					Console.WriteLine("[FOLDER] " + e.ToString());
 				}
 				Database.close(conn, reader);
 			}
@@ -283,7 +283,7 @@ namespace MediaFerry.DataModel.Model
 
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[FOLDER] " + e.ToString());
 			}
 
 			finally
@@ -295,7 +295,7 @@ namespace MediaFerry.DataModel.Model
 
 				catch (Exception e)
 				{
-					Console.WriteLine(e.ToString());
+					Console.WriteLine("[FOLDER] " + e.ToString());
 				}
 				Database.close(conn, reader);
 			}
@@ -331,7 +331,7 @@ namespace MediaFerry.DataModel.Model
 
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[FOLDER] " + e.ToString());
 			}
 
 			finally
@@ -343,7 +343,7 @@ namespace MediaFerry.DataModel.Model
 
 				catch (Exception e)
 				{
-					Console.WriteLine(e.ToString());
+					Console.WriteLine("[FOLDER] " + e.ToString());
 				}
 				Database.close(conn, reader);
 			}
@@ -391,8 +391,10 @@ namespace MediaFerry.DataModel.Model
 				q.Parameters.AddWithValue("@foldername", FolderName);
 				q.Parameters.AddWithValue("@folderpath", FolderPath);
 				if (mediaf == true)
+				{
 					q.Parameters.AddWithValue("@parentfolderid", DBNull.Value);
-				else 
+				}
+				else
 				{
 					q.Parameters.AddWithValue("@parentfolderid", _getParentFolderId(FolderPath));
 				}
@@ -413,7 +415,7 @@ namespace MediaFerry.DataModel.Model
 
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[FOLDER] " + e.ToString());
 			}
 
 			finally
@@ -425,7 +427,7 @@ namespace MediaFerry.DataModel.Model
 
 				catch (Exception e)
 				{
-					Console.WriteLine(e.ToString());
+					Console.WriteLine("[FOLDER] " + e.ToString());
 				}
 				Database.close(conn, reader);
 			}
@@ -453,7 +455,7 @@ namespace MediaFerry.DataModel.Model
 
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[FOLDER] " + e.ToString());
 			}
 
 			finally
@@ -465,7 +467,7 @@ namespace MediaFerry.DataModel.Model
 
 				catch (Exception e)
 				{
-					Console.WriteLine(e.ToString());
+					Console.WriteLine("[FOLDER] " + e.ToString());
 				}
 				Database.close(conn, reader);
 			}
@@ -503,7 +505,7 @@ namespace MediaFerry.DataModel.Model
 
 				catch (Exception e)
 				{
-					Console.WriteLine(e.ToString());
+					Console.WriteLine("[FOLDER] " + e.ToString());
 				}
 
 				finally
@@ -515,7 +517,7 @@ namespace MediaFerry.DataModel.Model
 
 					catch (Exception e)
 					{
-						Console.WriteLine(e.ToString());
+						Console.WriteLine("[FOLDER] " + e.ToString());
 					}
 					Database.close(conn, reader);
 				}

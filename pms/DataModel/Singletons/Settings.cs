@@ -65,7 +65,7 @@ namespace MediaFerry.DataModel.Singletons
 			{
 				try
 				{
-					Console.WriteLine("Setting file doesn't exist; Creating it. (pms.conf)");
+					Console.WriteLine("[SETTINGS] " + "Setting file doesn't exist; Creating it. (pms.conf)");
 					var settingsTemplate = new StreamReader("res/pms.conf");
 					var settingsOut = new StreamWriter("pms.conf");
 
@@ -77,7 +77,7 @@ namespace MediaFerry.DataModel.Singletons
 
 				catch (Exception e)
 				{
-					Console.WriteLine(e.ToString());
+					Console.WriteLine("[SETTINGS] " + e.ToString());
 				}
 			}
 

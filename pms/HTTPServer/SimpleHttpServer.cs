@@ -196,6 +196,7 @@ namespace Bend.Util {
 		public void listen() {
 			listener = new TcpListener(IPAddress.Any, port);
 			listener.Start();
+			Console.WriteLine("HTTP server started");
 			while (is_active) {                
 				TcpClient s = listener.AcceptTcpClient();
 				//TcpClient d = listener.BeginAcceptTcpClient

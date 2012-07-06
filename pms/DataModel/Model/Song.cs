@@ -169,7 +169,7 @@ namespace MediaFerry.DataModel.Model
 
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[SONG] " + e.ToString());
 			}
 
 			finally
@@ -214,7 +214,7 @@ namespace MediaFerry.DataModel.Model
 			_fileType = FileType.fileTypeForTagSharpString(file.Properties.Description);
 
 			if (FileType == FileType.UNKNOWN)
-				Console.WriteLine("Unknown file type!");
+				Console.WriteLine("[SONG] " + "Unknown file type!");
 
 
             try
@@ -303,7 +303,7 @@ namespace MediaFerry.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[SONG] " + e.ToString());
 			}
 		}
 
@@ -345,19 +345,13 @@ namespace MediaFerry.DataModel.Model
 
 				q.Connection = conn;
 				q.Prepare();
-				int ins = q.ExecuteNonQuery();
-
-				if (ins < 1)
-				{
-					Console.WriteLine("Problem!"); 
-				}
-
+				q.ExecuteNonQuery();
 				return;
 			}
 
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[SONG] " + e.ToString());
 			}
 
 			finally
@@ -397,7 +391,7 @@ namespace MediaFerry.DataModel.Model
 
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[SONG] " + e.ToString());
 			}
 
 			finally

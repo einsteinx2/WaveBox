@@ -14,6 +14,8 @@ namespace MediaFerry.DataModel.Singletons
 		public FileManager()
 		{
 			mf = Settings.MediaFolders;
+			var orphan = new FolderScanning.OrphanScanOperation(0);
+			orphan.start();
 
 			foreach (var folder in mf)
 			{

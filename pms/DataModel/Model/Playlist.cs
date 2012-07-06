@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -128,7 +129,7 @@ namespace MediaFerry.DataModel.Model
 
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[PLAYLIST] " + e.ToString());
 			}
 
 			finally
@@ -164,7 +165,7 @@ namespace MediaFerry.DataModel.Model
 
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[PLAYLIST] " + e.ToString());
 			}
 
 			finally
@@ -190,7 +191,7 @@ namespace MediaFerry.DataModel.Model
 
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[PLAYLIST] " + e.ToString());
 			}
 		}
 
@@ -228,7 +229,7 @@ namespace MediaFerry.DataModel.Model
 
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[PLAYLIST] " + e.ToString());
 			}
 
 			finally
@@ -279,7 +280,7 @@ namespace MediaFerry.DataModel.Model
 
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[PLAYLIST] " + e.ToString());
 			}
 
 			finally
@@ -318,7 +319,7 @@ namespace MediaFerry.DataModel.Model
 
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[PLAYLIST] " + e.ToString());
 			}
 
 			finally
@@ -368,7 +369,7 @@ namespace MediaFerry.DataModel.Model
 
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[PLAYLIST] " + e.ToString());
 			}
 
 			finally
@@ -417,7 +418,7 @@ namespace MediaFerry.DataModel.Model
 
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[PLAYLIST] " + e.ToString());
 			}
 
 			finally
@@ -437,7 +438,7 @@ namespace MediaFerry.DataModel.Model
 		public void removeMediaItems(List<MediaItem> items)
 		{
 			var indexes = new List<int>();
-			if (PlaylistId == null || items == null)
+			if (PlaylistId == 0 || items == null)
 			{
 				return;
 			}
@@ -452,7 +453,7 @@ namespace MediaFerry.DataModel.Model
 
 		public void removeMediaItemAtIndex(int index)
 		{
-			if (PlaylistId == null)
+			if (PlaylistId == 0)
 			{
 				return;
 			}
@@ -482,7 +483,7 @@ namespace MediaFerry.DataModel.Model
 
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[PLAYLIST] " + e.ToString());
 			}
 
 			finally
@@ -492,12 +493,90 @@ namespace MediaFerry.DataModel.Model
 			}
 		}
 
-		public void removeMediaItemAtIndexes(List<int> indexes)
+		public void removeMediaItemAtIndexes(List<int> indices)
 		{
+			SqlCeConnection conn = null;
+			SqlCeDataReader reader = null;
+			SqlCeTransaction trans = null;
+
+			try
+			{
+				Database.dbLock.WaitOne();
+				conn = Database.getDbConnection();
+				trans = conn.BeginTransaction();
+				var q = new SqlCeCommand();
+				q.Connection = conn;
+
+				// temporary storage for playlist item information.  We can't use temp tables with SQL CE, so this
+				// is a workaround for that.  There is probably a better solution.
+				ArrayList idValues = new ArrayList();
+				
+
+				// delete the items at the indicated indices
+				foreach (int index in indices)
+				{
+					q.CommandText = "DELETE FROM playlist_item WHERE playlist_id = @playlistid AND item_position = @itemposition";
+					q.Parameters.AddWithValue("@playlistid", PlaylistId);
+					q.Parameters.AddWithValue("@itemposition", index);
+
+					q.Prepare();
+					q.ExecuteNonQuery();
+				}
+
+				// select the id of all members of the playlist
+				q.CommandText = "SELECT playlist_item_id FROM playlist_item WHERE playlist_id = @playlistid";
+				q.Parameters.AddWithValue("@playlistid", PlaylistId);
+
+				q.Prepare();
+				reader =  q.ExecuteReader();
+
+				// insert them into an array
+				while (reader.Read())
+				{
+					idValues.Add(reader.GetInt32(0));
+				}
+
+				// update the values of each index in the array to be the new index
+				for (int i = 0; i < idValues.Count; i++)
+				{
+					q.CommandText = "SELECT playlist_item_id FROM playlist_item WHERE playlist_id = @playlistid";
+					q.CommandText = "UPDATE playlist_item SET playlist_item_id = @newid WHERE playlist_item_id = @oldid AND playlist_id = @playlistid";
+					q.Parameters.AddWithValue("@newid", i + 1);
+					q.Parameters.AddWithValue("@oldid", (int)idValues[i]);
+					q.Parameters.AddWithValue("@playlistid", PlaylistId);
+
+					q.Prepare();
+					q.ExecuteNonQuery();
+				}
+
+				trans.Commit();
+			}
+
+			catch (Exception e)
+			{
+				if (trans != null)
+				{
+					trans.Rollback();
+				}
+				Console.WriteLine("[PLAYLIST] " + e.ToString());
+			}
+
+			finally
+			{
+				Database.dbLock.ReleaseMutex();
+				Database.close(conn, reader);
+			}
 		}
 
 		public void moveMediaItem(int fromIndex, int toIndex)
 		{
+			// make sure the input is within bounds and is not null
+			if (fromIndex == 0 || toIndex == 0 ||
+				fromIndex > PlaylistCount || fromIndex < 0 ||
+				toIndex < 0 || toIndex == fromIndex)
+			{
+				return;
+			}
 		}
 
 		public void addMediaItem(MediaItem item, bool updateDatabase)

@@ -19,28 +19,21 @@ namespace MediaFerry
 			// define run port
 			int httpPort = 8080;
 
+			// thread for the HTTP server.  its listen operation is blocking, so we can't start it before
+			// we do any file scanning otherwise.
+			Thread httpSrv = null;
+
 			// register application kill notifier
 			Console.WriteLine("Registering shutdown hook...");
 			_handler += new EventHandler(Handler);
 			SetConsoleCtrlHandler(_handler, true);
-			
-			var database = Database.Instance;
-			var settings = Settings.Instance;
-
-			var sw = new Stopwatch();
-			Console.WriteLine("Scanning media directories...");
-			sw.Start();
-			var filemanager = FileManager.Instance;
-			sw.Stop();
-			Console.WriteLine("Scan took {0} seconds", sw.ElapsedMilliseconds / 1000);
 
 			// start http server
-			Console.Write("Starting HTTP server... ");
 			try
 			{
 				var http = new PmsHttpServer(httpPort);
-				Console.WriteLine("done.\r\n\r\n");
-				http.listen();
+				httpSrv = new Thread(new ThreadStart(http.listen));
+				httpSrv.Start();
 			}
 
 			catch (System.Net.Sockets.SocketException e)
@@ -59,6 +52,18 @@ namespace MediaFerry
 				Console.WriteLine(e.ToString());
 				Environment.Exit(-1);
 			}
+			
+			var database = Database.Instance;
+			var settings = Settings.Instance;
+
+			var sw = new Stopwatch();
+			Console.WriteLine("Scanning media directories...");
+			sw.Start();
+			var filemanager = FileManager.Instance;
+			sw.Stop();
+			Console.WriteLine("Scan took {0} seconds", sw.ElapsedMilliseconds / 1000);
+
+
 
 			// sleep the main thread so we can go about handling api calls and stuff on other threads.
 			Thread.Sleep(Timeout.Infinite);
@@ -92,6 +97,7 @@ namespace MediaFerry
 
 			else Console.WriteLine("Database connection failed to close");
 
+			Environment.Exit(0);
 			return true;
 		}
 

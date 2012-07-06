@@ -45,7 +45,7 @@ namespace MediaFerry.DataModel.FolderScanning
 
 		public void processFolder(string folderPath)
 		{
-			if (isRestart())
+			if (isRestart)
 			{
 				return;
 			}
@@ -69,47 +69,47 @@ namespace MediaFerry.DataModel.FolderScanning
 					topFolder = new Folder(topFile.FullName);
 					//Console.WriteLine("scanning " + topFolder.FolderName + "  id: " + topFolder.FolderId);
 
-					foreach (var subfolder in Directory.GetDirectories(topFile.FullName))
-					{
-						if (!(subfolder.Contains(".AppleDouble")))
-						{
-							var folder = new Folder(subfolder);
-
-							// if the folder isn't already in the database, add it.
-							if (folder.FolderId == 0)
-							{
-								folder.addToDatabase(false);
-							}
-							processFolder(subfolder);
-						}
-					}
-
-					//Parallel.ForEach(Directory.GetDirectories(topFile.FullName), currentFile =>
+					//foreach (var subfolder in Directory.GetDirectories(topFile.FullName))
+					//{
+					//    if (!(subfolder.Contains(".AppleDouble")))
 					//    {
-					//        if (!(currentFile.Contains(".AppleDouble")))
+					//        var folder = new Folder(subfolder);
+
+					//        // if the folder isn't already in the database, add it.
+					//        if (folder.FolderId == 0)
 					//        {
-					//            var folder = new Folder(currentFile);
-
-					//            // if the folder isn't already in the database, add it.
-					//            if (folder.FolderId == 0)
-					//            {
-					//                folder.addToDatabase(false);
-					//            }
-					//            processFolder(currentFile);
+					//            folder.addToDatabase(false);
 					//        }
-					//    });
+					//        processFolder(subfolder);
+					//    }
+					//}
 
-					foreach (var subfile in Directory.GetFiles(topFile.FullName))
-					{
-						// if the subfile is a directory...
-						processFile(new FileInfo(subfile), topFolder.FolderId);
-						//Console.WriteLine(subfile);
-					}
+					Parallel.ForEach(Directory.GetDirectories(topFile.FullName), currentFile =>
+						{
+							if (!(currentFile.Contains(".AppleDouble")))
+							{
+								var folder = new Folder(currentFile);
 
-					//Parallel.ForEach(Directory.GetFiles(topFile.FullName), currentFile =>
-					//    {
-					//        processFile(new FileInfo(currentFile), topFolder.FolderId);
-					//    });
+								// if the folder isn't already in the database, add it.
+								if (folder.FolderId == 0)
+								{
+									folder.addToDatabase(false);
+								}
+								processFolder(currentFile);
+							}
+						});
+
+					//foreach (var subfile in Directory.GetFiles(topFile.FullName))
+					//{
+					//    // if the subfile is a directory...
+					//    processFile(new FileInfo(subfile), topFolder.FolderId);
+					//    //Console.WriteLine(subfile);
+					//}
+
+					Parallel.ForEach(Directory.GetFiles(topFile.FullName), currentFile =>
+						{
+							processFile(new FileInfo(currentFile), topFolder.FolderId);
+						});
 
 
 
@@ -118,26 +118,26 @@ namespace MediaFerry.DataModel.FolderScanning
 
 			catch (FileNotFoundException e)
 			{
-				Console.WriteLine("\t" + folderPath + ": Directory does not exist. " + e.InnerException);
+				Console.WriteLine("\t" + "[FOLDERSCAN] " + folderPath + ": Directory does not exist. " + e.InnerException);
 			}
 
 			catch (DirectoryNotFoundException e)
 			{
-				Console.WriteLine("\t" + folderPath + ": Directory does not exist. " + e.InnerException);
+				Console.WriteLine("\t" + "[FOLDERSCAN] " + folderPath + ": Directory does not exist. " + e.InnerException);
 			}
 			catch (IOException e)
 			{
-				Console.WriteLine("\t" + folderPath + ": " + e.Message);
+				Console.WriteLine("\t" + "[FOLDERSCAN] " + folderPath + ": " + e.Message);
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("\t" + "Error checking to see if the file was a directory: " + e.ToString());
+				Console.WriteLine("\t" + "[FOLDERSCAN] " + "Error checking to see if the file was a directory: " + e.ToString());
 			}
 		}
 
 			public void processFile(FileInfo file, int folderId)
 			{
-				if (isRestart())
+				if (isRestart)
 				{
 					return;
 				}
@@ -151,7 +151,7 @@ namespace MediaFerry.DataModel.FolderScanning
 
 				if (MediaItem.fileNeedsUpdating(file))
 				{
-					Console.WriteLine("File needs updating: " + file.Name);
+					Console.WriteLine("[FOLDERSCAN] " + "File needs updating: " + file.Name);
 					var sw = new Stopwatch();
 					sw.Start();
 					TagLib.File f = null;
@@ -163,13 +163,13 @@ namespace MediaFerry.DataModel.FolderScanning
 					catch (TagLib.CorruptFileException e)
 					{
 						e.ToString();
-						Console.WriteLine(file.Name + " has a corrupt tag and will not be inserted.");
+						Console.WriteLine("[FOLDERSCAN] " + file.Name + " has a corrupt tag and will not be inserted.");
 						return;
 					}
 
 					catch (Exception e)
 					{
-						Console.WriteLine("Error processing file: " + e.ToString());
+						Console.WriteLine("[FOLDERSCAN] " + "Error processing file: " + e.ToString());
 					}
 					sw.Stop();
 					//Console.WriteLine("Get tag: {0} ms", sw.ElapsedMilliseconds);
