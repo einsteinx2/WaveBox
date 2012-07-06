@@ -26,13 +26,13 @@ namespace MediaFerry.DataModel.FolderScanning
 		private string[] _validExtensions = { "mp3", "aac", "m4a", "mp4", "flac", "wv", "mpc", "ogg" };
 		private List<string> _validExtensionsList;
 
-		public FolderScanOperation(string folderPath, int secondsDelay) : base(secondsDelay)
+		public FolderScanOperation(string folderPath, int secondsDelay) : base()
 		{
 			_validExtensionsList = new List<string>(_validExtensions);
 			_folderPath = folderPath;
 		}
 
-		public void start()
+		public override void start()
 		{
 			processFolder(FolderPath);
 		}
@@ -45,7 +45,7 @@ namespace MediaFerry.DataModel.FolderScanning
 
 		public void processFolder(string folderPath)
 		{
-			if (isRestart)
+			if (IsRestart)
 			{
 				return;
 			}
@@ -137,7 +137,7 @@ namespace MediaFerry.DataModel.FolderScanning
 
 			public void processFile(FileInfo file, int folderId)
 			{
-				if (isRestart)
+				if (IsRestart)
 				{
 					return;
 				}

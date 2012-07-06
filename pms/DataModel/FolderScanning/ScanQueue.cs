@@ -44,7 +44,17 @@ namespace MediaFerry.DataModel.FolderScanning
 
 		public void startScanQueue()
 		{
-			_scanQueueThread = new Thread(delegate
+			_scanQueueThread = new Thread(delegate() 
+				{
+					while (_scanQueueShouldLoop)
+					{
+						lock (_scanQueueSyncObject)
+						{
+						}
+					}
+
+				});
 		}
+
 	}
 }

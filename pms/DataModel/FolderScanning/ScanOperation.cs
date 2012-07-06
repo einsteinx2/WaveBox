@@ -66,6 +66,6 @@ namespace MediaFerry.DataModel.FolderScanning
 			while (IsRestart);
 		}
 
-		public void start();
+		public abstract void start();
 	}
 }

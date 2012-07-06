@@ -17,7 +17,7 @@ namespace MediaFerry.DataModel.FolderScanning
 		{
 		}
 
-		public void start()
+		public override void start()
 		{
 			var sw = new Stopwatch();
 			sw.Start();
@@ -32,7 +32,7 @@ namespace MediaFerry.DataModel.FolderScanning
 
 		public void checkFolders()
 		{
-			if (isRestart)
+			if (IsRestart)
 			{
 				return;
 			}
