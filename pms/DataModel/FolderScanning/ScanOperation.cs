@@ -12,7 +12,6 @@ namespace MediaFerry.DataModel.FolderScanning
 		private int _secondsDelay;
 		private bool _isRestart;
 		private Timer _t;
-		TimerCallback _tcb;
 
 		public bool IsRestart
 		{
@@ -39,14 +38,14 @@ namespace MediaFerry.DataModel.FolderScanning
 		{
 			_secondsDelay = secondsDelay;
 			TimerCallback _tcb = timerComplete;
-			resetDelay();
+			ResetDelay();
 		}
 
 		public ScanOperation()
 		{
 		}
 
-		public void resetDelay()
+		public void ResetDelay()
 		{
 			_t.Dispose();
 			_t = new Timer(timerComplete, null, new TimeSpan(0, 0, 0), new TimeSpan(0, 0, _secondsDelay));
@@ -56,16 +55,22 @@ namespace MediaFerry.DataModel.FolderScanning
 		{
 		}
 
-		public void run()
+		public void Run()
 		{
 			do
 			{
 				IsRestart = false;
-				start();
+				Start();
 			} 
 			while (IsRestart);
 		}
 
-		public abstract void start();
+		public void Restart()
+		{
+			Console.WriteLine("[SCANOP] Restarting scan");
+			IsRestart = true;
+		}
+
+		public abstract void Start();
 	}
 }

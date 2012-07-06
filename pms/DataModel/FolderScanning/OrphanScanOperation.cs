@@ -17,17 +17,17 @@ namespace MediaFerry.DataModel.FolderScanning
 		{
 		}
 
-		public override void start()
+		public override void Start()
 		{
 			var sw = new Stopwatch();
 			sw.Start();
 			checkFolders();
 			sw.Stop();
-			Console.WriteLine("check folders: {0}ms", sw.ElapsedMilliseconds);
+			Console.WriteLine("[ORPHANSCAN] check folders: {0}ms", sw.ElapsedMilliseconds);
 			sw.Restart();
 			checkSongs();
 			sw.Stop();
-			Console.WriteLine("check songs: {0}ms", sw.ElapsedMilliseconds);
+			Console.WriteLine("[ORPHANSCAN] check songs: {0}ms", sw.ElapsedMilliseconds);
 		}
 
 		public void checkFolders()

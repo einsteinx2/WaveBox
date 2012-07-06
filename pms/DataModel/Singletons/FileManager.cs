@@ -4,23 +4,25 @@ using System.Linq;
 using System.Text;
 using MediaFerry.DataModel.Singletons;
 using MediaFerry.DataModel.Model;
+using MediaFerry.DataModel.FolderScanning;
 
 namespace MediaFerry.DataModel.Singletons
 {
 	class FileManager
 	{
 		List<Folder> mf;
+		private ScanQueue sq;
 
 		public FileManager()
 		{
 			mf = Settings.MediaFolders;
-			var orphan = new FolderScanning.OrphanScanOperation(0);
-			orphan.start();
+			sq = new ScanQueue();
+			sq.startScanQueue();
+			sq.queueOperation(new FolderScanning.OrphanScanOperation(0));
 
 			foreach (var folder in mf)
 			{
-				var scanner = new FolderScanning.FolderScanOperation(folder.FolderPath, 0);
-				scanner.start();
+				sq.queueOperation(new FolderScanning.FolderScanOperation(folder.FolderPath, 0));
 			}
 		}
 

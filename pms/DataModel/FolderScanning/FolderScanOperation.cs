@@ -32,7 +32,7 @@ namespace MediaFerry.DataModel.FolderScanning
 			_folderPath = folderPath;
 		}
 
-		public override void start()
+		public override void Start()
 		{
 			processFolder(FolderPath);
 		}

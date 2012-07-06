@@ -61,7 +61,7 @@ namespace MediaFerry
 			sw.Start();
 			var filemanager = FileManager.Instance;
 			sw.Stop();
-			Console.WriteLine("Scan took {0} seconds", sw.ElapsedMilliseconds / 1000);
+
 
 
 
