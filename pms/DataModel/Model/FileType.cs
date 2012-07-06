@@ -7,14 +7,16 @@ namespace MediaFerry.DataModel.Model
 {
 	public enum FileType
 	{
-		MP3 = 0,
-		AAC = 1, 
-		OGG = 2,
-        WMA = 3,
-        MPC = 4, 
-		FLAC = 5,
-		ALAC = 6,
-        WV = 7,
+        // Alphabetized, lossy first, then lossless, then unknown
+        AAC = 0,
+        MP3 = 1,
+        MPC = 2,
+        OGG = 3,
+        WMA = 4,
+        ALAC = 5,
+        APE = 6,
+        FLAC = 7,
+        WV = 8,
 		UNKNOWN = -1
 	}
 
@@ -22,14 +24,19 @@ namespace MediaFerry.DataModel.Model
 	{
 		public static FileType fileTypeForTagSharpString(this FileType ft, string audioFormatString)
 		{
-            if (audioFormatString == "MPEG Version 1 Audio, Layer 3 VBR" || audioFormatString == "MPEG Version 1 Audio, Layer 3") return FileType.MP3;
-            else if (audioFormatString == "MPEG-4 Audio (mp4a)") return FileType.AAC;
+            // Lossy codecs
+            if (audioFormatString == "MPEG-4 Audio (mp4a)") return FileType.AAC;
+            else if (audioFormatString == "MPEG Version 1 Audio, Layer 3 VBR" || audioFormatString == "MPEG Version 1 Audio, Layer 3") return FileType.MP3;
+            else if (audioFormatString == "MusePack Version 7 Audio") return FileType.MPC;
             else if (audioFormatString == "Vorbis Version 0 Audio") return FileType.OGG;
             else if (audioFormatString == "Microsoft WMA2 Audio" || audioFormatString == "Microsoft Lossless WMA Audio") return FileType.WMA;
-            else if (audioFormatString == "MusePack Version 7 Audio") return FileType.MPC;
-            else if (audioFormatString == "Flac Audio") return FileType.FLAC;
+            // Lossless codecs; reordered slightly to prevent ArgumentOutOfRange exception on substring()
             else if (audioFormatString == "MPEG-4 Audio (alac)") return FileType.ALAC;
+            else if (audioFormatString == "Flac Audio") return FileType.FLAC;
+            // These two use substrings because their version numbers constantly increment with each release
             else if (audioFormatString.Substring(0, 7) == "WavPack") return FileType.WV;
+            else if (audioFormatString.Substring(0, 14) == "Monkey's Audio") return FileType.APE;
+
             else return FileType.UNKNOWN;
 		}
 

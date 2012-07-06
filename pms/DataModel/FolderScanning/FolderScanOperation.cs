@@ -23,7 +23,7 @@ namespace MediaFerry.DataModel.FolderScanning
 			}
 		}
 
-		private string[] _validExtensions = { "mp3", "m4a", "mp4", "flac", "wv", "mpc", "ogg", "wma" };
+        private string[] _validExtensions = { "ape", "m4a", "flac", "mp3", "mpc", "ogg", "wma", "wv" };
 		private List<string> _validExtensionsList;
 
 		public FolderScanOperation(string folderPath, int secondsDelay) : base()
