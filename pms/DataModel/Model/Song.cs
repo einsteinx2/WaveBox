@@ -214,8 +214,7 @@ namespace MediaFerry.DataModel.Model
 			_fileType = FileType.fileTypeForTagSharpString(file.Properties.Description);
 
 			if (FileType == FileType.UNKNOWN)
-				Console.WriteLine("[SONG] " + "Unknown file type!");
-
+				Console.WriteLine("[SONG] " + "Unknown file type: " + file.Properties.Description);
 
             try
             {

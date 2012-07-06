@@ -10,12 +10,8 @@ namespace MediaFerry.DataModel.Model
 		MP3 = 0,
 		AAC = 1, 
 		OGG = 2,
-		FLAC16 = 3,
-		FLAC24 = 4,
-		WAV = 5,
-		AIFF = 6,
-		ALAC = 7,
-		M4A = 8,
+		FLAC = 3,
+		ALAC = 4,
 		UNKNOWN = -1
 	}
 
@@ -23,15 +19,11 @@ namespace MediaFerry.DataModel.Model
 	{
 		public static FileType fileTypeForTagSharpString(this FileType ft, string audioFormatString)
 		{
-			if (audioFormatString == "MPEG Version 1 Audio, Layer 3 VBR" || audioFormatString == "MPEG Version 2 Audio, Layer 3" || audioFormatString == "MPEG Version 1 Audio, Layer 3") return FileType.MP3;
-			else if (audioFormatString == "Advanced Audio Coding" || audioFormatString == "AAC") return FileType.AAC;
-			else if (audioFormatString == "Ogg Vorbis" || audioFormatString == "OGG") return FileType.OGG;
-			else if (audioFormatString == "Free Lossless Audio Codec" || audioFormatString == "FLAC 16 bits") return FileType.FLAC16;
-			else if (audioFormatString == "Free Lossless Audio Codec" || audioFormatString == "FLAC 24 bits") return FileType.FLAC24;
-			else if (audioFormatString == "Waveform Audio File Format" || audioFormatString == "WAV") return FileType.WAV;
-			else if (audioFormatString == "Audio Interchange File Format" || audioFormatString == "AIFF") return FileType.AIFF;
-			else if (audioFormatString == "Apple Lossless Audio Codec" || audioFormatString == "Apple Lossless") return FileType.ALAC;
-			else if (audioFormatString == "MPEG-4 Audio (mp4a)") return FileType.M4A;
+			if (audioFormatString == "MPEG Version 1 Audio, Layer 3 VBR" || audioFormatString == "MPEG Version 1 Audio, Layer 3") return FileType.MP3;
+			else if (audioFormatString == "MPEG-4 Audio (mp4a)") return FileType.AAC;
+			else if (audioFormatString == "Vorbis Version 0 Audio") return FileType.OGG;
+			else if (audioFormatString == "Flac Audio") return FileType.FLAC;
+			else if (audioFormatString == "MPEG-4 Audio (alac)") return FileType.ALAC;
 			else return FileType.UNKNOWN;
 		}
 
