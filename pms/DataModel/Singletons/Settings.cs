@@ -97,7 +97,7 @@ namespace MediaFerry.DataModel.Singletons
 
 			for (int i = 0; i < json.mediaFolders.Count; i++)
 			{
-				mf = new Folder(json.mediaFolders[i].ToString());
+				mf = new Folder(json.mediaFolders[i].ToString(), true);
 				if (mf.FolderId == 0)
 				{
 					mf.addToDatabase(true);

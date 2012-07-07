@@ -9,6 +9,7 @@ namespace MediaFerry.DataModel.FolderScanning
 {
 	class ScanQueue
 	{
+		public const int DEFAULT_DELAY = 10;
 		private string _currentScanningFolder;
 		public string CurrentScanningFolder
 		{
@@ -37,13 +38,29 @@ namespace MediaFerry.DataModel.FolderScanning
 			}
 		}
 
+		private Thread _scanQueueThread;
+		public Thread ScanQueueThread
+		{
+			get
+			{
+				return _scanQueueThread;
+			}
+		}
+
+		public ScanOperation CurrentOperation
+		{
+			get
+			{
+				return _currentOperation;
+			}
+		}
+
 		public ScanQueue()
 		{
 			sw = new Stopwatch();
 		}
 
 		private bool _scanQueueShouldLoop = true;
-		private Thread _scanQueueThread;
 		private Object _scanQueueSyncObject = new Object();
 		private Queue<ScanOperation> _scanQueue = new Queue<ScanOperation>();
 		private ScanOperation _currentOperation;
@@ -96,21 +113,34 @@ namespace MediaFerry.DataModel.FolderScanning
 		{
 			lock (_scanQueueSyncObject)
 			{
-				// if the operation at the head of the queue is the same as the currently running operation,
-				// then the file changed while we were scanning.  Restart the scan.
-				if (op.Equals(_currentOperation))
+				bool shouldBeAddedToQueue = true;
+
+				if (_currentOperation != null && (op.ScanType().Contains(_currentOperation.ScanType()) || _currentOperation.ScanType().Contains(op.ScanType())))
 				{
-					op.Restart();
+					_currentOperation.ExtendWaitOrRestart();
+					shouldBeAddedToQueue = false;
 				}
 
-				else if (_scanQueue.Contains(op))
+				if (shouldBeAddedToQueue == true)
 				{
-					// I don't think I really need to do anything in this case.  If it's not running and it's in the queue,
-					// I should just leave it in the queue and let it do its thing when the time comes.  Then, at that time,
-					// I can decide stuff.
+					foreach (ScanOperation o in _scanQueue)
+					{
+						string opscantype = op.ScanType();
+						string oscantype = o.ScanType();
+
+						if (opscantype.Contains(oscantype) || oscantype.Contains(opscantype))
+						{
+							// I don't think I really need to do anything in this case.  If it's not running and it's in the queue,
+							// I should just leave it in the queue and let it do its thing when the time comes.  Then, at that time,
+							// I can decide stuff.
+
+							shouldBeAddedToQueue = false;
+							break;
+						}
+					}
 				}
 
-				else
+				if (shouldBeAddedToQueue)
 				{
 					_scanQueue.Enqueue(op);
 					Console.WriteLine("[SCANQUEUE] New {0}!", op.GetType());

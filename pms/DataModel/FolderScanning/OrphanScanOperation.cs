@@ -13,7 +13,7 @@ namespace MediaFerry.DataModel.FolderScanning
 {
 	class OrphanScanOperation : ScanOperation
 	{
-		public OrphanScanOperation(int secondsDelay)
+		public OrphanScanOperation(int secondsDelay) : base(secondsDelay)
 		{
 		}
 
@@ -32,7 +32,7 @@ namespace MediaFerry.DataModel.FolderScanning
 
 		public void checkFolders()
 		{
-			if (IsRestart)
+			if (ShouldRestart)
 			{
 				return;
 			}
@@ -149,6 +149,11 @@ namespace MediaFerry.DataModel.FolderScanning
 
 		public void checkSongs()
 		{
+			if (ShouldRestart)
+			{
+				return;
+			}
+
 			SqlCeConnection conn = null;
 			SqlCeDataReader reader = null;
 			var orphanSongIds = new ArrayList();
@@ -211,6 +216,11 @@ namespace MediaFerry.DataModel.FolderScanning
 				Database.dbLock.ReleaseMutex();
 				Database.close(conn, reader);
 			}
+		}
+
+		public override string ScanType()
+		{
+			return "OrphanScanOperation";
 		}
 	}
 }

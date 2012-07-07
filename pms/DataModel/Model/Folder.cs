@@ -198,9 +198,10 @@ namespace MediaFerry.DataModel.Model
 
 				else
 				{
+					ParentFolderId = _getParentFolderId(FolderPath);
 					q.CommandText = "SELECT folder_id FROM folder WHERE folder_name = @foldername AND parent_folder_id = @parentfolderid";
 					q.Parameters.AddWithValue("@foldername", FolderName);
-					q.Parameters.AddWithValue("@parentfolderid", _getParentFolderId(FolderPath));
+					q.Parameters.AddWithValue("@parentfolderid", ParentFolderId);
 				}
 
 				Database.dbLock.WaitOne();
@@ -235,6 +236,74 @@ namespace MediaFerry.DataModel.Model
 				}
 				Database.close(conn, reader);
 			}
+		}
+		
+
+		public Folder(string path, bool mediafolder)
+		{
+			FolderPath = path;
+			FolderName = Path.GetFileName(path);
+			ParentFolderId = 0;
+			MediaFolderId = 0;
+			FolderId = 0;
+
+			SqlCeConnection conn = null;
+			SqlCeCommand q = null;
+			SqlCeDataReader reader = null;
+
+			if (path == null || path == "")
+			{
+				return;
+			}
+
+			try
+			{
+				conn = Database.getDbConnection();
+
+				q = new SqlCeCommand("SELECT * FROM folder WHERE folder_path = @folderpath AND folder_media_folder_id = 0", conn);
+
+				Database.dbLock.WaitOne();
+				q.Parameters.AddWithValue("@folderpath", path);
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				while (reader.Read())
+				{
+					if (path == reader.GetString(reader.GetOrdinal("folder_path")))
+					{
+						_folderId = reader.GetInt32(reader.GetOrdinal("folder_id"));
+						_folderName = reader.GetString(reader.GetOrdinal("folder_name"));
+						_folderName = reader.GetString(reader.GetOrdinal("folder_path"));
+
+						if (reader.GetValue(reader.GetOrdinal("parent_folder_id")) == DBNull.Value)
+							_parentFolderId = 0;
+						else _parentFolderId = reader.GetInt32(reader.GetOrdinal("parent_folder_id"));
+						_mediaFolderId = reader.GetInt32(reader.GetOrdinal("folder_media_folder_id"));
+					}
+
+				}
+			}
+
+			catch (Exception e)
+			{
+				Console.WriteLine("[FOLDER] " + e.ToString());
+			}
+
+			finally
+			{
+				try
+				{
+					Database.dbLock.ReleaseMutex();
+				}
+
+				catch (Exception e)
+				{
+					Console.WriteLine("[FOLDER] " + e.ToString());
+				}
+				Database.close(conn, reader);
+			}
+
+
 		}
 
 		public Folder parentFolder()
@@ -450,7 +519,18 @@ namespace MediaFerry.DataModel.Model
 				conn = Database.getDbConnection();
 				q.Connection = conn;
 				q.Prepare();
-				pFolderId = (int)q.ExecuteScalar();
+				var result = q.ExecuteScalar();
+
+				if(result == null)
+				{
+					Console.WriteLine("No db result for parent folder.  Constructing parent folder object.");
+					var f = new Folder(parentFolderPath);
+					f.addToDatabase(false);
+					pFolderId = f.FolderId;
+				}
+
+				else pFolderId = (int)result;
+				
 			}
 
 			catch (Exception e)

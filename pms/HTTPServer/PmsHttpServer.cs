@@ -75,8 +75,10 @@ namespace Bend.Util
 
 			if (_sh.httpHeaders.ContainsKey("Range"))
 			{
-				fs.Seek((int)_sh.httpHeaders["Range"], SeekOrigin.Begin);
-				Console.WriteLine("[SENDFILE] Connection retried.  Resuming from {0}", fs.Position);
+				string range = (string)_sh.httpHeaders["Range"];
+				string start = range.Split(new char[]{'-', '='})[1];
+				Console.WriteLine("[SENDFILE] Connection retried.  Resuming from {0}", start);
+				fs.Seek(Convert.ToInt32(start), SeekOrigin.Begin);
 				bytesWritten = fs.Position;
 			}
 
