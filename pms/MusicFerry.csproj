@@ -75,6 +75,7 @@
     <Compile Include="ApiHandler\Handlers\CoverArtApiHandler.cs" />
     <Compile Include="ApiHandler\Handlers\ErrorApiHandler.cs" />
     <Compile Include="ApiHandler\Handlers\FoldersApiHandler.cs" />
+    <Compile Include="ApiHandler\Handlers\JukeboxApiHandler.cs" />
     <Compile Include="ApiHandler\Handlers\SongsApiHandler.cs" />
     <Compile Include="ApiHandler\Handlers\StatusApiHandler.cs" />
     <Compile Include="ApiHandler\Handlers\StreamApiHandler.cs" />
@@ -99,6 +100,7 @@
     <Compile Include="DataModel\Model\Video.cs" />
     <Compile Include="DataModel\Singletons\Database.cs" />
     <Compile Include="DataModel\Singletons\FileManager.cs" />
+    <Compile Include="DataModel\Singletons\Jukebox.cs" />
     <Compile Include="DataModel\Singletons\Settings.cs" />
     <Compile Include="HTTPServer\PmsHttpHeader.cs" />
     <Compile Include="HTTPServer\PmsHttpServer.cs" />
@@ -152,6 +154,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="ClassDiagram1.cd" />
+    <None Include="ClassDiagram2.cd" />
     <None Include="pmsDataSet.xsc">
       <DependentUpon>pmsDataSet.xsd</DependentUpon>
     </None>

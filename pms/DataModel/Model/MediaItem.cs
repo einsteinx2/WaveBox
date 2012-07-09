@@ -240,5 +240,10 @@ namespace MediaFerry.DataModel.Model
 			}
 			return needsUpdating;
 		}
+
+		public FileStream file()
+		{
+			return new FileStream(new Folder(FolderId).FolderPath + Path.DirectorySeparatorChar + FileName, FileMode.Open, FileAccess.Read);
+		}
 	}
 }

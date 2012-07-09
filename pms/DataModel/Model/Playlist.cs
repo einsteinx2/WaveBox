@@ -10,6 +10,8 @@ namespace MediaFerry.DataModel.Model
 {
 	public class Playlist
 	{
+		private Object sync = new Object();
+
 		private int _playlistId;
 		public int PlaylistId
 		{
@@ -577,14 +579,111 @@ namespace MediaFerry.DataModel.Model
 			{
 				return;
 			}
+
+			SqlCeConnection conn = null;
+			SqlCeDataReader reader = null;
+			SqlCeTransaction trans = null;
+
+			try
+			{
+				// to do - better way of knowing whether or not a query has been successfully completed.
+				trans = conn.BeginTransaction();
+				var q = new SqlCeCommand("UPDATE playlist_item SET item_position = item_position + 1 " + 
+										 "WHERE playlist_id = @playlistid AND item_position >= @itemposition");
+				q.Parameters.AddWithValue("@playlistid", PlaylistId);
+				q.Parameters.AddWithValue("@itemposition", toIndex);
+
+				Database.dbLock.WaitOne();
+				conn = Database.getDbConnection();
+				q.Connection = conn;
+				q.Prepare();
+				q.ExecuteNonQuery();
+
+				// conditional rollback here
+
+				// If the fromIndex is higher than toIndex, compensate for the position update above
+				fromIndex = fromIndex < toIndex ? fromIndex : fromIndex - 1;
+
+				var q1 = new SqlCeCommand("UPDATE playlist_item SET item_position = @toitemposition " + 
+								"WHERE playlist_id = @playlistid AND item_position = @fromitemposition");
+
+				q1.Parameters.AddWithValue("@toitemposition", toIndex);
+				q1.Parameters.AddWithValue("@playlistid", PlaylistId);
+				q1.Parameters.AddWithValue("@fromitemposition", fromIndex);
+				q1.Prepare();
+				var res1 = q1.ExecuteNonQuery();
+
+				if(res1 != 1)
+				{
+					trans.Rollback();
+					return;
+				}
+
+				trans.Commit();
+			}
+
+			catch (Exception e)
+			{
+				Console.WriteLine("[PLAYLIST] " + e.ToString());
+			}
+
+			finally
+			{
+				Database.dbLock.ReleaseMutex();
+				Database.close(conn, reader);
+			}
 		}
 
 		public void addMediaItem(MediaItem item, bool updateDatabase)
 		{
+			SqlCeConnection conn = null;
+			SqlCeDataReader reader = null;
+
+			try
+			{
+				// to do - better way of knowing whether or not a query has been successfully completed.
+				var q = new SqlCeCommand("INSERT INTO playlist_item VALUES (@nullid, @playlistid, @itemtypeid, @itemid, @itempos");
+				q.Parameters.AddWithValue("@nullid", DBNull.Value);
+				q.Parameters.AddWithValue("@playlistid", PlaylistId);
+				q.Parameters.AddWithValue("@itemtypeid", item.ItemTypeId);
+				q.Parameters.AddWithValue("@itemid", item.ItemId);
+				q.Parameters.AddWithValue("@itempos", PlaylistCount == null ? 0 : PlaylistCount);
+
+				Database.dbLock.WaitOne();
+				conn = Database.getDbConnection();
+				q.Connection = conn;
+				q.Prepare();
+				q.ExecuteNonQuery();
+			}
+
+			catch (Exception e)
+			{
+				Console.WriteLine("[PLAYLIST] " + e.ToString());
+			}
+
+			finally
+			{
+				Database.dbLock.ReleaseMutex();
+				Database.close(conn, reader);
+			}
 		}
 
 		public void addMediaItems(List<MediaItem> items)
 		{
+			if(PlaylistId == null || items == null)
+			{
+				return;
+			}
+
+			int duration = 0;
+			foreach(MediaItem item in items)
+			{
+				addMediaItem(item, false);
+				duration += item.Duration;
+			}
+
+			_updateProperties(items.Count, duration);
+			_updateDatabase();
 		}
 
 		public void insertMediaItem(MediaItem item, int index)
@@ -593,6 +692,32 @@ namespace MediaFerry.DataModel.Model
 
 		public void clearPlaylist()
 		{
+			SqlCeConnection conn = null;
+			SqlCeDataReader reader = null;
+
+			try
+			{
+				// to do - better way of knowing whether or not a query has been successfully completed.
+				var q = new SqlCeCommand("DELETE FROM playlist_item WHERE playlist_id = @playlistid"); 
+				q.Parameters.AddWithValue("@playlistid", PlaylistId);
+
+				Database.dbLock.WaitOne();
+				conn = Database.getDbConnection();
+				q.Connection = conn;
+				q.Prepare();
+				q.ExecuteNonQuery();
+			}
+
+			catch (Exception e)
+			{
+				Console.WriteLine("[PLAYLIST] " + e.ToString());
+			}
+
+			finally
+			{
+				Database.dbLock.ReleaseMutex();
+				Database.close(conn, reader);
+			}
 		}
 
 		public void createPlaylist()

@@ -306,11 +306,6 @@ namespace MediaFerry.DataModel.Model
 			}
 		}
 
-		public FileStream file()
-		{
-			return new FileStream(new Folder(FolderId).FolderPath + Path.DirectorySeparatorChar + FileName, FileMode.Open, FileAccess.Read);
-		}
-
 		public void updateDatabase()
 		{
 			SqlCeConnection conn = null;
