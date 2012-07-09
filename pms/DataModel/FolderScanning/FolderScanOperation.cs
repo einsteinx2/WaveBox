@@ -73,7 +73,7 @@ namespace MediaFerry.DataModel.FolderScanning
 					{
 						if (!(subfolder.Contains(".AppleDouble")))
 						{
-							var folder = new Folder(subfolder);
+							var folder = new Folder(subfolder, true);
 
 							// if the folder isn't already in the database, add it.
 							if (folder.FolderId == 0)
