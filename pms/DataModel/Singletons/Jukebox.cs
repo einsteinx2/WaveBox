@@ -79,27 +79,58 @@ namespace MediaFerry.DataModel.Singletons
 
 		public double Progress()
 		{
-			return 0;
+			if (IsInitialized && _currentStream != 0)
+			{
+				long bytePosition = Bass.BASS_ChannelGetPosition(_currentStream, BASSMode.BASS_POS_BYTES | BASSMode.BASS_POS_DECODE);
+				double seconds = Bass.BASS_ChannelBytes2Seconds(_currentStream, bytePosition);
+				return seconds;
+			}
+
+			return 0.0;
 		}
 
 		public void Play()
 		{
+			if (_currentStream != 0)
+			{
+				Bass.BASS_Start();
+				_isPlaying = true;
+			}
 		}
 
 		public void Pause()
 		{
+			if (IsPlaying && _currentStream != 0)
+			{
+				Bass.BASS_Pause();
+				IsPlaying = false;
+			}
 		}
 
 		public void Stop()
 		{
+			if (IsInitialized)
+			{
+				_bassFree();
+			}
 		}
 
 		public void Prev()
 		{
+			CurrentIndex = CurrentIndex - 1 < 0 ? 0 : CurrentIndex - 1;
+			PlaySongAtIndex(CurrentIndex);
 		}
 
 		public void Next()
 		{
+			CurrentIndex = CurrentIndex + 1;
+
+			if (CurrentIndex >= _playlist.PlaylistCount)
+			{
+				CurrentIndex = CurrentIndex - 1;
+				Stop();
+			}
+			else PlaySongAtIndex(CurrentIndex);
 		}
 
 		public void PlaySongAtIndex(int index)
@@ -111,6 +142,9 @@ namespace MediaFerry.DataModel.Singletons
 			{
 				if(item.ItemTypeId == (int)ItemType.SONG)
 				{
+					// set the current index
+					CurrentIndex = index;
+
 					// re-initialize bass
 					_bassInit();
 

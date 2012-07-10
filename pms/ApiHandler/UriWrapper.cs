@@ -24,6 +24,7 @@ namespace MediaFerry.ApiHandler
 			//Console.WriteLine("uri: {0}", uri);
 			_uri = uri;
 			_uriParts = _removeEmptyElements(uri.Split(new char[]{'/', '?'}));
+			_parseParameters();
 		}
 
 		private void _parseParameters()

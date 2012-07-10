@@ -52,9 +52,9 @@ namespace MediaFerry.DataModel.Model
 			}
 		}
 
-		public StreamReader artFile()
+		public string artFile()
 		{
-			return new StreamReader(ART_PATH + AdlerHash);
+			return ART_PATH + Path.DirectorySeparatorChar + AdlerHash;
 		}
 
 		/// <summary>

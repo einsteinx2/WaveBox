@@ -13,6 +13,7 @@ namespace MediaFerry.ApiHandler.Handlers
 	{
 		private HttpProcessor _sh;
 		private UriWrapper _uriW;
+		private List<Song> songs;
 
 		public AlbumsApiHandler(UriWrapper uriW, HttpProcessor sh)
 		{
@@ -30,9 +31,14 @@ namespace MediaFerry.ApiHandler.Handlers
 				listToReturn = Album.allAlbums();
 			}
 
-			else listToReturn.Add(new Album(int.Parse(_uriW.getUriPart(2))));
+			else
+			{
+				var album = new Album(int.Parse(_uriW.getUriPart(2)));
+				listToReturn.Add(album);
+				songs = album.listOfSongs();
+			}
 
-			json = JsonConvert.SerializeObject(new AlbumsResponse(null, listToReturn), Formatting.None);
+			json = JsonConvert.SerializeObject(new AlbumsResponse(null, listToReturn, songs), Formatting.None);
 
 
 			PmsHttpServer.sendJson(_sh, json);
@@ -67,10 +73,24 @@ namespace MediaFerry.ApiHandler.Handlers
 			}
 		}
 
-		public AlbumsResponse(string Error, List<Album> Albums)
+		private List<Song> _songs;
+		public List<Song> songs
+		{
+			get
+			{
+				return _songs;
+			}
+			set
+			{
+				_songs = value;
+			}
+		}
+
+		public AlbumsResponse(string Error, List<Album> Albums, List<Song> Songs)
 		{
 			error = Error;
 			albums = Albums;
+			songs = Songs;
 		}
 	}
 }

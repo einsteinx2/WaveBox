@@ -302,7 +302,7 @@ namespace MediaFerry.DataModel.Model
 
 			try
 			{
-				var q = new SqlCeCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " + 
+				var q = new SqlCeCommand("SELECT song.*, artist.artist_name, album.album_name, item_type_art.art_id FROM song " + 
 										 "LEFT JOIN item_type_art ON item_type_art.item_type_id = @itemtypeid AND item_id = song_id " +
 										 "LEFT JOIN artist ON song_artist_id = artist_id " +
 										 "LEFT JOIN album ON song_album_id = album_id " +

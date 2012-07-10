@@ -143,6 +143,8 @@ namespace MediaFerry.DataModel.Model
 
 		public Playlist(string playlistName)
 		{
+			PlaylistName = playlistName;
+
 			SqlCeConnection conn = null;
 			SqlCeDataReader reader = null;
 
@@ -188,7 +190,7 @@ namespace MediaFerry.DataModel.Model
 				PlaylistCount = reader.GetInt32(reader.GetOrdinal("playlist_count"));
 				PlaylistDuration = reader.GetInt32(reader.GetOrdinal("playlist_duration"));
 				Md5Hash = reader.GetString(reader.GetOrdinal("md5_hash"));
-				LastUpdateTime = reader.GetInt32(reader.GetOrdinal("last_update"));
+				LastUpdateTime = reader.GetInt64(reader.GetOrdinal("last_update"));
 			}
 
 			catch (Exception e)
@@ -212,8 +214,8 @@ namespace MediaFerry.DataModel.Model
 
 			try
 			{
-				var q = new SqlCeCommand("SELECT * FROM playlist WHERE playlist_id = @playlistid");
-				q.Parameters.AddWithValue("@playlistname", PlaylistId);
+				var q = new SqlCeCommand("SELECT * FROM playlist_item WHERE playlist_id = @playlistid");
+				q.Parameters.AddWithValue("@playlistid", PlaylistId);
 
 				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();
@@ -223,7 +225,7 @@ namespace MediaFerry.DataModel.Model
 
 				while (reader.Read())
 				{
-					itemIds += reader.GetString(reader.GetOrdinal("item_id"));
+					itemIds += Convert.ToString(reader.GetInt32(reader.GetOrdinal("item_id")));
 				}
 
 				reader.Close();
@@ -265,12 +267,34 @@ namespace MediaFerry.DataModel.Model
 
 			try
 			{
-				var q = new SqlCeCommand("INSERT INTO playlist VALUES (@playlistid, @playlistname, @playlistcount, @playlistduration, @md5, @lastupdate");
-				q.Parameters.AddWithValue("@playlistid", PlaylistId);
-				q.Parameters.AddWithValue("@playlistname", PlaylistName);
+				SqlCeCommand q;
+				//q.Parameters.AddWithValue("@playlistid", PlaylistId);
+				if (PlaylistId == 0)
+				{
+					q = new SqlCeCommand("INSERT INTO playlist (playlist_name, playlist_count, playlist_duration, md5_hash, last_update) VALUES (@playlistname, @playlistcount, @playlistduration, @md5, @lastupdate)");
+					//q = new SqlCeCommand("INSERT INTO playlist VALUES (@playlistid, @playlistname, @playlistcount, @playlistduration, @md5, @lastupdate)");
+					//q.Parameters.AddWithValue("@playlistid", DBNull.Value);
+				}
+
+				else
+				{
+					q = new SqlCeCommand("UPDATE playlist SET playlist_name = @playlistname, "
+										+ "playlist_count = @playlistcount, "
+										+ "playlist_duration = @playlistduration, "
+										+ "md5_hash = @md5, "
+										+ "last_update = @lastupdate "
+										+ "WHERE playlist_id = @playlistid");
+
+					q.Parameters.AddWithValue("@playlistid", PlaylistId);
+				}
+
+				if (PlaylistName == null)
+					 q.Parameters.AddWithValue("@playlistname", "");
+				else q.Parameters.AddWithValue("@playlistname", PlaylistName);
+
 				q.Parameters.AddWithValue("@playlistcount", PlaylistCount);
 				q.Parameters.AddWithValue("@playlistduration", PlaylistDuration);
-				q.Parameters.AddWithValue("@md5", Md5Hash);
+				q.Parameters.AddWithValue("@md5", PlaylistId == 0 ? "" : _calculateHash());
 				q.Parameters.AddWithValue("@lastupdate", LastUpdateTime);
 
 				Database.dbLock.WaitOne();
@@ -278,6 +302,12 @@ namespace MediaFerry.DataModel.Model
 				q.Connection = conn;
 				q.Prepare();
 				q.ExecuteNonQuery();
+
+				if (PlaylistId == 0)
+				{
+					q.CommandText = "SELECT @@IDENTITY";
+					PlaylistId = Convert.ToInt32(q.ExecuteScalar().ToString());
+				}
 			}
 
 			catch (Exception e)
@@ -351,16 +381,20 @@ namespace MediaFerry.DataModel.Model
 				q.Prepare();
 				reader = q.ExecuteReader();
 
+
 				if (reader.Read())
 				{
 					var itemid = reader.GetInt32(reader.GetOrdinal("item_id"));
-					switch (reader.GetInt32(reader.GetOrdinal("item_type_id")))
+					int itemtypeid = reader.GetInt32(reader.GetOrdinal("item_type_id"));
+					ItemType it = ItemTypeExtensions.itemTypeForId(itemtypeid);
+
+					switch (it)
 					{
-						case (int)ItemType.SONG:
+						case ItemType.SONG:
 							item = new Song(itemid);
 							break;
 
-						case (int)ItemType.VIDEO:
+						case ItemType.VIDEO:
 							// nothing for now
 							break;
 
@@ -642,12 +676,12 @@ namespace MediaFerry.DataModel.Model
 			try
 			{
 				// to do - better way of knowing whether or not a query has been successfully completed.
-				var q = new SqlCeCommand("INSERT INTO playlist_item VALUES (@nullid, @playlistid, @itemtypeid, @itemid, @itempos");
+				var q = new SqlCeCommand("INSERT INTO playlist_item (playlist_id, item_type_id, item_id, item_position) VALUES (@playlistid, @itemtypeid, @itemid, @itempos)");
 				q.Parameters.AddWithValue("@nullid", DBNull.Value);
 				q.Parameters.AddWithValue("@playlistid", PlaylistId);
 				q.Parameters.AddWithValue("@itemtypeid", item.ItemTypeId);
 				q.Parameters.AddWithValue("@itemid", item.ItemId);
-				q.Parameters.AddWithValue("@itempos", PlaylistCount == null ? 0 : PlaylistCount);
+				q.Parameters.AddWithValue("@itempos", PlaylistCount);
 
 				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();
@@ -670,7 +704,7 @@ namespace MediaFerry.DataModel.Model
 
 		public void addMediaItems(List<MediaItem> items)
 		{
-			if(PlaylistId == null || items == null)
+			if(PlaylistId == 0 || items == null)
 			{
 				return;
 			}
@@ -722,6 +756,7 @@ namespace MediaFerry.DataModel.Model
 
 		public void createPlaylist()
 		{
+			_updateDatabase();
 		}
 
 		public void deletePlaylist()

@@ -13,7 +13,7 @@ namespace MediaFerry.DataModel.Model
 {
 	public class MediaItem
 	{
-		public int ItemTypeId
+		public virtual int ItemTypeId
 		{
 			get
 			{

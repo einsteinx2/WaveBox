@@ -14,11 +14,11 @@ namespace MediaFerry.DataModel.Model
 	public class Song : MediaItem
 	{
 		[JsonProperty("itemTypeId")]
-		new public int ItemTypeId
+		public override int ItemTypeId
 		{
 			get
 			{
-				return ItemType.SONG.getItemTypeId();
+				return (int)ItemType.SONG;
 			}
 		}
 

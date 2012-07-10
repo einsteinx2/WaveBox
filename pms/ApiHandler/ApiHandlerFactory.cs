@@ -28,6 +28,11 @@ namespace MediaFerry.ApiHandler
 					returnHandler = new FoldersApiHandler(uriW, sh);
 				}
 
+				else if (part1 == "jukebox")
+				{
+					returnHandler = new JukeboxApiHandler(uriW, sh);
+				}
+
 				else if (part1 == "artists")
 				{
 					returnHandler = new ArtistsApiHandler(uriW, sh);

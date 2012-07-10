@@ -22,6 +22,8 @@ namespace MediaFerry.ApiHandler.Handlers
 		public void process()
 		{
 			List<Artist> listOfArtists = new List<Artist>();
+			List<Song> listOfSongs = new List<Song>();
+			List<Album> listOfAlbums = new List<Album>();
 			string json = "";
 
 			if (_uriW.getUriPart(2) == null)
@@ -30,10 +32,13 @@ namespace MediaFerry.ApiHandler.Handlers
 			}
 			else
 			{
-				listOfArtists.Add(new Artist(Convert.ToInt32(_uriW.getUriPart(2))));
+				var artist = new Artist(Convert.ToInt32(_uriW.getUriPart(2)));
+				listOfArtists.Add(artist);
+				listOfSongs = artist.listOfSongs();
+				listOfAlbums = artist.listOfAlbums();
 			}
 
-			json = JsonConvert.SerializeObject(new ArtistsResponse(null, listOfArtists), Formatting.None);
+			json = JsonConvert.SerializeObject(new ArtistsResponse(null, listOfArtists, listOfAlbums, listOfSongs), Formatting.None);
 			PmsHttpServer.sendJson(_sh, json);
 		}
 	}
@@ -66,10 +71,38 @@ namespace MediaFerry.ApiHandler.Handlers
 			}
 		}
 
-		public ArtistsResponse(string Error, List<Artist> Artists)
+		private List<Album> _albums;
+		public List<Album> albums
+		{
+			get
+			{
+				return _albums;
+			}
+			set
+			{
+				_albums = value;
+			}
+		}
+
+		private List<Song> _songs;
+		public List<Song> songs
+		{
+			get
+			{
+				return _songs;
+			}
+			set
+			{
+				_songs = value;
+			}
+		}
+
+		public ArtistsResponse(string Error, List<Artist> Artists, List<Album> Albums, List<Song> Songs)
 		{
 			error = Error;
 			artists = Artists;
+			songs = Songs;
+			albums = Albums;
 		}
 	}
 }
