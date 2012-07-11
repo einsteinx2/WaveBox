@@ -336,6 +336,7 @@ namespace WaveBox.DataModel.Model
 				Database.close(conn, reader);
 			}
 
+			songs.Sort(Song.CompareSongsByDiscAndTrack);
 			return songs;
 		}
 

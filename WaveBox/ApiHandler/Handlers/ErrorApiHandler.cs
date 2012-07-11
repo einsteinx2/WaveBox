@@ -10,17 +10,26 @@ namespace WaveBox.ApiHandler.Handlers
 	{
 		private HttpProcessor _sh;
 		private UriWrapper _uriW;
+		private string _err;
 
 		public ErrorApiHandler(UriWrapper uriW, HttpProcessor sh)
 		{
 			_sh = sh;
 			_uriW = uriW;
+			_err = "Invalid API call";
+		}
+
+		public ErrorApiHandler(UriWrapper uriW, HttpProcessor sh, string err)
+		{
+			_sh = sh;
+			_uriW = uriW;
+			_err = err;
 		}
 
 		public void process()
 		{
-			Console.WriteLine("Error: INVALID API CALL");
-			_sh.outputStream.Write("Error: INVALID API CALL");
+			Console.WriteLine("Error: " + _err);
+			_sh.outputStream.Write(_err);
 		}
 	}
 }

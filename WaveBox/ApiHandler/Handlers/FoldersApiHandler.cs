@@ -13,7 +13,7 @@ namespace WaveBox.ApiHandler.Handlers
 		private HttpProcessor _sh;
 		private UriWrapper _uriW;
 
-		public FoldersApiHandler(UriWrapper uriW, HttpProcessor sh)
+		public FoldersApiHandler(UriWrapper uriW, HttpProcessor sh, int userId)
 		{
 			_sh = sh;
 			_uriW = uriW;

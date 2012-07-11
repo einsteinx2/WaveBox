@@ -16,7 +16,7 @@ namespace WaveBox.ApiHandler.Handlers
 		private HttpProcessor _sh;
 		//private int _userId;
 
-		public JukeboxApiHandler(UriWrapper uriW, HttpProcessor sh)
+		public JukeboxApiHandler(UriWrapper uriW, HttpProcessor sh, int userId)
 		{
 			_jukebox = Jukebox.Instance;
 			_uri = uriW;

@@ -69,47 +69,47 @@ namespace WaveBox.DataModel.FolderScanning
 					topFolder = new Folder(topFile.FullName);
 					//Console.WriteLine("scanning " + topFolder.FolderName + "  id: " + topFolder.FolderId);
 
-					foreach (var subfolder in Directory.GetDirectories(topFile.FullName))
-					{
-						if (!(subfolder.Contains(".AppleDouble")))
-						{
-							var folder = new Folder(subfolder, true);
-
-							// if the folder isn't already in the database, add it.
-							if (folder.FolderId == 0)
-							{
-								folder.addToDatabase(false);
-							}
-							processFolder(subfolder);
-						}
-					}
-
-					//Parallel.ForEach(Directory.GetDirectories(topFile.FullName), currentFile =>
+					//foreach (var subfolder in Directory.GetDirectories(topFile.FullName))
+					//{
+					//    if (!(subfolder.Contains(".AppleDouble")))
 					//    {
-					//        if (!(currentFile.Contains(".AppleDouble")))
+					//        var folder = new Folder(subfolder, true);
+
+					//        // if the folder isn't already in the database, add it.
+					//        if (folder.FolderId == 0)
 					//        {
-					//            var folder = new Folder(currentFile);
-
-					//            // if the folder isn't already in the database, add it.
-					//            if (folder.FolderId == 0)
-					//            {
-					//                folder.addToDatabase(false);
-					//            }
-					//            processFolder(currentFile);
+					//            folder.addToDatabase(false);
 					//        }
-					//    });
+					//        processFolder(subfolder);
+					//    }
+					//}
 
-					foreach (var subfile in Directory.GetFiles(topFile.FullName))
-					{
-						// if the subfile is a directory...
-						processFile(new FileInfo(subfile), topFolder.FolderId);
-						//Console.WriteLine(subfile);
-					}
+					//foreach (var subfile in Directory.GetFiles(topFile.FullName))
+					//{
+					//    // if the subfile is a directory...
+					//    processFile(new FileInfo(subfile), topFolder.FolderId);
+					//    //Console.WriteLine(subfile);
+					//}
 
-					//Parallel.ForEach(Directory.GetFiles(topFile.FullName), currentFile =>
-					//    {
-					//        processFile(new FileInfo(currentFile), topFolder.FolderId);
-					//    });
+					Parallel.ForEach(Directory.GetDirectories(topFile.FullName), currentFile =>
+						{
+							if (!(currentFile.Contains(".AppleDouble")))
+							{
+								var folder = new Folder(currentFile);
+
+								// if the folder isn't already in the database, add it.
+								if (folder.FolderId == 0)
+								{
+									folder.addToDatabase(false);
+								}
+								processFolder(currentFile);
+							}
+						});
+
+					Parallel.ForEach(Directory.GetFiles(topFile.FullName), currentFile =>
+						{
+							processFile(new FileInfo(currentFile), topFolder.FolderId);
+						});
 
 
 

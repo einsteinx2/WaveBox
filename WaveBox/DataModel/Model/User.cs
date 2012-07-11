@@ -219,12 +219,13 @@ namespace WaveBox.DataModel.Model
 				Database.dbLock.ReleaseMutex();
 				Database.close(conn, reader);
 			}
+
+			PasswordHash = hash;
+			PasswordSalt = salt;
 		}
 
 		public static User createUser(string userName, string password)
 		{
-			User user = null;
-
 			var salt = _generatePasswordSalt();
 			var hash = _computePasswordHash(password, salt);
 
@@ -256,6 +257,12 @@ namespace WaveBox.DataModel.Model
 			}
 
 			return new User(userName);
+		}
+
+		public bool authenticate(string password)
+		{
+			var hash = _computePasswordHash(password, PasswordSalt);
+			return hash == PasswordHash ? true : false;
 		}
 	}
 }

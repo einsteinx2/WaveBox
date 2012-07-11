@@ -14,7 +14,7 @@ namespace WaveBox.ApiHandler.Handlers
 		private HttpProcessor _sh;
 		private UriWrapper _uriW;
 
-		public CoverArtApiHandler(UriWrapper uriW, HttpProcessor sh)
+		public CoverArtApiHandler(UriWrapper uriW, HttpProcessor sh, int userId)
 		{
 			_sh = sh;
 			_uriW = uriW;

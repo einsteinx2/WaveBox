@@ -400,8 +400,17 @@ namespace WaveBox.DataModel.Model
 		// stub!
 		public static int CompareSongsByDiscAndTrack(Song x, Song y)
 		{
-			return 1;
-			//return StringComparer.OrdinalIgnoreCase.Compare(x, y);
+			// if one track contains a disc number and the other doesn't, the one with the disc number is greater
+			//if (x.DiscNumber == 0 && y.DiscNumber != 0) return 1;
+			//else if (x.DiscNumber != 0 && y.DiscNumber == 0) return -1;
+
+			if (x.DiscNumber == y.DiscNumber && x.TrackNumber == y.TrackNumber) return 0;
+
+			// if the disc numbers are equal, we have to compare by track
+			else if (x.DiscNumber == y.DiscNumber) return x.TrackNumber > y.TrackNumber ? 1 : -1;
+
+			// if the disc numbers are not equal, the one with the higher disc number is greater.
+			else return x.DiscNumber > y.DiscNumber ? 1 : -1;
 		}
 	}
 }

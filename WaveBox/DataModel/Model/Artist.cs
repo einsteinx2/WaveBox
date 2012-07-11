@@ -288,7 +288,6 @@ namespace WaveBox.DataModel.Model
 			}
 
 			albums.Sort(Album.CompareAlbumsByName);
-
 			return albums;
 		}
 
@@ -345,7 +344,6 @@ namespace WaveBox.DataModel.Model
 			}
 
 			songs.Sort(Song.CompareSongsByDiscAndTrack);
-
 			return songs;
 		}
 
