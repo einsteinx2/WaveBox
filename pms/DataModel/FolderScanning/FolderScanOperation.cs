@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using MediaFerry.DataModel.Model;
-using MediaFerry.DataModel.Singletons;
+using WaveBox.DataModel.Model;
+using WaveBox.DataModel.Singletons;
 using System.IO;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using TagLib;
 
-namespace MediaFerry.DataModel.FolderScanning
+namespace WaveBox.DataModel.FolderScanning
 {
 	class FolderScanOperation : ScanOperation
 	{

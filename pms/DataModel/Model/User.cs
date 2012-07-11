@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Data.SqlServerCe;
-using MediaFerry.DataModel.Singletons;
-using MediaFerry.DataModel.Model;
+using WaveBox.DataModel.Singletons;
+using WaveBox.DataModel.Model;
 using System.Security.Cryptography;
 
-namespace MediaFerry.DataModel.Model
+namespace WaveBox.DataModel.Model
 {
 	class User
 	{

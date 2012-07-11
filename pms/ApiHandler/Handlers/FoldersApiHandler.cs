@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
-using MediaFerry.DataModel.Model;
+using WaveBox.DataModel.Model;
 using Bend.Util;
 
-namespace MediaFerry.ApiHandler.Handlers
+namespace WaveBox.ApiHandler.Handlers
 {
 	class FoldersApiHandler : IApiHandler
 	{

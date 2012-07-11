@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MediaFerry.DataModel.Model
+namespace WaveBox.DataModel.Model
 {
 	public class Video
 	{

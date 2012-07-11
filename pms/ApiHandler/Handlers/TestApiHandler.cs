@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Bend.Util;
-using MediaFerry.DataModel.Model;
+using WaveBox.DataModel.Model;
 using Newtonsoft.Json;
 
-namespace MediaFerry.ApiHandler.Handlers
+namespace WaveBox.ApiHandler.Handlers
 {
 	class TestApiHandler : IApiHandler
 	{

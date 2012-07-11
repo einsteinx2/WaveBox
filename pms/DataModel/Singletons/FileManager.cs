@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using MediaFerry.DataModel.Singletons;
-using MediaFerry.DataModel.Model;
-using MediaFerry.DataModel.FolderScanning;
+using WaveBox.DataModel.Singletons;
+using WaveBox.DataModel.Model;
+using WaveBox.DataModel.FolderScanning;
 using System.IO;
 
-namespace MediaFerry.DataModel.Singletons
+namespace WaveBox.DataModel.Singletons
 {
 	class FileManager
 	{

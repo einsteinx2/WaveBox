@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using MediaFerry.DataModel.Model;
+using WaveBox.DataModel.Model;
 using Bend.Util;
 
-namespace MediaFerry.ApiHandler.Handlers
+namespace WaveBox.ApiHandler.Handlers
 {
 	class CoverArtApiHandler : IApiHandler
 	{

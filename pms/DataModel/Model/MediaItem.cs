@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Data.SqlServerCe;
-using MediaFerry.DataModel.Model;
-using MediaFerry.DataModel.Singletons;
+using WaveBox.DataModel.Model;
+using WaveBox.DataModel.Singletons;
 using System.Diagnostics;
 using Newtonsoft.Json;
 
-namespace MediaFerry.DataModel.Model
+namespace WaveBox.DataModel.Model
 {
 	public class MediaItem
 	{

@@ -5,13 +5,13 @@ using System.Text;
 using System.IO;
 using System.Data.SqlServerCe;
 using System.Data.SqlTypes;
-using MediaFerry.DataModel.Singletons;
-using MediaFerry.DataModel.Model;
+using WaveBox.DataModel.Singletons;
+using WaveBox.DataModel.Model;
 using System.Security.Cryptography;
 using TagLib;
 using Newtonsoft.Json;
 
-namespace MediaFerry.DataModel.Model
+namespace WaveBox.DataModel.Model
 {
 	public class CoverArt
 	{

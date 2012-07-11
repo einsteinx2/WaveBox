@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using MediaFerry.DataModel.Model;
+using WaveBox.DataModel.Model;
 using Newtonsoft.Json;
 using System.IO;
 
-namespace MediaFerry.DataModel.Singletons
+namespace WaveBox.DataModel.Singletons
 {
 	public class Settings
 	{

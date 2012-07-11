@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Data.SqlServerCe;
-using MediaFerry.DataModel.Singletons;
+using WaveBox.DataModel.Singletons;
 using Newtonsoft.Json;
 
-namespace MediaFerry.DataModel.Model
+namespace WaveBox.DataModel.Model
 {
 	public class Album
 	{

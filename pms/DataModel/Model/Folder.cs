@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Data.SqlServerCe;
 using System.Data.SqlTypes;
-using MediaFerry.DataModel.Singletons;
-using MediaFerry.DataModel.Model;
+using WaveBox.DataModel.Singletons;
+using WaveBox.DataModel.Model;
 using Newtonsoft.Json;
 using System.IO;
 
-namespace MediaFerry.DataModel.Model
+namespace WaveBox.DataModel.Model
 {
 	public class Folder
 	{

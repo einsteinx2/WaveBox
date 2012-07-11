@@ -6,7 +6,7 @@ using System.Data.SqlServerCe;
 using System.Threading;
 
 
-namespace MediaFerry.DataModel.Singletons
+namespace WaveBox.DataModel.Singletons
 {
 	class Database
 	{

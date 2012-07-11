@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using MediaFerry.ApiHandler.Handlers;
+using WaveBox.ApiHandler.Handlers;
 using Bend.Util;
 
-namespace MediaFerry.ApiHandler
+namespace WaveBox.ApiHandler
 {
 	class ApiHandlerFactory
 	{

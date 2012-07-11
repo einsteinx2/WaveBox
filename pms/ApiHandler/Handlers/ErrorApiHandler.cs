@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Bend.Util;
 
-namespace MediaFerry.ApiHandler.Handlers
+namespace WaveBox.ApiHandler.Handlers
 {
 	class ErrorApiHandler : IApiHandler
 	{

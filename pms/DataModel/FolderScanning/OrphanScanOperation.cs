@@ -3,13 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using MediaFerry.DataModel.Singletons;
-using MediaFerry.DataModel.Model;
+using WaveBox.DataModel.Singletons;
+using WaveBox.DataModel.Model;
 using System.Data.SqlServerCe;
 using System.IO;
 using System.Diagnostics;
 
-namespace MediaFerry.DataModel.FolderScanning
+namespace WaveBox.DataModel.FolderScanning
 {
 	class OrphanScanOperation : ScanOperation
 	{

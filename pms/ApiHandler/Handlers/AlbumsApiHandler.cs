@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using MediaFerry.ApiHandler;
-using MediaFerry.DataModel.Model;
+using WaveBox.ApiHandler;
+using WaveBox.DataModel.Model;
 using Newtonsoft.Json;
 using Bend.Util;
 
-namespace MediaFerry.ApiHandler.Handlers
+namespace WaveBox.ApiHandler.Handlers
 {
 	class AlbumsApiHandler : IApiHandler
 	{

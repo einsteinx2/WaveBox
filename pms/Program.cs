@@ -5,11 +5,11 @@ using System.Text;
 using System.Data.SqlServerCe;
 using Bend.Util;
 using System.Threading;
-using MediaFerry.DataModel.Singletons;
+using WaveBox.DataModel.Singletons;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace MediaFerry
+namespace WaveBox
 {
 	class Program
 	{

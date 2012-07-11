@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using MediaFerry.DataModel.Model;
+using WaveBox.DataModel.Model;
 using Un4seen.Bass;
 
-namespace MediaFerry.DataModel.Singletons
+namespace WaveBox.DataModel.Singletons
 {
 	class Jukebox
 	{

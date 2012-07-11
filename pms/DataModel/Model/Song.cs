@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Data.SqlServerCe;
-using MediaFerry.DataModel.Model;
-using MediaFerry.DataModel.Singletons;
+using WaveBox.DataModel.Model;
+using WaveBox.DataModel.Singletons;
 using System.IO;
 using TagLib;
 using Newtonsoft.Json;
 
-namespace MediaFerry.DataModel.Model
+namespace WaveBox.DataModel.Model
 {
 	public class Song : MediaItem
 	{

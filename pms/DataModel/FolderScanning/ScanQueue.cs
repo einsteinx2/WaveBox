@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Diagnostics;
 
-namespace MediaFerry.DataModel.FolderScanning
+namespace WaveBox.DataModel.FolderScanning
 {
 	class ScanQueue
 	{
