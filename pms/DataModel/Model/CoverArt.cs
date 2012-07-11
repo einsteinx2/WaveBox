@@ -155,9 +155,7 @@ namespace WaveBox.DataModel.Model
 						}
 						try
 						{
-							var writer = new StreamWriter(ART_PATH + _adlerHash);
-							writer.Write(file.Tag.Pictures[0].Data.Data);
-							writer.Close();
+							System.IO.File.WriteAllBytes(ART_PATH + _adlerHash, data);
 						}
 
 						catch (Exception e)
