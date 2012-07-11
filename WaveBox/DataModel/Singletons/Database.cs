@@ -35,7 +35,7 @@ namespace WaveBox.DataModel.Singletons
 		{
 			if (dbconn == null)
 			{
-				dbconn = new SqlCeConnection("DataSource = \"pms.sdf\"");
+				dbconn = new SqlCeConnection("DataSource = \"wavebox.sdf\"");
 			}
 
 			while ((dbconn.State == System.Data.ConnectionState.Closed))

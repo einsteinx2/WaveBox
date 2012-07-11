@@ -9,7 +9,7 @@
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>WaveBox</RootNamespace>
-    <AssemblyName>pms</AssemblyName>
+    <AssemblyName>WaveBox</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
@@ -106,11 +106,6 @@
     <Compile Include="HTTPServer\PmsHttpHeader.cs" />
     <Compile Include="HTTPServer\PmsHttpServer.cs" />
     <Compile Include="HTTPServer\SimpleHttpServer.cs" />
-    <Compile Include="pmsDataSet.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>pmsDataSet.xsd</DependentUpon>
-    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
@@ -120,12 +115,12 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="lib\bass.dll">
+    <Content Include="bass.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="lib\Newtonsoft.Json.dll" />
     <Content Include="lib\taglib-sharp.dll" />
-    <Content Include="pms.sdf">
+    <Content Include="wavebox.sdf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -158,24 +153,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="ClassDiagram1.cd" />
-    <None Include="ClassDiagram2.cd" />
-    <None Include="pmsDataSet.xsc">
-      <DependentUpon>pmsDataSet.xsd</DependentUpon>
-    </None>
-    <None Include="pmsDataSet.xsd">
-      <Generator>MSDataSetGenerator</Generator>
-      <LastGenOutput>pmsDataSet.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="pmsDataSet.xss">
-      <DependentUpon>pmsDataSet.xsd</DependentUpon>
-    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <None Include="res\pms.conf">
+    <None Include="res\WaveBox.conf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
