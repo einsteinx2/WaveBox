@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaveBox", "pms\WaveBox.csproj", "{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaveBox", "WaveBox\WaveBox.csproj", "{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
