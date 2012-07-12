@@ -74,7 +74,7 @@ namespace WaveBox.DataModel.Model
 			{
 				var q = new SqlCeCommand("SELECT * FROM art WHERE art_id = @artid");
 
-				q.Parameters.AddWithValue("@artid", ArtId);
+				q.Parameters.AddWithValue("@artid", artId);
 
 				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();

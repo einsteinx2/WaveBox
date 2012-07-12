@@ -245,7 +245,7 @@ namespace WaveBox.DataModel.Model
 
 			try
 			{
-				_releaseYear = Convert.ToInt32(tag.Disc);
+				_releaseYear = Convert.ToInt32(tag.Year);
 			}
 			catch
 			{
