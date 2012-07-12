@@ -16,14 +16,14 @@ namespace WaveBox.ApiHandler
 			
 			// authenticate before anything happens.
 			int userId;
-			if (uriW.Parameters == null || (!uriW.Parameters.ContainsKey("p") || !uriW.Parameters.ContainsKey("p")))
+			if (uriW.Parameters == null || (!uriW.Parameters.ContainsKey("u") || !uriW.Parameters.ContainsKey("p")))
 			{
 				return new ErrorApiHandler(uriW, sh, "Missing authentication data");
 			}
 
 			string username, password;
-			uriW.Parameters.TryGetValue("username", out username);
-			uriW.Parameters.TryGetValue("password", out password);
+			uriW.Parameters.TryGetValue("u", out username);
+			uriW.Parameters.TryGetValue("p", out password);
 
 			var user = new User(username);
 			if (user.UserId == 0 || !user.authenticate(password))

@@ -8,6 +8,7 @@ using System.Threading;
 using WaveBox.DataModel.Singletons;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using WaveBox.DataModel.Model;
 
 namespace WaveBox
 {
@@ -55,6 +56,8 @@ namespace WaveBox
 			
 			var database = Database.Instance;
 			var settings = Settings.Instance;
+
+			User.createUser("test", "test");
 
 			var sw = new Stopwatch();
 			Console.WriteLine("Scanning media directories...");

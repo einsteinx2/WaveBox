@@ -23,8 +23,8 @@ namespace WaveBox.ApiHandler
 		{
 			//Console.WriteLine("uri: {0}", uri);
 			_uri = uri;
-			_uriParts = _removeEmptyElements(uri.Split(new char[]{'/', '?'}));
 			_parseParameters();
+			_uriParts = _removeEmptyElements(_uri.Split('/'));
 		}
 
 		private void _parseParameters()
@@ -34,12 +34,14 @@ namespace WaveBox.ApiHandler
 				_parameters = new Dictionary<string,string>();
 				// if we split the uri by the question mark, the second part of the split will be the params
 				string parameters = _uri.Split('?')[1];
-				string[] splitParams = parameters.Split('=');
+				string[] splitParams = parameters.Split(new char[]{'=', '&'});
 
 				for(int i = 0; i <= splitParams.Length - 2; i = i + 2)
 				{
 					_parameters.Add(splitParams[i], splitParams[i + 1]);
 				}
+
+				_uri = _uri.Substring(0, _uri.IndexOf('?'));
 			}
 		}
 

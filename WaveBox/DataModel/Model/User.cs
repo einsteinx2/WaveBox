@@ -78,7 +78,7 @@ namespace WaveBox.DataModel.Model
 			{
 				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();
-				var q = new SqlCeCommand("SELECT * FROM user WHERE user_id = @userid");
+				var q = new SqlCeCommand("SELECT * FROM users WHERE user_id = @userid");
 				q.Connection = conn;
 				q.Parameters.AddWithValue("@userid", UserId);
 				q.Prepare();
@@ -121,9 +121,9 @@ namespace WaveBox.DataModel.Model
 			{
 				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();
-				var q = new SqlCeCommand("SELECT * FROM user WHERE user_name = @username");
+				var q = new SqlCeCommand("SELECT * FROM users WHERE user_name = @username");
 				q.Connection = conn;
-				q.Parameters.AddWithValue("@username", UserName);
+				q.Parameters.AddWithValue("@username", userName);
 				q.Prepare();
 				reader = q.ExecuteReader();
 
@@ -157,8 +157,8 @@ namespace WaveBox.DataModel.Model
 		{
 			UserId = reader.GetInt32(reader.GetOrdinal("user_id"));
 			UserName = reader.GetString(reader.GetOrdinal("user_name"));
-			PasswordHash = reader.GetString(reader.GetOrdinal("password_hash"));
-			PasswordSalt = reader.GetString(reader.GetOrdinal("password_salt"));
+			PasswordHash = reader.GetString(reader.GetOrdinal("user_password"));
+			PasswordSalt = reader.GetString(reader.GetOrdinal("user_salt"));
 		}
 
 		private static string _sha1(string sumthis)
@@ -202,7 +202,7 @@ namespace WaveBox.DataModel.Model
 			{
 				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();
-				var q = new SqlCeCommand("UPDATE user SET password_hash = @hash, password_salt = @salt WHERE user_name = @username");
+				var q = new SqlCeCommand("UPDATE users SET user_password = @hash, user_salt = @salt WHERE user_name = @username");
 				q.Connection = conn;
 				q.Parameters.AddWithValue("@username", UserName);
 				q.Prepare();
@@ -236,7 +236,7 @@ namespace WaveBox.DataModel.Model
 			{
 				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();
-				var q = new SqlCeCommand("INSERT INTO user (user_name, user_password, user_salt) VALUES (@username, @userhash, @usersalt)");
+				var q = new SqlCeCommand("INSERT INTO users (user_name, user_password, user_salt) VALUES (@username, @userhash, @usersalt)");
 				q.Connection = conn;
 				q.Parameters.AddWithValue("@username", userName);
 				q.Parameters.AddWithValue("@userhash", hash);
