@@ -299,9 +299,9 @@ namespace WaveBox.DataModel.Model
 				_fileName = reader.GetString(reader.GetOrdinal("song_file_name"));
 				_releaseYear = reader.GetInt32(reader.GetOrdinal("song_release_year"));
 
-				if (reader.GetValue(reader.GetOrdinal("art_id")) == DBNull.Value) _artId = 0;
-				else _artId = reader.GetInt32(reader.GetOrdinal("art_id"));
-				//_artId = 0;
+				//if (reader.GetValue(reader.GetOrdinal("art_id")) == DBNull.Value) _artId = 0;
+				//else _artId = reader.GetInt32(reader.GetOrdinal("art_id"));
+				_artId = 0;
 			}
 			catch (Exception e)
 			{
@@ -382,8 +382,8 @@ namespace WaveBox.DataModel.Model
 
 			try
 			{
-				var q = new SqlCeCommand("SELECT song.*, item_type_art.art_id, artist.artist_name, album.album_name FROM song " +
-										 "LEFT JOIN item_type_art ON item_type_art.item_type_id = @itemtypeid AND item_id = song_id " +
+				var q = new SqlCeCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " +
+										// "LEFT JOIN item_type_art ON item_type_art.item_type_id = @itemtypeid AND song_id = item_id " +
 										 "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
 										 "LEFT JOIN album ON song_album_id = album.album_id ");
 				q.Parameters.AddWithValue("@itemtypeid", (int)ItemType.SONG);
@@ -394,15 +394,15 @@ namespace WaveBox.DataModel.Model
 				q.Prepare();
 				reader = q.ExecuteReader();
 
-//				var sw = new Stopwatch();
+			//	var sw = new Stopwatch();
 				while (reader.Read())
 				{
-//					sw.Start();
+			//		sw.Start();
 					allsongs.Add(new Song(reader));
-	//				Console.WriteLine("Elapsed: {0}ms", sw.ElapsedMilliseconds);
-		//			sw.Restart();
+			//		Console.WriteLine("Elapsed: {0}ms", sw.ElapsedMilliseconds);
+			//		sw.Restart();
 				}
-//				sw.Stop();
+			//	sw.Stop();
 
 				reader.Close();
 			}

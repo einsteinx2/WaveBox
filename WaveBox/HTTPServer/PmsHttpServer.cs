@@ -17,17 +17,27 @@ namespace Bend.Util
 		}
 		public override void handleGETRequest(HttpProcessor p)
 		{
+			var sw = new Stopwatch();
 			var apiHandler = ApiHandlerFactory.createRestHandler(p.http_url, p);
+
+			sw.Start();
 			apiHandler.process();
+			Console.WriteLine(apiHandler.GetType() + ": {0}ms", sw.ElapsedMilliseconds);
+			sw.Stop();
 		}
 
 		public override void handlePOSTRequest(HttpProcessor p, StreamReader inputData)
 		{
 			string data = p.http_url + "?" + inputData.ReadToEnd();
 			Console.WriteLine("[HTTPSERVER] POST request: {0}", data);
-
+			
+			var sw = new Stopwatch();
 			var apiHandler = ApiHandlerFactory.createRestHandler(data, p);
+
+			sw.Start();
 			apiHandler.process();
+			Console.WriteLine(apiHandler.GetType() + ": {0}ms", sw.ElapsedMilliseconds);
+			sw.Stop();
 		}
 
 		public static void sendJson(HttpProcessor _sh, string json)
