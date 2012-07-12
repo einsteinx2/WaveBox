@@ -21,7 +21,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 		public void process()
 		{
-			List<Song> listOfSongs = new List<Song>(); Song.allSongs();
+			List<Song> listOfSongs = new List<Song>();
 			string json = "";
 
 			if (_uriW.getUriPart(2) == null)

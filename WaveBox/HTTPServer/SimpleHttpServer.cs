@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using WaveBox;
 
 // offered to the public domain for any use with no restriction
 // and also with no warranty of any kind, please enjoy. - David Jeske. 
@@ -196,7 +197,26 @@ namespace Bend.Util {
 
 		public void listen() {
 			listener = new TcpListener(IPAddress.Any, port);
-			listener.Start();
+			try
+			{
+				listener.Start();
+			}
+			catch (System.Net.Sockets.SocketException e)
+			{
+				if (e.SocketErrorCode.ToString() == "AddressAlreadyInUse")
+				{
+					Console.WriteLine("ERROR: Socket already in use.  Ensure that PMS is not already running.");
+				}
+
+				else Console.WriteLine("ERROR: " + e.Message);
+				Program.Shutdown();
+			}
+
+			catch (Exception e)
+			{
+				Console.WriteLine(e.ToString());
+				Program.Shutdown();
+			}
 			Console.WriteLine("HTTP server started");
 			while (is_active) {                
 				TcpClient s = listener.AcceptTcpClient();

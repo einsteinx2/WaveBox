@@ -89,6 +89,12 @@ namespace WaveBox
 
 		private static bool Handler(CtrlType sig)
 		{
+			Shutdown();
+			return true;
+		}
+
+		public static void Shutdown()
+		{
 			Console.WriteLine("Executing shutdown hook!");
 			SqlCeConnection dbconn = Database.getDbConnection();
 			dbconn.Close();
@@ -101,7 +107,6 @@ namespace WaveBox
 			else Console.WriteLine("Database connection failed to close");
 
 			Environment.Exit(0);
-			return true;
 		}
 
 	}
