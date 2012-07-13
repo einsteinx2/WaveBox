@@ -69,11 +69,16 @@ namespace WaveBox.DataModel.FolderScanning
 					topFolder = new Folder(topFile.FullName);
 					//Console.WriteLine("scanning " + topFolder.FolderName + "  id: " + topFolder.FolderId);
 
+					if (topFolder.FolderId == 0)
+					{
+						topFolder.addToDatabase(false);
+					}
+
 					foreach (var subfolder in Directory.GetDirectories(topFile.FullName))
 					{
 						if (!(subfolder.Contains(".AppleDouble")))
 						{
-							var folder = new Folder(subfolder, true);
+							var folder = new Folder(subfolder);
 
 							// if the folder isn't already in the database, add it.
 							if (folder.FolderId == 0)
