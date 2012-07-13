@@ -146,8 +146,7 @@ namespace WaveBox.DataModel.Model
 
 			try
 			{
-				var q = new SqlCeCommand("SELECT song.*, item_type_art.art_id, artist.artist_name, album.album_name FROM song " +
-										 "LEFT JOIN item_type_art ON item_type_art.item_type_id = @itemtypeid AND item_id = song_id " +
+				var q = new SqlCeCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " +
 										 "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
 										 "LEFT JOIN album ON song_album_id = album.album_id " +
 										 "WHERE song_id = @songid");
@@ -299,9 +298,9 @@ namespace WaveBox.DataModel.Model
 				_fileName = reader.GetString(reader.GetOrdinal("song_file_name"));
 				_releaseYear = reader.GetInt32(reader.GetOrdinal("song_release_year"));
 
-				//if (reader.GetValue(reader.GetOrdinal("art_id")) == DBNull.Value) _artId = 0;
-				//else _artId = reader.GetInt32(reader.GetOrdinal("art_id"));
-				_artId = 0;
+				if (reader.GetValue(reader.GetOrdinal("song_art_id")) == DBNull.Value) _artId = 0;
+				else _artId = reader.GetInt32(reader.GetOrdinal("song_art_id"));
+				//_artId = 0;
 			}
 			catch (Exception e)
 			{
@@ -317,8 +316,8 @@ namespace WaveBox.DataModel.Model
 			try
 			{
 				// insert the song into the database
-				var q = new SqlCeCommand("INSERT INTO song (song_folder_id, song_artist_id, song_album_id, song_file_type_id, song_name, song_track_num, song_disc_num, song_duration, song_bitrate, song_file_size, song_last_modified, song_file_name, song_release_year)" + 
-										 "VALUES (@folderid, @artistid, @albumid, @filetype, @songname, @tracknum, @discnum, @duration, @bitrate, @filesize, @lastmod, @filename, @releaseyear)");
+				var q = new SqlCeCommand("INSERT INTO song (song_folder_id, song_artist_id, song_album_id, song_file_type_id, song_name, song_track_num, song_disc_num, song_duration, song_bitrate, song_file_size, song_last_modified, song_file_name, song_release_year, song_art_id)" + 
+										 "VALUES (@folderid, @artistid, @albumid, @filetype, @songname, @tracknum, @discnum, @duration, @bitrate, @filesize, @lastmod, @filename, @releaseyear, @artid)");
 
 				q.Parameters.AddWithValue("@folderid", FolderId);
 				q.Parameters.AddWithValue("@artistid", ArtistId);
@@ -337,28 +336,14 @@ namespace WaveBox.DataModel.Model
 				q.Parameters.AddWithValue("@lastmod", LastModified);
 				q.Parameters.AddWithValue("@filename", FileName);
 				q.Parameters.AddWithValue("@releaseyear", ReleaseYear);
+				q.Parameters.AddWithValue("@artid", ArtId);
 
 				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();
 
 				q.Connection = conn;
 				q.Prepare();
-
-				// if the insert succeeds
-				if (q.ExecuteNonQuery() >= 1)
-				{
-					// get the id of the song we just inserted
-					q = new SqlCeCommand("SELECT @@IDENTITY", conn);
-					_itemId = Convert.ToInt32((q.ExecuteScalar()).ToString());
-
-					// then use it to insert the art entry
-					q = new SqlCeCommand("INSERT INTO item_type_art (item_type_id, item_id, art_id) VALUES (@itemtypeid, @itemid, @artid)", conn);
-					q.Parameters.AddWithValue("@itemtypeid", ItemTypeId);
-					q.Parameters.AddWithValue("@itemid", ItemId);
-					q.Parameters.AddWithValue("@artid", ArtId);
-
-					q.ExecuteNonQuery();
-				}
+				q.ExecuteNonQuery();
 				return;
 			}
 
@@ -383,10 +368,8 @@ namespace WaveBox.DataModel.Model
 			try
 			{
 				var q = new SqlCeCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " +
-										// "LEFT JOIN item_type_art ON item_type_art.item_type_id = @itemtypeid AND song_id = item_id " +
 										 "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
 										 "LEFT JOIN album ON song_album_id = album.album_id ");
-				q.Parameters.AddWithValue("@itemtypeid", (int)ItemType.SONG);
 
 				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();

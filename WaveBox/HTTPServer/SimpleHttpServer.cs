@@ -77,6 +77,18 @@ namespace Bend.Util {
 				outputStream.Flush();
 			}
 
+			catch (IOException e)
+			{
+				if (e.InnerException.GetType() == typeof(System.Net.Sockets.SocketException))
+				{
+					var se = (System.Net.Sockets.SocketException)e.InnerException;
+					if (se.SocketErrorCode == System.Net.Sockets.SocketError.ConnectionReset)
+					{
+						Console.WriteLine("[HTTPSERVER] " + "Connection was forcibly closed by the remote host");
+					}
+				}
+			}
+
 			catch (Exception e)
 			{
 				Console.WriteLine(e.ToString());

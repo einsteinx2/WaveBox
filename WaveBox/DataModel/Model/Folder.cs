@@ -116,14 +116,12 @@ namespace WaveBox.DataModel.Model
 			{
 				conn = Database.getDbConnection();
 
-				var q = new SqlCeCommand("SELECT folder.*, item_type_art.art_id FROM folder " +
+				var q = new SqlCeCommand("SELECT TOP(1) folder.*, song.song_art_id FROM folder " + 
 										 "LEFT JOIN song ON song_folder_id = folder_id " +
-										 "LEFT JOIN item_type_art ON item_type_art.item_type_id = @itemtypeid AND item_id = song_id " +
-										 "WHERE folder_id = @folderid ");
+										 "WHERE folder_id = @folderid");
 
 				Database.dbLock.WaitOne();
 				q.Connection = conn;
-				q.Parameters.AddWithValue("@itemtypeid", new Song().ItemTypeId);
 				q.Parameters.AddWithValue("@folderid", folderId);
 				q.Prepare();
 				reader = q.ExecuteReader();
@@ -138,9 +136,9 @@ namespace WaveBox.DataModel.Model
 					else _parentFolderId = reader.GetInt32(reader.GetOrdinal("parent_folder_id"));
 					_mediaFolderId = reader.GetInt32(reader.GetOrdinal("folder_media_folder_id"));
 
-					if (reader.GetValue(reader.GetOrdinal("art_id")) == DBNull.Value)
+					if (reader.GetValue(reader.GetOrdinal("song_art_id")) == DBNull.Value)
 						_artId = 0;
-					else _artId = reader.GetInt32(reader.GetOrdinal("art_id"));
+					else _artId = reader.GetInt32(reader.GetOrdinal("song_art_id"));
 				}
 			}
 
@@ -279,6 +277,10 @@ namespace WaveBox.DataModel.Model
 							_parentFolderId = 0;
 						else _parentFolderId = reader.GetInt32(reader.GetOrdinal("parent_folder_id"));
 						_mediaFolderId = reader.GetInt32(reader.GetOrdinal("folder_media_folder_id"));
+
+						if (reader.GetValue(reader.GetOrdinal("folder_art_id")) == DBNull.Value)
+							_artId = 0;
+						else _parentFolderId = reader.GetInt32(reader.GetOrdinal("folder_art_id"));
 					}
 
 				}
@@ -327,13 +329,11 @@ namespace WaveBox.DataModel.Model
 
 			try
 			{
-				var q = new SqlCeCommand("SELECT song.*, item_type_art.art_id, artist.artist_name, album.album_name FROM song " +
-										 "LEFT JOIN item_type_art ON item_type_art.item_type_id = @itemtypeid AND item_id = song_id " +
+				var q = new SqlCeCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " +
 										 "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
 										 "LEFT JOIN album ON song_album_id = album.album_id " +
 										 "WHERE song_folder_id = @folderid");
 
-				q.Parameters.AddWithValue("@itemtypeid", new Song().ItemTypeId);
 				q.Parameters.AddWithValue("@folderid", FolderId);
 
 				Database.dbLock.WaitOne();

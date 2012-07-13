@@ -111,8 +111,7 @@ namespace WaveBox.DataModel.Model
 
 			try
 			{
-				var q = new SqlCeCommand("SELECT * FROM album LEFT JOIN item_type_art ON item_type_art.item_type_id = @itemtypeid AND album_id = @albumid WHERE album_id = @albumid");
-				q.Parameters.AddWithValue("@itemtypeid", ItemTypeId);
+				var q = new SqlCeCommand("SELECT * FROM album WHERE album_id = @albumid");
 				q.Parameters.AddWithValue("@albumid", albumId);
 
 				Database.dbLock.WaitOne();
@@ -163,7 +162,7 @@ namespace WaveBox.DataModel.Model
 
 			try
 			{
-				var q = new SqlCeCommand("SELECT * FROM album LEFT JOIN item_type_art ON item_type_id = @itemtypeid AND item_id = album_id WHERE album_name  = @albumname");
+				var q = new SqlCeCommand("SELECT * FROM album WHERE album_name  = @albumname");
 				q.Parameters.AddWithValue("@itemtypeid", ItemTypeId);
 				q.Parameters.AddWithValue("@albumname", AlbumName);
 
@@ -215,7 +214,6 @@ namespace WaveBox.DataModel.Model
 			try
 			{
 				var q = new SqlCeCommand("INSERT INTO album (album_name, artist_id) VALUES(@albumname, @artistid)");
-				//q.Parameters.AddWithValue("@albumid", DBNull.Value);
 				q.Parameters.AddWithValue("@albumname", albumName);
 				q.Parameters.AddWithValue("@artistid", artistId);
 
@@ -270,11 +268,11 @@ namespace WaveBox.DataModel.Model
 			}
 			else _albumName = reader.GetString(reader.GetOrdinal("album_name"));
 
-			if (reader.IsDBNull(reader.GetOrdinal("art_id")))
+			if (reader.IsDBNull(reader.GetOrdinal("album_art_id")))
 			{
 				_artId = 0;
 			}
-			else _artId = reader.GetInt32(reader.GetOrdinal("art_id"));
+			else _artId = reader.GetInt32(reader.GetOrdinal("album_art_id"));
 		}
 
 		public Artist artist()
@@ -296,13 +294,11 @@ namespace WaveBox.DataModel.Model
 
 			try
 			{
-				var q = new SqlCeCommand("SELECT song.*, artist.artist_name, album.album_name, item_type_art.art_id FROM song " +
-										 "LEFT JOIN item_type_art ON item_type_art.item_type_id = @itemtypeid AND item_id = song_id " +
+				var q = new SqlCeCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " +
 										 "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
 										 "LEFT JOIN album ON song_album_id = album.album_id " +
 										 "WHERE song_album_id = @albumid");
 
-				q.Parameters.AddWithValue("@itemtypeid", new Song().ItemTypeId);
 				q.Parameters.AddWithValue("@albumid", AlbumId);
 
 				Database.dbLock.WaitOne();
@@ -371,7 +367,7 @@ namespace WaveBox.DataModel.Model
 
 			try
 			{
-				var q = new SqlCeCommand("SELECT * FROM album LEFT JOIN item_type_art ON item_type_id = @itemtypeid AND item_id = album_id");
+				var q = new SqlCeCommand("SELECT * FROM album");
 
 				q.Parameters.AddWithValue("@itemtypeid", new Album().ItemTypeId);
 
@@ -418,7 +414,7 @@ namespace WaveBox.DataModel.Model
 
 			try
 			{
-				var q = new SqlCeCommand("SELECT TOP @count * FROM album LEFT JOIN item_type_art ON item_type_id = @itemtypeid AND item_id = album_id" +
+				var q = new SqlCeCommand("SELECT TOP @count * FROM album" +
 										 "ORDER BY NEWID()");
 
 				q.Parameters.AddWithValue("@itemtypeid", new Album().ItemTypeId);

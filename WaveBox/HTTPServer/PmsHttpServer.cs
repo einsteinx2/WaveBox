@@ -93,27 +93,43 @@ namespace Bend.Util
 			}
 
 			sw.Start();
-			while((bytesRead = fs.Read(buf, offset, 8192)) != 0)
+			bool exceptionHasOccurred = false;
+			while((bytesRead = fs.Read(buf, offset, 8192)) != 0 && !exceptionHasOccurred)
 			{
-				stream.Write(buf, 0, 8192);
-				bytesWritten += bytesRead;
-				//offset += 8192;
-
-				if (sw.ElapsedMilliseconds > 1000)
+				try
 				{
-					lol.WriteLine("[SENDFILE] " + fsinfo.Name + ": [ {0} / {1} | {2:F1}% | {3:F1} Mbps ]", bytesWritten, fileLength, (Convert.ToDouble(bytesWritten) / Convert.ToDouble(fileLength)) * 100,(((double)(sinceLastReport * 8) / 1024) / 1024) / (double)(sw.ElapsedMilliseconds / 1000));
-					lol.Flush();
-					sinceLastReport = 0;
-					sw.Restart();
+					stream.Write(buf, 0, 8192);
+					bytesWritten += bytesRead;
+					//offset += 8192;
+
+					if (sw.ElapsedMilliseconds > 1000)
+					{
+						lol.WriteLine("[SENDFILE] " + fsinfo.Name + ": [ {0} / {1} | {2:F1}% | {3:F1} Mbps ]", bytesWritten, fileLength, (Convert.ToDouble(bytesWritten) / Convert.ToDouble(fileLength)) * 100, (((double)(sinceLastReport * 8) / 1024) / 1024) / (double)(sw.ElapsedMilliseconds / 1000));
+						lol.Flush();
+						sinceLastReport = 0;
+						sw.Restart();
+					}
+
+					else sinceLastReport += bytesRead;
+
+					if (bytesWritten == fileLength)
+					{
+						Console.WriteLine("[SENDFILE] " + fsinfo.Name + ": Done.");
+						lol.Flush();
+						break;
+					}
 				}
-
-				else sinceLastReport += bytesRead;
-
-				if(bytesWritten == fileLength)
+				catch (IOException e)
 				{
-					Console.WriteLine("[SENDFILE] " + fsinfo.Name + ": Done.");
-					lol.Flush();
-					break;
+					if (e.InnerException.GetType() == typeof(System.Net.Sockets.SocketException))
+					{
+						var se = (System.Net.Sockets.SocketException)e.InnerException;
+						if (se.SocketErrorCode == System.Net.Sockets.SocketError.ConnectionReset)
+						{
+							Console.WriteLine("[SENDFILE] " + "Connection was forcibly closed by the remote host");
+						}
+					}
+					exceptionHasOccurred = true;
 				}
 			}
 			sw.Stop();
