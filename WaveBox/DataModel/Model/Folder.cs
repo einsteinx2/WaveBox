@@ -136,9 +136,17 @@ namespace WaveBox.DataModel.Model
 					else _parentFolderId = reader.GetInt32(reader.GetOrdinal("parent_folder_id"));
 					_mediaFolderId = reader.GetInt32(reader.GetOrdinal("folder_media_folder_id"));
 
-					if (reader.GetValue(reader.GetOrdinal("song_art_id")) == DBNull.Value)
-						_artId = 0;
-					else _artId = reader.GetInt32(reader.GetOrdinal("song_art_id"));
+					// if the folder has no associated art, i.e. there is no image file in the folder,
+					// check to see if there was a song image available, i.e. there was an image in its tag
+					// if neither of these things, then sadly, we have no image file to show the user.
+					if (reader.GetValue(reader.GetOrdinal("folder_art_id")) == DBNull.Value)
+					{
+						if (reader.GetValue(reader.GetOrdinal("song_art_id")) == DBNull.Value)
+							_artId = 0;
+						else _artId = reader.GetInt32(reader.GetOrdinal("song_art_id"));
+					}
+
+					else _artId = reader.GetInt32(reader.GetOrdinal("folder_art_id"));
 				}
 			}
 
@@ -182,6 +190,12 @@ namespace WaveBox.DataModel.Model
 				{
 					MediaFolderId = mf.FolderId;
 				}
+			}
+
+			string folderImageName;
+			if (_folderContainsImages(path, out folderImageName))
+			{
+				_artId = new CoverArt(new FileStream(folderImageName, FileMode.Open, FileAccess.Read)).ArtId;
 			}
 
 			try
@@ -422,7 +436,7 @@ namespace WaveBox.DataModel.Model
 			return folders;
 		}
 
-		bool isMediaFolder()
+		private bool isMediaFolder()
 		{
 			Folder mFolder = mediaFolder();
 
@@ -431,6 +445,25 @@ namespace WaveBox.DataModel.Model
 				return true;
 			}
 			else return false;
+		}
+
+		private bool _folderContainsImages(string dir, out string firstImageFoundPath)
+		{
+			var validImageExtensions = new string[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
+			string ext = "";
+
+			foreach (string file in Directory.GetFiles(dir))
+			{
+				ext = Path.GetExtension(file).ToLower();
+				if (validImageExtensions.Contains(ext))
+				{
+					firstImageFoundPath = file;
+					return true;
+				}
+			}
+
+			firstImageFoundPath = "";
+			return false;
 		}
 
 		private Folder mediaFolder()
@@ -458,7 +491,7 @@ namespace WaveBox.DataModel.Model
 				var q = new SqlCeCommand();
 
 
-				q.CommandText = "INSERT INTO folder (folder_name, folder_path, parent_folder_id, folder_media_folder_id) VALUES (@foldername, @folderpath, @parentfolderid, @folderid)";
+				q.CommandText = "INSERT INTO folder (folder_name, folder_path, parent_folder_id, folder_media_folder_id, folder_art_id) VALUES (@foldername, @folderpath, @parentfolderid, @folderid, @artid)";
 				q.Parameters.AddWithValue("@foldername", FolderName);
 				q.Parameters.AddWithValue("@folderpath", FolderPath);
 				if (mediaf == true)
@@ -470,6 +503,9 @@ namespace WaveBox.DataModel.Model
 					q.Parameters.AddWithValue("@parentfolderid", _getParentFolderId(FolderPath));
 				}
 				q.Parameters.AddWithValue("@folderid", MediaFolderId);
+
+				if (ArtId == 0) q.Parameters.AddWithValue("@artid", DBNull.Value);
+				else q.Parameters.AddWithValue("@artid", ArtId);
 
 
 				Database.dbLock.WaitOne();

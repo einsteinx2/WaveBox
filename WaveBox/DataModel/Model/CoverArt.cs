@@ -15,8 +15,8 @@ namespace WaveBox.DataModel.Model
 {
 	public class CoverArt
 	{
-		public const string ART_PATH = "art/";
-		public const string TMP_ART_PATH = "art/tmp/";
+		public const string ART_PATH = "art";
+		public const string TMP_ART_PATH = "art/tmp";
 
 		/// <summary>
 		/// Properties
@@ -54,7 +54,8 @@ namespace WaveBox.DataModel.Model
 
 		public string artFile()
 		{
-			return ART_PATH + Path.DirectorySeparatorChar + AdlerHash;
+			string artf = ART_PATH + Path.DirectorySeparatorChar + AdlerHash;
+			return artf;
 		}
 
 		/// <summary>
@@ -103,6 +104,23 @@ namespace WaveBox.DataModel.Model
 			}
 		}
 
+		// used for getting art from a file.
+		public CoverArt(FileStream fs)
+		{
+			// create an array the length of the file
+			byte[] data = new byte[fs.Length];
+
+			// read the data in
+			fs.Read(data, 0, Convert.ToInt32(fs.Length));
+
+			// compute the hash of the data
+			var md5 = new MD5CryptoServiceProvider();
+			_adlerHash = BitConverter.ToInt64(md5.ComputeHash(data), 0);
+
+			_checkDatabaseAndPerformCopy(data);
+		}
+
+		// used for getting art from a tag.
 		public CoverArt(FileInfo af)
 		{
 			var file = TagLib.File.Create(af.FullName);
@@ -112,6 +130,12 @@ namespace WaveBox.DataModel.Model
 				var md5 = new MD5CryptoServiceProvider();
 				_adlerHash = BitConverter.ToInt64(md5.ComputeHash(data), 0);
 
+				_checkDatabaseAndPerformCopy(data);
+			}
+		}
+
+		private void _checkDatabaseAndPerformCopy(byte[] data)
+		{
 				SqlCeConnection conn = null;
 				SqlCeDataReader reader = null;
 
@@ -227,7 +251,6 @@ namespace WaveBox.DataModel.Model
 
 					Database.close(conn, reader);
 				}
-			}
 		}
 	}
 }

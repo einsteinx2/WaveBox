@@ -258,8 +258,16 @@ namespace WaveBox.DataModel.Model
             _lastModified = Convert.ToInt64(fsFile.LastWriteTime.Ticks);
             _fileName = fsFile.Name;
 
-            var art = new CoverArt(fsFile);
-			_artId = art.ArtId;
+			// check to see if the folder has art associated with it.  if it does, use that art.  if not,
+			// check to see if the tag contains art.
+			_artId = new Folder(folderId).ArtId;
+
+			if (_artId == 0)
+			{
+				var art = new CoverArt(fsFile);
+				_artId = art.ArtId;
+			}
+
 
 		}
 
