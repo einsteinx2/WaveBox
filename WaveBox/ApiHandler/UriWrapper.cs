@@ -7,65 +7,65 @@ namespace WaveBox.ApiHandler
 {
 	class UriWrapper
 	{
-		private List<string> _uriParts;
-		private string _uri;
+		private List<string> UriParts { get; set; }
+		private string Uri { get; set; }
 
-		private Dictionary<string, string> _parameters;
+		private Dictionary<string, string> parameters;
 		public Dictionary<string, string> Parameters
 		{
 			get
 			{
-				return _parameters;
+				return parameters;
 			}
 		}
 
 		public UriWrapper(string uri)
 		{
 			//Console.WriteLine("uri: {0}", uri);
-			_uri = uri;
-			_parseParameters();
-			_uriParts = _removeEmptyElements(_uri.Split('/'));
+			Uri = uri;
+			ParseParameters();
+			UriParts = RemoveEmptyElements(Uri.Split('/'));
 		}
 
-		private void _parseParameters()
+		private void ParseParameters()
 		{
-			if(_uri.Contains('?'))
+			if(Uri.Contains('?'))
 			{
-				_parameters = new Dictionary<string,string>();
+				parameters = new Dictionary<string,string>();
 				// if we split the uri by the question mark, the second part of the split will be the params
-				string parameters = _uri.Split('?')[1];
-				string[] splitParams = parameters.Split(new char[]{'=', '&'});
+				string parametersString = Uri.Split('?')[1];
+				string[] splitParams = parametersString.Split(new char[]{'=', '&'});
 
 				for(int i = 0; i <= splitParams.Length - 2; i = i + 2)
 				{
-					_parameters.Add(splitParams[i], splitParams[i + 1]);
+					parameters.Add(splitParams[i], splitParams[i + 1]);
 				}
 
-				_uri = _uri.Substring(0, _uri.IndexOf('?'));
+				Uri = Uri.Substring(0, Uri.IndexOf('?'));
 			}
 		}
 
-		public string getUriPart(int index)
+		public string UriPart(int index)
 		{
-			if (_uriParts.Count > index)
+			if (UriParts.Count > index)
 			{
-				return _uriParts.ElementAt(index);
+				return UriParts.ElementAt(index);
 			}
 
 			return null;
 		}
 
-		public string getFirstPart()
+		public string FirstPart()
 		{
-			return getUriPart(0);
+			return UriPart(0);
 		}
 
-		public string getLastPart()
+		public string LastPart()
 		{
-			return getUriPart(_uriParts.Count - 1);
+			return UriPart(UriParts.Count - 1);
 		}
 
-		private List<string> _removeEmptyElements(string[] input)
+		private List<string> RemoveEmptyElements(string[] input)
 		{
 			var result = new List<string>();
 
@@ -79,7 +79,5 @@ namespace WaveBox.ApiHandler
 
 			return result;
 		}
-
-		
 	}
 }

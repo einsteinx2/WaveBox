@@ -10,99 +10,52 @@ namespace WaveBox.ApiHandler.Handlers
 {
 	class ArtistsApiHandler : IApiHandler
 	{
-		private HttpProcessor _sh;
-		private UriWrapper _uriW;
+		private HttpProcessor Processor { get; set; }
+		private UriWrapper Uri { get; set; }
 
-		public ArtistsApiHandler(UriWrapper uriW, HttpProcessor sh, int userId)
+		public ArtistsApiHandler(UriWrapper uri, HttpProcessor processor, int userId)
 		{
-			_sh = sh;
-			_uriW = uriW;
+			Processor = processor;
+			Uri = uri;
 		}
 
-		public void process()
+		public void Process()
 		{
 			List<Artist> listOfArtists = new List<Artist>();
 			List<Song> listOfSongs = new List<Song>();
 			List<Album> listOfAlbums = new List<Album>();
 			string json = "";
 
-			if (_uriW.getUriPart(2) == null)
+			if (Uri.UriPart(2) == null)
 			{
-				listOfArtists = new Artist().allArtists();
+				listOfArtists = new Artist().AllArtists();
 			}
 			else
 			{
-				var artist = new Artist(Convert.ToInt32(_uriW.getUriPart(2)));
+				var artist = new Artist(Convert.ToInt32(Uri.UriPart(2)));
 				listOfArtists.Add(artist);
-				listOfSongs = artist.listOfSongs();
-				listOfAlbums = artist.listOfAlbums();
+				listOfSongs = artist.ListOfSongs();
+				listOfAlbums = artist.ListOfAlbums();
 			}
 
 			json = JsonConvert.SerializeObject(new ArtistsResponse(null, listOfArtists, listOfAlbums, listOfSongs), Formatting.None);
-			PmsHttpServer.sendJson(_sh, json);
+			WaveBoxHttpServer.sendJson(Processor, json);
 		}
 	}
 
 	class ArtistsResponse
 	{
-		private string _error;
-		public string error
-		{
-			get
-			{
-				return _error;
-			}
-			set
-			{
-				_error = value;
-			}
-		}
+		public string Error { get; set; }
+		public List<Artist> Artists { get; set; }
+		public List<Album> Albums { get; set; }
+		public List<Song> Songs { get; set; }
 
-		private List<Artist> _artists;
-		public List<Artist> artists
+		public ArtistsResponse(string error, List<Artist> artists, List<Album> albums, List<Song> songs)
 		{
-			get
-			{
-				return _artists;
-			}
-			set
-			{
-				_artists = value;
-			}
-		}
-
-		private List<Album> _albums;
-		public List<Album> albums
-		{
-			get
-			{
-				return _albums;
-			}
-			set
-			{
-				_albums = value;
-			}
-		}
-
-		private List<Song> _songs;
-		public List<Song> songs
-		{
-			get
-			{
-				return _songs;
-			}
-			set
-			{
-				_songs = value;
-			}
-		}
-
-		public ArtistsResponse(string Error, List<Artist> Artists, List<Album> Albums, List<Song> Songs)
-		{
-			error = Error;
-			artists = Artists;
-			songs = Songs;
-			albums = Albums;
+			Error = error;
+			Artists = artists;
+			Songs = songs;
+			Albums = albums;
 		}
 	}
 }

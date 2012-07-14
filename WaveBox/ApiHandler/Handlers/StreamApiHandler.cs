@@ -10,25 +10,25 @@ namespace WaveBox.ApiHandler.Handlers
 {
 	class StreamApiHandler : IApiHandler
 	{
-		private HttpProcessor _sh;
-		private UriWrapper _uriW;
+		private HttpProcessor Processor { get; set; }
+		private UriWrapper Uri { get; set; }
 
-		public StreamApiHandler(UriWrapper uriW, HttpProcessor sh, int userId)
+		public StreamApiHandler(UriWrapper uri, HttpProcessor processor, int userId)
 		{
-			_sh = sh;
-			_uriW = uriW;
+			Processor = processor;
+			Uri = uri;
 		}
 
-		public void process()
+		public void Process()
 		{
-			if (_uriW.getUriPart(2) != null)
+			if (Uri.UriPart(2) != null)
 			{
 				try
 				{
 					// this will really be a mediaitem object, but it's just a song for now.
-					var song = new Song(Convert.ToInt32(_uriW.getUriPart(2)));
-					var fs = song.file();
-					PmsHttpServer.sendFile(_sh, fs, 0);
+					var song = new Song(Convert.ToInt32(Uri.UriPart(2)));
+					var fs = song.File();
+					WaveBoxHttpServer.sendFile(Processor, fs, 0);
 				}
 
 				catch (Exception e)

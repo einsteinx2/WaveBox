@@ -10,48 +10,24 @@ namespace WaveBox.DataModel.FolderScanning
 	class ScanQueue
 	{
 		public const int DEFAULT_DELAY = 10;
-		private string _currentScanningFolder;
-		public string CurrentScanningFolder
-		{
-			get
-			{
-				return _currentScanningFolder;
-			}
+		public string CurrentScanningFolder { get; set; }
+		public string CurrentScanningFile { get; set; }
 
-			set
-			{
-				_currentScanningFolder = value;
-			}
-		}
-
-		private string _currentScanningFile;
-		public string CurrentScanningFile
-		{
-			get
-			{
-				return _currentScanningFile;
-			}
-
-			set
-			{
-				_currentScanningFile = value;
-			}
-		}
-
-		private Thread _scanQueueThread;
+		private Thread scanQueueThread;
 		public Thread ScanQueueThread
 		{
 			get
 			{
-				return _scanQueueThread;
+				return scanQueueThread;
 			}
 		}
 
+		private ScanOperation currentOperation;
 		public ScanOperation CurrentOperation
 		{
 			get
 			{
-				return _currentOperation;
+				return currentOperation;
 			}
 		}
 
@@ -60,70 +36,69 @@ namespace WaveBox.DataModel.FolderScanning
 			sw = new Stopwatch();
 		}
 
-		private bool _scanQueueShouldLoop = true;
-		private Object _scanQueueSyncObject = new Object();
-		private Queue<ScanOperation> _scanQueue = new Queue<ScanOperation>();
-		private ScanOperation _currentOperation;
+		private bool scanQueueShouldLoop = true;
+		private Object scanQueueSyncObject = new Object();
+		private Queue<ScanOperation> scanQueue = new Queue<ScanOperation>();
 		Stopwatch sw;
 
 		public void startScanQueue()
 		{
-			_scanQueueThread = new Thread(delegate() 
+			scanQueueThread = new Thread(delegate() 
+			{
+				while (scanQueueShouldLoop)
 				{
-					while (_scanQueueShouldLoop)
+					lock (scanQueueSyncObject)
 					{
-						lock (_scanQueueSyncObject)
+						try
 						{
-							try
-							{
-								_currentOperation = _scanQueue.Dequeue();
-							}
-							catch
-							{
-								//Console.WriteLine("[SCANQUEUE] Queue is empty: ", e.Message);
-								_currentOperation = null;
-							}
+							currentOperation = scanQueue.Dequeue();
 						}
-
-						if (_currentOperation != null)
+						catch
 						{
-							sw.Start();
-							_currentOperation.Run();
-							sw.Stop();
-							Console.WriteLine("[SCANQUEUE] Scan took {0} seconds", sw.ElapsedMilliseconds / 1000);
-							sw.Reset();
+							//Console.WriteLine("[SCANQUEUE] Queue is empty: ", e.Message);
+							currentOperation = null;
 						}
-
-						// sleep for a second
-						Thread.Sleep(new TimeSpan(0, 0, 1));
 					}
 
-				});
-			_scanQueueThread.Start();
+					if (currentOperation != null)
+					{
+						sw.Start();
+						currentOperation.Run();
+						sw.Stop();
+						Console.WriteLine("[SCANQUEUE] Scan took {0} seconds", sw.ElapsedMilliseconds / 1000);
+						sw.Reset();
+					}
+
+					// sleep for a second
+					Thread.Sleep(new TimeSpan(0, 0, 1));
+				}
+
+			});
+			scanQueueThread.Start();
 		}
 
 		public void stopScanQueue()
 		{
-			_scanQueueShouldLoop = false;
-			_scanQueueThread.Abort();
-			_scanQueue.Clear();
+			scanQueueShouldLoop = false;
+			scanQueueThread.Abort();
+			scanQueue.Clear();
 		}
 
 		public void queueOperation(ScanOperation op)
 		{
-			lock (_scanQueueSyncObject)
+			lock (scanQueueSyncObject)
 			{
 				bool shouldBeAddedToQueue = true;
 
-				if (_currentOperation != null && (op.ScanType().Contains(_currentOperation.ScanType()) || _currentOperation.ScanType().Contains(op.ScanType())))
+				if (currentOperation != null && (op.ScanType().Contains(currentOperation.ScanType()) || currentOperation.ScanType().Contains(op.ScanType())))
 				{
-					_currentOperation.ExtendWaitOrRestart();
+					currentOperation.ExtendWaitOrRestart();
 					shouldBeAddedToQueue = false;
 				}
 
 				if (shouldBeAddedToQueue == true)
 				{
-					foreach (ScanOperation o in _scanQueue)
+					foreach (ScanOperation o in scanQueue)
 					{
 						string opscantype = op.ScanType();
 						string oscantype = o.ScanType();
@@ -142,7 +117,7 @@ namespace WaveBox.DataModel.FolderScanning
 
 				if (shouldBeAddedToQueue)
 				{
-					_scanQueue.Enqueue(op);
+					scanQueue.Enqueue(op);
 					Console.WriteLine("[SCANQUEUE] New {0}!", op.GetType());
 				}
 			}

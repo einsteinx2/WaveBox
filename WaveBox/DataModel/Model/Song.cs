@@ -144,38 +144,38 @@ namespace WaveBox.DataModel.Model
 			SQLiteConnection conn = null;
 			SQLiteDataReader reader = null;
 
-			try
+			lock (Database.dbLock)
 			{
-				var q = new SQLiteCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " +
-										 "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
-										 "LEFT JOIN album ON song_album_id = album.album_id " +
-										 "WHERE song_id = @songid");
-				q.Parameters.AddWithValue("@itemtypeid", ItemTypeId);
-				q.Parameters.AddWithValue("@songid", songId);
-
-				Database.dbLock.WaitOne();
-				conn = Database.getDbConnection();
-				q.Connection = conn;
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
+				try
 				{
-					_setPropertiesFromQueryResult(reader);
+					var q = new SQLiteCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " +
+						"LEFT JOIN artist ON song_artist_id = artist.artist_id " +
+						"LEFT JOIN album ON song_album_id = album.album_id " +
+						"WHERE song_id = @songid"
+					);
+					q.Parameters.AddWithValue("@itemtypeid", ItemTypeId);
+					q.Parameters.AddWithValue("@songid", songId);
+
+					conn = Database.GetDbConnection();
+					q.Connection = conn;
+					q.Prepare();
+					reader = q.ExecuteReader();
+
+					if (reader.Read())
+					{
+						SetPropertiesFromQueryResult(reader);
+					}
+
+					reader.Close();
 				}
-
-				reader.Close();
-			}
-
-			catch (Exception e)
-			{
-				Console.WriteLine("[SONG] " + e.ToString());
-			}
-
-			finally
-			{
-				Database.dbLock.ReleaseMutex();
-				Database.close(conn, reader);
+				catch (Exception e)
+				{
+					Console.WriteLine("[SONG] " + e.ToString());
+				}
+				finally
+				{
+					Database.Close(conn, reader);
+				}
 			}
 		}
 
@@ -184,12 +184,12 @@ namespace WaveBox.DataModel.Model
             var file = TagLib.File.Create(fsFile.FullName);
 
 			var tag = file.Tag;
-            var lol = file.Properties.Codecs;
-			_folderId = folderId;
+            //var lol = file.Properties.Codecs;
+			FolderId = folderId;
 
 			try
 			{
-				var artist = Artist.artistForName(tag.FirstPerformer);
+				var artist = Artist.ArtistForName(tag.FirstPerformer);
                 _artistId = artist.ArtistId;
                 _artistName = artist.ArtistName;
 			}
@@ -201,7 +201,7 @@ namespace WaveBox.DataModel.Model
 
             try
             {
-                var album = Album.albumForName(tag.Album, ArtistId);
+                var album = Album.AlbumForName(tag.Album, ArtistId);
                 _albumId = album.AlbumId;
                 _albumName = album.AlbumName;
             }
@@ -211,7 +211,7 @@ namespace WaveBox.DataModel.Model
                 _albumName = null;
             }
 
-			_fileType = FileType.fileTypeForTagSharpString(file.Properties.Description);
+			FileType = FileType.FileTypeForTagSharpString(file.Properties.Description);
 
 			if (FileType == FileType.UNKNOWN)
 				Console.WriteLine("[SONG] " + "Unknown file type: " + file.Properties.Description);
@@ -252,20 +252,20 @@ namespace WaveBox.DataModel.Model
 				_releaseYear = 0;
 			}
 
-            _duration = Convert.ToInt32(file.Properties.Duration.TotalSeconds);
-            _bitrate = file.Properties.AudioBitrate;
-            _fileSize = fsFile.Length;
-            _lastModified = Convert.ToInt64(fsFile.LastWriteTime.Ticks);
-            _fileName = fsFile.Name;
+            Duration = Convert.ToInt32(file.Properties.Duration.TotalSeconds);
+            Bitrate = file.Properties.AudioBitrate;
+            FileSize = fsFile.Length;
+            LastModified = Convert.ToInt64(fsFile.LastWriteTime.Ticks);
+            FileName = fsFile.Name;
 
 			// check to see if the folder has art associated with it.  if it does, use that art.  if not,
 			// check to see if the tag contains art.
-			_artId = new Folder(folderId).ArtId;
+			ArtId = new Folder(folderId).ArtId;
 
-			if (_artId == 0)
+			if (ArtId == 0)
 			{
 				var art = new CoverArt(fsFile);
-				_artId = art.ArtId;
+				ArtId = art.ArtId;
 			}
 
 
@@ -273,41 +273,47 @@ namespace WaveBox.DataModel.Model
 
 		public Song(SQLiteDataReader reader)
 		{
-			_setPropertiesFromQueryResult(reader);
+			SetPropertiesFromQueryResult(reader);
 		}
 
-		private void _setPropertiesFromQueryResult(SQLiteDataReader reader)
+		private void SetPropertiesFromQueryResult(SQLiteDataReader reader)
 		{
 			try
 			{
-				_itemId = reader.GetInt32(reader.GetOrdinal("song_id"));
-				_folderId = reader.GetInt32(reader.GetOrdinal("song_folder_id"));
-				_artistId = reader.GetInt32(reader.GetOrdinal("song_artist_id"));
+				ItemId = reader.GetInt32(reader.GetOrdinal("song_id"));
+				FolderId = reader.GetInt32(reader.GetOrdinal("song_folder_id"));
+				ArtistId = reader.GetInt32(reader.GetOrdinal("song_artist_id"));
 
-				if (reader.GetValue(reader.GetOrdinal("artist_name")) == DBNull.Value) _artistName = "";
-				else _artistName = reader.GetString(reader.GetOrdinal("artist_name"));
+				if 
+					(reader.GetValue(reader.GetOrdinal("artist_name")) == DBNull.Value) ArtistName = "";
+				else 
+					ArtistName = reader.GetString(reader.GetOrdinal("artist_name"));
 
 				_albumId = reader.GetInt32(reader.GetOrdinal("song_album_id"));
 
-				if (reader.GetValue(reader.GetOrdinal("album_name")) == DBNull.Value) _albumName = "";
-				else _albumName = reader.GetString(reader.GetOrdinal("album_name"));
+				if 
+					(reader.GetValue(reader.GetOrdinal("album_name")) == DBNull.Value) _albumName = "";
+				else 
+					AlbumName = reader.GetString(reader.GetOrdinal("album_name"));
 
-				_fileType = FileType.fileTypeForId(reader.GetInt32(reader.GetOrdinal("song_file_type_id")));
+				FileType = FileType.FileTypeForId(reader.GetInt32(reader.GetOrdinal("song_file_type_id")));
 
 				if (reader.GetValue(reader.GetOrdinal("song_name")) == DBNull.Value) _songName = "";
 				else _songName = reader.GetString(reader.GetOrdinal("song_name"));
 
-				_trackNumber = reader.GetInt32(reader.GetOrdinal("song_track_num"));
-				_discNumber = reader.GetInt32(reader.GetOrdinal("song_disc_num"));
-				_duration = reader.GetInt32(reader.GetOrdinal("song_duration"));
-				_bitrate = reader.GetInt32(reader.GetOrdinal("song_bitrate"));
-				_fileSize = reader.GetInt64(reader.GetOrdinal("song_file_size"));
-				_lastModified = reader.GetInt64(reader.GetOrdinal("song_last_modified"));
-				_fileName = reader.GetString(reader.GetOrdinal("song_file_name"));
-				_releaseYear = reader.GetInt32(reader.GetOrdinal("song_release_year"));
+				TrackNumber = reader.GetInt32(reader.GetOrdinal("song_track_num"));
+				DiscNumber = reader.GetInt32(reader.GetOrdinal("song_disc_num"));
+				Duration = reader.GetInt32(reader.GetOrdinal("song_duration"));
+				Bitrate = reader.GetInt32(reader.GetOrdinal("song_bitrate"));
+				FileSize = reader.GetInt64(reader.GetOrdinal("song_file_size"));
+				LastModified = reader.GetInt64(reader.GetOrdinal("song_last_modified"));
+				FileName = reader.GetString(reader.GetOrdinal("song_file_name"));
+				ReleaseYear = reader.GetInt32(reader.GetOrdinal("song_release_year"));
 
-				if (reader.GetValue(reader.GetOrdinal("song_art_id")) == DBNull.Value) _artId = 0;
-				else _artId = reader.GetInt32(reader.GetOrdinal("song_art_id"));
+				if 
+					(reader.GetValue(reader.GetOrdinal("song_art_id")) == DBNull.Value) ArtId = 0;
+				else 
+					ArtId = reader.GetInt32(reader.GetOrdinal("song_art_id"));
 				//_artId = 0;
 			}
 			catch (Exception e)
@@ -321,49 +327,50 @@ namespace WaveBox.DataModel.Model
 			SQLiteConnection conn = null;
 			SQLiteDataReader reader = null;
 
-			try
+			lock (Database.dbLock)
 			{
-				// insert the song into the database
-				var q = new SQLiteCommand("INSERT INTO song (song_folder_id, song_artist_id, song_album_id, song_file_type_id, song_name, song_track_num, song_disc_num, song_duration, song_bitrate, song_file_size, song_last_modified, song_file_name, song_release_year, song_art_id)" + 
-										 "VALUES (@folderid, @artistid, @albumid, @filetype, @songname, @tracknum, @discnum, @duration, @bitrate, @filesize, @lastmod, @filename, @releaseyear, @artid)");
+				try
+				{
+					// insert the song into the database
+					var q = new SQLiteCommand("INSERT INTO song (song_folder_id, song_artist_id, song_album_id, song_file_type_id, song_name, song_track_num, song_disc_num, song_duration, song_bitrate, song_file_size, song_last_modified, song_file_name, song_release_year, song_art_id)" + 
+						"VALUES (@folderid, @artistid, @albumid, @filetype, @songname, @tracknum, @discnum, @duration, @bitrate, @filesize, @lastmod, @filename, @releaseyear, @artid)"
+					);
 
-				q.Parameters.AddWithValue("@folderid", FolderId);
-				q.Parameters.AddWithValue("@artistid", ArtistId);
-				q.Parameters.AddWithValue("@albumid", AlbumId);
-				q.Parameters.AddWithValue("@filetype", (int)FileType);
+					q.Parameters.AddWithValue("@folderid", FolderId);
+					q.Parameters.AddWithValue("@artistid", ArtistId);
+					q.Parameters.AddWithValue("@albumid", AlbumId);
+					q.Parameters.AddWithValue("@filetype", (int)FileType);
 
-				if (SongName == null)
-					q.Parameters.AddWithValue("@songname", DBNull.Value);
-				else q.Parameters.AddWithValue("@songname", SongName);
+					if (SongName == null)
+						q.Parameters.AddWithValue("@songname", DBNull.Value);
+					else
+						q.Parameters.AddWithValue("@songname", SongName);
 
-				q.Parameters.AddWithValue("@tracknum", TrackNumber);
-				q.Parameters.AddWithValue("@discnum", DiscNumber);
-				q.Parameters.AddWithValue("@duration", Duration);
-				q.Parameters.AddWithValue("@bitrate", Bitrate);
-				q.Parameters.AddWithValue("@filesize", FileSize);
-				q.Parameters.AddWithValue("@lastmod", LastModified);
-				q.Parameters.AddWithValue("@filename", FileName);
-				q.Parameters.AddWithValue("@releaseyear", ReleaseYear);
-				q.Parameters.AddWithValue("@artid", ArtId);
+					q.Parameters.AddWithValue("@tracknum", TrackNumber);
+					q.Parameters.AddWithValue("@discnum", DiscNumber);
+					q.Parameters.AddWithValue("@duration", Duration);
+					q.Parameters.AddWithValue("@bitrate", Bitrate);
+					q.Parameters.AddWithValue("@filesize", FileSize);
+					q.Parameters.AddWithValue("@lastmod", LastModified);
+					q.Parameters.AddWithValue("@filename", FileName);
+					q.Parameters.AddWithValue("@releaseyear", ReleaseYear);
+					q.Parameters.AddWithValue("@artid", ArtId);
 
-				Database.dbLock.WaitOne();
-				conn = Database.getDbConnection();
+					conn = Database.GetDbConnection();
 
-				q.Connection = conn;
-				q.Prepare();
-				q.ExecuteNonQuery();
-				return;
-			}
-
-			catch (Exception e)
-			{
-				Console.WriteLine("[SONG] " + e.ToString());
-			}
-
-			finally
-			{
-				Database.dbLock.ReleaseMutex();
-				Database.close(conn, reader);
+					q.Connection = conn;
+					q.Prepare();
+					q.ExecuteNonQuery();
+					return;
+				}
+				catch (Exception e)
+				{
+					Console.WriteLine("[SONG] " + e.ToString());
+				}
+				finally
+				{
+					Database.Close(conn, reader);
+				}
 			}
 		}
 
@@ -373,40 +380,40 @@ namespace WaveBox.DataModel.Model
 			SQLiteConnection conn = null;
 			SQLiteDataReader reader = null;
 
-			try
+			lock (Database.dbLock)
 			{
-				var q = new SQLiteCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " +
-										 "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
-										 "LEFT JOIN album ON song_album_id = album.album_id ");
-
-				Database.dbLock.WaitOne();
-				conn = Database.getDbConnection();
-				q.Connection = conn;
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-			//	var sw = new Stopwatch();
-				while (reader.Read())
+				try
 				{
-			//		sw.Start();
-					allsongs.Add(new Song(reader));
-			//		Console.WriteLine("Elapsed: {0}ms", sw.ElapsedMilliseconds);
-			//		sw.Restart();
+					var q = new SQLiteCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " +
+						"LEFT JOIN artist ON song_artist_id = artist.artist_id " +
+						"LEFT JOIN album ON song_album_id = album.album_id "
+					);
+
+					conn = Database.GetDbConnection();
+					q.Connection = conn;
+					q.Prepare();
+					reader = q.ExecuteReader();
+
+					//	var sw = new Stopwatch();
+					while (reader.Read())
+					{
+						//		sw.Start();
+						allsongs.Add(new Song(reader));
+						//		Console.WriteLine("Elapsed: {0}ms", sw.ElapsedMilliseconds);
+						//		sw.Restart();
+					}
+					//	sw.Stop();
+
+					reader.Close();
 				}
-			//	sw.Stop();
-
-				reader.Close();
-			}
-
-			catch (Exception e)
-			{
-				Console.WriteLine("[SONG] " + e.ToString());
-			}
-
-			finally
-			{
-				Database.dbLock.ReleaseMutex();
-				Database.close(conn, reader);
+				catch (Exception e)
+				{
+					Console.WriteLine("[SONG] " + e.ToString());
+				}
+				finally
+				{
+					Database.Close(conn, reader);
+				}
 			}
 
 			return allsongs;

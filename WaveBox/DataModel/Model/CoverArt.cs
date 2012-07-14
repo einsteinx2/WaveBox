@@ -22,37 +22,13 @@ namespace WaveBox.DataModel.Model
 		/// Properties
 		/// </summary>
 
-		private int _artId;
 		[JsonProperty("artId")]
-		public int ArtId
-		{
-			get
-			{
-				return _artId;
-			}
+		public int ArtId { get; set; }
 
-			set
-			{
-				_artId = value;
-			}
-		}
-
-		private long _adlerHash;
 		[JsonProperty("adlerHash")]
-		public long AdlerHash
-		{
-			get
-			{
-				return _adlerHash;
-			}
+		public long AdlerHash { get; set; }
 
-			set
-			{
-				_adlerHash = value;
-			}
-		}
-
-		public string artFile()
+		public string ArtFile()
 		{
 			string artf = ART_PATH + Path.DirectorySeparatorChar + AdlerHash;
 			return artf;
@@ -71,36 +47,35 @@ namespace WaveBox.DataModel.Model
 			SQLiteConnection conn = null;
 			SQLiteDataReader reader = null;
 
-			try
+			lock (Database.dbLock)
 			{
-				var q = new SQLiteCommand("SELECT * FROM art WHERE art_id = @artid");
-
-				q.Parameters.AddWithValue("@artid", artId);
-
-				Database.dbLock.WaitOne();
-				conn = Database.getDbConnection();
-				q.Connection = conn;
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
+				try
 				{
-					_artId = reader.GetInt32(0);
-					_adlerHash = reader.GetInt64(1);
+					var q = new SQLiteCommand("SELECT * FROM art WHERE art_id = @artid");
+
+					q.Parameters.AddWithValue("@artid", artId);
+
+					conn = Database.GetDbConnection();
+					q.Connection = conn;
+					q.Prepare();
+					reader = q.ExecuteReader();
+
+					if (reader.Read())
+					{
+						ArtId = reader.GetInt32(0);
+						AdlerHash = reader.GetInt64(1);
+					}
+
+					reader.Close();
 				}
-
-				reader.Close();
-				Database.dbLock.ReleaseMutex();
-			}
-
-			catch (Exception e)
-			{
-				Console.WriteLine(e.ToString());
-			}
-
-			finally
-			{
-				Database.close(conn, reader);
+				catch (Exception e)
+				{
+					Console.WriteLine(e.ToString());
+				}
+				finally
+				{
+					Database.Close(conn, reader);
+				}
 			}
 		}
 
@@ -115,9 +90,9 @@ namespace WaveBox.DataModel.Model
 
 			// compute the hash of the data
 			var md5 = new MD5CryptoServiceProvider();
-			_adlerHash = BitConverter.ToInt64(md5.ComputeHash(data), 0);
+			this.AdlerHash = BitConverter.ToInt64(md5.ComputeHash(data), 0);
 
-			_checkDatabaseAndPerformCopy(data);
+			CheckDatabaseAndPerformCopy(data);
 		}
 
 		// used for getting art from a tag.
@@ -128,24 +103,25 @@ namespace WaveBox.DataModel.Model
 			{
 				var data = file.Tag.Pictures[0].Data.Data;
 				var md5 = new MD5CryptoServiceProvider();
-				_adlerHash = BitConverter.ToInt64(md5.ComputeHash(data), 0);
+				this.AdlerHash = BitConverter.ToInt64(md5.ComputeHash(data), 0);
 
-				_checkDatabaseAndPerformCopy(data);
+				CheckDatabaseAndPerformCopy(data);
 			}
 		}
 
-		private void _checkDatabaseAndPerformCopy(byte[] data)
+		private void CheckDatabaseAndPerformCopy(byte[] data)
 		{
-				SQLiteConnection conn = null;
-				SQLiteDataReader reader = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
 
+			lock (Database.dbLock)
+			{
 				try
 				{
 					var q = new SQLiteCommand("SELECT * FROM art WHERE adler_hash = @adlerhash");
 					q.Parameters.AddWithValue("@adlerhash", AdlerHash);
 
-					Database.dbLock.WaitOne();
-					conn = Database.getDbConnection();
+					conn = Database.GetDbConnection();
 					q.Connection = conn;
 					q.Prepare();
 					reader = q.ExecuteReader();
@@ -153,16 +129,7 @@ namespace WaveBox.DataModel.Model
 					if (reader.Read())
 					{
 						// the art is already in the database
-						_artId = reader.GetInt32(reader.GetOrdinal("art_id"));
-						try
-						{
-							Database.dbLock.ReleaseMutex();
-						}
-
-						catch (Exception e)
-						{
-							Console.WriteLine(e.ToString());
-						}
+						this.ArtId = reader.GetInt32(reader.GetOrdinal("art_id"));
 					}
 
 					// the art is not already in the database
@@ -170,26 +137,15 @@ namespace WaveBox.DataModel.Model
 					{
 						try
 						{
-							Database.dbLock.ReleaseMutex();
+							System.IO.File.WriteAllBytes(ART_PATH + this.AdlerHash, data);
 						}
-
 						catch (Exception e)
 						{
 							Console.WriteLine(e.ToString());
 						}
-						try
-						{
-							System.IO.File.WriteAllBytes(ART_PATH + _adlerHash, data);
-						}
-
-						catch (Exception e)
-						{
-							Console.WriteLine(e.ToString());
-						}
-
 						finally
 						{
-							Database.close(conn, reader);
+							Database.Close(conn, reader);
 						}
 
 						try
@@ -198,8 +154,7 @@ namespace WaveBox.DataModel.Model
 
 							q1.Parameters.AddWithValue("@adlerhash", AdlerHash);
 
-							Database.dbLock.WaitOne();
-							var conn1 = Database.getDbConnection();
+							var conn1 = Database.GetDbConnection();
 							q1.Connection = conn1;
 							q1.Prepare();
 							int result = q1.ExecuteNonQuery();
@@ -211,46 +166,34 @@ namespace WaveBox.DataModel.Model
 
 							try
 							{
-								q1.CommandText = "SELECT @@IDENTITY";
-								_artId = Convert.ToInt32((q1.ExecuteScalar()).ToString());
+								q1.CommandText = "SELECT last_insert_rowid()";
+								this.ArtId = Convert.ToInt32((q1.ExecuteScalar()).ToString());
 							}
-
 							catch (Exception e)
 							{
 								Console.WriteLine("\r\n\r\nGetting identity: " + e.ToString() + "\r\n\r\n");
 							}
-
 							finally
 							{
-								try
-								{
-									Database.dbLock.ReleaseMutex();
-								}
 
-								catch (Exception e)
-								{
-									Console.WriteLine(e.ToString());
-								}
 							}
 						}
-
 						catch (SQLiteException e)
 						{
 							Console.WriteLine("\r\n\r\n" + e.Message + "\r\n\r\n");
 						}
 					}
 				}
-
 				catch (Exception e)
 				{
 					Console.WriteLine(e.ToString());
 				}
-
 				finally
 				{
 
-					Database.close(conn, reader);
+					Database.Close(conn, reader);
 				}
+			}
 		}
 	}
 }

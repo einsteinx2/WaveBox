@@ -21,133 +21,137 @@ namespace WaveBox.DataModel.FolderScanning
 		{
 			var sw = new Stopwatch();
 			sw.Start();
-			checkFolders();
+			CheckFolders();
 			sw.Stop();
 			Console.WriteLine("[ORPHANSCAN] check folders: {0}ms", sw.ElapsedMilliseconds);
 			sw.Restart();
-			checkSongs();
+			CheckSongs();
 			sw.Stop();
 			Console.WriteLine("[ORPHANSCAN] check songs: {0}ms", sw.ElapsedMilliseconds);
 		}
 
-		public void checkFolders()
+		public void CheckFolders ()
 		{
-			if (ShouldRestart)
-			{
+			if (ShouldRestart) {
 				return;
 			}
 
 			SQLiteConnection conn = null;
 			SQLiteDataReader reader = null;
-			var mediaFolderIds = new ArrayList();
-			var orphanFolderIds = new ArrayList();
+			var mediaFolderIds = new ArrayList ();
+			var orphanFolderIds = new ArrayList ();
 
-			foreach (Folder mediaFolder in Settings.MediaFolders)
-			{
-				mediaFolderIds.Add(mediaFolder.FolderId);
+			foreach (Folder mediaFolder in Settings.MediaFolders) {
+				mediaFolderIds.Add (mediaFolder.FolderId);
 			}
 
-			try
+			lock (Database.dbLock) 
 			{
-				conn = Database.getDbConnection();
-
-				var q = new SQLiteCommand("SELECT * FROM folder");
-
-				Database.dbLock.WaitOne();
-				q.Connection = conn;
-
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				while (reader.Read())
+				try 
 				{
-					// storage for stuff we'll get.
-					string path;
-					int folderId, mediaFolderId;
+					conn = Database.GetDbConnection ();
 
-					// get ordinals
-					int pathOrdinal = reader.GetOrdinal("folder_path");
-					int folderIdOrdinal = reader.GetOrdinal("folder_id");
-					int mediaFolderIdOrdinal = reader.GetOrdinal("folder_media_folder_id");
+					var q = new SQLiteCommand ("SELECT * FROM folder");
 
-					if (reader.GetValue(pathOrdinal) != DBNull.Value)
+					q.Connection = conn;
+
+					q.Prepare ();
+					reader = q.ExecuteReader ();
+
+					while (reader.Read()) 
 					{
-						path = reader.GetString(reader.GetOrdinal("folder_path"));
-					}
-					else path = "";
+						// storage for stuff we'll get.
+						string path;
+						int folderId, mediaFolderId;
 
-					if (reader.GetValue(folderIdOrdinal) != DBNull.Value)
-					{
-						folderId = reader.GetInt32(reader.GetOrdinal("folder_id"));
-					}
-					else folderId = 0;
+						// get ordinals
+						int pathOrdinal = reader.GetOrdinal ("folder_path");
+						int folderIdOrdinal = reader.GetOrdinal ("folder_id");
+						int mediaFolderIdOrdinal = reader.GetOrdinal ("folder_media_folder_id");
 
-					if ((int)reader.GetValue(mediaFolderIdOrdinal) != 0)
-					{
-						mediaFolderId = reader.GetInt32(reader.GetOrdinal("folder_media_folder_id"));
-					}
-					else mediaFolderId = 0;
-
-					if (mediaFolderId != 0)
-					{
-						if(!mediaFolderIds.Contains(mediaFolderId) || !Directory.Exists(path))
+						if (reader.GetValue (pathOrdinal) != DBNull.Value) 
 						{
-							Console.WriteLine("[ORPHANSCAN] " + "{0} is orphaned", folderId);
-							orphanFolderIds.Add(folderId);
+							path = reader.GetString (reader.GetOrdinal ("folder_path"));
+						} 
+						else
+						{
+							path = "";
+						}
+
+						if (reader.GetValue (folderIdOrdinal) != DBNull.Value)
+						{
+							folderId = reader.GetInt32 (reader.GetOrdinal ("folder_id"));
+						} 
+						else 
+						{
+							folderId = 0;
+						}
+
+						if ((long)reader.GetValue (mediaFolderIdOrdinal) != 0) 
+						{
+							mediaFolderId = reader.GetInt32 (reader.GetOrdinal ("folder_media_folder_id"));
+						} 
+						else
+						{
+							mediaFolderId = 0;
+						}
+
+						if (mediaFolderId != 0)
+						{
+							if (!mediaFolderIds.Contains (mediaFolderId) || !Directory.Exists (path)) 
+							{
+								Console.WriteLine ("[ORPHANSCAN] " + "{0} is orphaned", folderId);
+								orphanFolderIds.Add (folderId);
+							}
 						}
 					}
+
+					reader.Close ();
+
+					foreach (int fid in orphanFolderIds) 
+					{
+						try 
+						{
+							var q1 = new SQLiteCommand ("DELETE FROM folder WHERE folder_id = @folderid", conn);
+							q1.Parameters.AddWithValue ("@folderid", fid);
+
+							q1.Prepare ();
+							q1.ExecuteNonQuery ();
+						} 
+						catch (Exception e) 
+						{
+							Console.WriteLine ("[ORPHANSCAN] " + e.ToString ());
+						}
+
+						try
+						{
+							Console.WriteLine ("[ORPHANSCAN] " + "Songs for {0} deleted", fid);
+
+							var q2 = new SQLiteCommand ("DELETE FROM song WHERE song_folder_id = @folderid", conn);
+							q2.Parameters.AddWithValue ("@folderid", fid);
+
+							q2.Prepare ();
+							q2.ExecuteNonQuery ();
+						} 
+						catch (Exception e) 
+						{
+							Console.WriteLine ("[ORPHANSCAN] " + e.ToString ());
+						}
+
+					}
 				}
-
-				reader.Close();
-
-				foreach (int fid in orphanFolderIds)
+				catch (Exception e) 
 				{
-					try
-					{
-						var q1 = new SQLiteCommand("DELETE FROM folder WHERE folder_id = @folderid", conn);
-						q1.Parameters.AddWithValue("@folderid", fid);
-
-						q1.Prepare();
-						q1.ExecuteNonQuery();
-					}
-
-					catch (Exception e)
-					{
-						Console.WriteLine("[ORPHANSCAN] " + e.ToString());
-					}
-
-					try
-					{
-						Console.WriteLine("[ORPHANSCAN] " + "Songs for {0} deleted", fid);
-
-						var q2 = new SQLiteCommand("DELETE FROM song WHERE song_folder_id = @folderid", conn);
-						q2.Parameters.AddWithValue("@folderid", fid);
-
-						q2.Prepare();
-						q2.ExecuteNonQuery();
-					}
-
-					catch (Exception e)
-					{
-						Console.WriteLine("[ORPHANSCAN] " + e.ToString());
-					}
-
+					Console.WriteLine ("[ORPHANSCAN] " + e.ToString ());
 				}
-			}
-
-			catch (Exception e)
-			{
-				Console.WriteLine("[ORPHANSCAN] " + e.ToString());
-			}
-
-			finally
-			{
-				Database.dbLock.ReleaseMutex();
-				Database.close(conn, reader);
+				finally
+				{
+					Database.Close (conn, reader);
+				}
 			}
 		}
 
-		public void checkSongs()
+		public void CheckSongs()
 		{
 			if (ShouldRestart)
 			{
@@ -160,61 +164,60 @@ namespace WaveBox.DataModel.FolderScanning
 			int songid;
 			string path, filename;
 
-			try
+			lock (Database.dbLock)
 			{
-				var q = new SQLiteCommand("SELECT song.song_id, song.song_file_name, folder.folder_path " +
-										 "FROM song " + 
-										 "LEFT JOIN folder ON song.song_folder_id = folder.folder_id");
-
-				Database.dbLock.WaitOne();
-				conn = Database.getDbConnection();
-				q.Connection = conn;
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				while (reader.Read())
+				try
 				{
-					songid = reader.GetInt32(reader.GetOrdinal("song_id"));
-					filename = reader.GetString(reader.GetOrdinal("song_file_name"));
-					path = reader.GetString(reader.GetOrdinal("folder_path")) + Path.DirectorySeparatorChar + filename;
+					var q = new SQLiteCommand("SELECT song.song_id, song.song_file_name, folder.folder_path " +
+						"FROM song " + 
+						"LEFT JOIN folder ON song.song_folder_id = folder.folder_id"
+					);
 
+					conn = Database.GetDbConnection();
+					q.Connection = conn;
+					q.Prepare();
+					reader = q.ExecuteReader();
 
-					if (!File.Exists(path))
+					while (reader.Read())
 					{
-						orphanSongIds.Add(songid);
+						songid = reader.GetInt32(reader.GetOrdinal("song_id"));
+						filename = reader.GetString(reader.GetOrdinal("song_file_name"));
+						path = reader.GetString(reader.GetOrdinal("folder_path")) + Path.DirectorySeparatorChar + filename;
+
+
+						if (!File.Exists(path))
+						{
+							orphanSongIds.Add(songid);
+						}
+					}
+
+					reader.Close();
+
+					foreach (int id in orphanSongIds)
+					{
+						try
+						{
+							var q1 = new SQLiteCommand("DELETE FROM song WHERE song_id = @songid", conn);
+							q1.Parameters.AddWithValue("@songid", id);
+							q1.Prepare();
+							q1.ExecuteNonQuery();
+							Console.WriteLine("[ORPHANSCAN] " + "Song " + id + " deleted");
+							reader.Close();
+						}
+						catch (Exception e)
+						{
+							Console.WriteLine("[ORPHANSCAN] " + e.ToString());
+						}
 					}
 				}
-
-				reader.Close();
-
-				foreach (int id in orphanSongIds)
+				catch (Exception e)
 				{
-					try
-					{
-						var q1 = new SQLiteCommand("DELETE FROM song WHERE song_id = @songid", conn);
-						q1.Parameters.AddWithValue("@songid", id);
-						q1.Prepare();
-						q1.ExecuteNonQuery();
-						Console.WriteLine("[ORPHANSCAN] " + "Song " + id + " deleted");
-						reader.Close();
-					}
-
-					catch (Exception e)
-					{
-						Console.WriteLine("[ORPHANSCAN] " + e.ToString());
-					}
+					Console.WriteLine("[ORPHANSCAN] " + e.ToString());
 				}
-			}
-
-			catch (Exception e)
-			{
-				Console.WriteLine("[ORPHANSCAN] " + e.ToString());
-			}
-
-			finally
-			{
-				Database.dbLock.ReleaseMutex();
-				Database.close(conn, reader);
+				finally
+				{
+					Database.Close(conn, reader);
+				}
 			}
 		}
 

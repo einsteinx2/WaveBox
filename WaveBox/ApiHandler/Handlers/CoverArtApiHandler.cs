@@ -11,40 +11,40 @@ namespace WaveBox.ApiHandler.Handlers
 {
 	class CoverArtApiHandler : IApiHandler
 	{
-		private HttpProcessor _sh;
-		private UriWrapper _uriW;
+		private HttpProcessor Processor { get; set; }
+		private UriWrapper Uri { get; set; }
 
-		public CoverArtApiHandler(UriWrapper uriW, HttpProcessor sh, int userId)
+		public CoverArtApiHandler(UriWrapper uri, HttpProcessor processor, int userId)
 		{
-			_sh = sh;
-			_uriW = uriW;
+			Processor = processor;
+			Uri = uri;
 		}
 
-		public void process()
+		public void Process()
 		{
-			var artid = int.Parse(_uriW.getUriPart(2));
+			var artid = int.Parse(Uri.UriPart(2));
 			var art = new CoverArt(artid);
-			Image img = new Bitmap(art.artFile());
+			Image img = new Bitmap(art.ArtFile());
 
-			if (_uriW.Parameters.ContainsKey("size"))
+			if (Uri.Parameters.ContainsKey("size"))
 			{
 				string size = null; 
-				_uriW.Parameters.TryGetValue("size", out size);
+				Uri.Parameters.TryGetValue("size", out size);
 
 				if (size != null)
 				{
-					img = resizeImage(img, new Size(int.Parse(size), int.Parse(size)));
+					img = ResizeImage(img, new Size(int.Parse(size), int.Parse(size)));
 				}
 			}
 
-			img.Save(_sh.socket.GetStream(), System.Drawing.Imaging.ImageFormat.Jpeg);
+			img.Save(Processor.Socket.GetStream(), System.Drawing.Imaging.ImageFormat.Jpeg);
 
 			Console.WriteLine("CoverArt: Not implemented yet.");
-			_sh.outputStream.Write("CoverArt: Not implemented yet.");
+			Processor.OutputStream.Write("CoverArt: Not implemented yet.");
 		}
 
 // Thanks to http://www.switchonthecode.com/tutorials/csharp-tutorial-image-editing-saving-cropping-and-resizing
-		private static Image resizeImage(Image imgToResize, Size size)
+		private static Image ResizeImage(Image imgToResize, Size size)
 		{
 			int sourceWidth = imgToResize.Width;
 			int sourceHeight = imgToResize.Height;

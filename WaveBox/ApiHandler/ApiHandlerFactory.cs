@@ -10,7 +10,7 @@ namespace WaveBox.ApiHandler
 {
 	class ApiHandlerFactory
 	{
-		public static IApiHandler createRestHandler(string uri, HttpProcessor sh)
+		public static IApiHandler CreateApiHandler(string uri, HttpProcessor sh)
 		{
 			UriWrapper uriW = new UriWrapper(uri);
 			
@@ -26,7 +26,7 @@ namespace WaveBox.ApiHandler
 			uriW.Parameters.TryGetValue("p", out password);
 
 			var user = new User(username);
-			if (user.UserId == 0 || !user.authenticate(password))
+			if (user.UserId == 0 || !user.Authenticate(password))
 			{
 				return new ErrorApiHandler(uriW, sh, "Bad username or password");
 			}
@@ -35,9 +35,9 @@ namespace WaveBox.ApiHandler
 
 			IApiHandler returnHandler = null;
 
-			if (uriW.getFirstPart() == "api")
+			if (uriW.FirstPart() == "api")
 			{
-				string part1 = uriW.getUriPart(1);
+				string part1 = uriW.UriPart(1);
 
 				if (part1 == "test")
 				{

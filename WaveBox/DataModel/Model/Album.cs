@@ -15,85 +15,24 @@ namespace WaveBox.DataModel.Model
 		{
 			get
 			{
-				return ItemType.ALBUM.getItemTypeId();
+				return ItemType.ALBUM.GetItemTypeId();
 			}
 		}
 
-		private int _artistId;
 		[JsonProperty("artistId")]
-		public int ArtistId
-		{
-			get
-			{
-				return _artistId;
-			}
+		public int ArtistId { get; set; }
 
-			set
-			{
-				_artistId = value;
-			}
-		}
-
-		private int _albumId;
 		[JsonProperty("albumId")]
-		public int AlbumId
-		{
-			get
-			{
-				return _albumId;
-			}
+		public int AlbumId { get; set; }
 
-			set
-			{
-				_albumId = value;
-			}
-		}
-
-		private string _albumName;
 		[JsonProperty("albumName")]
-		public string AlbumName
-		{
-			get
-			{
-				return _albumName;
-			}
+		public string AlbumName { get; set; }
 
-			set
-			{
-				_albumName = value;
-			}
-		}
-
-		private int _releaseYear;
 		[JsonProperty("releaseYear")]
-		public int ReleaseYear
-		{
-			get
-			{
-				return _releaseYear;
-			}
+		public int ReleaseYear { get; set; }
 
-			set
-			{
-				_releaseYear = value;
-			}
-		}
-
-		private int _artId;
 		[JsonProperty("artId")]
-		public int ArtId
-		{
-			get
-			{
-				return _artId;
-			}
-
-			set
-			{
-				_artId = value;
-			}
-
-		}
+		public int ArtId { get; set; }
 
 		public Album()
 		{
@@ -101,7 +40,7 @@ namespace WaveBox.DataModel.Model
 
 		public Album(SQLiteDataReader reader)
 		{
-			_setPropertiesFromQueryResult(reader);
+			SetPropertiesFromQueryResult(reader);
 		}
 
 		public Album(int albumId)
@@ -109,42 +48,33 @@ namespace WaveBox.DataModel.Model
 			SQLiteConnection conn = null;
 			SQLiteDataReader result = null;
 
-			try
-			{
-				var q = new SQLiteCommand("SELECT * FROM album WHERE album_id = @albumid");
-				q.Parameters.AddWithValue("@albumid", albumId);
-
-				Database.dbLock.WaitOne();
-				conn = Database.getDbConnection();
-				q.Connection = conn;
-				q.Prepare();
-				result = q.ExecuteReader();
-
-				if (result.Read())
-				{
-					_setPropertiesFromQueryResult(result);
-				}
-
-				result.Close();
-			}
-
-			catch (Exception e)
-			{
-				Console.WriteLine(e.ToString());
-			}
-
-			finally
+			lock (Database.dbLock)
 			{
 				try
 				{
-					Database.dbLock.ReleaseMutex();
-				}
+					var q = new SQLiteCommand("SELECT * FROM album WHERE album_id = @albumid");
+					q.Parameters.AddWithValue("@albumid", albumId);
 
+					conn = Database.GetDbConnection();
+					q.Connection = conn;
+					q.Prepare();
+					result = q.ExecuteReader();
+
+					if (result.Read())
+					{
+						SetPropertiesFromQueryResult(result);
+					}
+
+					result.Close();
+				}
 				catch (Exception e)
 				{
 					Console.WriteLine(e.ToString());
 				}
-				Database.close(conn, result);
+				finally
+				{
+					Database.Close(conn, result);
+				}
 			}
 		}
 
@@ -160,183 +90,158 @@ namespace WaveBox.DataModel.Model
 			SQLiteConnection conn = null;
 			SQLiteDataReader result = null;
 
-			try
-			{
-				var q = new SQLiteCommand("SELECT * FROM album WHERE album_name  = @albumname");
-				q.Parameters.AddWithValue("@itemtypeid", ItemTypeId);
-				q.Parameters.AddWithValue("@albumname", AlbumName);
-
-				Database.dbLock.WaitOne();
-				conn = Database.getDbConnection();
-				q.Connection = conn;
-				q.Prepare();
-				result = q.ExecuteReader();
-
-				if (result.Read())
-				{
-					_setPropertiesFromQueryResult(result);
-				}
-
-				else AlbumName = albumName;
-
-
-				result.Close();
-			}
-
-			catch (Exception e)
-			{
-				Console.WriteLine(e.ToString());
-			}
-
-			finally
+			lock (Database.dbLock)
 			{
 				try
 				{
-					Database.dbLock.ReleaseMutex();
-				}
+					var q = new SQLiteCommand("SELECT * FROM album WHERE album_name  = @albumname");
+					q.Parameters.AddWithValue("@itemtypeid", ItemTypeId);
+					q.Parameters.AddWithValue("@albumname", AlbumName);
 
-				catch(Exception e)
+					conn = Database.GetDbConnection();
+					q.Connection = conn;
+					q.Prepare();
+					result = q.ExecuteReader();
+
+					if (result.Read())
+					{
+						SetPropertiesFromQueryResult(result);
+					}
+					else
+					{
+						AlbumName = albumName;
+					}
+
+					result.Close();
+				}
+				catch (Exception e)
 				{
 					Console.WriteLine(e.ToString());
 				}
-				Database.close(conn, result);
+				finally
+				{
+					Database.Close(conn, result);
+				}
 			}
-
 		}
 
-		private static bool _insertAlbum(string albumName, int artistId)
+		private static bool InsertAlbum(string albumName, int artistId)
 		{
 			bool success = false;
 
 			SQLiteConnection conn = null;
 			SQLiteDataReader result = null;
 
-			try
-			{
-				var q = new SQLiteCommand("INSERT INTO album (album_name, artist_id) VALUES(@albumname, @artistid)");
-				q.Parameters.AddWithValue("@albumname", albumName);
-				q.Parameters.AddWithValue("@artistid", artistId);
-
-				Database.dbLock.WaitOne();
-				conn = Database.getDbConnection();
-				q.Connection = conn;
-				q.Prepare();
-				int affected = (int)q.ExecuteNonQuery();
-
-				if(affected >= 1) success = true;
-			}
-
-			catch (Exception e)
-			{
-				Console.WriteLine(e.ToString());
-			}
-
-			finally
+			lock (Database.dbLock)
 			{
 				try
 				{
-					Database.dbLock.ReleaseMutex();
-				}
+					var q = new SQLiteCommand("INSERT INTO album (album_name, artist_id) VALUES(@albumname, @artistid)");
+					q.Parameters.AddWithValue("@albumname", albumName);
+					q.Parameters.AddWithValue("@artistid", artistId);
 
+					conn = Database.GetDbConnection();
+					q.Connection = conn;
+					q.Prepare();
+					int affected = (int)q.ExecuteNonQuery();
+
+					if (affected >= 1)
+						success = true;
+				}
 				catch (Exception e)
 				{
 					Console.WriteLine(e.ToString());
 				}
-				Database.close(conn, result);
+				finally
+				{
+					Database.Close(conn, result);
+				}
 			}
 
 			return success;
 		}
 
-		private void _setPropertiesFromQueryResult(SQLiteDataReader reader)
+		private void SetPropertiesFromQueryResult(SQLiteDataReader reader)
 		{
 			if(reader.IsDBNull(reader.GetOrdinal("artist_id")))
 			{
-				_artistId = 0;
+				this.ArtistId = 0;
 			}
-			else _artistId = reader.GetInt32(reader.GetOrdinal("artist_id"));
+			else ArtistId = reader.GetInt32(reader.GetOrdinal("artist_id"));
 
 			if (reader.IsDBNull(reader.GetOrdinal("album_id")))
 			{
-				_albumId = 0;
+				this.AlbumId = 0;
 			}
-			else _albumId = reader.GetInt32(reader.GetOrdinal("album_id"));
+			else this.AlbumId = reader.GetInt32(reader.GetOrdinal("album_id"));
 
 			if (reader.IsDBNull(reader.GetOrdinal("album_name")))
 			{
-				_albumName = "";
+				this.AlbumName = "";
 			}
-			else _albumName = reader.GetString(reader.GetOrdinal("album_name"));
+			else this.AlbumName = reader.GetString(reader.GetOrdinal("album_name"));
 
 			if (reader.IsDBNull(reader.GetOrdinal("album_art_id")))
 			{
-				_artId = 0;
+				this.ArtId = 0;
 			}
-			else _artId = reader.GetInt32(reader.GetOrdinal("album_art_id"));
+			else this.ArtId = reader.GetInt32(reader.GetOrdinal("album_art_id"));
 		}
 
-		public Artist artist()
+		public Artist Artist()
 		{
 			return new Artist(ArtistId);
 		}
 
 		// TO DO
-		public void autoTag()
+		public void AutoTag()
 		{
 		}
 
-		public List<Song> listOfSongs()
+		public List<Song> ListOfSongs()
 		{
 			var songs = new List<Song>();
 
 			SQLiteConnection conn = null;
 			SQLiteDataReader reader = null;
 
-			try
-			{
-				var q = new SQLiteCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " +
-										 "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
-										 "LEFT JOIN album ON song_album_id = album.album_id " +
-										 "WHERE song_album_id = @albumid");
-
-				q.Parameters.AddWithValue("@albumid", AlbumId);
-
-				Database.dbLock.WaitOne();
-				conn = Database.getDbConnection();
-				q.Connection = conn;
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				while (reader.Read())
-				{
-					songs.Add(new Song(reader));
-				}
-			}
-
-			catch (Exception e)
-			{
-				Console.WriteLine(e.ToString());
-			}
-
-			finally
+			lock (Database.dbLock)
 			{
 				try
 				{
-					Database.dbLock.ReleaseMutex();
-				}
+					var q = new SQLiteCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " +
+						"LEFT JOIN artist ON song_artist_id = artist.artist_id " +
+						"LEFT JOIN album ON song_album_id = album.album_id " +
+						"WHERE song_album_id = @albumid"
+					);
 
+					q.Parameters.AddWithValue("@albumid", AlbumId);
+
+					conn = Database.GetDbConnection();
+					q.Connection = conn;
+					q.Prepare();
+					reader = q.ExecuteReader();
+
+					while (reader.Read())
+					{
+						songs.Add(new Song(reader));
+					}
+				}
 				catch (Exception e)
 				{
 					Console.WriteLine(e.ToString());
 				}
-				Database.close(conn, reader);
+				finally
+				{
+					Database.Close(conn, reader);
+				}
 			}
 
 			songs.Sort(Song.CompareSongsByDiscAndTrack);
 			return songs;
 		}
 
-		public static Album albumForName(string albumName, int artistId)
+		public static Album AlbumForName(string albumName, int artistId)
 		{
 			if (albumName == "" || albumName == null || artistId == 0)
 			{
@@ -349,97 +254,88 @@ namespace WaveBox.DataModel.Model
 			{
 				a = null;
 
-				if(_insertAlbum(albumName, artistId))
+				if(InsertAlbum(albumName, artistId))
 				{
-					a = albumForName(albumName, artistId);
+					a = AlbumForName(albumName, artistId);
 				}
 			}
 
 			return a;
 		}
 
-		public static List<Album> allAlbums()
+		public static List<Album> AllAlbums()
 		{
 			var albums = new List<Album>();
 
 			SQLiteConnection conn = null;
 			SQLiteDataReader reader = null;
 
-			try
-			{
-				var q = new SQLiteCommand("SELECT * FROM album");
-
-				q.Parameters.AddWithValue("@itemtypeid", new Album().ItemTypeId);
-
-				Database.dbLock.WaitOne();
-				conn = Database.getDbConnection();
-				q.Connection = conn;
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				while (reader.Read())
-				{
-					albums.Add(new Album(reader));
-				}
-			}
-
-			catch (Exception e)
-			{
-				Console.WriteLine(e.ToString());
-			}
-
-			finally
+			lock (Database.dbLock)
 			{
 				try
 				{
-					Database.dbLock.ReleaseMutex();
-				}
+					var q = new SQLiteCommand("SELECT * FROM album");
 
+					q.Parameters.AddWithValue("@itemtypeid", new Album().ItemTypeId);
+
+					conn = Database.GetDbConnection();
+					q.Connection = conn;
+					q.Prepare();
+					reader = q.ExecuteReader();
+
+					while (reader.Read())
+					{
+						albums.Add(new Album(reader));
+					}
+				}
 				catch (Exception e)
 				{
 					Console.WriteLine(e.ToString());
 				}
-				Database.close(conn, reader);
+				finally
+				{
+					Database.Close(conn, reader);
+				}
 			}
 
 			albums.Sort(CompareAlbumsByName);
 			return albums;
 		}
 
-		public static List<Album> randomAlbums()
+		public static List<Album> RandomAlbums()
 		{
 			var random = new List<Album>();
 			SQLiteConnection conn = null;
 			SQLiteDataReader reader = null;
 
-			try
+			lock (Database.dbLock)
 			{
-				var q = new SQLiteCommand("SELECT TOP @count * FROM album" +
-										 "ORDER BY NEWID()");
-
-				q.Parameters.AddWithValue("@itemtypeid", new Album().ItemTypeId);
-
-				Database.dbLock.WaitOne();
-				conn = Database.getDbConnection();
-				q.Connection = conn;
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				while (reader.Read())
+				try
 				{
-					random.Add(new Album(reader));
+					var q = new SQLiteCommand("SELECT TOP @count * FROM album" +
+						"ORDER BY NEWID()"
+					);
+
+					q.Parameters.AddWithValue("@itemtypeid", new Album().ItemTypeId);
+
+					conn = Database.GetDbConnection();
+					q.Connection = conn;
+					q.Prepare();
+					reader = q.ExecuteReader();
+
+					while (reader.Read())
+					{
+						random.Add(new Album(reader));
+					}
 				}
-			}
-
-			catch (Exception e)
-			{
-				Console.WriteLine(e.ToString());
-			}
-
-			finally
-			{
-				Database.dbLock.ReleaseMutex();
-				Database.close(conn, reader);
+				catch (Exception e)
+				{
+					Console.WriteLine(e.ToString());
+				}
+				finally
+				{
+					Database.Close(conn, reader);
+				}
 			}
 
 			return random;

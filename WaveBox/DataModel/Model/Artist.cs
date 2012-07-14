@@ -19,54 +19,19 @@ namespace WaveBox.DataModel.Model
 		{
 			get
 			{
-				return ItemType.ARTIST.getItemTypeId();
+				return ItemType.ARTIST.GetItemTypeId();
 			}
 		}
 
-		private int _artistId;
 		[JsonProperty("artistId")]
-		public int ArtistId
-		{
-			get
-			{
-				return _artistId;
-			}
+		public int ArtistId { get; set; }
 
-			set
-			{
-				_artistId = value;
-			}
-		}
-
-		private string _artistName;
 		[JsonProperty("artistName")]
-		public string ArtistName
-		{
-			get
-			{
-				return _artistName;
-			}
+		public string ArtistName { get; set; }
 
-			set
-			{
-				_artistName = value;
-			}
-		}
-
-		private int _artId;
 		[JsonProperty("artId")]
-		public int ArtId
-		{
-			get
-			{
-				return _artId;
-			}
+		public int ArtId { get; set; }
 
-			set
-			{
-				_artId = value;
-			}
-		}
 
 		/// <summary>
 		/// Constructors
@@ -78,7 +43,7 @@ namespace WaveBox.DataModel.Model
 
 		public Artist(SQLiteDataReader reader)
 		{
-			_setPropertiesFromQueryResult(reader);
+			SetPropertiesFromQueryResult(reader);
 		}
 
 		public Artist(int artistId)
@@ -86,42 +51,35 @@ namespace WaveBox.DataModel.Model
 			SQLiteConnection conn = null;
 			SQLiteDataReader reader = null;
 
-			try
-			{
-				Database.dbLock.WaitOne();
-				conn = Database.getDbConnection();
-
-				var q = new SQLiteCommand("SELECT * FROM artist WHERE artist_id = @artistid");
-				q.Connection = conn;
-				q.Parameters.AddWithValue("@artistid", artistId);
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
-				{
-					_setPropertiesFromQueryResult(reader);
-				}
-
-				else Console.WriteLine("Artist constructor query returned no results");
-			}
-
-			catch (Exception e)
-			{
-				Console.WriteLine(e.ToString());
-			}
-
-			finally
+			lock (Database.dbLock)
 			{
 				try
 				{
-					Database.dbLock.ReleaseMutex();
-				}
+					conn = Database.GetDbConnection();
 
+					var q = new SQLiteCommand("SELECT * FROM artist WHERE artist_id = @artistid");
+					q.Connection = conn;
+					q.Parameters.AddWithValue("@artistid", artistId);
+					q.Prepare();
+					reader = q.ExecuteReader();
+
+					if (reader.Read())
+					{
+						SetPropertiesFromQueryResult(reader);
+					}
+					else
+					{
+						Console.WriteLine("Artist constructor query returned no results");
+					}
+				}
 				catch (Exception e)
 				{
 					Console.WriteLine(e.ToString());
 				}
-				Database.close(conn, reader);
+				finally
+				{
+					Database.Close(conn, reader);
+				}
 			}
 		}
 
@@ -135,41 +93,34 @@ namespace WaveBox.DataModel.Model
 			SQLiteConnection conn = null;
 			SQLiteDataReader reader = null;
 
-			try
-			{
-				Database.dbLock.WaitOne();
-				conn = Database.getDbConnection();
-				var q = new SQLiteCommand("SELECT * FROM artist WHERE artist_name = @artistname");
-				q.Connection = conn;
-				q.Parameters.AddWithValue("@artistname", artistName);
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
-				{
-					_setPropertiesFromQueryResult(reader);
-				}
-
-				else _artistName = artistName;
-			}
-
-			catch (Exception e)
-			{
-				Console.WriteLine(e.ToString());
-			}
-
-			finally
+			lock (Database.dbLock)
 			{
 				try
 				{
-					Database.dbLock.ReleaseMutex();
-				}
+					conn = Database.GetDbConnection();
+					var q = new SQLiteCommand("SELECT * FROM artist WHERE artist_name = @artistname");
+					q.Connection = conn;
+					q.Parameters.AddWithValue("@artistname", artistName);
+					q.Prepare();
+					reader = q.ExecuteReader();
 
+					if (reader.Read())
+					{
+						SetPropertiesFromQueryResult(reader);
+					}
+					else
+					{
+						ArtistName = artistName;
+					}
+				}
 				catch (Exception e)
 				{
 					Console.WriteLine(e.ToString());
 				}
-				Database.close(conn, reader);
+				finally
+				{
+					Database.Close(conn, reader);
+				}
 			}
 		}
 
@@ -177,15 +128,17 @@ namespace WaveBox.DataModel.Model
 		/// Private methods
 		/// </summary>
 
-		private void _setPropertiesFromQueryResult(SQLiteDataReader reader)
+		private void SetPropertiesFromQueryResult(SQLiteDataReader reader)
 		{
 			try
 			{
-				_artistId = reader.GetInt32(reader.GetOrdinal("artist_id"));
-				_artistName = reader.GetString(reader.GetOrdinal("artist_name"));
+				ArtistId = reader.GetInt32(reader.GetOrdinal("artist_id"));
+				ArtistName = reader.GetString(reader.GetOrdinal("artist_name"));
 
-				if (reader.GetValue(reader.GetOrdinal("artist_art_id")) == DBNull.Value) _artId = 0;
-				else _artId = reader.GetInt32(reader.GetOrdinal("artist_art_id"));
+				if 
+					(reader.GetValue(reader.GetOrdinal("artist_art_id")) == DBNull.Value) ArtId = 0;
+				else 
+					ArtId = reader.GetInt32(reader.GetOrdinal("artist_art_id"));
 			}
 
 			catch (SQLiteException e)
@@ -194,47 +147,38 @@ namespace WaveBox.DataModel.Model
 			}
 		}
 
-		private static bool _insertArtist(string artistName)
+		private static bool InsertArtist(string artistName)
 		{
 			bool success = false;
 			SQLiteConnection conn = null;
 			SQLiteDataReader reader = null;
 
-			try
-			{
-				Database.dbLock.WaitOne();
-				conn = Database.getDbConnection();
-				var q = new SQLiteCommand("INSERT INTO artist (artist_name) VALUES (@artistname)");
-				q.Connection = conn;
-				q.Parameters.AddWithValue("@artistname", artistName);
-				q.Prepare();
-				int affected = q.ExecuteNonQuery();
-
-				if (affected == 1)
-				{
-					success = true;
-				}
-
-				else success = false;
-			}
-
-			catch (Exception e)
-			{
-				Console.WriteLine(e.ToString());
-			}
-
-			finally
+			lock (Database.dbLock)
 			{
 				try
 				{
-					Database.dbLock.ReleaseMutex();
-				}
+					conn = Database.GetDbConnection();
+					var q = new SQLiteCommand("INSERT INTO artist (artist_name) VALUES (@artistname)");
+					q.Connection = conn;
+					q.Parameters.AddWithValue("@artistname", artistName);
+					q.Prepare();
+					int affected = q.ExecuteNonQuery();
 
+					if (affected == 1)
+					{
+						success = true;
+					}
+					else
+						success = false;
+				}
 				catch (Exception e)
 				{
 					Console.WriteLine(e.ToString());
 				}
-				Database.close(conn, reader);
+				finally
+				{
+					Database.Close(conn, reader);
+				}
 			}
 
 			return success;
@@ -244,53 +188,44 @@ namespace WaveBox.DataModel.Model
 		/// Public methods
 		/// </summary>
 
-		public List<Album> listOfAlbums()
+		public List<Album> ListOfAlbums()
 		{
 			var albums = new List<Album>();
 
 			SQLiteConnection conn = null;
 			SQLiteDataReader reader = null;
 
-			try
-			{
-				Database.dbLock.WaitOne();
-				conn = Database.getDbConnection();
-				var q = new SQLiteCommand("SELECT * FROM album WHERE artist_id = @artistid");
-				q.Connection = conn;
-				q.Parameters.AddWithValue("@artistid", ArtistId);
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				while (reader.Read())
-				{
-					albums.Add(new Album(reader));
-				}
-			}
-
-			catch (Exception e)
-			{
-				Console.WriteLine(e.ToString());
-			}
-
-			finally
+			lock (Database.dbLock)
 			{
 				try
 				{
-					Database.dbLock.ReleaseMutex();
-				}
+					conn = Database.GetDbConnection();
+					var q = new SQLiteCommand("SELECT * FROM album WHERE artist_id = @artistid");
+					q.Connection = conn;
+					q.Parameters.AddWithValue("@artistid", ArtistId);
+					q.Prepare();
+					reader = q.ExecuteReader();
 
+					while (reader.Read())
+					{
+						albums.Add(new Album(reader));
+					}
+				}
 				catch (Exception e)
 				{
 					Console.WriteLine(e.ToString());
 				}
-				Database.close(conn, reader);
+				finally
+				{
+					Database.Close(conn, reader);
+				}
 			}
 
 			albums.Sort(Album.CompareAlbumsByName);
 			return albums;
 		}
 
-		public List<Song> listOfSongs()
+		public List<Song> ListOfSongs()
 		{
 			var songs = new List<Song>();
 
@@ -298,53 +233,45 @@ namespace WaveBox.DataModel.Model
 			SQLiteConnection conn = null;
 			SQLiteDataReader reader = null;
 
-			try
-			{
-				var q = new SQLiteCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " + 
-										 "LEFT JOIN artist ON song_artist_id = artist_id " +
-										 "LEFT JOIN album ON song_album_id = album_id " +
-										 "WHERE song_artist_id = @artistid");
-
-				q.Parameters.AddWithValue("@artistid", ArtistId);
-
-				Database.dbLock.WaitOne();
-				conn = Database.getDbConnection();
-				q.Connection = conn;
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				while (reader.Read())
-				{
-					songs.Add(new Song(reader));
-				}
-
-				reader.Close();
-			}
-
-			catch (Exception e)
-			{
-				Console.WriteLine(e.ToString());
-			}
-
-			finally
+			lock (Database.dbLock)
 			{
 				try
 				{
-					Database.dbLock.ReleaseMutex();
-				}
+					var q = new SQLiteCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " + 
+						"LEFT JOIN artist ON song_artist_id = artist_id " +
+						"LEFT JOIN album ON song_album_id = album_id " +
+						"WHERE song_artist_id = @artistid"
+					);
 
+					q.Parameters.AddWithValue("@artistid", ArtistId);
+
+					conn = Database.GetDbConnection();
+					q.Connection = conn;
+					q.Prepare();
+					reader = q.ExecuteReader();
+
+					while (reader.Read())
+					{
+						songs.Add(new Song(reader));
+					}
+
+					reader.Close();
+				}
 				catch (Exception e)
 				{
 					Console.WriteLine(e.ToString());
 				}
-				Database.close(conn, reader);
+				finally
+				{
+					Database.Close(conn, reader);
+				}
 			}
 
 			songs.Sort(Song.CompareSongsByDiscAndTrack);
 			return songs;
 		}
 
-		public static Artist artistForName(string artistName)
+		public static Artist ArtistForName(string artistName)
 		{
 			if (artistName == null || artistName == "")
 			{
@@ -358,9 +285,9 @@ namespace WaveBox.DataModel.Model
 			if (anArtist.ArtistId == 0)
 			{
 				anArtist = null;
-				if (_insertArtist(artistName))
+				if (InsertArtist(artistName))
 				{
-					anArtist = artistForName(artistName);
+					anArtist = ArtistForName(artistName);
 				}
 			}
 
@@ -368,48 +295,39 @@ namespace WaveBox.DataModel.Model
 			return anArtist;
 		}
 
-		public List<Artist> allArtists()
+		public List<Artist> AllArtists()
 		{
 			var artists = new List<Artist>();
 
 			SQLiteConnection conn = null;
 			SQLiteDataReader result = null;
 
-			try
-			{
-				var q = new SQLiteCommand("SELECT * FROM artist");
-
-				Database.dbLock.WaitOne();
-				conn = Database.getDbConnection();
-				q.Connection = conn;
-				q.Prepare();
-				result = q.ExecuteReader();
-
-				while (result.Read())
-				{
-					artists.Add(new Artist(result));
-				}
-
-				result.Close();
-			}
-
-			catch (Exception e)
-			{
-				Console.WriteLine(e.ToString());
-			}
-
-			finally
+			lock (Database.dbLock)
 			{
 				try
 				{
-					Database.dbLock.ReleaseMutex();
-				}
+					var q = new SQLiteCommand("SELECT * FROM artist");
 
+					conn = Database.GetDbConnection();
+					q.Connection = conn;
+					q.Prepare();
+					result = q.ExecuteReader();
+
+					while (result.Read())
+					{
+						artists.Add(new Artist(result));
+					}
+
+					result.Close();
+				}
 				catch (Exception e)
 				{
 					Console.WriteLine(e.ToString());
 				}
-				Database.close(conn, result);
+				finally
+				{
+					Database.Close(conn, result);
+				}
 			}
 
 			artists.Sort(Artist.CompareArtistsByName);

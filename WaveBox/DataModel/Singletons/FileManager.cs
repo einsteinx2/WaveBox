@@ -11,11 +11,25 @@ namespace WaveBox.DataModel.Singletons
 {
 	class FileManager
 	{
-		List<Folder> mf;
+		private List<Folder> mf;
 		private ScanQueue sq;
 		//private List<FileSystemWatcher> watcherList;
 
-		public FileManager()
+		private static FileManager instance;
+		public static FileManager Instance
+		{
+			get
+			{
+				if (instance == null)
+				{
+					instance = new FileManager();
+				}
+
+				return instance;
+			}
+		}
+
+		public void Setup()
 		{
 			mf = Settings.MediaFolders;
 			sq = new ScanQueue();
@@ -42,20 +56,6 @@ namespace WaveBox.DataModel.Singletons
 					//watcherList.Add(watch);
 				}
 
-			}
-		}
-
-		private static FileManager instance;
-		public static FileManager Instance
-		{
-			get
-			{
-				if (instance == null)
-				{
-					instance = new FileManager();
-				}
-
-				return instance;
 			}
 		}
 

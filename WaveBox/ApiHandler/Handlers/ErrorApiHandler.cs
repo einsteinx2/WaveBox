@@ -8,28 +8,28 @@ namespace WaveBox.ApiHandler.Handlers
 {
 	class ErrorApiHandler : IApiHandler
 	{
-		private HttpProcessor _sh;
-		private UriWrapper _uriW;
-		private string _err;
+		private HttpProcessor Processor { get; set; }
+		private UriWrapper Uri { get; set; }
+		private string Err { get; set; }
 
-		public ErrorApiHandler(UriWrapper uriW, HttpProcessor sh)
+		public ErrorApiHandler(UriWrapper uri, HttpProcessor processor)
 		{
-			_sh = sh;
-			_uriW = uriW;
-			_err = "Invalid API call";
+			Processor = processor;
+			Uri = uri;
+			Err = "Invalid API call";
 		}
 
-		public ErrorApiHandler(UriWrapper uriW, HttpProcessor sh, string err)
+		public ErrorApiHandler(UriWrapper uri, HttpProcessor processor, string err)
 		{
-			_sh = sh;
-			_uriW = uriW;
-			_err = err;
+			Processor = processor;
+			Uri = uri;
+			Err = err;
 		}
 
-		public void process()
+		public void Process()
 		{
-			Console.WriteLine("Error: " + _err);
-			_sh.outputStream.Write(_err);
+			Console.WriteLine("Error: " + Err);
+			Processor.OutputStream.Write(Err);
 		}
 	}
 }

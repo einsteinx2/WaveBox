@@ -10,87 +10,51 @@ namespace WaveBox.ApiHandler.Handlers
 {
 	class FoldersApiHandler : IApiHandler
 	{
-		private HttpProcessor _sh;
-		private UriWrapper _uriW;
+		private HttpProcessor Processor { get; set; }
+		private UriWrapper Uri { get; set; }
 
-		public FoldersApiHandler(UriWrapper uriW, HttpProcessor sh, int userId)
+		public FoldersApiHandler(UriWrapper uri, HttpProcessor processor, int userId)
 		{
-			_sh = sh;
-			_uriW = uriW;
+			Processor = processor;
+			Uri = uri;
 		}
 
-		public void process()
+		public void Process()
 		{
 			List<Folder> listOfFolders = new List<Folder>();
 			List<Song> listOfSongs = new List<Song>();
 			string json = "";
 
-			var stuff = _uriW.getUriPart(2);
+			var stuff = Uri.UriPart(2);
 
 			// if the second part of the URI is null or contains GET parameters, we should ignore it and send the folder listing.
 			if (stuff == null || stuff.Contains('='))
 			{
-				listOfFolders = Folder.topLevelFolders();
+				listOfFolders = Folder.TopLevelFolders();
 			}
 			else
 			{
 				var folder = new Folder(Convert.ToInt32(stuff));
-				listOfFolders = folder.listOfSubFolders();
-				listOfSongs = folder.listOfSongs();
+				listOfFolders = folder.ListOfSubFolders();
+				listOfSongs = folder.ListOfSongs();
 			}
 
 			json = JsonConvert.SerializeObject(new FoldersResponse(null, listOfFolders, listOfSongs), Formatting.None);
-			PmsHttpServer.sendJson(_sh, json);
+			WaveBoxHttpServer.sendJson(Processor, json);
 		}
 	}
 
 	class FoldersResponse
 	{
-		private string _error;
-		public string error
-		{
-			get
-			{
-				return _error;
-			}
-			set
-			{
-				_error = value;
-			}
-		}
+		public string Error { get; set; }
+		public List<Folder> Folders { get; set; }
+		public List<Song> Songs { get; set; }
 
-		private List<Folder> _folders;
-		public List<Folder> folders
+		public FoldersResponse(string error, List<Folder> folders, List<Song> songs)
 		{
-			get
-			{
-				return _folders;
-			}
-			set
-			{
-				_folders = value;
-			}
-		}
-
-		private List<Song> _songs;
-		public List<Song> songs
-		{
-			get
-			{
-				return _songs;
-			}
-
-			set
-			{
-				_songs = value;
-			}
-		}
-
-		public FoldersResponse(string Error, List<Folder> Folders, List<Song> Songs)
-		{
-			error = Error;
-			folders = Folders;
-			songs = Songs;
+			Error = error;
+			Folders = folders;
+			Songs = songs;
 		}
 	}
 }

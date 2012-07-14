@@ -10,43 +10,28 @@ namespace WaveBox.DataModel.Singletons
 {
 	class Database
 	{
-		private static Database instance;
-		public static Mutex dbLock;
-		private static SQLiteConnection dbconn;
-		public static Database Instance
+		private static SQLiteConnection dbConn;
+		public static readonly Object dbLock = new Object();
+
+		public static SQLiteConnection GetDbConnection ()
 		{
-			get
+			lock (dbLock) 
 			{
-				if (instance == null)
+				if (dbConn == null)
 				{
-					instance = new Database();
-					dbLock = new Mutex();
+					dbConn = new SQLiteConnection("Data Source = \"wavebox.db\"");
 				}
-
-				return instance;
-			}
-		}
-
-		private Database()
-		{
-		}
-
-		public static SQLiteConnection getDbConnection()
-		{
-			if (dbconn == null)
-			{
-				dbconn = new SQLiteConnection("DataSource = \"wavebox.db\"");
+			
+				while ((dbConn.State == System.Data.ConnectionState.Closed))
+				{
+					dbConn.Open();
+				}
 			}
 
-			while ((dbconn.State == System.Data.ConnectionState.Closed))
-			{
-				dbconn.Open();
-			}
-
-			return dbconn;
+			return dbConn;
 		}
 
-		public static void close(SQLiteConnection c, SQLiteDataReader r)
+		public static void Close(SQLiteConnection c, SQLiteDataReader r)
 		{
 			if (!(c == null) && !(c.State == System.Data.ConnectionState.Closed))
 			{

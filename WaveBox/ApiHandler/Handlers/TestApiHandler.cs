@@ -10,23 +10,23 @@ namespace WaveBox.ApiHandler.Handlers
 {
 	class TestApiHandler : IApiHandler
 	{
-		private HttpProcessor _sh;
-		private UriWrapper _uriW;
+		private HttpProcessor Processor { get; set; }
+		private UriWrapper Uri { get; set; }
 
-		public TestApiHandler(UriWrapper uriW, HttpProcessor sh, int userId)
+		public TestApiHandler(UriWrapper uri, HttpProcessor processor, int userId)
 		{
-			_sh = sh;
-			_uriW = uriW;
+			Processor = processor;
+			Uri = uri;
 		}
 
-		public void process()
+		public void Process()
 		{
 			Console.WriteLine("Test: Great success!");
 
 			var a = new Artist();
 
-			string json = JsonConvert.SerializeObject(new TestResponse(null, a.allArtists()), Formatting.None);
-			_sh.outputStream.WriteLine(json);
+			string json = JsonConvert.SerializeObject(new TestResponse(null, a.AllArtists()), Formatting.None);
+			Processor.OutputStream.WriteLine(json);
 
 			//foreach (var g in a.allArtists())
 			//{
@@ -38,36 +38,13 @@ namespace WaveBox.ApiHandler.Handlers
 
 	class TestResponse
 	{
-		private string _error;
-		public string error
-		{
-			get
-			{
-				return _error;
-			}
-			set
-			{
-				_error = value;
-			}
-		}
+		public string Error { get; set; }
+		public List<Artist> Artists { get; set; }
 
-		private List<Artist> _artists;
-		public List<Artist> artists
+		public TestResponse(string error, List<Artist> artists)
 		{
-			get
-			{
-				return _artists;
-			}
-			set
-			{
-				_artists = value;
-			}
-		}
-
-		public TestResponse(string Error, List<Artist> Artists)
-		{
-			error = Error;
-			artists = Artists;
+			Error = error;
+			Artists = artists;
 		}
 	}
 }

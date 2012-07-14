@@ -11,86 +11,50 @@ namespace WaveBox.ApiHandler.Handlers
 {
 	class AlbumsApiHandler : IApiHandler
 	{
-		private HttpProcessor _sh;
-		private UriWrapper _uriW;
+		private HttpProcessor Processor { get; set; }
+		private UriWrapper Uri { get; set; }
 		private List<Song> songs;
 
-		public AlbumsApiHandler(UriWrapper uriW, HttpProcessor sh, int userId)
+		public AlbumsApiHandler(UriWrapper uri, HttpProcessor processor, int userId)
 		{
-			_sh = sh;
-			_uriW = uriW;
+			Processor = processor;
+			Uri = uri;
 		}
 
-		public void process()
+		public void Process()
 		{
 			List<Album> listToReturn = new List<Album>();
 			string json;
 
-			if (_uriW.getUriPart(2) == null)
+			if (Uri.UriPart(2) == null)
 			{
-				listToReturn = Album.allAlbums();
+				listToReturn = Album.AllAlbums();
 			}
 
 			else
 			{
-				var album = new Album(int.Parse(_uriW.getUriPart(2)));
+				var album = new Album(int.Parse(Uri.UriPart(2)));
 				listToReturn.Add(album);
-				songs = album.listOfSongs();
+				songs = album.ListOfSongs();
 			}
 
 			json = JsonConvert.SerializeObject(new AlbumsResponse(null, listToReturn, songs), Formatting.None);
 
-
-			PmsHttpServer.sendJson(_sh, json);
+			WaveBoxHttpServer.sendJson(Processor, json);
 		}
 	}
 
 	class AlbumsResponse
 	{
-		private string _error;
-		public string error
-		{
-			get
-			{
-				return _error;
-			}
-			set
-			{
-				_error = value;
-			}
-		}
+		public string Error { get; set; }
+		public List<Album> Albums { get; set; }
+		public List<Song> Songs { get; set; }
 
-		private List<Album> _albums;
-		public List<Album> albums
+		public AlbumsResponse(string error, List<Album> albums, List<Song> songs)
 		{
-			get
-			{
-				return _albums;
-			}
-			set
-			{
-				_albums = value;
-			}
-		}
-
-		private List<Song> _songs;
-		public List<Song> songs
-		{
-			get
-			{
-				return _songs;
-			}
-			set
-			{
-				_songs = value;
-			}
-		}
-
-		public AlbumsResponse(string Error, List<Album> Albums, List<Song> Songs)
-		{
-			error = Error;
-			albums = Albums;
-			songs = Songs;
+			Error = error;
+			Albums = albums;
+			Songs = songs;
 		}
 	}
 }

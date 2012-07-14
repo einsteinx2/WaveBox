@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,37 +11,37 @@ namespace WaveBox.ApiHandler.Handlers
 {
 	class JukeboxApiHandler : IApiHandler
 	{
-		private Jukebox _jukebox;
-		private UriWrapper _uri;
-		private HttpProcessor _sh;
+		private Jukebox Juke;
+		private HttpProcessor Processor { get; set; }
+		private UriWrapper Uri { get; set; }
 		//private int _userId;
 
-		public JukeboxApiHandler(UriWrapper uriW, HttpProcessor sh, int userId)
+		public JukeboxApiHandler(UriWrapper uri, HttpProcessor processor, int userId)
 		{
-			_jukebox = Jukebox.Instance;
-			_uri = uriW;
-			_sh = sh;
+			Juke = Jukebox.Instance;
+			Processor = processor;
+			Uri = uri;
 		}
 
-		public void process()
+		public void Process()
 		{
 			int index = 0;
 			string s = "";
 
-			string part2 = _uri.getUriPart(2);
-			string part3 = _uri.getUriPart(3);
+			string part2 = Uri.UriPart(2);
+			//string part3 = Uri.UriPart(3);
 
 			switch(part2)
 			{
 				case "play":
 					string p3 = null;
-					if(_uri.getUriPart(3) != null)
+					if(Uri.UriPart(3) != null)
 					{
 						try
 						{
-							p3 = _uri.getUriPart(3);
+							p3 = Uri.UriPart(3);
 							if(p3 != null)
-								index = int.Parse(_uri.getUriPart(3));
+								index = int.Parse(Uri.UriPart(3));
 						}
 						catch (Exception e)
 						{
@@ -49,20 +49,22 @@ namespace WaveBox.ApiHandler.Handlers
 						}
 					}
 
-					if (p3 == null) _jukebox.Play();
-					else _jukebox.PlaySongAtIndex(index);
+					if 
+						(p3 == null) Juke.Play();
+					else 
+						Juke.PlaySongAtIndex(index);
 					break;
 				case "pause":
-					_jukebox.Pause();
+					Juke.Pause();
 					break;
 				case "stop":
-					_jukebox.Stop();
+					Juke.Stop();
 					break;
 				case "prev":
-					_jukebox.Prev();
+					Juke.Prev();
 					break;
 				case "next":
-					_jukebox.Next();
+					Juke.Next();
 					break;
 				case "status":
 					_status();
@@ -71,36 +73,36 @@ namespace WaveBox.ApiHandler.Handlers
 					_playlist();
 					break;
 				case "add":
-					if(_uri.Parameters.ContainsKey("i"))
+					if (Uri.Parameters.ContainsKey("i"))
 					{
 						s = "";
-						_uri.Parameters.TryGetValue("i", out s);
-						_addSongs(s);
+						Uri.Parameters.TryGetValue("i", out s);
+						AddSongs(s);
 					}
 					break;
 				case "remove":
-					if(_uri.Parameters.ContainsKey("i"))
+					if (Uri.Parameters.ContainsKey("i"))
 					{
 						s = "";
-						_uri.Parameters.TryGetValue("i", out s);
-						_removeSongs(s);
+						Uri.Parameters.TryGetValue("i", out s);
+						RemoveSongs(s);
 					}
 					break;
 				case "move":
-					if(_uri.Parameters.ContainsKey("from") && _uri.Parameters.ContainsKey("to"))
+					if (Uri.Parameters.ContainsKey("from") && Uri.Parameters.ContainsKey("to"))
 					{
 						string to, from;
-						_uri.Parameters.TryGetValue("from", out from);
-						_uri.Parameters.TryGetValue("to", out to);
+						Uri.Parameters.TryGetValue("from", out from);
+						Uri.Parameters.TryGetValue("to", out to);
 
-						if(to != null && from != null)
+						if (to != null && from != null)
 						{
-							_move(to, from);
+							Move(to, from);
 						}
 					}
 					break;
 				case "clear":
-					_jukebox.ClearPlaylist();
+					Juke.ClearPlaylist();
 					break;
 				default: break;
 
@@ -109,15 +111,15 @@ namespace WaveBox.ApiHandler.Handlers
 
 		public void _status()
 		{
-			PmsHttpServer.sendJson(_sh, JsonConvert.SerializeObject(new JukeboxStatusResponse(_jukebox.IsPlaying, _jukebox.CurrentIndex, _jukebox.Progress())));
+			WaveBoxHttpServer.sendJson(Processor, JsonConvert.SerializeObject(new JukeboxStatusResponse()));
 		}
 
 		public void _playlist()
 		{
-			PmsHttpServer.sendJson(_sh, JsonConvert.SerializeObject(new JukeboxPlaylistResponse(_jukebox.IsPlaying, _jukebox.CurrentIndex, _jukebox.ListOfSongs())));
+			WaveBoxHttpServer.sendJson(Processor, JsonConvert.SerializeObject(new JukeboxPlaylistResponse()));
 		}
 
-		public void _addSongs(string songIds)
+		public void AddSongs(string songIds)
 		{
 			List<Song> songs = new List<Song>();
 			foreach(string p in songIds.Split(','))
@@ -132,10 +134,10 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 			}
 
-			_jukebox.AddSongs(songs);
+			Juke.AddSongs(songs);
 		}
 
-		public void _removeSongs(string songIds)
+		public void RemoveSongs(string songIds)
 		{
 			List<int> indices = new List<int>();
 			foreach (string p in songIds.Split(','))
@@ -150,16 +152,16 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 			}
 
-			_jukebox.RemoveSongsAtIndexes(indices);
+			Juke.RemoveSongsAtIndexes(indices);
 		}
 
-		public void _move(string from, string to)
+		public void Move(string from, string to)
 		{
 			try
 			{
 				int fromI = int.Parse(from);
 				int toI = int.Parse(to);
-				_jukebox.MoveSong(fromI, toI);
+				Juke.MoveSong(fromI, toI);
 			}
 			catch(Exception e)
 			{
@@ -170,24 +172,12 @@ namespace WaveBox.ApiHandler.Handlers
 
 	class JukeboxStatusResponse
 	{
-		private bool isPlaying;
-		private int currentIndex;
-		private double progress;
-		private Jukebox _jukebox = Jukebox.Instance;
-
-		public JukeboxStatusResponse(bool isplaying, int currentindex, double prog)
-		{
-			isPlaying = isplaying;
-			currentIndex = currentindex;
-			progress = prog;
-		}
-
 		[JsonProperty("isPlaying")]
 		public bool IsPlaying
 		{
 			get
 			{
-				return _jukebox.IsPlaying;
+				return Jukebox.Instance.IsPlaying;
 			}
 		}
 
@@ -196,7 +186,7 @@ namespace WaveBox.ApiHandler.Handlers
 		{
 			get
 			{
-				return _jukebox.CurrentIndex;
+				return Jukebox.Instance.CurrentIndex;
 			}
 		}
 
@@ -205,31 +195,19 @@ namespace WaveBox.ApiHandler.Handlers
 		{
 			get
 			{
-				return _jukebox.Progress();
+				return Jukebox.Instance.Progress();
 			}
 		}
 	}
 
 	class JukeboxPlaylistResponse
 	{
-		private bool isPlaying;
-		private int currentIndex;
-		private List<MediaItem> songs;
-		private Jukebox _jukebox = Jukebox.Instance;
-
-		public JukeboxPlaylistResponse(bool isplaying, int currentindex, List<MediaItem> songz)
-		{
-			isPlaying = isplaying;
-			currentIndex = currentindex;
-			songs = songz;
-		}
-
 		[JsonProperty("isPlaying")]
 		public bool IsPlaying
 		{
 			get
 			{
-				return _jukebox.IsPlaying;
+				return Jukebox.Instance.IsPlaying;
 			}
 		}
 
@@ -238,7 +216,7 @@ namespace WaveBox.ApiHandler.Handlers
 		{
 			get
 			{
-				return _jukebox.CurrentIndex;
+				return Jukebox.Instance.CurrentIndex;
 			}
 		}
 
@@ -247,7 +225,7 @@ namespace WaveBox.ApiHandler.Handlers
 		{
 			get
 			{
-				return _jukebox.ListOfSongs();
+				return Jukebox.Instance.ListOfSongs();
 			}
 		}
 	}

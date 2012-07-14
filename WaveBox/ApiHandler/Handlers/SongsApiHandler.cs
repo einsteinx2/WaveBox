@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,66 +10,43 @@ namespace WaveBox.ApiHandler.Handlers
 {
 	class SongsApiHandler : IApiHandler
 	{
-		private HttpProcessor _sh;
-		private UriWrapper _uriW;
+		private HttpProcessor Processor { get; set; }
+		private UriWrapper Uri { get; set; }
 
-		public SongsApiHandler(UriWrapper uriW, HttpProcessor sh, int userId)
+		public SongsApiHandler(UriWrapper uri, HttpProcessor processor, int userId)
 		{
-			_sh = sh;
-			_uriW = uriW;
+			Processor = processor;
+			Uri = uri;
 		}
 
-		public void process()
+		public void Process()
 		{
 			List<Song> listOfSongs = new List<Song>();
 			string json = "";
 
-			if (_uriW.getUriPart(2) == null)
+			if (Uri.UriPart(2) == null)
 			{
 				listOfSongs = Song.allSongs();
 			}
 			else
 			{
-				listOfSongs.Add(new Song(Convert.ToInt32(_uriW.getUriPart(2))));
+				listOfSongs.Add(new Song(Convert.ToInt32(Uri.UriPart(2))));
 			}
 
 			json = JsonConvert.SerializeObject(new SongsResponse(null, listOfSongs), Formatting.None);
-			PmsHttpServer.sendJson(_sh, json);
+			WaveBoxHttpServer.sendJson(Processor, json);
 		}
 	}
 
 	class SongsResponse
 	{
-		private string _error;
-		public string error
-		{
-			get
-			{
-				return _error;
-			}
-			set
-			{
-				_error = value;
-			}
-		}
+		public string Error { get; set; }
+		public List<Song> Songs { get; set; }
 
-		private List<Song> _songs;
-		public List<Song> songs
+		public SongsResponse(string error, List<Song> songs)
 		{
-			get
-			{
-				return _songs;
-			}
-			set
-			{
-				_songs = value;
-			}
-		}
-
-		public SongsResponse(string Error, List<Song> Songs)
-		{
-			error = Error;
-			songs = Songs;
+			Error = error;
+			Songs = songs;
 		}
 	}
 }

@@ -22,7 +22,7 @@ namespace WaveBox.DataModel.Model
 
 	public static class FileTypeExtensions
 	{
-		public static FileType fileTypeForTagSharpString(this FileType ft, string audioFormatString)
+		public static FileType FileTypeForTagSharpString(this FileType ft, string audioFormatString)
 		{
             // Lossy codecs
             if (audioFormatString == "MPEG-4 Audio (mp4a)") return FileType.AAC;
@@ -40,7 +40,7 @@ namespace WaveBox.DataModel.Model
             else return FileType.UNKNOWN;
 		}
 
-		public static FileType fileTypeForId(this FileType ft, int id)
+		public static FileType FileTypeForId(this FileType ft, int id)
 		{
 			foreach (FileType type in Enum.GetValues(typeof(FileType)))
 			{
@@ -51,7 +51,5 @@ namespace WaveBox.DataModel.Model
 			}
 			return FileType.UNKNOWN;
 		}
-
-
 	}
 }

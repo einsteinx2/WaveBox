@@ -7,6 +7,6 @@ namespace WaveBox.ApiHandler
 {
 	interface IApiHandler
 	{
-		void process();
+		void Process();
 	}
 }

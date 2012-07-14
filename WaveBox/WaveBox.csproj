@@ -103,8 +103,6 @@
     <Compile Include="DataModel\Singletons\FileManager.cs" />
     <Compile Include="DataModel\Singletons\Jukebox.cs" />
     <Compile Include="DataModel\Singletons\Settings.cs" />
-    <Compile Include="HTTPServer\PmsHttpHeader.cs" />
-    <Compile Include="HTTPServer\PmsHttpServer.cs" />
     <Compile Include="HTTPServer\SimpleHttpServer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -113,6 +111,8 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="HTTPServer\WaveBoxHttpHeader.cs" />
+    <Compile Include="HTTPServer\WaveBoxHttpServer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="bass.dll">
@@ -159,7 +159,6 @@
     </None>
     <None Include="lib\Bass.Net.dll" />
     <None Include="res\wavebox.db" />
-    <None Include="res\wavebox.sdf" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

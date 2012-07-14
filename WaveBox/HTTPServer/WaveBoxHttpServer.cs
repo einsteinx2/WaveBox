@@ -9,44 +9,44 @@ using System.Diagnostics;
 
 namespace Bend.Util
 {
-	public class PmsHttpServer : HttpServer
+	public class WaveBoxHttpServer : HttpServer
 	{
-		public PmsHttpServer(int port)
-			: base(port)
+		public WaveBoxHttpServer(int port) : base(port)
 		{
 		}
-		public override void handleGETRequest(HttpProcessor p)
+
+		public override void HandleGETRequest(HttpProcessor processor)
 		{
 			var sw = new Stopwatch();
-			var apiHandler = ApiHandlerFactory.createRestHandler(p.http_url, p);
+			var apiHandler = ApiHandlerFactory.CreateApiHandler(processor.HttpUrl, processor);
 
 			sw.Start();
-			apiHandler.process();
+			apiHandler.Process();
 			Console.WriteLine(apiHandler.GetType() + ": {0}ms", sw.ElapsedMilliseconds);
 			sw.Stop();
 		}
 
-		public override void handlePOSTRequest(HttpProcessor p, StreamReader inputData)
+		public override void HandlePOSTRequest(HttpProcessor processor, StreamReader inputData)
 		{
-			string data = p.http_url + "?" + inputData.ReadToEnd();
+			string data = processor.HttpUrl + "?" + inputData.ReadToEnd();
 			Console.WriteLine("[HTTPSERVER] POST request: {0}", data);
 			
 			var sw = new Stopwatch();
-			var apiHandler = ApiHandlerFactory.createRestHandler(data, p);
+			var apiHandler = ApiHandlerFactory.CreateApiHandler(data, processor);
 
 			sw.Start();
-			apiHandler.process();
+			apiHandler.Process();
 			Console.WriteLine(apiHandler.GetType() + ": {0}ms", sw.ElapsedMilliseconds);
 			sw.Stop();
 		}
 
-		public static void sendJson(HttpProcessor _sh, string json)
+		public static void sendJson(HttpProcessor processor, string json)
 		{
-			_sh.writeSuccess();
-			_sh.outputStream.Write(json);
+			processor.WriteSuccess();
+			processor.OutputStream.Write(json);
 		}
 
-		public static void sendFile(HttpProcessor _sh, FileStream fs, int startOffset)
+		public static void sendFile(HttpProcessor processor, FileStream fs, int startOffset)
 		{
 			FileInfo fsinfo = null;
 			if (fs == null)
@@ -69,23 +69,23 @@ namespace Bend.Util
 			}
 
 			// new http header object
-			PmsHttpHeader h = new PmsHttpHeader(PmsHttpHeader.HttpStatusCode.OK, "", fileLength);
+			WaveBoxHttpHeader h = new WaveBoxHttpHeader(WaveBoxHttpHeader.HttpStatusCode.OK, "", fileLength);
 			
 			// write the headers to output stream
-			h.writeHeader(_sh);
+			h.WriteHeader(processor);
 
 			byte[] buf = new byte[8192];
 			int bytesRead;
 			long bytesWritten = 0;
 			int offset = startOffset;
 			var lol = new System.IO.StreamWriter(Console.OpenStandardOutput());
-			var stream = _sh.outputStream.BaseStream;
+			var stream = processor.OutputStream.BaseStream;
 			int sinceLastReport = 0;
 			var sw = new Stopwatch();
 
-			if (_sh.httpHeaders.ContainsKey("Range"))
+			if (processor.HttpHeaders.ContainsKey("Range"))
 			{
-				string range = (string)_sh.httpHeaders["Range"];
+				string range = (string)processor.HttpHeaders["Range"];
 				string start = range.Split(new char[]{'-', '='})[1];
 				Console.WriteLine("[SENDFILE] Connection retried.  Resuming from {0}", start);
 				fs.Seek(Convert.ToInt32(start), SeekOrigin.Begin);

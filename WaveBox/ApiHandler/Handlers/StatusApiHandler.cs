@@ -10,55 +10,32 @@ namespace WaveBox.ApiHandler.Handlers
 {
 	class StatusApiHandler : IApiHandler
 	{
-		private HttpProcessor _sh;
-		private UriWrapper _uriW;
+		private HttpProcessor Processor { get; set; }
+		private UriWrapper Uri { get; set; }
 
-		public StatusApiHandler(UriWrapper uriW, HttpProcessor sh, int userId)
+		public StatusApiHandler(UriWrapper uri, HttpProcessor processor, int userId)
 		{
-			_sh = sh;
-			_uriW = uriW;
+			Processor = processor;
+			Uri = uri;
 		}
 
-		public void process()
+		public void Process()
 		{
 			Console.WriteLine("Status: ok!");
-			string json = JsonConvert.SerializeObject(new StatusResponse(null, 1), Formatting.None);
-			_sh.outputStream.Write(json);
+			string json = JsonConvert.SerializeObject(new StatusResponse(null, "1"), Formatting.None);
+			Processor.OutputStream.Write(json);
 		}
 	}
 
 	class StatusResponse
 	{
-		private string _error;
-		public string error
-		{
-			get
-			{
-				return _error;
-			}
-			set
-			{
-				_error = value;
-			}
-		}
+		public string Error { get; set; }
+		public string Version { get; set; }
 
-		private double _version;
-		public double version
+		public StatusResponse(string error, string version)
 		{
-			get
-			{
-				return _version;
-			}
-			set
-			{
-				_version = value;
-			}
-		}
-
-		public StatusResponse(string Error, double Version)
-		{
-			error = Error;
-			version = Version;
+			Error = error;
+			Version = version;
 		}
 	}
 }

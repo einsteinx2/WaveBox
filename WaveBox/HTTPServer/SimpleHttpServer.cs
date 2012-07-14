@@ -12,29 +12,32 @@ using WaveBox;
 // simple HTTP explanation
 // http://www.jmarshall.com/easy/http/
 
-namespace Bend.Util {
+namespace Bend.Util 
+{
+	public class HttpProcessor 
+	{
+		public TcpClient Socket { get; set; }
+		public HttpServer Srv { get; set; }
 
-	public class HttpProcessor {
-		public TcpClient socket;
-		public HttpServer srv;
+		private Stream InputStream { get; set; }
+		public StreamWriter OutputStream { get; set; }
 
-		private Stream inputStream;
-		public StreamWriter outputStream;
-
-		public String http_method;
-		public String http_url;
-		public String http_protocol_versionstring;
-		public Hashtable httpHeaders = new Hashtable();
+		public String HttpMethod { get; set; }
+		public String HttpUrl { get; set; }
+		public String HttpProtocolVersionString { get; set; }
+		public Hashtable HttpHeaders { get; set; }
 
 
 		private static int MAX_POST_SIZE = 10 * 1024 * 1024; // 10MB
 
-		public HttpProcessor(TcpClient s, HttpServer srv) {
-			this.socket = s;
+		public HttpProcessor(TcpClient s, HttpServer srv) 
+		{
+			HttpHeaders = new Hashtable();
+			Socket = s;
 			//Console.WriteLine("Send timeout: " + s.SendTimeout);
 			//s.SendTimeout = -1;
 			//Console.WriteLine("Send timeout after: " + s.SendTimeout);
-			this.srv = srv;
+			Srv = srv;
 		}
 		
 
@@ -42,7 +45,8 @@ namespace Bend.Util {
 		{
 			int next_char;
 			string data = "";
-			while (true) {
+			while (true)
+			{
 				next_char = inputStream.ReadByte();
 				if (next_char == '\n') { break; }
 				if (next_char == '\r') { continue; }
@@ -55,26 +59,30 @@ namespace Bend.Util {
 		{
 			// we can't use a StreamReader for input, because it buffers up extra data on us inside it's
 			// "processed" view of the world, and we want the data raw after the headers
-			inputStream = new BufferedStream(socket.GetStream());
+			InputStream = new BufferedStream(Socket.GetStream());
 
 			// we probably shouldn't be using a streamwriter for all output from handlers either
-			outputStream = new StreamWriter(new BufferedStream(socket.GetStream()));
-			try {
-				parseRequest();
-				readHeaders();
-				if (http_method.Equals("GET")) {
-					handleGETRequest();
-				} else if (http_method.Equals("POST")) {
-					handlePOSTRequest();
+			OutputStream = new StreamWriter(new BufferedStream(Socket.GetStream()));
+			try 
+			{
+				ParseRequest();
+				ReadHeaders();
+				if (HttpMethod.Equals("GET")) 
+				{
+					HandleGETRequest();
+				} 
+				else if (HttpMethod.Equals("POST"))
+				{
+					HandlePOSTRequest();
 				}
 			} catch (Exception e) {
 				Console.WriteLine("Exception: " + e.ToString());
-				writeFailure();
+				WriteFailure();
 			}
 
 			try
 			{
-				outputStream.Flush();
+				OutputStream.Flush();
 			}
 
 			catch (IOException e)
@@ -94,27 +102,30 @@ namespace Bend.Util {
 				Console.WriteLine(e.ToString());
 			}
 			// bs.Flush(); // flush any remaining output
-			inputStream = null; outputStream = null; // bs = null;
-			socket.Close();             
+			InputStream = null; OutputStream = null; // bs = null;
+			Socket.Close();             
 		}
 
-		public void parseRequest() {
-			String request = streamReadLine(inputStream);
+		public void ParseRequest() 
+		{
+			String request = streamReadLine(InputStream);
 			string[] tokens = request.Split(' ');
-			if (tokens.Length != 3) {
+			if (tokens.Length != 3) 
+			{
 				throw new Exception("invalid http request line");
 			}
-			http_method = tokens[0].ToUpper();
-			http_url = tokens[1];
-			http_protocol_versionstring = tokens[2];
+			HttpMethod = tokens[0].ToUpper();
+			HttpUrl = tokens[1];
+			HttpProtocolVersionString = tokens[2];
 
 			//Console.WriteLine("starting: " + request);
 		}
 
-		public void readHeaders() {
+		public void ReadHeaders() 
+		{
 			//Console.WriteLine("readHeaders()");
 			String line;
-			while ((line = streamReadLine(inputStream)) != null) {
+			while ((line = streamReadLine(InputStream)) != null) {
 				if (line.Equals("")) {
 					//Console.WriteLine("got headers");
 					return;
@@ -132,16 +143,18 @@ namespace Bend.Util {
 					
 				string value = line.Substring(pos, line.Length - pos);
 				//Console.WriteLine("header: {0}:{1}",name,value);
-				httpHeaders[name] = value;
+				HttpHeaders[name] = value;
 			}
 		}
 
-		public void handleGETRequest() {
-			srv.handleGETRequest(this);
+		public void HandleGETRequest() 
+		{
+			Srv.HandleGETRequest(this);
 		}
 
 		private const int BUF_SIZE = 4096;
-		public void handlePOSTRequest() {
+		public void HandlePOSTRequest()
+		{
 			// this post data processing just reads everything into a memory stream.
 			// this is fine for smallish things, but for large stuff we should really
 			// hand an input stream to the request processor. However, the input stream 
@@ -151,26 +164,31 @@ namespace Bend.Util {
 			//Console.WriteLine("get post data start");
 			int content_len = 0;
 			MemoryStream ms = new MemoryStream();
-			if (this.httpHeaders.ContainsKey("Content-Length")) {
-				 content_len = Convert.ToInt32(this.httpHeaders["Content-Length"]);
-				 if (content_len > MAX_POST_SIZE) {
-					 throw new Exception(
-						 String.Format("POST Content-Length({0}) too big for this simple server",
-						   content_len));
-				 }
-				 byte[] buf = new byte[BUF_SIZE];              
-				 int to_read = content_len;
-				 while (to_read > 0) {  
-					 //Console.WriteLine("starting Read, to_read={0}",to_read);
+			if (HttpHeaders.ContainsKey("Content-Length")) 
+			{
+				content_len = Convert.ToInt32(HttpHeaders["Content-Length"]);
+				if (content_len > MAX_POST_SIZE)
+				{
+					throw new Exception(String.Format("POST Content-Length({0}) too big for this simple server", content_len));
+				}
+				byte[] buf = new byte[BUF_SIZE];              
+				int to_read = content_len;
+				while (to_read > 0) 
+				{  
+					//Console.WriteLine("starting Read, to_read={0}",to_read);
 
-					 int numread = this.inputStream.Read(buf, 0, Math.Min(BUF_SIZE, to_read));
-					 //Console.WriteLine("read finished, numread={0}", numread);
-					 if (numread == 0) {
-						 if (to_read == 0) {
-							 break;
-						 } else {
-							 throw new Exception("client disconnected during post");
-						 }
+					int numread = InputStream.Read(buf, 0, Math.Min(BUF_SIZE, to_read));
+					//Console.WriteLine("read finished, numread={0}", numread);
+					if (numread == 0) 
+					{
+						if (to_read == 0) 
+						{
+							break;
+						} 
+						else 
+						{
+							throw new Exception("client disconnected during post");
+						}
 					 }
 					 to_read -= numread;
 					 ms.Write(buf, 0, numread);
@@ -178,40 +196,44 @@ namespace Bend.Util {
 				 ms.Seek(0, SeekOrigin.Begin);
 			}
 			//Console.WriteLine("get post data end");
-			srv.handlePOSTRequest(this, new StreamReader(ms));
-
+			Srv.HandlePOSTRequest(this, new StreamReader(ms));
 		}
 
-		public void writeSuccess() {
-			outputStream.WriteLine("HTTP/1.0 200 OK");            
-			outputStream.WriteLine("Content-Type: application/json");
-			outputStream.WriteLine("Access-Control-Allow-Origin: *");
-			outputStream.WriteLine("Connection: close");
-			outputStream.WriteLine("");
+		public void WriteSuccess()
+		{
+			OutputStream.WriteLine("HTTP/1.0 200 OK");            
+			OutputStream.WriteLine("Content-Type: application/json");
+			OutputStream.WriteLine("Access-Control-Allow-Origin: *");
+			OutputStream.WriteLine("Connection: close");
+			OutputStream.WriteLine("");
 		}
 
-		public void writeFailure() {
-			outputStream.WriteLine("HTTP/1.0 404 File not found");
-			outputStream.WriteLine("Connection: close");
-			outputStream.WriteLine("");
+		public void WriteFailure() 
+		{
+			OutputStream.WriteLine("HTTP/1.0 404 File not found");
+			OutputStream.WriteLine("Connection: close");
+			OutputStream.WriteLine("");
 		}
 	}
 
-	public abstract class HttpServer {
-
-		protected int port;
-		TcpListener listener;
-		bool is_active = true;
+	public abstract class HttpServer 
+	{
+		protected int Port { get; set; }
+		private TcpListener Listener { get; set; }
+		private bool IsActive { get; set; }
 	   
-		public HttpServer(int port) {
-			this.port = port;
+		public HttpServer(int port) 
+		{
+			IsActive = true;
+			Port = port;
 		}
 
-		public void listen() {
-			listener = new TcpListener(IPAddress.Any, port);
+		public void Listen()
+		{
+			Listener = new TcpListener(IPAddress.Any, Port);
 			try
 			{
-				listener.Start();
+				Listener.Start();
 			}
 			catch (System.Net.Sockets.SocketException e)
 			{
@@ -230,8 +252,9 @@ namespace Bend.Util {
 				Program.Shutdown();
 			}
 			Console.WriteLine("HTTP server started");
-			while (is_active) {                
-				TcpClient s = listener.AcceptTcpClient();
+			while (IsActive) 
+			{                
+				TcpClient s = Listener.AcceptTcpClient();
 				//TcpClient d = listener.BeginAcceptTcpClient
 				HttpProcessor processor = new HttpProcessor(s, this);
 				Thread thread = new Thread(new ThreadStart(processor.process));
@@ -240,8 +263,8 @@ namespace Bend.Util {
 			}
 		}
 
-		public abstract void handleGETRequest(HttpProcessor p);
-		public abstract void handlePOSTRequest(HttpProcessor p, StreamReader inputData);
+		public abstract void HandleGETRequest(HttpProcessor p);
+		public abstract void HandlePOSTRequest(HttpProcessor p, StreamReader inputData);
 	}
 }
 

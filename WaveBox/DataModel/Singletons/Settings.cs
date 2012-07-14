@@ -10,56 +10,37 @@ namespace WaveBox.DataModel.Singletons
 {
 	public class Settings
 	{
-		private static Settings instance;
 		public static string SETTINGS_PATH = "res/WaveBox.conf";
 
-		private double _version = 1.0;
-		public double Version
+		private static double version = 1.0;
+		public static double Version
 		{
 			get
 			{
-				return _version;
+				return version;
 			}
 		}
 
-		private static List<Folder> _mediaFolders;
+		private static List<Folder> mediaFolders;
 		public static List<Folder> MediaFolders
 		{
 			get
 			{
-				return _mediaFolders;
+				return mediaFolders;
 			}
 		}
 
-		private Settings()
+		public static void Reload()
 		{
-			_settingsSetup();
+			ParseSettings();
 		}
 
-		public static Settings Instance
+		private static void ParseSettings()
 		{
-			get
-			{
-				if (instance == null)
-				{
-					instance = new Settings();
-				}
-
-				return instance;
-			}
+			mediaFolders = PopulateMediaFolders();
 		}
 
-		public static void reload()
-		{
-			_parseSettings();
-		}
-
-		private static void _parseSettings()
-		{
-			_mediaFolders = _populateMediaFolders();
-		}
-
-		private static void _settingsSetup()
+		public static void SettingsSetup()
 		{
 			if(!File.Exists("WaveBox.conf"))
 			{
@@ -81,10 +62,10 @@ namespace WaveBox.DataModel.Singletons
 				}
 			}
 
-			reload();
+			Reload();
 		}
 
-		private static List<Folder> _populateMediaFolders()
+		private static List<Folder> PopulateMediaFolders()
 		{
 			var folders = new List<Folder>();
 			Folder mf = null;
@@ -100,12 +81,10 @@ namespace WaveBox.DataModel.Singletons
 				mf = new Folder(json.mediaFolders[i].ToString(), true);
 				if (mf.FolderId == 0)
 				{
-					mf.addToDatabase(true);
+					mf.AddToDatabase(true);
 				}
 				folders.Add(mf);
 			}
-
-
 
 			return folders;
 		}

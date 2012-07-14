@@ -11,57 +11,14 @@ namespace WaveBox.DataModel.Model
 {
 	class User
 	{
-		private int _userId;
-		public int UserId
-		{
-			get
-			{
-				return _userId;
-			}
-			set
-			{
-				_userId = value;
-			}
-		}
+		public int UserId { get; set; }
 
-		private string _userName;
-		public string UserName
-		{
-			get
-			{
-				return _userName;
-			}
-			set
-			{
-				_userName = value;
-			}
-		}
+		public string UserName { get; set; }
 
-		private string _passwordHash;
-		public string PasswordHash
-		{
-			get
-			{
-				return _passwordHash;
-			}
-			set
-			{
-				_passwordHash = value;
-			}
-		}
+		public string PasswordHash { get; set; }
 
-		private string _passwordSalt;
-		public string PasswordSalt
-		{
-			get
-			{
-				return _passwordSalt;
-			}
-			set
-			{
-				_passwordSalt = value;
-			}
-		}
+		public string PasswordSalt { get; set; }
+
 
 		public User()
 		{
@@ -74,39 +31,30 @@ namespace WaveBox.DataModel.Model
 			SQLiteConnection conn = null;
 			SQLiteDataReader reader = null;
 
-			try
-			{
-				Database.dbLock.WaitOne();
-				conn = Database.getDbConnection();
-				var q = new SQLiteCommand("SELECT * FROM users WHERE user_id = @userid");
-				q.Connection = conn;
-				q.Parameters.AddWithValue("@userid", UserId);
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
-				{
-					_setPropertiesFromQueryResult(reader);
-				}
-			}
-
-			catch (Exception e)
-			{
-				Console.WriteLine(e.ToString());
-			}
-
-			finally
+			lock (Database.dbLock)
 			{
 				try
 				{
-					Database.dbLock.ReleaseMutex();
-				}
+					conn = Database.GetDbConnection();
+					var q = new SQLiteCommand("SELECT * FROM users WHERE user_id = @userid");
+					q.Connection = conn;
+					q.Parameters.AddWithValue("@userid", UserId);
+					q.Prepare();
+					reader = q.ExecuteReader();
 
+					if (reader.Read())
+					{
+						SetPropertiesFromQueryResult(reader);
+					}
+				}
 				catch (Exception e)
 				{
 					Console.WriteLine(e.ToString());
 				}
-				Database.close(conn, reader);
+				finally
+				{
+					Database.Close(conn, reader);
+				}
 			}
 		}
 
@@ -117,43 +65,34 @@ namespace WaveBox.DataModel.Model
 			SQLiteConnection conn = null;
 			SQLiteDataReader reader = null;
 
-			try
-			{
-				Database.dbLock.WaitOne();
-				conn = Database.getDbConnection();
-				var q = new SQLiteCommand("SELECT * FROM users WHERE user_name = @username");
-				q.Connection = conn;
-				q.Parameters.AddWithValue("@username", userName);
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
-				{
-					_setPropertiesFromQueryResult(reader);
-				}
-			}
-
-			catch (Exception e)
-			{
-				Console.WriteLine(e.ToString());
-			}
-
-			finally
+			lock (Database.dbLock)
 			{
 				try
 				{
-					Database.dbLock.ReleaseMutex();
-				}
+					conn = Database.GetDbConnection();
+					var q = new SQLiteCommand("SELECT * FROM users WHERE user_name = @username");
+					q.Connection = conn;
+					q.Parameters.AddWithValue("@username", userName);
+					q.Prepare();
+					reader = q.ExecuteReader();
 
+					if (reader.Read())
+					{
+						SetPropertiesFromQueryResult(reader);
+					}
+				}
 				catch (Exception e)
 				{
 					Console.WriteLine(e.ToString());
 				}
-				Database.close(conn, reader);
+				finally
+				{
+					Database.Close(conn, reader);
+				}
 			}
 		}
 
-		private void _setPropertiesFromQueryResult(SQLiteDataReader reader)
+		private void SetPropertiesFromQueryResult(SQLiteDataReader reader)
 		{
 			UserId = reader.GetInt32(reader.GetOrdinal("user_id"));
 			UserName = reader.GetString(reader.GetOrdinal("user_name"));
@@ -161,7 +100,7 @@ namespace WaveBox.DataModel.Model
 			PasswordSalt = reader.GetString(reader.GetOrdinal("user_salt"));
 		}
 
-		private static string _sha1(string sumthis)
+		private static string Sha1(string sumthis)
 		{
 			if (sumthis == "" || sumthis == null)
 			{
@@ -172,96 +111,94 @@ namespace WaveBox.DataModel.Model
 			return BitConverter.ToString(provider.ComputeHash(Encoding.ASCII.GetBytes(sumthis)));
 		}
 
-		private static string _computePasswordHash(string password, string salt)
+		private static string ComputePasswordHash(string password, string salt)
 		{
-			long startTime = DateTime.Now.Ticks;
-			var hash = _sha1(password + salt);
+			//long startTime = DateTime.Now.Ticks;
+			var hash = Sha1(password + salt);
 
 			for (int i = 0; i < 50; i++)
 			{
-				hash = _sha1(hash + salt);
+				hash = Sha1(hash + salt);
 			}
 
 			return hash;
 		}
 
-		private static string _generatePasswordSalt()
+		private static string GeneratePasswordSalt()
 		{
-			return _sha1(Convert.ToString(DateTime.Now.Ticks));
+			return Sha1(Convert.ToString(DateTime.Now.Ticks));
 		}
 
-		public void updatePassword(string password)
+		public void UpdatePassword(string password)
 		{
 			SQLiteConnection conn = null;
 			SQLiteDataReader reader = null;
 
-			var salt = _generatePasswordSalt();
-			var hash = _computePasswordHash(password, salt);
+			var salt = GeneratePasswordSalt();
+			var hash = ComputePasswordHash(password, salt);
 
-			try
+			lock (Database.dbLock)
 			{
-				Database.dbLock.WaitOne();
-				conn = Database.getDbConnection();
-				var q = new SQLiteCommand("UPDATE users SET user_password = @hash, user_salt = @salt WHERE user_name = @username");
-				q.Connection = conn;
-				q.Parameters.AddWithValue("@username", UserName);
-				q.Prepare();
-				q.ExecuteNonQuery();
-			}
-
-			catch (Exception e)
-			{
-				Console.WriteLine(e.ToString());
-			}
-
-			finally
-			{
-				Database.dbLock.ReleaseMutex();
-				Database.close(conn, reader);
+				try
+				{
+					conn = Database.GetDbConnection();
+					var q = new SQLiteCommand("UPDATE users SET user_password = @hash, user_salt = @salt WHERE user_name = @username");
+					q.Connection = conn;
+					q.Parameters.AddWithValue("@username", UserName);
+					q.Prepare();
+					q.ExecuteNonQuery();
+				}
+				catch (Exception e)
+				{
+					Console.WriteLine(e.ToString());
+				}
+				finally
+				{
+					Database.Close(conn, reader);
+				}
 			}
 
 			PasswordHash = hash;
 			PasswordSalt = salt;
 		}
 
-		public static User createUser(string userName, string password)
+		public static User CreateUser(string userName, string password)
 		{
-			var salt = _generatePasswordSalt();
-			var hash = _computePasswordHash(password, salt);
+			var salt = GeneratePasswordSalt();
+			var hash = ComputePasswordHash(password, salt);
 
 			SQLiteConnection conn = null;
 			SQLiteDataReader reader = null;
 
-			try
+			lock (Database.dbLock)
 			{
-				Database.dbLock.WaitOne();
-				conn = Database.getDbConnection();
-				var q = new SQLiteCommand("INSERT INTO users (user_name, user_password, user_salt) VALUES (@username, @userhash, @usersalt)");
-				q.Connection = conn;
-				q.Parameters.AddWithValue("@username", userName);
-				q.Parameters.AddWithValue("@userhash", hash);
-				q.Parameters.AddWithValue("@usersalt", salt);
-				q.Prepare();
-				q.ExecuteNonQuery();
-			}
-
-			catch (Exception e)
-			{
-				Console.WriteLine(e.ToString());
-			}
-
-			finally
-			{
-				Database.dbLock.ReleaseMutex();
-				Database.close(conn, reader);
+				try
+				{
+					conn = Database.GetDbConnection();
+					var q = new SQLiteCommand("INSERT INTO users (user_name, user_password, user_salt) VALUES (@username, @userhash, @usersalt)");
+					q.Connection = conn;
+					q.Parameters.AddWithValue("@username", userName);
+					q.Parameters.AddWithValue("@userhash", hash);
+					q.Parameters.AddWithValue("@usersalt", salt);
+					q.Prepare();
+					q.ExecuteNonQuery();
+				}
+				catch (Exception e)
+				{
+					Console.WriteLine(e.ToString());
+				}
+				finally
+				{
+					Database.Close(conn, reader);
+				}
 			}
 
 			return new User(userName);
 		}
 
-		public bool authenticate(string password)
+		public bool Authenticate(string password)
 		{
-			var hash = _computePasswordHash(password, PasswordSalt);
+			var hash = ComputePasswordHash(password, PasswordSalt);
 			return hash == PasswordHash ? true : false;
 		}
 	}

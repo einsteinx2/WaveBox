@@ -14,7 +14,6 @@ namespace WaveBox
 {
 	class Program
 	{
-
 		static void Main(string[] args)
 		{
 			// define run port
@@ -24,16 +23,16 @@ namespace WaveBox
 			// we do any file scanning otherwise.
 			Thread httpSrv = null;
 
-			// register application kill notifier
+			/*// register application kill notifier
 			Console.WriteLine("Registering shutdown hook...");
 			_handler += new EventHandler(Handler);
-			SetConsoleCtrlHandler(_handler, true);
+			SetConsoleCtrlHandler(_handler, true);*/
 
 			// start http server
 			try
 			{
-				var http = new PmsHttpServer(httpPort);
-				httpSrv = new Thread(new ThreadStart(http.listen));
+				var http = new WaveBoxHttpServer(httpPort);
+				httpSrv = new Thread(new ThreadStart(http.Listen));
 				httpSrv.Start();
 			}
 
@@ -54,25 +53,21 @@ namespace WaveBox
 				Environment.Exit(-1);
 			}
 			
-			var database = Database.Instance;
-			var settings = Settings.Instance;
+			Settings.SettingsSetup();
 
-			User.createUser("test", "test");
+			User.CreateUser("test", "test");
 
 			var sw = new Stopwatch();
 			Console.WriteLine("Scanning media directories...");
 			sw.Start();
-			var filemanager = FileManager.Instance;
+			FileManager.Instance.Setup();
 			sw.Stop();
-
-
-
 
 			// sleep the main thread so we can go about handling api calls and stuff on other threads.
 			Thread.Sleep(Timeout.Infinite);
 		}
 
-		[DllImport("Kernel32")]
+		/*[DllImport("Kernel32")]
 		private static extern bool SetConsoleCtrlHandler(EventHandler handler, bool add);
 
 		private delegate bool EventHandler(CtrlType sig);
@@ -91,12 +86,12 @@ namespace WaveBox
 		{
 			Shutdown();
 			return true;
-		}
+		}*/
 
 		public static void Shutdown()
 		{
 			Console.WriteLine("Executing shutdown hook!");
-			SQLiteConnection dbconn = Database.getDbConnection();
+			SQLiteConnection dbconn = Database.GetDbConnection();
 			dbconn.Close();
 
 			if (dbconn.State == System.Data.ConnectionState.Closed)
