@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Data.SqlServerCe;
+using System.Data.SQLite;
 using WaveBox.DataModel.Singletons;
 using Newtonsoft.Json;
 
@@ -99,19 +99,19 @@ namespace WaveBox.DataModel.Model
 		{
 		}
 
-		public Album(SqlCeDataReader reader)
+		public Album(SQLiteDataReader reader)
 		{
 			_setPropertiesFromQueryResult(reader);
 		}
 
 		public Album(int albumId)
 		{
-			SqlCeConnection conn = null;
-			SqlCeDataReader result = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader result = null;
 
 			try
 			{
-				var q = new SqlCeCommand("SELECT * FROM album WHERE album_id = @albumid");
+				var q = new SQLiteCommand("SELECT * FROM album WHERE album_id = @albumid");
 				q.Parameters.AddWithValue("@albumid", albumId);
 
 				Database.dbLock.WaitOne();
@@ -157,12 +157,12 @@ namespace WaveBox.DataModel.Model
 
 			AlbumName = albumName;
 
-			SqlCeConnection conn = null;
-			SqlCeDataReader result = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader result = null;
 
 			try
 			{
-				var q = new SqlCeCommand("SELECT * FROM album WHERE album_name  = @albumname");
+				var q = new SQLiteCommand("SELECT * FROM album WHERE album_name  = @albumname");
 				q.Parameters.AddWithValue("@itemtypeid", ItemTypeId);
 				q.Parameters.AddWithValue("@albumname", AlbumName);
 
@@ -208,12 +208,12 @@ namespace WaveBox.DataModel.Model
 		{
 			bool success = false;
 
-			SqlCeConnection conn = null;
-			SqlCeDataReader result = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader result = null;
 
 			try
 			{
-				var q = new SqlCeCommand("INSERT INTO album (album_name, artist_id) VALUES(@albumname, @artistid)");
+				var q = new SQLiteCommand("INSERT INTO album (album_name, artist_id) VALUES(@albumname, @artistid)");
 				q.Parameters.AddWithValue("@albumname", albumName);
 				q.Parameters.AddWithValue("@artistid", artistId);
 
@@ -248,7 +248,7 @@ namespace WaveBox.DataModel.Model
 			return success;
 		}
 
-		private void _setPropertiesFromQueryResult(SqlCeDataReader reader)
+		private void _setPropertiesFromQueryResult(SQLiteDataReader reader)
 		{
 			if(reader.IsDBNull(reader.GetOrdinal("artist_id")))
 			{
@@ -289,12 +289,12 @@ namespace WaveBox.DataModel.Model
 		{
 			var songs = new List<Song>();
 
-			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
 
 			try
 			{
-				var q = new SqlCeCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " +
+				var q = new SQLiteCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " +
 										 "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
 										 "LEFT JOIN album ON song_album_id = album.album_id " +
 										 "WHERE song_album_id = @albumid");
@@ -362,12 +362,12 @@ namespace WaveBox.DataModel.Model
 		{
 			var albums = new List<Album>();
 
-			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
 
 			try
 			{
-				var q = new SqlCeCommand("SELECT * FROM album");
+				var q = new SQLiteCommand("SELECT * FROM album");
 
 				q.Parameters.AddWithValue("@itemtypeid", new Album().ItemTypeId);
 
@@ -409,12 +409,12 @@ namespace WaveBox.DataModel.Model
 		public static List<Album> randomAlbums()
 		{
 			var random = new List<Album>();
-			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
 
 			try
 			{
-				var q = new SqlCeCommand("SELECT TOP @count * FROM album" +
+				var q = new SQLiteCommand("SELECT TOP @count * FROM album" +
 										 "ORDER BY NEWID()");
 
 				q.Parameters.AddWithValue("@itemtypeid", new Album().ItemTypeId);

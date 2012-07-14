@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using System.Data.SqlServerCe;
+using System.Data.SQLite;
 using System.Data.SqlTypes;
 using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
@@ -68,12 +68,12 @@ namespace WaveBox.DataModel.Model
 
 		public CoverArt(int artId)
 		{
-			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
 
 			try
 			{
-				var q = new SqlCeCommand("SELECT * FROM art WHERE art_id = @artid");
+				var q = new SQLiteCommand("SELECT * FROM art WHERE art_id = @artid");
 
 				q.Parameters.AddWithValue("@artid", artId);
 
@@ -136,12 +136,12 @@ namespace WaveBox.DataModel.Model
 
 		private void _checkDatabaseAndPerformCopy(byte[] data)
 		{
-				SqlCeConnection conn = null;
-				SqlCeDataReader reader = null;
+				SQLiteConnection conn = null;
+				SQLiteDataReader reader = null;
 
 				try
 				{
-					var q = new SqlCeCommand("SELECT * FROM art WHERE adler_hash = @adlerhash");
+					var q = new SQLiteCommand("SELECT * FROM art WHERE adler_hash = @adlerhash");
 					q.Parameters.AddWithValue("@adlerhash", AdlerHash);
 
 					Database.dbLock.WaitOne();
@@ -194,7 +194,7 @@ namespace WaveBox.DataModel.Model
 
 						try
 						{
-							var q1 = new SqlCeCommand("INSERT INTO art (adler_hash) VALUES (@adlerhash)");
+							var q1 = new SQLiteCommand("INSERT INTO art (adler_hash) VALUES (@adlerhash)");
 
 							q1.Parameters.AddWithValue("@adlerhash", AdlerHash);
 
@@ -234,7 +234,7 @@ namespace WaveBox.DataModel.Model
 							}
 						}
 
-						catch (SqlCeException e)
+						catch (SQLiteException e)
 						{
 							Console.WriteLine("\r\n\r\n" + e.Message + "\r\n\r\n");
 						}

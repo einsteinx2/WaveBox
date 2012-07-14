@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Data.SqlServerCe;
+using System.Data.SQLite;
 using WaveBox.DataModel.Singletons;
 using Newtonsoft.Json;
 
@@ -76,22 +76,22 @@ namespace WaveBox.DataModel.Model
 		{
 		}
 
-		public Artist(SqlCeDataReader reader)
+		public Artist(SQLiteDataReader reader)
 		{
 			_setPropertiesFromQueryResult(reader);
 		}
 
 		public Artist(int artistId)
 		{
-			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
 
 			try
 			{
 				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();
 
-				var q = new SqlCeCommand("SELECT * FROM artist WHERE artist_id = @artistid");
+				var q = new SQLiteCommand("SELECT * FROM artist WHERE artist_id = @artistid");
 				q.Connection = conn;
 				q.Parameters.AddWithValue("@artistid", artistId);
 				q.Prepare();
@@ -132,14 +132,14 @@ namespace WaveBox.DataModel.Model
 				return;
 			}
 
-			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
 
 			try
 			{
 				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();
-				var q = new SqlCeCommand("SELECT * FROM artist WHERE artist_name = @artistname");
+				var q = new SQLiteCommand("SELECT * FROM artist WHERE artist_name = @artistname");
 				q.Connection = conn;
 				q.Parameters.AddWithValue("@artistname", artistName);
 				q.Prepare();
@@ -177,7 +177,7 @@ namespace WaveBox.DataModel.Model
 		/// Private methods
 		/// </summary>
 
-		private void _setPropertiesFromQueryResult(SqlCeDataReader reader)
+		private void _setPropertiesFromQueryResult(SQLiteDataReader reader)
 		{
 			try
 			{
@@ -188,7 +188,7 @@ namespace WaveBox.DataModel.Model
 				else _artId = reader.GetInt32(reader.GetOrdinal("artist_art_id"));
 			}
 
-			catch (SqlCeException e)
+			catch (SQLiteException e)
 			{
 				if (e.InnerException.ToString() == "SqlNullValueException") { }
 			}
@@ -197,14 +197,14 @@ namespace WaveBox.DataModel.Model
 		private static bool _insertArtist(string artistName)
 		{
 			bool success = false;
-			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
 
 			try
 			{
 				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();
-				var q = new SqlCeCommand("INSERT INTO artist (artist_name) VALUES (@artistname)");
+				var q = new SQLiteCommand("INSERT INTO artist (artist_name) VALUES (@artistname)");
 				q.Connection = conn;
 				q.Parameters.AddWithValue("@artistname", artistName);
 				q.Prepare();
@@ -248,14 +248,14 @@ namespace WaveBox.DataModel.Model
 		{
 			var albums = new List<Album>();
 
-			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
 
 			try
 			{
 				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();
-				var q = new SqlCeCommand("SELECT * FROM album WHERE artist_id = @artistid");
+				var q = new SQLiteCommand("SELECT * FROM album WHERE artist_id = @artistid");
 				q.Connection = conn;
 				q.Parameters.AddWithValue("@artistid", ArtistId);
 				q.Prepare();
@@ -295,12 +295,12 @@ namespace WaveBox.DataModel.Model
 			var songs = new List<Song>();
 
 
-			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
 
 			try
 			{
-				var q = new SqlCeCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " + 
+				var q = new SQLiteCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " + 
 										 "LEFT JOIN artist ON song_artist_id = artist_id " +
 										 "LEFT JOIN album ON song_album_id = album_id " +
 										 "WHERE song_artist_id = @artistid");
@@ -372,12 +372,12 @@ namespace WaveBox.DataModel.Model
 		{
 			var artists = new List<Artist>();
 
-			SqlCeConnection conn = null;
-			SqlCeDataReader result = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader result = null;
 
 			try
 			{
-				var q = new SqlCeCommand("SELECT * FROM artist");
+				var q = new SQLiteCommand("SELECT * FROM artist");
 
 				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();

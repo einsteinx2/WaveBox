@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Data.SqlServerCe;
+using System.Data.SQLite;
 using WaveBox.DataModel.Model;
 using WaveBox.DataModel.Singletons;
 using System.IO;
@@ -141,12 +141,12 @@ namespace WaveBox.DataModel.Model
 
 		public Song(int songId)
 		{
-			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
 
 			try
 			{
-				var q = new SqlCeCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " +
+				var q = new SQLiteCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " +
 										 "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
 										 "LEFT JOIN album ON song_album_id = album.album_id " +
 										 "WHERE song_id = @songid");
@@ -271,12 +271,12 @@ namespace WaveBox.DataModel.Model
 
 		}
 
-		public Song(SqlCeDataReader reader)
+		public Song(SQLiteDataReader reader)
 		{
 			_setPropertiesFromQueryResult(reader);
 		}
 
-		private void _setPropertiesFromQueryResult(SqlCeDataReader reader)
+		private void _setPropertiesFromQueryResult(SQLiteDataReader reader)
 		{
 			try
 			{
@@ -318,13 +318,13 @@ namespace WaveBox.DataModel.Model
 
 		public void updateDatabase()
 		{
-			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
 
 			try
 			{
 				// insert the song into the database
-				var q = new SqlCeCommand("INSERT INTO song (song_folder_id, song_artist_id, song_album_id, song_file_type_id, song_name, song_track_num, song_disc_num, song_duration, song_bitrate, song_file_size, song_last_modified, song_file_name, song_release_year, song_art_id)" + 
+				var q = new SQLiteCommand("INSERT INTO song (song_folder_id, song_artist_id, song_album_id, song_file_type_id, song_name, song_track_num, song_disc_num, song_duration, song_bitrate, song_file_size, song_last_modified, song_file_name, song_release_year, song_art_id)" + 
 										 "VALUES (@folderid, @artistid, @albumid, @filetype, @songname, @tracknum, @discnum, @duration, @bitrate, @filesize, @lastmod, @filename, @releaseyear, @artid)");
 
 				q.Parameters.AddWithValue("@folderid", FolderId);
@@ -370,12 +370,12 @@ namespace WaveBox.DataModel.Model
 		public static List<Song> allSongs()
 		{
 			var allsongs = new List<Song>();
-			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
 
 			try
 			{
-				var q = new SqlCeCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " +
+				var q = new SQLiteCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " +
 										 "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
 										 "LEFT JOIN album ON song_album_id = album.album_id ");
 

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Data.SqlServerCe;
+using System.Data.SQLite;
 using WaveBox.DataModel.Singletons;
 
 namespace WaveBox.DataModel.Model
@@ -100,19 +100,19 @@ namespace WaveBox.DataModel.Model
 		{
 		}
 
-		public Playlist(SqlCeDataReader reader)
+		public Playlist(SQLiteDataReader reader)
 		{
 			_setPropertiesFromQueryResult(reader);
 		}
 
 		public Playlist(int playlistId)
 		{
-			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
 
 			try
 			{
-				var q = new SqlCeCommand("SELECT * FROM playlist WHERE playlist_id = @playlistid");
+				var q = new SQLiteCommand("SELECT * FROM playlist WHERE playlist_id = @playlistid");
 				q.Parameters.AddWithValue("@playlistid", playlistId);
 
 				Database.dbLock.WaitOne();
@@ -145,12 +145,12 @@ namespace WaveBox.DataModel.Model
 		{
 			PlaylistName = playlistName;
 
-			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
 
 			try
 			{
-				var q = new SqlCeCommand("SELECT * FROM playlist WHERE playlist_name = @playlistname");
+				var q = new SQLiteCommand("SELECT * FROM playlist WHERE playlist_name = @playlistname");
 				q.Parameters.AddWithValue("@playlistname", playlistName);
 
 				Database.dbLock.WaitOne();
@@ -181,7 +181,7 @@ namespace WaveBox.DataModel.Model
 
 		// Private methods
 
-		private void _setPropertiesFromQueryResult(SqlCeDataReader reader)
+		private void _setPropertiesFromQueryResult(SQLiteDataReader reader)
 		{
 			try
 			{
@@ -208,13 +208,13 @@ namespace WaveBox.DataModel.Model
 		// what is the synchronized keyword in java?
 		public string _calculateHash()
 		{
-			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
 			string itemIds = "";
 
 			try
 			{
-				var q = new SqlCeCommand("SELECT * FROM playlist_item WHERE playlist_id = @playlistid");
+				var q = new SQLiteCommand("SELECT * FROM playlist_item WHERE playlist_id = @playlistid");
 				q.Parameters.AddWithValue("@playlistid", PlaylistId);
 
 				Database.dbLock.WaitOne();
@@ -262,23 +262,23 @@ namespace WaveBox.DataModel.Model
 
 		public void _updateDatabase()
 		{
-			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
 
 			try
 			{
-				SqlCeCommand q;
+				SQLiteCommand q;
 				//q.Parameters.AddWithValue("@playlistid", PlaylistId);
 				if (PlaylistId == 0)
 				{
-					q = new SqlCeCommand("INSERT INTO playlist (playlist_name, playlist_count, playlist_duration, md5_hash, last_update) VALUES (@playlistname, @playlistcount, @playlistduration, @md5, @lastupdate)");
-					//q = new SqlCeCommand("INSERT INTO playlist VALUES (@playlistid, @playlistname, @playlistcount, @playlistduration, @md5, @lastupdate)");
+					q = new SQLiteCommand("INSERT INTO playlist (playlist_name, playlist_count, playlist_duration, md5_hash, last_update) VALUES (@playlistname, @playlistcount, @playlistduration, @md5, @lastupdate)");
+					//q = new SQLiteCommand("INSERT INTO playlist VALUES (@playlistid, @playlistname, @playlistcount, @playlistduration, @md5, @lastupdate)");
 					//q.Parameters.AddWithValue("@playlistid", DBNull.Value);
 				}
 
 				else
 				{
-					q = new SqlCeCommand("UPDATE playlist SET playlist_name = @playlistname, "
+					q = new SQLiteCommand("UPDATE playlist SET playlist_name = @playlistname, "
 										+ "playlist_count = @playlistcount, "
 										+ "playlist_duration = @playlistduration, "
 										+ "md5_hash = @md5, "
@@ -324,13 +324,13 @@ namespace WaveBox.DataModel.Model
 
 		public int indexOfMediaItem(MediaItem item)
 		{
-			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
 			int index = 0;
 
 			try
 			{
-				var q = new SqlCeCommand("SELECT item_position FROM playlist_item " + 
+				var q = new SQLiteCommand("SELECT item_position FROM playlist_item " + 
 										 "WHERE playlist_id = @playlistid AND item_type_id = @itemtypeid " + 
 										 "ORDER BY item_position LIMIT 1");
 				q.Parameters.AddWithValue("@playlistid", PlaylistId);
@@ -365,13 +365,13 @@ namespace WaveBox.DataModel.Model
 
 		public MediaItem mediaItemAtIndex(int index)
 		{
-			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
 			MediaItem item = null;
 
 			try
 			{
-				var q = new SqlCeCommand("SELECT * FROM playlist_item WHERE playlist_id = @playlistid AND item_position = @itemposition");
+				var q = new SQLiteCommand("SELECT * FROM playlist_item WHERE playlist_id = @playlistid AND item_position = @itemposition");
 				q.Parameters.AddWithValue("@playlistid", PlaylistId);
 				q.Parameters.AddWithValue("@itemposition", index);
 
@@ -419,13 +419,13 @@ namespace WaveBox.DataModel.Model
 
 		public List<MediaItem> listOfMediaItems()
 		{
-			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
 			List<MediaItem> items = new List<MediaItem>();
 
 			try
 			{
-				var q = new SqlCeCommand("SELECT * FROM playlist_item WHERE playlist_id = @playlistid ORDER BY item_position");
+				var q = new SQLiteCommand("SELECT * FROM playlist_item WHERE playlist_id = @playlistid ORDER BY item_position");
 				q.Parameters.AddWithValue("@playlistid", PlaylistId);
 
 				Database.dbLock.WaitOne();
@@ -494,12 +494,12 @@ namespace WaveBox.DataModel.Model
 				return;
 			}
 
-			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
 
 			try
 			{
-				var q = new SqlCeCommand("DELETE FROM playlist_item WHERE playlist_id = @playlistid AND item_position = @itemposition");
+				var q = new SQLiteCommand("DELETE FROM playlist_item WHERE playlist_id = @playlistid AND item_position = @itemposition");
 				q.Parameters.AddWithValue("@playlistid", PlaylistId);
 				q.Parameters.AddWithValue("@itemposition", index);
 
@@ -531,16 +531,16 @@ namespace WaveBox.DataModel.Model
 
 		public void removeMediaItemAtIndexes(List<int> indices)
 		{
-			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
-			SqlCeTransaction trans = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
+			SQLiteTransaction trans = null;
 
 			try
 			{
 				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();
 				trans = conn.BeginTransaction();
-				var q = new SqlCeCommand();
+				var q = new SQLiteCommand();
 				q.Connection = conn;
 
 				// temporary storage for playlist item information.  We can't use temp tables with SQL CE, so this
@@ -614,15 +614,15 @@ namespace WaveBox.DataModel.Model
 				return;
 			}
 
-			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
-			SqlCeTransaction trans = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
+			SQLiteTransaction trans = null;
 
 			try
 			{
 				// to do - better way of knowing whether or not a query has been successfully completed.
 				trans = conn.BeginTransaction();
-				var q = new SqlCeCommand("UPDATE playlist_item SET item_position = item_position + 1 " + 
+				var q = new SQLiteCommand("UPDATE playlist_item SET item_position = item_position + 1 " + 
 										 "WHERE playlist_id = @playlistid AND item_position >= @itemposition");
 				q.Parameters.AddWithValue("@playlistid", PlaylistId);
 				q.Parameters.AddWithValue("@itemposition", toIndex);
@@ -638,7 +638,7 @@ namespace WaveBox.DataModel.Model
 				// If the fromIndex is higher than toIndex, compensate for the position update above
 				fromIndex = fromIndex < toIndex ? fromIndex : fromIndex - 1;
 
-				var q1 = new SqlCeCommand("UPDATE playlist_item SET item_position = @toitemposition " + 
+				var q1 = new SQLiteCommand("UPDATE playlist_item SET item_position = @toitemposition " + 
 								"WHERE playlist_id = @playlistid AND item_position = @fromitemposition");
 
 				q1.Parameters.AddWithValue("@toitemposition", toIndex);
@@ -670,13 +670,13 @@ namespace WaveBox.DataModel.Model
 
 		public void addMediaItem(MediaItem item, bool updateDatabase)
 		{
-			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
 
 			try
 			{
 				// to do - better way of knowing whether or not a query has been successfully completed.
-				var q = new SqlCeCommand("INSERT INTO playlist_item (playlist_id, item_type_id, item_id, item_position) VALUES (@playlistid, @itemtypeid, @itemid, @itempos)");
+				var q = new SQLiteCommand("INSERT INTO playlist_item (playlist_id, item_type_id, item_id, item_position) VALUES (@playlistid, @itemtypeid, @itemid, @itempos)");
 				q.Parameters.AddWithValue("@nullid", DBNull.Value);
 				q.Parameters.AddWithValue("@playlistid", PlaylistId);
 				q.Parameters.AddWithValue("@itemtypeid", item.ItemTypeId);
@@ -726,13 +726,13 @@ namespace WaveBox.DataModel.Model
 
 		public void clearPlaylist()
 		{
-			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
 
 			try
 			{
 				// to do - better way of knowing whether or not a query has been successfully completed.
-				var q = new SqlCeCommand("DELETE FROM playlist_item WHERE playlist_id = @playlistid"); 
+				var q = new SQLiteCommand("DELETE FROM playlist_item WHERE playlist_id = @playlistid"); 
 				q.Parameters.AddWithValue("@playlistid", PlaylistId);
 
 				Database.dbLock.WaitOne();

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using System.Data.SqlServerCe;
+using System.Data.SQLite;
 using WaveBox.DataModel.Model;
 using WaveBox.DataModel.Singletons;
 using System.Diagnostics;
@@ -193,13 +193,13 @@ namespace WaveBox.DataModel.Model
 			//Console.WriteLine("Get file information: {0} ms", sw.ElapsedMilliseconds);
 			//sw.Reset();
 
-			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
 
 			try
 			{
 				//sw.Start();
-				var q = new SqlCeCommand("SELECT COUNT(*) AS count FROM song WHERE song_folder_id = @folderid AND song_file_name = @filename AND song_last_modified = @lastmod");
+				var q = new SQLiteCommand("SELECT COUNT(*) AS count FROM song WHERE song_folder_id = @folderid AND song_file_name = @filename AND song_last_modified = @lastmod");
 				q.Parameters.AddWithValue("@folderid", folderId);
 				q.Parameters.AddWithValue("@filename", fileName);
 				q.Parameters.AddWithValue("@lastmod", lastModified);

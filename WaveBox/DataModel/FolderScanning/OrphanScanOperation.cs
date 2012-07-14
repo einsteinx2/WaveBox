@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
-using System.Data.SqlServerCe;
+using System.Data.SQLite;
 using System.IO;
 using System.Diagnostics;
 
@@ -37,8 +37,8 @@ namespace WaveBox.DataModel.FolderScanning
 				return;
 			}
 
-			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
 			var mediaFolderIds = new ArrayList();
 			var orphanFolderIds = new ArrayList();
 
@@ -51,7 +51,7 @@ namespace WaveBox.DataModel.FolderScanning
 			{
 				conn = Database.getDbConnection();
 
-				var q = new SqlCeCommand("SELECT * FROM folder");
+				var q = new SQLiteCommand("SELECT * FROM folder");
 
 				Database.dbLock.WaitOne();
 				q.Connection = conn;
@@ -104,7 +104,7 @@ namespace WaveBox.DataModel.FolderScanning
 				{
 					try
 					{
-						var q1 = new SqlCeCommand("DELETE FROM folder WHERE folder_id = @folderid", conn);
+						var q1 = new SQLiteCommand("DELETE FROM folder WHERE folder_id = @folderid", conn);
 						q1.Parameters.AddWithValue("@folderid", fid);
 
 						q1.Prepare();
@@ -120,7 +120,7 @@ namespace WaveBox.DataModel.FolderScanning
 					{
 						Console.WriteLine("[ORPHANSCAN] " + "Songs for {0} deleted", fid);
 
-						var q2 = new SqlCeCommand("DELETE FROM song WHERE song_folder_id = @folderid", conn);
+						var q2 = new SQLiteCommand("DELETE FROM song WHERE song_folder_id = @folderid", conn);
 						q2.Parameters.AddWithValue("@folderid", fid);
 
 						q2.Prepare();
@@ -154,15 +154,15 @@ namespace WaveBox.DataModel.FolderScanning
 				return;
 			}
 
-			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
 			var orphanSongIds = new ArrayList();
 			int songid;
 			string path, filename;
 
 			try
 			{
-				var q = new SqlCeCommand("SELECT song.song_id, song.song_file_name, folder.folder_path " +
+				var q = new SQLiteCommand("SELECT song.song_id, song.song_file_name, folder.folder_path " +
 										 "FROM song " + 
 										 "LEFT JOIN folder ON song.song_folder_id = folder.folder_id");
 
@@ -191,7 +191,7 @@ namespace WaveBox.DataModel.FolderScanning
 				{
 					try
 					{
-						var q1 = new SqlCeCommand("DELETE FROM song WHERE song_id = @songid", conn);
+						var q1 = new SQLiteCommand("DELETE FROM song WHERE song_id = @songid", conn);
 						q1.Parameters.AddWithValue("@songid", id);
 						q1.Prepare();
 						q1.ExecuteNonQuery();

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Data.SqlServerCe;
+using System.Data.SQLite;
 using System.Threading;
 
 
@@ -12,7 +12,7 @@ namespace WaveBox.DataModel.Singletons
 	{
 		private static Database instance;
 		public static Mutex dbLock;
-		private static SqlCeConnection dbconn;
+		private static SQLiteConnection dbconn;
 		public static Database Instance
 		{
 			get
@@ -31,11 +31,11 @@ namespace WaveBox.DataModel.Singletons
 		{
 		}
 
-		public static SqlCeConnection getDbConnection()
+		public static SQLiteConnection getDbConnection()
 		{
 			if (dbconn == null)
 			{
-				dbconn = new SqlCeConnection("DataSource = \"wavebox.sdf\"");
+				dbconn = new SQLiteConnection("DataSource = \"wavebox.db\"");
 			}
 
 			while ((dbconn.State == System.Data.ConnectionState.Closed))
@@ -46,7 +46,7 @@ namespace WaveBox.DataModel.Singletons
 			return dbconn;
 		}
 
-		public static void close(SqlCeConnection c, SqlCeDataReader r)
+		public static void close(SQLiteConnection c, SQLiteDataReader r)
 		{
 			if (!(c == null) && !(c.State == System.Data.ConnectionState.Closed))
 			{

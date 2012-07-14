@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Data.SqlServerCe;
+using System.Data.SQLite;
 using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
 using System.Security.Cryptography;
@@ -71,14 +71,14 @@ namespace WaveBox.DataModel.Model
 		{
 			UserId = userId;
 
-			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
 
 			try
 			{
 				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();
-				var q = new SqlCeCommand("SELECT * FROM users WHERE user_id = @userid");
+				var q = new SQLiteCommand("SELECT * FROM users WHERE user_id = @userid");
 				q.Connection = conn;
 				q.Parameters.AddWithValue("@userid", UserId);
 				q.Prepare();
@@ -114,14 +114,14 @@ namespace WaveBox.DataModel.Model
 		{
 			UserName = userName;
 
-			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
 
 			try
 			{
 				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();
-				var q = new SqlCeCommand("SELECT * FROM users WHERE user_name = @username");
+				var q = new SQLiteCommand("SELECT * FROM users WHERE user_name = @username");
 				q.Connection = conn;
 				q.Parameters.AddWithValue("@username", userName);
 				q.Prepare();
@@ -153,7 +153,7 @@ namespace WaveBox.DataModel.Model
 			}
 		}
 
-		private void _setPropertiesFromQueryResult(SqlCeDataReader reader)
+		private void _setPropertiesFromQueryResult(SQLiteDataReader reader)
 		{
 			UserId = reader.GetInt32(reader.GetOrdinal("user_id"));
 			UserName = reader.GetString(reader.GetOrdinal("user_name"));
@@ -192,8 +192,8 @@ namespace WaveBox.DataModel.Model
 
 		public void updatePassword(string password)
 		{
-			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
 
 			var salt = _generatePasswordSalt();
 			var hash = _computePasswordHash(password, salt);
@@ -202,7 +202,7 @@ namespace WaveBox.DataModel.Model
 			{
 				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();
-				var q = new SqlCeCommand("UPDATE users SET user_password = @hash, user_salt = @salt WHERE user_name = @username");
+				var q = new SQLiteCommand("UPDATE users SET user_password = @hash, user_salt = @salt WHERE user_name = @username");
 				q.Connection = conn;
 				q.Parameters.AddWithValue("@username", UserName);
 				q.Prepare();
@@ -229,14 +229,14 @@ namespace WaveBox.DataModel.Model
 			var salt = _generatePasswordSalt();
 			var hash = _computePasswordHash(password, salt);
 
-			SqlCeConnection conn = null;
-			SqlCeDataReader reader = null;
+			SQLiteConnection conn = null;
+			SQLiteDataReader reader = null;
 
 			try
 			{
 				Database.dbLock.WaitOne();
 				conn = Database.getDbConnection();
-				var q = new SqlCeCommand("INSERT INTO users (user_name, user_password, user_salt) VALUES (@username, @userhash, @usersalt)");
+				var q = new SQLiteCommand("INSERT INTO users (user_name, user_password, user_salt) VALUES (@username, @userhash, @usersalt)");
 				q.Connection = conn;
 				q.Parameters.AddWithValue("@username", userName);
 				q.Parameters.AddWithValue("@userhash", hash);
