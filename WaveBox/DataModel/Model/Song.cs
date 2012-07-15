@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Data.SQLite;
+using Community.CsharpSqlite.SQLiteClient;
+using Community.CsharpSqlite;
 using WaveBox.DataModel.Model;
 using WaveBox.DataModel.Singletons;
 using System.IO;
@@ -141,20 +142,20 @@ namespace WaveBox.DataModel.Model
 
 		public Song(int songId)
 		{
-			SQLiteConnection conn = null;
-			SQLiteDataReader reader = null;
+			SqliteConnection conn = null;
+			SqliteDataReader reader = null;
 
 			lock (Database.dbLock)
 			{
 				try
 				{
-					var q = new SQLiteCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " +
+					var q = new SqliteCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " +
 						"LEFT JOIN artist ON song_artist_id = artist.artist_id " +
 						"LEFT JOIN album ON song_album_id = album.album_id " +
 						"WHERE song_id = @songid"
 					);
-					q.Parameters.AddWithValue("@itemtypeid", ItemTypeId);
-					q.Parameters.AddWithValue("@songid", songId);
+					q.Parameters.Add("@itemtypeid", ItemTypeId);
+					q.Parameters.Add("@songid", songId);
 
 					conn = Database.GetDbConnection();
 					q.Connection = conn;
@@ -271,12 +272,12 @@ namespace WaveBox.DataModel.Model
 
 		}
 
-		public Song(SQLiteDataReader reader)
+		public Song(SqliteDataReader reader)
 		{
 			SetPropertiesFromQueryResult(reader);
 		}
 
-		private void SetPropertiesFromQueryResult(SQLiteDataReader reader)
+		private void SetPropertiesFromQueryResult(SqliteDataReader reader)
 		{
 			try
 			{
@@ -324,37 +325,37 @@ namespace WaveBox.DataModel.Model
 
 		public void updateDatabase()
 		{
-			SQLiteConnection conn = null;
-			SQLiteDataReader reader = null;
+			SqliteConnection conn = null;
+			SqliteDataReader reader = null;
 
 			lock (Database.dbLock)
 			{
 				try
 				{
 					// insert the song into the database
-					var q = new SQLiteCommand("INSERT INTO song (song_folder_id, song_artist_id, song_album_id, song_file_type_id, song_name, song_track_num, song_disc_num, song_duration, song_bitrate, song_file_size, song_last_modified, song_file_name, song_release_year, song_art_id)" + 
+					var q = new SqliteCommand("INSERT INTO song (song_folder_id, song_artist_id, song_album_id, song_file_type_id, song_name, song_track_num, song_disc_num, song_duration, song_bitrate, song_file_size, song_last_modified, song_file_name, song_release_year, song_art_id)" + 
 						"VALUES (@folderid, @artistid, @albumid, @filetype, @songname, @tracknum, @discnum, @duration, @bitrate, @filesize, @lastmod, @filename, @releaseyear, @artid)"
 					);
 
-					q.Parameters.AddWithValue("@folderid", FolderId);
-					q.Parameters.AddWithValue("@artistid", ArtistId);
-					q.Parameters.AddWithValue("@albumid", AlbumId);
-					q.Parameters.AddWithValue("@filetype", (int)FileType);
+					q.Parameters.Add("@folderid", FolderId);
+					q.Parameters.Add("@artistid", ArtistId);
+					q.Parameters.Add("@albumid", AlbumId);
+					q.Parameters.Add("@filetype", (int)FileType);
 
 					if (SongName == null)
-						q.Parameters.AddWithValue("@songname", DBNull.Value);
+						q.Parameters.Add("@songname", DBNull.Value);
 					else
-						q.Parameters.AddWithValue("@songname", SongName);
+						q.Parameters.Add("@songname", SongName);
 
-					q.Parameters.AddWithValue("@tracknum", TrackNumber);
-					q.Parameters.AddWithValue("@discnum", DiscNumber);
-					q.Parameters.AddWithValue("@duration", Duration);
-					q.Parameters.AddWithValue("@bitrate", Bitrate);
-					q.Parameters.AddWithValue("@filesize", FileSize);
-					q.Parameters.AddWithValue("@lastmod", LastModified);
-					q.Parameters.AddWithValue("@filename", FileName);
-					q.Parameters.AddWithValue("@releaseyear", ReleaseYear);
-					q.Parameters.AddWithValue("@artid", ArtId);
+					q.Parameters.Add("@tracknum", TrackNumber);
+					q.Parameters.Add("@discnum", DiscNumber);
+					q.Parameters.Add("@duration", Duration);
+					q.Parameters.Add("@bitrate", Bitrate);
+					q.Parameters.Add("@filesize", FileSize);
+					q.Parameters.Add("@lastmod", LastModified);
+					q.Parameters.Add("@filename", FileName);
+					q.Parameters.Add("@releaseyear", ReleaseYear);
+					q.Parameters.Add("@artid", ArtId);
 
 					conn = Database.GetDbConnection();
 
@@ -377,14 +378,14 @@ namespace WaveBox.DataModel.Model
 		public static List<Song> allSongs()
 		{
 			var allsongs = new List<Song>();
-			SQLiteConnection conn = null;
-			SQLiteDataReader reader = null;
+			SqliteConnection conn = null;
+			SqliteDataReader reader = null;
 
 			lock (Database.dbLock)
 			{
 				try
 				{
-					var q = new SQLiteCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " +
+					var q = new SqliteCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " +
 						"LEFT JOIN artist ON song_artist_id = artist.artist_id " +
 						"LEFT JOIN album ON song_album_id = album.album_id "
 					);

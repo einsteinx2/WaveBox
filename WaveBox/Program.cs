@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Data.SQLite;
+using Community.CsharpSqlite.SQLiteClient;
+using Community.CsharpSqlite;
 using Bend.Util;
 using System.Threading;
 using WaveBox.DataModel.Singletons;
@@ -91,7 +92,7 @@ namespace WaveBox
 		public static void Shutdown()
 		{
 			Console.WriteLine("Executing shutdown hook!");
-			SQLiteConnection dbconn = Database.GetDbConnection();
+			SqliteConnection dbconn = Database.GetDbConnection();
 			dbconn.Close();
 
 			if (dbconn.State == System.Data.ConnectionState.Closed)

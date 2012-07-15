@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using System.Data.SQLite;
+using Community.CsharpSqlite.SQLiteClient;
+using Community.CsharpSqlite;
 using System.Data.SqlTypes;
 using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
@@ -44,16 +45,16 @@ namespace WaveBox.DataModel.Model
 
 		public CoverArt(int artId)
 		{
-			SQLiteConnection conn = null;
-			SQLiteDataReader reader = null;
+			SqliteConnection conn = null;
+			SqliteDataReader reader = null;
 
 			lock (Database.dbLock)
 			{
 				try
 				{
-					var q = new SQLiteCommand("SELECT * FROM art WHERE art_id = @artid");
+					var q = new SqliteCommand("SELECT * FROM art WHERE art_id = @artid");
 
-					q.Parameters.AddWithValue("@artid", artId);
+					q.Parameters.Add("@artid", artId);
 
 					conn = Database.GetDbConnection();
 					q.Connection = conn;
@@ -111,15 +112,15 @@ namespace WaveBox.DataModel.Model
 
 		private void CheckDatabaseAndPerformCopy(byte[] data)
 		{
-			SQLiteConnection conn = null;
-			SQLiteDataReader reader = null;
+			SqliteConnection conn = null;
+			SqliteDataReader reader = null;
 
 			lock (Database.dbLock)
 			{
 				try
 				{
-					var q = new SQLiteCommand("SELECT * FROM art WHERE adler_hash = @adlerhash");
-					q.Parameters.AddWithValue("@adlerhash", AdlerHash);
+					var q = new SqliteCommand("SELECT * FROM art WHERE adler_hash = @adlerhash");
+					q.Parameters.Add("@adlerhash", AdlerHash);
 
 					conn = Database.GetDbConnection();
 					q.Connection = conn;
@@ -150,9 +151,9 @@ namespace WaveBox.DataModel.Model
 
 						try
 						{
-							var q1 = new SQLiteCommand("INSERT INTO art (adler_hash) VALUES (@adlerhash)");
+							var q1 = new SqliteCommand("INSERT INTO art (adler_hash) VALUES (@adlerhash)");
 
-							q1.Parameters.AddWithValue("@adlerhash", AdlerHash);
+							q1.Parameters.Add("@adlerhash", AdlerHash);
 
 							var conn1 = Database.GetDbConnection();
 							q1.Connection = conn1;
@@ -178,7 +179,7 @@ namespace WaveBox.DataModel.Model
 
 							}
 						}
-						catch (SQLiteException e)
+						catch (SqliteException e)
 						{
 							Console.WriteLine("\r\n\r\n" + e.Message + "\r\n\r\n");
 						}

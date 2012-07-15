@@ -65,8 +65,11 @@
     <Reference Include="Bass.Net">
       <HintPath>lib\Bass.Net.dll</HintPath>
     </Reference>
-    <Reference Include="System.Data.SQLite">
-      <HintPath>lib\System.Data.SQLite.dll</HintPath>
+    <Reference Include="Community.CsharpSqlite.SQLiteClient">
+      <HintPath>lib\Community.CsharpSqlite.SQLiteClient.dll</HintPath>
+    </Reference>
+    <Reference Include="Community.CsharpSqlite">
+      <HintPath>lib\Community.CsharpSqlite.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
