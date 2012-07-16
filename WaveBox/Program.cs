@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Community.CsharpSqlite.SQLiteClient;
-using Community.CsharpSqlite;
+using Mono.Data.Sqlite;
 using Bend.Util;
 using System.Threading;
 using WaveBox.DataModel.Singletons;

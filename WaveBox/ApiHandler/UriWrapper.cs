@@ -38,7 +38,7 @@ namespace WaveBox.ApiHandler
 
 				for(int i = 0; i <= splitParams.Length - 2; i = i + 2)
 				{
-					parameters.Add(splitParams[i], splitParams[i + 1]);
+					Parameters.Add(splitParams[i], splitParams[i + 1]);
 				}
 
 				Uri = Uri.Substring(0, Uri.IndexOf('?'));

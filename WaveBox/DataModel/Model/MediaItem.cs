@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using Community.CsharpSqlite.SQLiteClient;
-using Community.CsharpSqlite;
+using Mono.Data.Sqlite;
 using WaveBox.DataModel.Model;
 using WaveBox.DataModel.Singletons;
 using System.Diagnostics;
@@ -14,7 +13,7 @@ namespace WaveBox.DataModel.Model
 {
 	public class MediaItem
 	{
-		public virtual int ItemTypeId
+		public virtual long ItemTypeId
 		{
 			get
 			{
@@ -26,22 +25,22 @@ namespace WaveBox.DataModel.Model
 		public MediaItemType MediaItemType { get; set; }
 
 		[JsonProperty("itemId")]
-		public int ItemId { get; set; }
+		public long ItemId { get; set; }
 
 		[JsonProperty("artId")]
-		public int ArtId { get; set; }
+		public long ArtId { get; set; }
 
 		[JsonProperty("folderId")]
-		public int FolderId { get; set; }
+		public long FolderId { get; set; }
 
 		[JsonProperty("fileType")]
 		public FileType FileType { get; set; }
 
 		[JsonProperty("duration")]
-		public int Duration { get; set; }
+		public long Duration { get; set; }
 
 		[JsonProperty("bitrate")]
-		public int Bitrate { get; set; }
+		public long Bitrate { get; set; }
 
 		[JsonProperty("fileSize")]
 		public long FileSize { get; set; }
@@ -57,7 +56,7 @@ namespace WaveBox.DataModel.Model
 		/// Public methods
 		/// </summary>
 
-		public void AddToPlaylist(Playlist thePlaylist, int index)
+		public void AddToPlaylist(Playlist thePlaylist, long index)
 		{
 		}
 
@@ -66,7 +65,7 @@ namespace WaveBox.DataModel.Model
 			//var sw = new Stopwatch();
 			//sw.Start();
 			//Console.WriteLine("Checking to see if file needs updating: " + file.Name);
-			int folderId = new Folder(file.Directory.ToString()).FolderId;
+			long folderId = new Folder(file.Directory.ToString()).FolderId;
 			string fileName = file.Name;
 			long lastModified = Convert.ToInt64(file.LastWriteTime.Ticks);
 			bool needsUpdating = true;
@@ -84,9 +83,9 @@ namespace WaveBox.DataModel.Model
 				{
 					//sw.Start();
 					var q = new SqliteCommand("SELECT COUNT(*) AS count FROM song WHERE song_folder_id = @folderid AND song_file_name = @filename AND song_last_modified = @lastmod");
-					q.Parameters.Add("@folderid", folderId);
-					q.Parameters.Add("@filename", fileName);
-					q.Parameters.Add("@lastmod", lastModified);
+					q.Parameters.AddWithValue("@folderid", folderId);
+					q.Parameters.AddWithValue("@filename", fileName);
+					q.Parameters.AddWithValue("@lastmod", lastModified);
 					//sw.Stop();
 					//Console.WriteLine("Add parameters: {0} ms", sw.ElapsedMilliseconds);
 					//sw.Reset();
@@ -100,7 +99,7 @@ namespace WaveBox.DataModel.Model
 					//sw.Start();
 					q.Connection = conn;
 					q.Prepare();
-					int i = (int)q.ExecuteScalar();
+					long i = (long)q.ExecuteScalar();
 
 					if (i >= 1)
 					{

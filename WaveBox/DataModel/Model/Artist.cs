@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Community.CsharpSqlite.SQLiteClient;
-using Community.CsharpSqlite;
+using Mono.Data.Sqlite;
 using WaveBox.DataModel.Singletons;
 using Newtonsoft.Json;
 
@@ -16,7 +15,7 @@ namespace WaveBox.DataModel.Model
 		/// </summary>
 		/// 
 		[JsonProperty("itemTypeId")]
-		public int ItemTypeId
+		public long ItemTypeId
 		{
 			get
 			{
@@ -25,13 +24,13 @@ namespace WaveBox.DataModel.Model
 		}
 
 		[JsonProperty("artistId")]
-		public int ArtistId { get; set; }
+		public long ArtistId { get; set; }
 
 		[JsonProperty("artistName")]
 		public string ArtistName { get; set; }
 
 		[JsonProperty("artId")]
-		public int ArtId { get; set; }
+		public long ArtId { get; set; }
 
 
 		/// <summary>
@@ -47,7 +46,7 @@ namespace WaveBox.DataModel.Model
 			SetPropertiesFromQueryResult(reader);
 		}
 
-		public Artist(int artistId)
+		public Artist(long artistId)
 		{
 			SqliteConnection conn = null;
 			SqliteDataReader reader = null;
@@ -60,7 +59,7 @@ namespace WaveBox.DataModel.Model
 
 					var q = new SqliteCommand("SELECT * FROM artist WHERE artist_id = @artistid");
 					q.Connection = conn;
-					q.Parameters.Add("@artistid", artistId);
+					q.Parameters.AddWithValue("@artistid", artistId);
 					q.Prepare();
 					reader = q.ExecuteReader();
 
@@ -101,7 +100,7 @@ namespace WaveBox.DataModel.Model
 					conn = Database.GetDbConnection();
 					var q = new SqliteCommand("SELECT * FROM artist WHERE artist_name = @artistname");
 					q.Connection = conn;
-					q.Parameters.Add("@artistname", artistName);
+					q.Parameters.AddWithValue("@artistname", artistName);
 					q.Prepare();
 					reader = q.ExecuteReader();
 
@@ -133,13 +132,13 @@ namespace WaveBox.DataModel.Model
 		{
 			try
 			{
-				ArtistId = reader.GetInt32(reader.GetOrdinal("artist_id"));
+				ArtistId = reader.GetInt64(reader.GetOrdinal("artist_id"));
 				ArtistName = reader.GetString(reader.GetOrdinal("artist_name"));
 
 				if 
 					(reader.GetValue(reader.GetOrdinal("artist_art_id")) == DBNull.Value) ArtId = 0;
 				else 
-					ArtId = reader.GetInt32(reader.GetOrdinal("artist_art_id"));
+					ArtId = reader.GetInt64(reader.GetOrdinal("artist_art_id"));
 			}
 
 			catch (SqliteException e)
@@ -161,7 +160,7 @@ namespace WaveBox.DataModel.Model
 					conn = Database.GetDbConnection();
 					var q = new SqliteCommand("INSERT INTO artist (artist_name) VALUES (@artistname)");
 					q.Connection = conn;
-					q.Parameters.Add("@artistname", artistName);
+					q.Parameters.AddWithValue("@artistname", artistName);
 					q.Prepare();
 					int affected = q.ExecuteNonQuery();
 
@@ -170,7 +169,9 @@ namespace WaveBox.DataModel.Model
 						success = true;
 					}
 					else
+					{
 						success = false;
+					}
 				}
 				catch (Exception e)
 				{
@@ -203,7 +204,7 @@ namespace WaveBox.DataModel.Model
 					conn = Database.GetDbConnection();
 					var q = new SqliteCommand("SELECT * FROM album WHERE artist_id = @artistid");
 					q.Connection = conn;
-					q.Parameters.Add("@artistid", ArtistId);
+					q.Parameters.AddWithValue("@artistid", ArtistId);
 					q.Prepare();
 					reader = q.ExecuteReader();
 
@@ -244,7 +245,7 @@ namespace WaveBox.DataModel.Model
 						"WHERE song_artist_id = @artistid"
 					);
 
-					q.Parameters.Add("@artistid", ArtistId);
+					q.Parameters.AddWithValue("@artistid", ArtistId);
 
 					conn = Database.GetDbConnection();
 					q.Connection = conn;

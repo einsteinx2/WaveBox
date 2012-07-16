@@ -5,8 +5,7 @@ using System.Linq;
 using System.Text;
 using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
-using Community.CsharpSqlite.SQLiteClient;
-using Community.CsharpSqlite;
+using Mono.Data.Sqlite;
 using System.IO;
 using System.Diagnostics;
 
@@ -63,7 +62,7 @@ namespace WaveBox.DataModel.FolderScanning
 					{
 						// storage for stuff we'll get.
 						string path;
-						int folderId, mediaFolderId;
+						long folderId, mediaFolderId;
 
 						// get ordinals
 						int pathOrdinal = reader.GetOrdinal ("folder_path");
@@ -109,12 +108,12 @@ namespace WaveBox.DataModel.FolderScanning
 
 					reader.Close ();
 
-					foreach (int fid in orphanFolderIds) 
+					foreach (long fid in orphanFolderIds) 
 					{
 						try 
 						{
 							var q1 = new SqliteCommand ("DELETE FROM folder WHERE folder_id = @folderid", conn);
-							q1.Parameters.Add ("@folderid", fid);
+							q1.Parameters.AddWithValue("@folderid", fid);
 
 							q1.Prepare ();
 							q1.ExecuteNonQuery ();
@@ -129,7 +128,7 @@ namespace WaveBox.DataModel.FolderScanning
 							Console.WriteLine ("[ORPHANSCAN] " + "Songs for {0} deleted", fid);
 
 							var q2 = new SqliteCommand ("DELETE FROM song WHERE song_folder_id = @folderid", conn);
-							q2.Parameters.Add ("@folderid", fid);
+							q2.Parameters.AddWithValue ("@folderid", fid);
 
 							q2.Prepare ();
 							q2.ExecuteNonQuery ();
@@ -162,7 +161,7 @@ namespace WaveBox.DataModel.FolderScanning
 			SqliteConnection conn = null;
 			SqliteDataReader reader = null;
 			var orphanSongIds = new ArrayList();
-			int songid;
+			long songid;
 			string path, filename;
 
 			lock (Database.dbLock)
@@ -194,12 +193,12 @@ namespace WaveBox.DataModel.FolderScanning
 
 					reader.Close();
 
-					foreach (int id in orphanSongIds)
+					foreach (long id in orphanSongIds)
 					{
 						try
 						{
 							var q1 = new SqliteCommand("DELETE FROM song WHERE song_id = @songid", conn);
-							q1.Parameters.Add("@songid", id);
+							q1.Parameters.AddWithValue("@songid", id);
 							q1.Prepare();
 							q1.ExecuteNonQuery();
 							Console.WriteLine("[ORPHANSCAN] " + "Song " + id + " deleted");

@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Community.CsharpSqlite.SQLiteClient;
-using Community.CsharpSqlite;
+using Mono.Data.Sqlite;
 using System.Threading;
-
+using System.IO;
 
 namespace WaveBox.DataModel.Singletons
 {
@@ -20,28 +19,36 @@ namespace WaveBox.DataModel.Singletons
 			{
 				if (dbConn == null)
 				{
-					//dbConn = new SqliteConnection("Data Source = \"wavebox.db\"");
-					dbConn = new SqliteConnection();
-					dbConn.ConnectionString = "Version=3,uri=file:wavebox.db";
+					dbConn = new SqliteConnection("Data Source = \"wavebox.db\"");
+					/*dbConn = new SqliteConnection();
+
+					string dbFilename = @"wavebox.db";
+					string cs = string.Format("Version=3,uri=file:{0}", dbFilename);
+
+					if (File.Exists(dbFilename)) 
+					{
+						Console.WriteLine("db file exists");
+					}
+
+					dbConn.ConnectionString = cs;*/
 				}
 			
-				while ((dbConn.State == System.Data.ConnectionState.Closed))
+				if (dbConn.State == System.Data.ConnectionState.Closed)
 				{
 					dbConn.Open();
 				}
 			}
-
 			return dbConn;
 		}
 
 		public static void Close(SqliteConnection c, SqliteDataReader r)
 		{
-			if (!(c == null) && !(c.State == System.Data.ConnectionState.Closed))
+			if (c != null && c.State != System.Data.ConnectionState.Closed)
 			{
-				//c.Close();
+				c.Close();
 			}
 
-			if (!(r == null) && !r.IsClosed)
+			if (r != null && !r.IsClosed)
 			{
 				r.Close();
 			}

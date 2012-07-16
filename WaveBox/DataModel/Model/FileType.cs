@@ -40,11 +40,11 @@ namespace WaveBox.DataModel.Model
             else return FileType.UNKNOWN;
 		}
 
-		public static FileType FileTypeForId(this FileType ft, int id)
+		public static FileType FileTypeForId(this FileType ft, long id)
 		{
 			foreach (FileType type in Enum.GetValues(typeof(FileType)))
 			{
-				if (id == (int)type)
+				if (id == (long)type)
 				{
 					return type;
 				}

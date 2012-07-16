@@ -3,21 +3,20 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Community.CsharpSqlite.SQLiteClient;
-using Community.CsharpSqlite;
+using Mono.Data.Sqlite;
 using WaveBox.DataModel.Singletons;
 
 namespace WaveBox.DataModel.Model
 {
 	public class Playlist
 	{
-		public int PlaylistId { get; set; }
+		public long PlaylistId { get; set; }
 
 		public string PlaylistName { get; set; }
 
-		public int PlaylistCount { get; set; }
+		public long PlaylistCount { get; set; }
 
-		public int PlaylistDuration { get; set; }
+		public long PlaylistDuration { get; set; }
 
 		public string Md5Hash { get; set; }
 
@@ -33,7 +32,7 @@ namespace WaveBox.DataModel.Model
 			SetPropertiesFromQueryResult(reader);
 		}
 
-		public Playlist(int playlistId)
+		public Playlist(long playlistId)
 		{
 			SqliteConnection conn = null;
 			SqliteDataReader reader = null;
@@ -43,7 +42,7 @@ namespace WaveBox.DataModel.Model
 				try
 				{
 					var q = new SqliteCommand("SELECT * FROM playlist WHERE playlist_id = @playlistid");
-					q.Parameters.Add("@playlistid", playlistId);
+					q.Parameters.AddWithValue("@playlistid", playlistId);
 
 					conn = Database.GetDbConnection();
 					q.Connection = conn;
@@ -80,7 +79,7 @@ namespace WaveBox.DataModel.Model
 				try
 				{
 					var q = new SqliteCommand("SELECT * FROM playlist WHERE playlist_name = @playlistname");
-					q.Parameters.Add("@playlistname", playlistName);
+					q.Parameters.AddWithValue("@playlistname", playlistName);
 
 					conn = Database.GetDbConnection();
 					q.Connection = conn;
@@ -143,7 +142,7 @@ namespace WaveBox.DataModel.Model
 				try
 				{
 					var q = new SqliteCommand("SELECT * FROM playlist_item WHERE playlist_id = @playlistid");
-					q.Parameters.Add("@playlistid", PlaylistId);
+					q.Parameters.AddWithValue("@playlistid", PlaylistId);
 
 					conn = Database.GetDbConnection();
 					q.Connection = conn;
@@ -171,17 +170,17 @@ namespace WaveBox.DataModel.Model
 		}
 
 
-		public void UpdateProperties(int itemsAdded, int durationAdded)
+		public void UpdateProperties(long itemsAdded, long durationAdded)
 		{
 			// update playlist count
-			int playlistCount = PlaylistCount;
+			long playlistCount = PlaylistCount;
 			PlaylistCount = playlistCount + itemsAdded;
 
 			// update last update time
 			LastUpdateTime = ((DateTime.Now.Ticks / 10) - (new DateTime(1970, 1, 1).Ticks / 10));	// correct?
 
 			// update playlist duration
-			int playlistDuration = PlaylistDuration;
+			long playlistDuration = PlaylistDuration;
 			PlaylistDuration = (playlistDuration + durationAdded);
 		}
 
@@ -195,12 +194,12 @@ namespace WaveBox.DataModel.Model
 				try
 				{
 					SqliteCommand q;
-					//q.Parameters.Add("@playlistid", PlaylistId);
+					//q.Parameters.AddWithValue("@playlistid", PlaylistId);
 					if (PlaylistId == 0)
 					{
 						q = new SqliteCommand("INSERT INTO playlist (playlist_name, playlist_count, playlist_duration, md5_hash, last_update) VALUES (@playlistname, @playlistcount, @playlistduration, @md5, @lastupdate)");
 						//q = new SqliteCommand("INSERT INTO playlist VALUES (@playlistid, @playlistname, @playlistcount, @playlistduration, @md5, @lastupdate)");
-						//q.Parameters.Add("@playlistid", DBNull.Value);
+						//q.Parameters.AddWithValue("@playlistid", DBNull.Value);
 					}
 					else
 					{
@@ -212,18 +211,18 @@ namespace WaveBox.DataModel.Model
 							+ "WHERE playlist_id = @playlistid"
 						);
 
-						q.Parameters.Add("@playlistid", PlaylistId);
+						q.Parameters.AddWithValue("@playlistid", PlaylistId);
 					}
 
 					if (PlaylistName == null)
-						q.Parameters.Add("@playlistname", "");
+						q.Parameters.AddWithValue("@playlistname", "");
 					else
-						q.Parameters.Add("@playlistname", PlaylistName);
+						q.Parameters.AddWithValue("@playlistname", PlaylistName);
 
-					q.Parameters.Add("@playlistcount", PlaylistCount);
-					q.Parameters.Add("@playlistduration", PlaylistDuration);
-					q.Parameters.Add("@md5", PlaylistId == 0 ? "" : CalculateHash());
-					q.Parameters.Add("@lastupdate", LastUpdateTime);
+					q.Parameters.AddWithValue("@playlistcount", PlaylistCount);
+					q.Parameters.AddWithValue("@playlistduration", PlaylistDuration);
+					q.Parameters.AddWithValue("@md5", PlaylistId == 0 ? "" : CalculateHash());
+					q.Parameters.AddWithValue("@lastupdate", LastUpdateTime);
 
 					conn = Database.GetDbConnection();
 					q.Connection = conn;
@@ -261,9 +260,9 @@ namespace WaveBox.DataModel.Model
 						"WHERE playlist_id = @playlistid AND item_type_id = @itemtypeid " + 
 						"ORDER BY item_position LIMIT 1"
 					);
-					q.Parameters.Add("@playlistid", PlaylistId);
-					q.Parameters.Add("@itemid", item.ItemId);
-					q.Parameters.Add("@itemtypeid", item.ItemTypeId);
+					q.Parameters.AddWithValue("@playlistid", PlaylistId);
+					q.Parameters.AddWithValue("@itemid", item.ItemId);
+					q.Parameters.AddWithValue("@itemtypeid", item.ItemTypeId);
 
 					conn = Database.GetDbConnection();
 					q.Connection = conn;
@@ -288,7 +287,7 @@ namespace WaveBox.DataModel.Model
 			return index;
 		}
 
-		public MediaItem MediaItemAtIndex(int index)
+		public MediaItem MediaItemAtIndex(long index)
 		{
 			SqliteConnection conn = null;
 			SqliteDataReader reader = null;
@@ -299,8 +298,8 @@ namespace WaveBox.DataModel.Model
 				try
 				{
 					var q = new SqliteCommand("SELECT * FROM playlist_item WHERE playlist_id = @playlistid AND item_position = @itemposition");
-					q.Parameters.Add("@playlistid", PlaylistId);
-					q.Parameters.Add("@itemposition", index);
+					q.Parameters.AddWithValue("@playlistid", PlaylistId);
+					q.Parameters.AddWithValue("@itemposition", index);
 
 					conn = Database.GetDbConnection();
 					q.Connection = conn;
@@ -311,7 +310,7 @@ namespace WaveBox.DataModel.Model
 					if (reader.Read())
 					{
 						var itemid = reader.GetInt32(reader.GetOrdinal("item_id"));
-						int itemtypeid = reader.GetInt32(reader.GetOrdinal("item_type_id"));
+						long itemtypeid = reader.GetInt32(reader.GetOrdinal("item_type_id"));
 						ItemType it = ItemTypeExtensions.ItemTypeForId(itemtypeid);
 
 						switch (it)
@@ -353,7 +352,7 @@ namespace WaveBox.DataModel.Model
 				try
 				{
 					var q = new SqliteCommand("SELECT * FROM playlist_item WHERE playlist_id = @playlistid ORDER BY item_position");
-					q.Parameters.Add("@playlistid", PlaylistId);
+					q.Parameters.AddWithValue("@playlistid", PlaylistId);
 
 					conn = Database.GetDbConnection();
 					q.Connection = conn;
@@ -398,7 +397,7 @@ namespace WaveBox.DataModel.Model
 
 		public void RemoveMediaItems(List<MediaItem> items)
 		{
-			var indexes = new List<int>();
+			/*var indexes = new List<int>();
 			if (PlaylistId == 0 || items == null)
 			{
 				return;
@@ -409,7 +408,12 @@ namespace WaveBox.DataModel.Model
 				indexes.Add(item.ItemId);
 			}
 
-			RemoveMediaItemAtIndexes(indexes);
+			RemoveMediaItemAtIndexes(indexes);*/
+
+			foreach (MediaItem item in items)
+			{
+				RemoveMediaItem(item);
+			}
 		}
 
 		public void RemoveMediaItemAtIndex(int index)
@@ -427,8 +431,8 @@ namespace WaveBox.DataModel.Model
 				try
 				{
 					var q = new SqliteCommand("DELETE FROM playlist_item WHERE playlist_id = @playlistid AND item_position = @itemposition");
-					q.Parameters.Add("@playlistid", PlaylistId);
-					q.Parameters.Add("@itemposition", index);
+					q.Parameters.AddWithValue("@playlistid", PlaylistId);
+					q.Parameters.AddWithValue("@itemposition", index);
 
 					conn = Database.GetDbConnection();
 					q.Connection = conn;
@@ -437,8 +441,8 @@ namespace WaveBox.DataModel.Model
 
 					q.CommandText = "UPDATE playlist_item SET item_position = item_position - 1";
 					q.CommandText += "WHERE playlist_id = @playlistid AND item_position > @item_position";
-					q.Parameters.Add("@playlistid", PlaylistId);
-					q.Parameters.Add("@itemposition", index);
+					q.Parameters.AddWithValue("@playlistid", PlaylistId);
+					q.Parameters.AddWithValue("@itemposition", index);
 					q.Prepare();
 					q.ExecuteNonQuery();
 				}
@@ -474,11 +478,11 @@ namespace WaveBox.DataModel.Model
 
 
 					// delete the items at the indicated indices
-					foreach (int index in indices)
+					foreach (long index in indices)
 					{
 						q.CommandText = "DELETE FROM playlist_item WHERE playlist_id = @playlistid AND item_position = @itemposition";
-						q.Parameters.Add("@playlistid", PlaylistId);
-						q.Parameters.Add("@itemposition", index);
+						q.Parameters.AddWithValue("@playlistid", PlaylistId);
+						q.Parameters.AddWithValue("@itemposition", index);
 
 						q.Prepare();
 						q.ExecuteNonQuery();
@@ -486,7 +490,7 @@ namespace WaveBox.DataModel.Model
 
 					// select the id of all members of the playlist
 					q.CommandText = "SELECT playlist_item_id FROM playlist_item WHERE playlist_id = @playlistid";
-					q.Parameters.Add("@playlistid", PlaylistId);
+					q.Parameters.AddWithValue("@playlistid", PlaylistId);
 
 					q.Prepare();
 					reader = q.ExecuteReader();
@@ -502,9 +506,9 @@ namespace WaveBox.DataModel.Model
 					{
 						q.CommandText = "SELECT playlist_item_id FROM playlist_item WHERE playlist_id = @playlistid";
 						q.CommandText = "UPDATE playlist_item SET playlist_item_id = @newid WHERE playlist_item_id = @oldid AND playlist_id = @playlistid";
-						q.Parameters.Add("@newid", i + 1);
-						q.Parameters.Add("@oldid", (int)idValues[i]);
-						q.Parameters.Add("@playlistid", PlaylistId);
+						q.Parameters.AddWithValue("@newid", i + 1);
+						q.Parameters.AddWithValue("@oldid", (long)idValues[i]);
+						q.Parameters.AddWithValue("@playlistid", PlaylistId);
 
 						q.Prepare();
 						q.ExecuteNonQuery();
@@ -527,7 +531,7 @@ namespace WaveBox.DataModel.Model
 			}
 		}
 
-		public void MoveMediaItem(int fromIndex, int toIndex)
+		public void MoveMediaItem(long fromIndex, long toIndex)
 		{
 			// make sure the input is within bounds and is not null
 			if (fromIndex == 0 || toIndex == 0 ||
@@ -550,8 +554,8 @@ namespace WaveBox.DataModel.Model
 					var q = new SqliteCommand("UPDATE playlist_item SET item_position = item_position + 1 " + 
 						"WHERE playlist_id = @playlistid AND item_position >= @itemposition"
 					);
-					q.Parameters.Add("@playlistid", PlaylistId);
-					q.Parameters.Add("@itemposition", toIndex);
+					q.Parameters.AddWithValue("@playlistid", PlaylistId);
+					q.Parameters.AddWithValue("@itemposition", toIndex);
 
 					conn = Database.GetDbConnection();
 					q.Connection = conn;
@@ -567,9 +571,9 @@ namespace WaveBox.DataModel.Model
 						"WHERE playlist_id = @playlistid AND item_position = @fromitemposition"
 					);
 
-					q1.Parameters.Add("@toitemposition", toIndex);
-					q1.Parameters.Add("@playlistid", PlaylistId);
-					q1.Parameters.Add("@fromitemposition", fromIndex);
+					q1.Parameters.AddWithValue("@toitemposition", toIndex);
+					q1.Parameters.AddWithValue("@playlistid", PlaylistId);
+					q1.Parameters.AddWithValue("@fromitemposition", fromIndex);
 					q1.Prepare();
 					var res1 = q1.ExecuteNonQuery();
 
@@ -603,11 +607,11 @@ namespace WaveBox.DataModel.Model
 				{
 					// to do - better way of knowing whether or not a query has been successfully completed.
 					var q = new SqliteCommand("INSERT INTO playlist_item (playlist_id, item_type_id, item_id, item_position) VALUES (@playlistid, @itemtypeid, @itemid, @itempos)");
-					q.Parameters.Add("@nullid", DBNull.Value);
-					q.Parameters.Add("@playlistid", PlaylistId);
-					q.Parameters.Add("@itemtypeid", item.ItemTypeId);
-					q.Parameters.Add("@itemid", item.ItemId);
-					q.Parameters.Add("@itempos", PlaylistCount);
+					q.Parameters.AddWithValue("@nullid", DBNull.Value);
+					q.Parameters.AddWithValue("@playlistid", PlaylistId);
+					q.Parameters.AddWithValue("@itemtypeid", item.ItemTypeId);
+					q.Parameters.AddWithValue("@itemid", item.ItemId);
+					q.Parameters.AddWithValue("@itempos", PlaylistCount);
 
 					conn = Database.GetDbConnection();
 					q.Connection = conn;
@@ -632,7 +636,7 @@ namespace WaveBox.DataModel.Model
 				return;
 			}
 
-			int duration = 0;
+			long duration = 0;
 			foreach(MediaItem item in items)
 			{
 				AddMediaItem(item, false);
@@ -643,7 +647,7 @@ namespace WaveBox.DataModel.Model
 			UpdateDatabase();
 		}
 
-		public void InsertMediaItem(MediaItem item, int index)
+		public void InsertMediaItem(MediaItem item, long index)
 		{
 		}
 
@@ -658,7 +662,7 @@ namespace WaveBox.DataModel.Model
 				{
 					// to do - better way of knowing whether or not a query has been successfully completed.
 					var q = new SqliteCommand("DELETE FROM playlist_item WHERE playlist_id = @playlistid"); 
-					q.Parameters.Add("@playlistid", PlaylistId);
+					q.Parameters.AddWithValue("@playlistid", PlaylistId);
 
 					conn = Database.GetDbConnection();
 					q.Connection = conn;

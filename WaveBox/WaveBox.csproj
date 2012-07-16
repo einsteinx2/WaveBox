@@ -65,12 +65,7 @@
     <Reference Include="Bass.Net">
       <HintPath>lib\Bass.Net.dll</HintPath>
     </Reference>
-    <Reference Include="Community.CsharpSqlite.SQLiteClient">
-      <HintPath>lib\Community.CsharpSqlite.SQLiteClient.dll</HintPath>
-    </Reference>
-    <Reference Include="Community.CsharpSqlite">
-      <HintPath>lib\Community.CsharpSqlite.dll</HintPath>
-    </Reference>
+    <Reference Include="Mono.Data.Sqlite" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiHandler\ApiHandlerFactory.cs" />

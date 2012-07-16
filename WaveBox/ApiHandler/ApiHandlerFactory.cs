@@ -15,7 +15,7 @@ namespace WaveBox.ApiHandler
 			UriWrapper uriW = new UriWrapper(uri);
 			
 			// authenticate before anything happens.
-			int userId;
+			long userId;
 			if (uriW.Parameters == null || (!uriW.Parameters.ContainsKey("u") || !uriW.Parameters.ContainsKey("p")))
 			{
 				return new ErrorApiHandler(uriW, sh, "Missing authentication data");

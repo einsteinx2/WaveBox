@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Community.CsharpSqlite.SQLiteClient;
-using Community.CsharpSqlite;
+using Mono.Data.Sqlite;
 using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
 using System.Security.Cryptography;
@@ -12,7 +11,7 @@ namespace WaveBox.DataModel.Model
 {
 	class User
 	{
-		public int UserId { get; set; }
+		public long UserId { get; set; }
 
 		public string UserName { get; set; }
 
@@ -25,7 +24,7 @@ namespace WaveBox.DataModel.Model
 		{
 		}
 
-		public User(int userId)
+		public User(long userId)
 		{
 			UserId = userId;
 
@@ -39,7 +38,7 @@ namespace WaveBox.DataModel.Model
 					conn = Database.GetDbConnection();
 					var q = new SqliteCommand("SELECT * FROM users WHERE user_id = @userid");
 					q.Connection = conn;
-					q.Parameters.Add("@userid", UserId);
+					q.Parameters.AddWithValue("@userid", UserId);
 					q.Prepare();
 					reader = q.ExecuteReader();
 
@@ -73,7 +72,7 @@ namespace WaveBox.DataModel.Model
 					conn = Database.GetDbConnection();
 					var q = new SqliteCommand("SELECT * FROM users WHERE user_name = @username");
 					q.Connection = conn;
-					q.Parameters.Add("@username", userName);
+					q.Parameters.AddWithValue("@username", userName);
 					q.Prepare();
 					reader = q.ExecuteReader();
 
@@ -145,7 +144,7 @@ namespace WaveBox.DataModel.Model
 					conn = Database.GetDbConnection();
 					var q = new SqliteCommand("UPDATE users SET user_password = @hash, user_salt = @salt WHERE user_name = @username");
 					q.Connection = conn;
-					q.Parameters.Add("@username", UserName);
+					q.Parameters.AddWithValue("@username", UserName);
 					q.Prepare();
 					q.ExecuteNonQuery();
 				}
@@ -178,9 +177,9 @@ namespace WaveBox.DataModel.Model
 					conn = Database.GetDbConnection();
 					var q = new SqliteCommand("INSERT INTO users (user_name, user_password, user_salt) VALUES (@username, @userhash, @usersalt)");
 					q.Connection = conn;
-					q.Parameters.Add("@username", userName);
-					q.Parameters.Add("@userhash", hash);
-					q.Parameters.Add("@usersalt", salt);
+					q.Parameters.AddWithValue("@username", userName);
+					q.Parameters.AddWithValue("@userhash", hash);
+					q.Parameters.AddWithValue("@usersalt", salt);
 					q.Prepare();
 					q.ExecuteNonQuery();
 				}

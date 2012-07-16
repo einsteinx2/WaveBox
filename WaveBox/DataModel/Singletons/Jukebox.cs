@@ -196,7 +196,7 @@ namespace WaveBox.DataModel.Singletons
 			Bass.BASS_SetConfig(BASSConfig.BASS_CONFIG_BUFFER, Bass.BASS_GetConfig(BASSConfig.BASS_CONFIG_UPDATEPERIOD + 200));
 			Console.WriteLine("[JUKEBOX] BASS buffer size: {0}ms", Bass.BASS_GetConfig(BASSConfig.BASS_CONFIG_BUFFER));
 
-			// dsp effects for floating point math to avoid clipping
+			// dsp effects for floating polong math to avoid clipping
 			Bass.BASS_SetConfig(BASSConfig.BASS_CONFIG_FLOATDSP, 1);
 
 			// initialize the audio output device
@@ -219,7 +219,7 @@ namespace WaveBox.DataModel.Singletons
 			currentStream = 0;
 		}
 
-		private string BassErrorCodeToString(int code)
+		private string BassErrorCodeToString(long code)
 		{
 			return "";
 		}

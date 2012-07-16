@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Community.CsharpSqlite.SQLiteClient;
-using Community.CsharpSqlite;
+using Mono.Data.Sqlite;
 using WaveBox.DataModel.Model;
 using WaveBox.DataModel.Singletons;
 using System.IO;
@@ -16,17 +15,17 @@ namespace WaveBox.DataModel.Model
 	public class Song : MediaItem
 	{
 		[JsonProperty("itemTypeId")]
-		public override int ItemTypeId
+		public override long ItemTypeId
 		{
 			get
 			{
-				return (int)ItemType.SONG;
+				return (long)ItemType.SONG;
 			}
 		}
 
-		private int _artistId;
+		private long _artistId;
 		[JsonProperty("artistId")]
-		public int ArtistId
+		public long ArtistId
 		{
 			get
 			{
@@ -52,9 +51,9 @@ namespace WaveBox.DataModel.Model
 			}
 		}
 
-		private int _albumId;
+		private long _albumId;
 		[JsonProperty("albumId")]
-		public int AlbumId
+		public long AlbumId
 		{
 			get
 			{
@@ -94,9 +93,9 @@ namespace WaveBox.DataModel.Model
 			}
 		}
 
-		private int _trackNumber;
+		private long _trackNumber;
 		[JsonProperty("trackNumber")]
-		public int TrackNumber
+		public long TrackNumber
 		{
 			get
 			{
@@ -108,9 +107,9 @@ namespace WaveBox.DataModel.Model
 			}
 		}
 
-		private int _discNumber;
+		private long _discNumber;
 		[JsonProperty("discNumber")]
-		public int DiscNumber
+		public long DiscNumber
 		{
 			get
 			{
@@ -122,9 +121,9 @@ namespace WaveBox.DataModel.Model
 			}
 		}
 
-		private int _releaseYear;
+		private long _releaseYear;
 		[JsonProperty("releaseYear")]
-		public int ReleaseYear
+		public long ReleaseYear
 		{
 			get
 			{
@@ -140,7 +139,7 @@ namespace WaveBox.DataModel.Model
 		{
 		}
 
-		public Song(int songId)
+		public Song(long songId)
 		{
 			SqliteConnection conn = null;
 			SqliteDataReader reader = null;
@@ -154,8 +153,8 @@ namespace WaveBox.DataModel.Model
 						"LEFT JOIN album ON song_album_id = album.album_id " +
 						"WHERE song_id = @songid"
 					);
-					q.Parameters.Add("@itemtypeid", ItemTypeId);
-					q.Parameters.Add("@songid", songId);
+					q.Parameters.AddWithValue("@itemtypeid", ItemTypeId);
+					q.Parameters.AddWithValue("@songid", songId);
 
 					conn = Database.GetDbConnection();
 					q.Connection = conn;
@@ -180,96 +179,75 @@ namespace WaveBox.DataModel.Model
 			}
 		}
 
-		public Song(System.IO.FileInfo fsFile, int folderId)
+		public Song (System.IO.FileInfo fsFile, long folderId)
 		{
-            var file = TagLib.File.Create(fsFile.FullName);
+			TagLib.File file = TagLib.File.Create (fsFile.FullName);
 
 			var tag = file.Tag;
-            //var lol = file.Properties.Codecs;
+			//var lol = file.Properties.Codecs;
 			FolderId = folderId;
 
-			try
-			{
-				var artist = Artist.ArtistForName(tag.FirstPerformer);
-                _artistId = artist.ArtistId;
-                _artistName = artist.ArtistName;
-			}
-			catch
-			{
-                _artistId = 0;
-                _artistName = null;
+			try {
+				var artist = Artist.ArtistForName (tag.FirstPerformer);
+				_artistId = artist.ArtistId;
+				_artistName = artist.ArtistName;
+			} catch {
+				_artistId = 0;
+				_artistName = null;
 			}
 
-            try
-            {
-                var album = Album.AlbumForName(tag.Album, ArtistId);
-                _albumId = album.AlbumId;
-                _albumName = album.AlbumName;
-            }
-            catch
-            {
-                _albumId = 0;
-                _albumName = null;
-            }
+			try {
+				var album = Album.AlbumForName (tag.Album, ArtistId);
+				_albumId = album.AlbumId;
+				_albumName = album.AlbumName;
+			} catch {
+				_albumId = 0;
+				_albumName = null;
+			}
 
-			FileType = FileType.FileTypeForTagSharpString(file.Properties.Description);
+			FileType = FileType.FileTypeForTagSharpString (file.Properties.Description);
 
 			if (FileType == FileType.UNKNOWN)
-				Console.WriteLine("[SONG] " + "Unknown file type: " + file.Properties.Description);
+				Console.WriteLine ("[SONG] " + "Unknown file type: " + file.Properties.Description);
 
-            try
-            {
-                _songName = tag.Title;
-            }
-            catch
-            {
-                _songName = null;
-            }
-
-            try
-            {
-                _trackNumber = Convert.ToInt32(tag.Track);
-            }
-            catch
-            {
-                _trackNumber = 0;
-            }
-
-            try
-            {
-                _discNumber = Convert.ToInt32(tag.Disc);
-            }
-            catch
-            {
-                _discNumber = 0;
-            }
-
-			try
-			{
-				_releaseYear = Convert.ToInt32(tag.Year);
+			try {
+				_songName = tag.Title;
+			} catch {
+				_songName = null;
 			}
-			catch
-			{
+
+			try {
+				_trackNumber = Convert.ToInt32 (tag.Track);
+			} catch {
+				_trackNumber = 0;
+			}
+
+			try {
+				_discNumber = Convert.ToInt32 (tag.Disc);
+			} catch {
+				_discNumber = 0;
+			}
+
+			try {
+				_releaseYear = Convert.ToInt32 (tag.Year);
+			} catch {
 				_releaseYear = 0;
 			}
 
-            Duration = Convert.ToInt32(file.Properties.Duration.TotalSeconds);
-            Bitrate = file.Properties.AudioBitrate;
-            FileSize = fsFile.Length;
-            LastModified = Convert.ToInt64(fsFile.LastWriteTime.Ticks);
-            FileName = fsFile.Name;
+			Duration = Convert.ToInt32 (file.Properties.Duration.TotalSeconds);
+			Bitrate = file.Properties.AudioBitrate;
+			FileSize = fsFile.Length;
+			LastModified = Convert.ToInt64 (fsFile.LastWriteTime.Ticks);
+			FileName = fsFile.Name;
 
 			// check to see if the folder has art associated with it.  if it does, use that art.  if not,
 			// check to see if the tag contains art.
-			ArtId = new Folder(folderId).ArtId;
+			ArtId = new Folder (folderId).ArtId;
 
-			if (ArtId == 0)
-			{
-				var art = new CoverArt(fsFile);
+			if (ArtId == 0) {
+				var art = new CoverArt (fsFile);
 				ArtId = art.ArtId;
 			}
-
-
 		}
 
 		public Song(SqliteDataReader reader)
@@ -337,25 +315,25 @@ namespace WaveBox.DataModel.Model
 						"VALUES (@folderid, @artistid, @albumid, @filetype, @songname, @tracknum, @discnum, @duration, @bitrate, @filesize, @lastmod, @filename, @releaseyear, @artid)"
 					);
 
-					q.Parameters.Add("@folderid", FolderId);
-					q.Parameters.Add("@artistid", ArtistId);
-					q.Parameters.Add("@albumid", AlbumId);
-					q.Parameters.Add("@filetype", (int)FileType);
+					q.Parameters.AddWithValue("@folderid", FolderId);
+					q.Parameters.AddWithValue("@artistid", ArtistId);
+					q.Parameters.AddWithValue("@albumid", AlbumId);
+					q.Parameters.AddWithValue("@filetype", (long)FileType);
 
 					if (SongName == null)
-						q.Parameters.Add("@songname", DBNull.Value);
+						q.Parameters.AddWithValue("@songname", DBNull.Value);
 					else
-						q.Parameters.Add("@songname", SongName);
+						q.Parameters.AddWithValue("@songname", SongName);
 
-					q.Parameters.Add("@tracknum", TrackNumber);
-					q.Parameters.Add("@discnum", DiscNumber);
-					q.Parameters.Add("@duration", Duration);
-					q.Parameters.Add("@bitrate", Bitrate);
-					q.Parameters.Add("@filesize", FileSize);
-					q.Parameters.Add("@lastmod", LastModified);
-					q.Parameters.Add("@filename", FileName);
-					q.Parameters.Add("@releaseyear", ReleaseYear);
-					q.Parameters.Add("@artid", ArtId);
+					q.Parameters.AddWithValue("@tracknum", TrackNumber);
+					q.Parameters.AddWithValue("@discnum", DiscNumber);
+					q.Parameters.AddWithValue("@duration", Duration);
+					q.Parameters.AddWithValue("@bitrate", Bitrate);
+					q.Parameters.AddWithValue("@filesize", FileSize);
+					q.Parameters.AddWithValue("@lastmod", LastModified);
+					q.Parameters.AddWithValue("@filename", FileName);
+					q.Parameters.AddWithValue("@releaseyear", ReleaseYear);
+					q.Parameters.AddWithValue("@artid", ArtId);
 
 					conn = Database.GetDbConnection();
 
