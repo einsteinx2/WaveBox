@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Data.SQLite;
+using System.Data;
 using Bend.Util;
 using System.Threading;
 using WaveBox.DataModel.Singletons;
@@ -54,8 +54,7 @@ namespace WaveBox
 			}
 			
 			Settings.SettingsSetup();
-
-			User.CreateUser("test", "test");
+			//User.CreateUser("test", "test");
 
 			var sw = new Stopwatch();
 			Console.WriteLine("Scanning media directories...");
@@ -90,7 +89,7 @@ namespace WaveBox
 
 		public static void Shutdown()
 		{
-			Console.WriteLine("Executing shutdown hook!");
+			/*Console.WriteLine("Executing shutdown hook!");
 			SQLiteConnection dbconn = Database.GetDbConnection();
 			dbconn.Close();
 
@@ -99,7 +98,7 @@ namespace WaveBox
 				Console.WriteLine("Database connection successfully closed");
 			}
 
-			else Console.WriteLine("Database connection failed to close");
+			else Console.WriteLine("Database connection failed to close");*/
 
 			Environment.Exit(0);
 		}

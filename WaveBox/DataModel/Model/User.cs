@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Data.SQLite;
+using System.Data;
 using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
 using System.Security.Cryptography;
@@ -28,17 +28,16 @@ namespace WaveBox.DataModel.Model
 		{
 			UserId = userId;
 
-			SQLiteConnection conn = null;
-			SQLiteDataReader reader = null;
+			IDbConnection conn = null;
+			IDataReader reader = null;
 
-			lock (Database.dbLock)
+			//lock (Database.dbLock)
 			{
 				try
 				{
 					conn = Database.GetDbConnection();
-					var q = new SQLiteCommand("SELECT * FROM users WHERE user_id = @userid");
-					q.Connection = conn;
-					q.Parameters.AddWithValue("@userid", UserId);
+					IDbCommand q = Database.GetDbCommand("SELECT * FROM users WHERE user_id = @userid", conn);
+					q.AddNamedParam("@userid", UserId);
 					q.Prepare();
 					reader = q.ExecuteReader();
 
@@ -62,17 +61,16 @@ namespace WaveBox.DataModel.Model
 		{
 			UserName = userName;
 
-			SQLiteConnection conn = null;
-			SQLiteDataReader reader = null;
+			IDbConnection conn = null;
+			IDataReader reader = null;
 
-			lock (Database.dbLock)
+			//lock (Database.dbLock)
 			{
 				try
 				{
 					conn = Database.GetDbConnection();
-					var q = new SQLiteCommand("SELECT * FROM users WHERE user_name = @username");
-					q.Connection = conn;
-					q.Parameters.AddWithValue("@username", userName);
+					IDbCommand q = Database.GetDbCommand("SELECT * FROM users WHERE user_name = @username", conn);
+					q.AddNamedParam("@username", userName);
 					q.Prepare();
 					reader = q.ExecuteReader();
 
@@ -92,7 +90,7 @@ namespace WaveBox.DataModel.Model
 			}
 		}
 
-		private void SetPropertiesFromQueryResult(SQLiteDataReader reader)
+		private void SetPropertiesFromQueryResult(IDataReader reader)
 		{
 			UserId = reader.GetInt32(reader.GetOrdinal("user_id"));
 			UserName = reader.GetString(reader.GetOrdinal("user_name"));
@@ -131,20 +129,21 @@ namespace WaveBox.DataModel.Model
 
 		public void UpdatePassword(string password)
 		{
-			SQLiteConnection conn = null;
-			SQLiteDataReader reader = null;
+			IDbConnection conn = null;
+			IDataReader reader = null;
 
 			var salt = GeneratePasswordSalt();
 			var hash = ComputePasswordHash(password, salt);
 
-			lock (Database.dbLock)
+			//lock (Database.dbLock)
 			{
 				try
 				{
 					conn = Database.GetDbConnection();
-					var q = new SQLiteCommand("UPDATE users SET user_password = @hash, user_salt = @salt WHERE user_name = @username");
-					q.Connection = conn;
-					q.Parameters.AddWithValue("@username", UserName);
+					IDbCommand q = Database.GetDbCommand("UPDATE users SET user_password = @hash, user_salt = @salt WHERE user_name = @username", conn);
+					q.AddNamedParam("@hash", hash);
+					q.AddNamedParam("@salt", salt);
+					q.AddNamedParam("@username", UserName);
 					q.Prepare();
 					q.ExecuteNonQuery();
 				}
@@ -167,19 +166,18 @@ namespace WaveBox.DataModel.Model
 			var salt = GeneratePasswordSalt();
 			var hash = ComputePasswordHash(password, salt);
 
-			SQLiteConnection conn = null;
-			SQLiteDataReader reader = null;
+			IDbConnection conn = null;
+			IDataReader reader = null;
 
-			lock (Database.dbLock)
+			//lock (Database.dbLock)
 			{
 				try
 				{
 					conn = Database.GetDbConnection();
-					var q = new SQLiteCommand("INSERT INTO users (user_name, user_password, user_salt) VALUES (@username, @userhash, @usersalt)");
-					q.Connection = conn;
-					q.Parameters.AddWithValue("@username", userName);
-					q.Parameters.AddWithValue("@userhash", hash);
-					q.Parameters.AddWithValue("@usersalt", salt);
+					IDbCommand q = Database.GetDbCommand("INSERT INTO users (user_name, user_password, user_salt) VALUES (@username, @userhash, @usersalt)", conn);
+					q.AddNamedParam("@username", userName);
+					q.AddNamedParam("@userhash", hash);
+					q.AddNamedParam("@usersalt", salt);
 					q.Prepare();
 					q.ExecuteNonQuery();
 				}

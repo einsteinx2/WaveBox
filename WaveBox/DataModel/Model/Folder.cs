@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Data.SQLite;
+using System.Data;
 using System.Data.SqlTypes;
 using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
@@ -38,22 +38,20 @@ namespace WaveBox.DataModel.Model
 
 		public Folder(int folderId)
 		{
-			SQLiteConnection conn = null;
-			SQLiteDataReader reader = null;
+			IDbConnection conn = null;
+			IDataReader reader = null;
 
-			lock (Database.dbLock)
+			//lock (Database.dbLock)
 			{
 				try
 				{
 					conn = Database.GetDbConnection();
 
-					var q = new SQLiteCommand("SELECT TOP(1) folder.*, song.song_art_id FROM folder " + 
+					IDbCommand q = Database.GetDbCommand("SELECT TOP(1) folder.*, song.song_art_id FROM folder " + 
 						"LEFT JOIN song ON song_folder_id = folder_id " +
-						"WHERE folder_id = @folderid"
-					);
+						"WHERE folder_id = @folderid", conn);
 
-					q.Connection = conn;
-					q.Parameters.AddWithValue("@folderid", folderId);
+					q.AddNamedParam("@folderid", folderId);
 					q.Prepare();
 					reader = q.ExecuteReader();
 
@@ -97,9 +95,9 @@ namespace WaveBox.DataModel.Model
 
 		public Folder(string path)
 		{
-			SQLiteConnection conn = null;
-			SQLiteCommand q = null;
-			SQLiteDataReader reader = null;
+			IDbConnection conn = null;
+			IDbCommand q = null;
+			IDataReader reader = null;
 
 			if (path == null || path == "")
 			{
@@ -123,27 +121,24 @@ namespace WaveBox.DataModel.Model
 				ArtId = new CoverArt(new FileStream(folderImageName, FileMode.Open, FileAccess.Read)).ArtId;
 			}
 
-			lock (Database.dbLock)
+			//lock (Database.dbLock)
 			{
 				try
 				{
-					q = new SQLiteCommand();
-
+					conn = Database.GetDbConnection();
 					if (IsMediaFolder() || Settings.MediaFolders == null)
 					{
-						q.CommandText = "SELECT folder_id FROM folder WHERE folder_name = @foldername AND parent_folder_id IS NULL";
-						q.Parameters.AddWithValue("@foldername", FolderName);
+						q = Database.GetDbCommand("SELECT folder_id FROM folder WHERE folder_name = @foldername AND parent_folder_id IS NULL", conn);
+						q.AddNamedParam("@foldername", FolderName);
 					}
 					else
 					{
 						ParentFolderId = GetParentFolderId(FolderPath);
-						q.CommandText = "SELECT folder_id FROM folder WHERE folder_name = @foldername AND parent_folder_id = @parentfolderid";
-						q.Parameters.AddWithValue("@foldername", FolderName);
-						q.Parameters.AddWithValue("@parentfolderid", ParentFolderId);
+						q = Database.GetDbCommand("SELECT folder_id FROM folder WHERE folder_name = @foldername AND parent_folder_id = @parentfolderid", conn);
+						q.AddNamedParam("@foldername", FolderName);
+						q.AddNamedParam("@parentfolderid", ParentFolderId);
 					}
 
-					conn = Database.GetDbConnection();
-					q.Connection = conn;
 					q.Prepare();
 					reader = q.ExecuteReader();
 
@@ -151,8 +146,6 @@ namespace WaveBox.DataModel.Model
 					{
 						FolderId = reader.GetInt32(0);
 					}
-
-					reader.Close();
 				}
 				catch (Exception e)
 				{
@@ -174,9 +167,9 @@ namespace WaveBox.DataModel.Model
 			MediaFolderId = 0;
 			FolderId = 0;
 
-			SQLiteConnection conn = null;
-			SQLiteCommand q = null;
-			SQLiteDataReader reader = null;
+			IDbCommand q = null;
+			IDbConnection conn = null;
+			IDataReader reader = null;
 
 			if (path == null || path == "")
 			{
@@ -188,10 +181,9 @@ namespace WaveBox.DataModel.Model
 				try
 				{
 					conn = Database.GetDbConnection();
-
-					q = new SQLiteCommand("SELECT * FROM folder WHERE folder_path = @folderpath AND folder_media_folder_id = 0", conn);
-
-					q.Parameters.AddWithValue("@folderpath", path);
+					q = Database.GetDbCommand("SELECT * FROM folder WHERE folder_path = \"" + path + "\" AND folder_media_folder_id = 0", conn);
+					//q = Database.GetDbCommand("SELECT * FROM folder WHERE folder_path = @folderpath AND folder_media_folder_id = 0", conn);
+					//q.AddNamedParam("@folderpath", path);
 					q.Prepare();
 					reader = q.ExecuteReader();
 
@@ -214,8 +206,9 @@ namespace WaveBox.DataModel.Model
 							else 
 								ParentFolderId = reader.GetInt32(reader.GetOrdinal("folder_art_id"));
 						}
-
 					}
+					reader.Close();
+					conn.Close();
 				}
 				catch (Exception e)
 				{
@@ -245,23 +238,21 @@ namespace WaveBox.DataModel.Model
 		{
 			var songs = new List<Song>();
 
-			SQLiteConnection conn = null;
-			SQLiteDataReader reader = null;
+			IDbConnection conn = null;
+			IDataReader reader = null;
 
-			lock (Database.dbLock)
+			//lock (Database.dbLock)
 			{
 				try
 				{
-					var q = new SQLiteCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " +
+					IDbCommand q = Database.GetDbCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " +
 						"LEFT JOIN artist ON song_artist_id = artist.artist_id " +
 						"LEFT JOIN album ON song_album_id = album.album_id " +
-						"WHERE song_folder_id = @folderid"
-					);
+					    "WHERE song_folder_id = @folderid", conn);
 
-					q.Parameters.AddWithValue("@folderid", FolderId);
+					q.AddNamedParam("@folderid", FolderId);
 
 					conn = Database.GetDbConnection();
-					q.Connection = conn;
 					q.Prepare();
 					reader = q.ExecuteReader();
 
@@ -269,8 +260,6 @@ namespace WaveBox.DataModel.Model
 					{
 						songs.Add(new Song(reader));
 					}
-
-					reader.Close();
 				}
 				catch (Exception e)
 				{
@@ -290,18 +279,17 @@ namespace WaveBox.DataModel.Model
 		{
 			var folders = new List<Folder>();
 
-			SQLiteConnection conn = null;
-			SQLiteDataReader reader = null;
+			IDbConnection conn = null;
+			IDataReader reader = null;
 
-			lock (Database.dbLock)
+			//lock (Database.dbLock)
 			{
 				try
 				{
-					var q = new SQLiteCommand("SELECT folder_id FROM folder WHERE parent_folder_id = @folderid");
-					q.Parameters.AddWithValue("@folderid", FolderId);
-
 					conn = Database.GetDbConnection();
-					q.Connection = conn;
+					IDbCommand q = Database.GetDbCommand("SELECT folder_id FROM folder WHERE parent_folder_id = @folderid", conn);
+					q.AddNamedParam("@folderid", FolderId);
+
 					q.Prepare();
 					reader = q.ExecuteReader();
 
@@ -309,8 +297,6 @@ namespace WaveBox.DataModel.Model
 					{
 						folders.Add(new Folder(reader.GetInt32(0)));
 					}
-
-					reader.Close();
 				}
 				catch (Exception e)
 				{
@@ -371,36 +357,33 @@ namespace WaveBox.DataModel.Model
 
 		public void AddToDatabase(bool mediaf)
 		{
-			SQLiteConnection conn = null;
-			SQLiteDataReader reader = null;
+			IDbConnection conn = null;
+			IDataReader reader = null;
 			int affected;
 
-			lock (Database.dbLock)
+			//lock (Database.dbLock)
 			{
 				try
 				{
-					var q = new SQLiteCommand();
+					conn = Database.GetDbConnection();
+					IDbCommand q = Database.GetDbCommand("INSERT INTO folder (folder_name, folder_path, parent_folder_id, folder_media_folder_id, folder_art_id) " +
+														 "VALUES (@foldername, @folderpath, @parentfolderid, @folderid, @artid)", conn);
 
-					q.CommandText = "INSERT INTO folder (folder_name, folder_path, parent_folder_id, folder_media_folder_id, folder_art_id) VALUES (@foldername, @folderpath, @parentfolderid, @folderid, @artid)";
-					q.Parameters.AddWithValue("@foldername", FolderName);
-					q.Parameters.AddWithValue("@folderpath", FolderPath);
+					q.AddNamedParam("@foldername", FolderName);
+					q.AddNamedParam("@folderpath", FolderPath);
+
 					if (mediaf == true)
-					{
-						q.Parameters.AddWithValue("@parentfolderid", DBNull.Value);
-					}
+						q.AddNamedParam("@parentfolderid", DBNull.Value);
 					else
-					{
-						q.Parameters.AddWithValue("@parentfolderid", GetParentFolderId(FolderPath));
-					}
-					q.Parameters.AddWithValue("@folderid", MediaFolderId);
+						q.AddNamedParam("@parentfolderid", GetParentFolderId(FolderPath));
+
+					q.AddNamedParam("@folderid", MediaFolderId);
 
 					if (ArtId == 0) 
-						q.Parameters.AddWithValue("@artid", DBNull.Value);
+						q.AddNamedParam("@artid", DBNull.Value);
 					else 
-						q.Parameters.AddWithValue("@artid", ArtId);
+						q.AddNamedParam("@artid", ArtId);
 					
-					conn = Database.GetDbConnection();
-					q.Connection = conn;
 					q.Prepare();
 					affected = q.ExecuteNonQuery();
 
@@ -427,34 +410,32 @@ namespace WaveBox.DataModel.Model
 		{
 			string parentFolderPath = Directory.GetParent(path).FullName;
 
-			SQLiteConnection conn = null;
-			SQLiteDataReader reader = null;
+			IDbConnection conn = null;
+			IDataReader reader = null;
 			int pFolderId = 0;
 
-			lock (Database.dbLock)
+			//lock (Database.dbLock)
 			{
 				try
 				{
-					var q = new SQLiteCommand("SELECT folder_id FROM folder WHERE folder_path = @folderpath");
-					q.Parameters.AddWithValue("@folderpath", parentFolderPath);
-
 					conn = Database.GetDbConnection();
-					q.Connection = conn;
-					q.Prepare();
-					var result = q.ExecuteScalar();
+					IDbCommand q = Database.GetDbCommand("SELECT folder_id FROM folder WHERE folder_path = @folderpath", conn);
+					q.AddNamedParam("@folderpath", parentFolderPath);
 
-					if (result == null)
+					q.Prepare();
+					reader = q.ExecuteReader();
+
+					if (reader.Read())
+					{
+						pFolderId = reader.GetInt32(reader.GetOrdinal("folder_id"));
+					}
+					else
 					{
 						Console.WriteLine("No db result for parent folder.  Constructing parent folder object.");
 						var f = new Folder(parentFolderPath);
 						f.AddToDatabase(false);
 						pFolderId = f.FolderId;
 					}
-					else
-					{
-						pFolderId = (int)result;
-					}
-					
 				}
 				catch (Exception e)
 				{
@@ -472,21 +453,19 @@ namespace WaveBox.DataModel.Model
 		public static List<Folder> MediaFolders()
 		{
 			var folders = new List<Folder>();
-			SQLiteConnection conn = null;
-			SQLiteDataReader reader = null;
+			IDbConnection conn = null;
+			IDataReader reader = null;
 
 			if (Settings.MediaFolders == null)
 			{
 			
-				lock (Database.dbLock)
+				//lock (Database.dbLock)
 				{
 					try
 					{
-						var q = new SQLiteCommand("SELECT * FROM folder WHERE parent_folder_id IS NULL");
-						//q.Parameters.AddWithValue("@nullvalue", DBNull.Value);
-
 						conn = Database.GetDbConnection();
-						q.Connection = conn;
+						IDbCommand q = Database.GetDbCommand("SELECT * FROM folder WHERE parent_folder_id IS NULL", conn);
+						//q.Parameters.AddWithValue("@nullvalue", DBNull.Value);
 						q.Prepare();
 						reader = q.ExecuteReader();
 
@@ -494,8 +473,6 @@ namespace WaveBox.DataModel.Model
 						{
 							folders.Add(new Folder(reader.GetInt32(reader.GetOrdinal("folder_id"))));
 						}
-
-						reader.Close();
 					}
 
 					catch (Exception e)

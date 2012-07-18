@@ -2,46 +2,68 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Data.SQLite;
+using System.Data;
 using System.Threading;
-
+//using System.Data.H2;
+using Mono.Data.Sqlite;
 
 namespace WaveBox.DataModel.Singletons
 {
-	class Database
+	static class Database
 	{
-		private static SQLiteConnection dbConn;
 		public static readonly Object dbLock = new Object();
 
-		public static SQLiteConnection GetDbConnection ()
-		{
-			lock (dbLock) 
-			{
-				if (dbConn == null)
-				{
-					dbConn = new SQLiteConnection("Data Source = \"wavebox.db\"");
-				}
-			
-				while ((dbConn.State == System.Data.ConnectionState.Closed))
-				{
-					dbConn.Open();
-				}
-			}
+		public static int count = 0;
 
-			return dbConn;
+		public static IDbConnection GetDbConnection ()
+		{
+			//lock (dbLock)
+			{
+				//IDbConnection conn = new H2Connection("jdbc:h2:wavebox", "pms", "pms");
+
+				//string connString = "Data Source = \"wavebox.db\"";
+				string connString = "URI=file:wavebox.db,version=3,pooling=true";
+				IDbConnection conn = new SqliteConnection(connString);
+
+				while (conn.State == System.Data.ConnectionState.Closed)
+				{
+					conn.Open();
+				}
+
+				count++;
+				Console.WriteLine("getting connection   " + count);
+				return conn;
+			}
 		}
 
-		public static void Close(SQLiteConnection c, SQLiteDataReader r)
+		public static IDbCommand GetDbCommand(string queryString, IDbConnection connection)
 		{
-			if (!(c == null) && !(c.State == System.Data.ConnectionState.Closed))
-			{
-				//c.Close();
-			}
+			//return new H2Command(queryString, (H2Connection)connection);
+			return new SqliteCommand(queryString, (SqliteConnection)connection);
+		}
 
-			if (!(r == null) && !r.IsClosed)
+		public static void Close (IDbConnection c, IDataReader r)
+		{
+			if (!(r == null) && !r.IsClosed) 
 			{
 				r.Close();
 			}
+
+			if (!(c == null))// && !(c.State == System.Data.ConnectionState.Closed)) 
+			{
+				count--;
+				Console.WriteLine ("Closing connection  " + count);
+				c.Close();
+			}
+		}
+	
+		// IDbCommand extension to add named parameters without writing a bunch of code each time
+		public static void AddNamedParam(this IDbCommand dbCmd, string name, object value)
+		{
+		    IDataParameter param = dbCmd.CreateParameter();
+			param.ParameterName = name;
+			param.Value = value;
+			dbCmd.Parameters.Add(param);
 		}
 	}
 }

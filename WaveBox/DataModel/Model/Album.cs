@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Data.SQLite;
+using System.Data;
 using WaveBox.DataModel.Singletons;
 using Newtonsoft.Json;
 
@@ -38,25 +38,24 @@ namespace WaveBox.DataModel.Model
 		{
 		}
 
-		public Album(SQLiteDataReader reader)
+		public Album(IDataReader reader)
 		{
 			SetPropertiesFromQueryResult(reader);
 		}
 
 		public Album(int albumId)
 		{
-			SQLiteConnection conn = null;
-			SQLiteDataReader result = null;
+			IDbConnection conn = null;
+			IDataReader result = null;
 
-			lock (Database.dbLock)
+			//lock (Database.dbLock)
 			{
 				try
 				{
-					var q = new SQLiteCommand("SELECT * FROM album WHERE album_id = @albumid");
-					q.Parameters.AddWithValue("@albumid", albumId);
-
 					conn = Database.GetDbConnection();
-					q.Connection = conn;
+					IDbCommand q = Database.GetDbCommand("SELECT * FROM album WHERE album_id = @albumid", conn);
+					q.AddNamedParam("@albumid", albumId);
+
 					q.Prepare();
 					result = q.ExecuteReader();
 
@@ -64,8 +63,6 @@ namespace WaveBox.DataModel.Model
 					{
 						SetPropertiesFromQueryResult(result);
 					}
-
-					result.Close();
 				}
 				catch (Exception e)
 				{
@@ -87,19 +84,17 @@ namespace WaveBox.DataModel.Model
 
 			AlbumName = albumName;
 
-			SQLiteConnection conn = null;
-			SQLiteDataReader result = null;
+			IDbConnection conn = null;
+			IDataReader result = null;
 
-			lock (Database.dbLock)
+			//lock (Database.dbLock)
 			{
 				try
 				{
-					var q = new SQLiteCommand("SELECT * FROM album WHERE album_name  = @albumname");
-					q.Parameters.AddWithValue("@itemtypeid", ItemTypeId);
-					q.Parameters.AddWithValue("@albumname", AlbumName);
-
 					conn = Database.GetDbConnection();
-					q.Connection = conn;
+					IDbCommand q = Database.GetDbCommand("SELECT * FROM album WHERE album_name  = @albumname", conn);
+					//q.Parameters.AddWithValue("@itemtypeid", ItemTypeId);
+					q.AddNamedParam("@albumname", AlbumName);
 					q.Prepare();
 					result = q.ExecuteReader();
 
@@ -112,7 +107,6 @@ namespace WaveBox.DataModel.Model
 						AlbumName = albumName;
 					}
 
-					result.Close();
 				}
 				catch (Exception e)
 				{
@@ -129,19 +123,17 @@ namespace WaveBox.DataModel.Model
 		{
 			bool success = false;
 
-			SQLiteConnection conn = null;
-			SQLiteDataReader result = null;
+			IDbConnection conn = null;
+			IDataReader result = null;
 
-			lock (Database.dbLock)
+			//lock (Database.dbLock)
 			{
 				try
 				{
-					var q = new SQLiteCommand("INSERT INTO album (album_name, artist_id) VALUES(@albumname, @artistid)");
-					q.Parameters.AddWithValue("@albumname", albumName);
-					q.Parameters.AddWithValue("@artistid", artistId);
-
 					conn = Database.GetDbConnection();
-					q.Connection = conn;
+					IDbCommand q = Database.GetDbCommand("INSERT INTO album (album_name, artist_id) VALUES(@albumname, @artistid)", conn);
+					q.AddNamedParam("@albumname", albumName);
+					q.AddNamedParam("@artistid", artistId);
 					q.Prepare();
 					int affected = (int)q.ExecuteNonQuery();
 
@@ -161,7 +153,7 @@ namespace WaveBox.DataModel.Model
 			return success;
 		}
 
-		private void SetPropertiesFromQueryResult(SQLiteDataReader reader)
+		private void SetPropertiesFromQueryResult(IDataReader reader)
 		{
 			if(reader.IsDBNull(reader.GetOrdinal("artist_id")))
 			{
@@ -202,23 +194,19 @@ namespace WaveBox.DataModel.Model
 		{
 			var songs = new List<Song>();
 
-			SQLiteConnection conn = null;
-			SQLiteDataReader reader = null;
+			IDbConnection conn = null;
+			IDataReader reader = null;
 
-			lock (Database.dbLock)
+			//lock (Database.dbLock)
 			{
 				try
 				{
-					var q = new SQLiteCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " +
+					conn = Database.GetDbConnection();
+					IDbCommand q = Database.GetDbCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " +
 						"LEFT JOIN artist ON song_artist_id = artist.artist_id " +
 						"LEFT JOIN album ON song_album_id = album.album_id " +
-						"WHERE song_album_id = @albumid"
-					);
-
-					q.Parameters.AddWithValue("@albumid", AlbumId);
-
-					conn = Database.GetDbConnection();
-					q.Connection = conn;
+						"WHERE song_album_id = @albumid", conn);
+					q.AddNamedParam("@albumid", AlbumId);
 					q.Prepare();
 					reader = q.ExecuteReader();
 
@@ -267,19 +255,15 @@ namespace WaveBox.DataModel.Model
 		{
 			var albums = new List<Album>();
 
-			SQLiteConnection conn = null;
-			SQLiteDataReader reader = null;
+			IDbConnection conn = null;
+			IDataReader reader = null;
 
-			lock (Database.dbLock)
+			//lock (Database.dbLock)
 			{
 				try
 				{
-					var q = new SQLiteCommand("SELECT * FROM album");
-
-					q.Parameters.AddWithValue("@itemtypeid", new Album().ItemTypeId);
-
 					conn = Database.GetDbConnection();
-					q.Connection = conn;
+					IDbCommand q = Database.GetDbCommand("SELECT * FROM album", conn);
 					q.Prepare();
 					reader = q.ExecuteReader();
 
@@ -305,21 +289,16 @@ namespace WaveBox.DataModel.Model
 		public static List<Album> RandomAlbums()
 		{
 			var random = new List<Album>();
-			SQLiteConnection conn = null;
-			SQLiteDataReader reader = null;
+			IDbConnection conn = null;
+			IDataReader reader = null;
 
-			lock (Database.dbLock)
+			//lock (Database.dbLock)
 			{
 				try
 				{
-					var q = new SQLiteCommand("SELECT TOP @count * FROM album" +
-						"ORDER BY NEWID()"
-					);
-
-					q.Parameters.AddWithValue("@itemtypeid", new Album().ItemTypeId);
-
 					conn = Database.GetDbConnection();
-					q.Connection = conn;
+					IDbCommand q = Database.GetDbCommand("SELECT count(*) FROM album ORDER BY NEWID() LIMIT 1", conn);
+
 					q.Prepare();
 					reader = q.ExecuteReader();
 

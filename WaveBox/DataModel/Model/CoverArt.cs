@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using System.Data.SQLite;
+using System.Data;
 using System.Data.SqlTypes;
 using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
@@ -44,19 +44,17 @@ namespace WaveBox.DataModel.Model
 
 		public CoverArt(int artId)
 		{
-			SQLiteConnection conn = null;
-			SQLiteDataReader reader = null;
+			IDbConnection conn = null;
+			IDataReader reader = null;
 
-			lock (Database.dbLock)
+			//lock (Database.dbLock)
 			{
 				try
 				{
-					var q = new SQLiteCommand("SELECT * FROM art WHERE art_id = @artid");
-
-					q.Parameters.AddWithValue("@artid", artId);
-
 					conn = Database.GetDbConnection();
-					q.Connection = conn;
+					IDbCommand q = Database.GetDbCommand("SELECT * FROM art WHERE art_id = @artid", conn);
+					q.AddNamedParam("@artid", artId);
+
 					q.Prepare();
 					reader = q.ExecuteReader();
 
@@ -65,8 +63,6 @@ namespace WaveBox.DataModel.Model
 						ArtId = reader.GetInt32(0);
 						AdlerHash = reader.GetInt64(1);
 					}
-
-					reader.Close();
 				}
 				catch (Exception e)
 				{
@@ -111,18 +107,17 @@ namespace WaveBox.DataModel.Model
 
 		private void CheckDatabaseAndPerformCopy(byte[] data)
 		{
-			SQLiteConnection conn = null;
-			SQLiteDataReader reader = null;
+			IDbConnection conn = null;
+			IDataReader reader = null;
 
-			lock (Database.dbLock)
+			//lock (Database.dbLock)
 			{
 				try
 				{
-					var q = new SQLiteCommand("SELECT * FROM art WHERE adler_hash = @adlerhash");
-					q.Parameters.AddWithValue("@adlerhash", AdlerHash);
-
 					conn = Database.GetDbConnection();
-					q.Connection = conn;
+					IDbCommand q = Database.GetDbCommand("SELECT * FROM art WHERE adler_hash = @adlerhash", conn);
+					q.AddNamedParam("@adlerhash", AdlerHash);
+
 					q.Prepare();
 					reader = q.ExecuteReader();
 
@@ -131,10 +126,9 @@ namespace WaveBox.DataModel.Model
 						// the art is already in the database
 						this.ArtId = reader.GetInt32(reader.GetOrdinal("art_id"));
 					}
-
-					// the art is not already in the database
 					else
 					{
+						// the art is not already in the database
 						try
 						{
 							System.IO.File.WriteAllBytes(ART_PATH + this.AdlerHash, data);
@@ -150,12 +144,11 @@ namespace WaveBox.DataModel.Model
 
 						try
 						{
-							var q1 = new SQLiteCommand("INSERT INTO art (adler_hash) VALUES (@adlerhash)");
+							IDbConnection conn1 = Database.GetDbConnection();
+							IDbCommand q1 = Database.GetDbCommand("INSERT INTO art (adler_hash) VALUES (@adlerhash)", conn1);
 
-							q1.Parameters.AddWithValue("@adlerhash", AdlerHash);
+							q1.AddNamedParam("@adlerhash", AdlerHash);
 
-							var conn1 = Database.GetDbConnection();
-							q1.Connection = conn1;
 							q1.Prepare();
 							int result = q1.ExecuteNonQuery();
 
@@ -175,10 +168,10 @@ namespace WaveBox.DataModel.Model
 							}
 							finally
 							{
-
+								Database.Close(conn1, null);
 							}
 						}
-						catch (SQLiteException e)
+						catch (Exception e)
 						{
 							Console.WriteLine("\r\n\r\n" + e.Message + "\r\n\r\n");
 						}
@@ -190,7 +183,6 @@ namespace WaveBox.DataModel.Model
 				}
 				finally
 				{
-
 					Database.Close(conn, reader);
 				}
 			}

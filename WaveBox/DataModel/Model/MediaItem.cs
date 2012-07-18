@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using System.Data.SQLite;
+using System.Data;
 using WaveBox.DataModel.Model;
 using WaveBox.DataModel.Singletons;
 using System.Diagnostics;
@@ -74,37 +74,39 @@ namespace WaveBox.DataModel.Model
 			//Console.WriteLine("Get file information: {0} ms", sw.ElapsedMilliseconds);
 			//sw.Reset();
 
-			SQLiteConnection conn = null;
-			SQLiteDataReader reader = null;
+			IDbConnection conn = null;
+			IDataReader reader = null;
 
-			lock (Database.dbLock)
+			//lock (Database.dbLock)
 			{
 				try
 				{
 					//sw.Start();
-					var q = new SQLiteCommand("SELECT COUNT(*) AS count FROM song WHERE song_folder_id = @folderid AND song_file_name = @filename AND song_last_modified = @lastmod");
-					q.Parameters.AddWithValue("@folderid", folderId);
-					q.Parameters.AddWithValue("@filename", fileName);
-					q.Parameters.AddWithValue("@lastmod", lastModified);
+					conn = Database.GetDbConnection();
+					IDbCommand q = Database.GetDbCommand("SELECT COUNT(*) AS count FROM song WHERE song_folder_id = @folderid AND song_file_name = @filename AND song_last_modified = @lastmod", conn);
+					q.AddNamedParam("@folderid", folderId);
+					q.AddNamedParam("@filename", fileName);
+					q.AddNamedParam("@lastmod", lastModified);
 					//sw.Stop();
 					//Console.WriteLine("Add parameters: {0} ms", sw.ElapsedMilliseconds);
 					//sw.Reset();
 
 					//sw.Start();
-					conn = Database.GetDbConnection();
+
 					//sw.Stop();
 					//Console.WriteLine("Get db connection: {0} ms", sw.ElapsedMilliseconds);
 					//sw.Reset();
 
 					//sw.Start();
-					q.Connection = conn;
 					q.Prepare();
-					int i = (int)q.ExecuteScalar();
+					reader = q.ExecuteReader();
 
-					if (i >= 1)
+					if (reader.Read())
 					{
-						needsUpdating = false;
+						if (reader.GetInt32(0) >= 1)
+							needsUpdating = false;
 					}
+
 					//sw.Stop();
 					//Console.WriteLine("Do query: {0} ms; count is {1}", sw.ElapsedMilliseconds, i);
 					//sw.Reset();

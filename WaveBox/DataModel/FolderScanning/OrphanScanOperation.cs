@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
-using System.Data.SQLite;
+using System.Data;
 using System.IO;
 using System.Diagnostics;
 
@@ -36,8 +36,8 @@ namespace WaveBox.DataModel.FolderScanning
 				return;
 			}
 
-			SQLiteConnection conn = null;
-			SQLiteDataReader reader = null;
+			IDbConnection conn = null;
+			IDataReader reader = null;
 			var mediaFolderIds = new ArrayList ();
 			var orphanFolderIds = new ArrayList ();
 
@@ -45,16 +45,13 @@ namespace WaveBox.DataModel.FolderScanning
 				mediaFolderIds.Add (mediaFolder.FolderId);
 			}
 
-			lock (Database.dbLock) 
+			//lock (Database.dbLock) 
 			{
 				try 
 				{
 					conn = Database.GetDbConnection ();
 
-					var q = new SQLiteCommand ("SELECT * FROM folder");
-
-					q.Connection = conn;
-
+					IDbCommand q = Database.GetDbCommand ("SELECT * FROM folder", conn);
 					q.Prepare ();
 					reader = q.ExecuteReader ();
 
@@ -106,14 +103,12 @@ namespace WaveBox.DataModel.FolderScanning
 						}
 					}
 
-					reader.Close ();
-
 					foreach (int fid in orphanFolderIds) 
 					{
 						try 
 						{
-							var q1 = new SQLiteCommand ("DELETE FROM folder WHERE folder_id = @folderid", conn);
-							q1.Parameters.AddWithValue ("@folderid", fid);
+							IDbCommand q1 = Database.GetDbCommand ("DELETE FROM folder WHERE folder_id = @folderid", conn);
+							q1.Parameters.Add (fid);
 
 							q1.Prepare ();
 							q1.ExecuteNonQuery ();
@@ -127,8 +122,14 @@ namespace WaveBox.DataModel.FolderScanning
 						{
 							Console.WriteLine ("[ORPHANSCAN] " + "Songs for {0} deleted", fid);
 
-							var q2 = new SQLiteCommand ("DELETE FROM song WHERE song_folder_id = @folderid", conn);
-							q2.Parameters.AddWithValue ("@folderid", fid);
+							IDbCommand q2 = Database.GetDbCommand ("DELETE FROM song WHERE song_folder_id = @folderid", conn);
+
+							q2.CreateParameter();
+
+							var param = q2.CreateParameter();
+							param.ParameterName = "@folderid";
+							param.Value = fid;
+							q2.Parameters.Add(param);
 
 							q2.Prepare ();
 							q2.ExecuteNonQuery ();
@@ -146,7 +147,7 @@ namespace WaveBox.DataModel.FolderScanning
 				}
 				finally
 				{
-					Database.Close (conn, reader);
+					Database.Close(conn, reader);
 				}
 			}
 		}
@@ -158,23 +159,21 @@ namespace WaveBox.DataModel.FolderScanning
 				return;
 			}
 
-			SQLiteConnection conn = null;
-			SQLiteDataReader reader = null;
+			IDbConnection conn = null;
+			IDataReader reader = null;
 			var orphanSongIds = new ArrayList();
 			int songid;
 			string path, filename;
 
-			lock (Database.dbLock)
+			//lock (Database.dbLock)
 			{
 				try
 				{
-					var q = new SQLiteCommand("SELECT song.song_id, song.song_file_name, folder.folder_path " +
-						"FROM song " + 
-						"LEFT JOIN folder ON song.song_folder_id = folder.folder_id"
-					);
-
 					conn = Database.GetDbConnection();
-					q.Connection = conn;
+					IDbCommand q = Database.GetDbCommand("SELECT song.song_id, song.song_file_name, folder.folder_path " +
+						"FROM song " + 
+						"LEFT JOIN folder ON song.song_folder_id = folder.folder_id", conn);
+
 					q.Prepare();
 					reader = q.ExecuteReader();
 
@@ -190,25 +189,6 @@ namespace WaveBox.DataModel.FolderScanning
 							orphanSongIds.Add(songid);
 						}
 					}
-
-					reader.Close();
-
-					foreach (int id in orphanSongIds)
-					{
-						try
-						{
-							var q1 = new SQLiteCommand("DELETE FROM song WHERE song_id = @songid", conn);
-							q1.Parameters.AddWithValue("@songid", id);
-							q1.Prepare();
-							q1.ExecuteNonQuery();
-							Console.WriteLine("[ORPHANSCAN] " + "Song " + id + " deleted");
-							reader.Close();
-						}
-						catch (Exception e)
-						{
-							Console.WriteLine("[ORPHANSCAN] " + e.ToString());
-						}
-					}
 				}
 				catch (Exception e)
 				{
@@ -217,6 +197,27 @@ namespace WaveBox.DataModel.FolderScanning
 				finally
 				{
 					Database.Close(conn, reader);
+				}
+
+				foreach (int id in orphanSongIds)
+				{
+					try
+					{
+						conn = Database.GetDbConnection();
+						IDbCommand q1 = Database.GetDbCommand("DELETE FROM song WHERE song_id = @songid", conn);
+						q1.AddNamedParam("@songid", id);
+						q1.Prepare();
+						q1.ExecuteNonQuery();
+						Console.WriteLine("[ORPHANSCAN] " + "Song " + id + " deleted");
+					}
+					catch (Exception e)
+					{
+						Console.WriteLine("[ORPHANSCAN] " + e.ToString());
+					}
+					finally
+					{
+						Database.Close(conn, reader);
+					}
 				}
 			}
 		}
