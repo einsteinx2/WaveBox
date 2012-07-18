@@ -37,7 +37,7 @@ namespace WaveBox.DataModel.FolderScanning
 			ProcessFolder(FolderPath);
 		}
 
-		public void ProcessFolder(long folderId)
+		public void ProcessFolder(int folderId)
 		{
 			var folder = new Folder(folderId);
 			ProcessFolder(folder.FolderPath);
@@ -45,8 +45,6 @@ namespace WaveBox.DataModel.FolderScanning
 
 		public void ProcessFolder(string folderPath)
 		{
-			GC.Collect();
-
 			if (ShouldRestart)
 			{
 				return;
@@ -142,7 +140,7 @@ namespace WaveBox.DataModel.FolderScanning
 			}
 		}
 
-		public void ProcessFile(FileInfo file, long folderId)
+		public void ProcessFile(FileInfo file, int folderId)
 		{
 			if (ShouldRestart)
 			{
@@ -154,6 +152,7 @@ namespace WaveBox.DataModel.FolderScanning
 			{
 				return;
 			}
+
 
 			if (MediaItem.FileNeedsUpdating(file))
 			{

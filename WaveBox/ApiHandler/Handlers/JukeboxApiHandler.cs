@@ -14,9 +14,9 @@ namespace WaveBox.ApiHandler.Handlers
 		private Jukebox Juke;
 		private HttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
-		//private long _userId;
+		//private int _userId;
 
-		public JukeboxApiHandler(UriWrapper uri, HttpProcessor processor, long userId)
+		public JukeboxApiHandler(UriWrapper uri, HttpProcessor processor, int userId)
 		{
 			Juke = Jukebox.Instance;
 			Processor = processor;
@@ -182,7 +182,7 @@ namespace WaveBox.ApiHandler.Handlers
 		}
 
 		[JsonProperty("currentIndex")]
-		public long CurrentIndex
+		public int CurrentIndex
 		{
 			get
 			{
@@ -212,7 +212,7 @@ namespace WaveBox.ApiHandler.Handlers
 		}
 
 		[JsonProperty("currentIndex")]
-		public long CurrentIndex
+		public int CurrentIndex
 		{
 			get
 			{

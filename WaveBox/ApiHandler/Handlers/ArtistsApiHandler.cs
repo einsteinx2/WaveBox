@@ -13,7 +13,7 @@ namespace WaveBox.ApiHandler.Handlers
 		private HttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 
-		public ArtistsApiHandler(UriWrapper uri, HttpProcessor processor, long userId)
+		public ArtistsApiHandler(UriWrapper uri, HttpProcessor processor, int userId)
 		{
 			Processor = processor;
 			Uri = uri;

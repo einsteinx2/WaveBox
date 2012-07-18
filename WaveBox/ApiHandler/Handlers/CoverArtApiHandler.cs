@@ -14,7 +14,7 @@ namespace WaveBox.ApiHandler.Handlers
 		private HttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 
-		public CoverArtApiHandler(UriWrapper uri, HttpProcessor processor, long userId)
+		public CoverArtApiHandler(UriWrapper uri, HttpProcessor processor, int userId)
 		{
 			Processor = processor;
 			Uri = uri;
@@ -46,8 +46,8 @@ namespace WaveBox.ApiHandler.Handlers
 // Thanks to http://www.switchonthecode.com/tutorials/csharp-tutorial-image-editing-saving-cropping-and-resizing
 		private static Image ResizeImage(Image imgToResize, Size size)
 		{
-			long sourceWidth = imgToResize.Width;
-			long sourceHeight = imgToResize.Height;
+			int sourceWidth = imgToResize.Width;
+			int sourceHeight = imgToResize.Height;
 
 			float nPercent = 0;
 			float nPercentW = 0;

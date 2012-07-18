@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using Mono.Data.Sqlite;
+using System.Data;
 using WaveBox.DataModel.Model;
 using WaveBox.DataModel.Singletons;
 using System.Diagnostics;
@@ -13,7 +13,7 @@ namespace WaveBox.DataModel.Model
 {
 	public class MediaItem
 	{
-		public virtual long ItemTypeId
+		public virtual int ItemTypeId
 		{
 			get
 			{
@@ -25,22 +25,22 @@ namespace WaveBox.DataModel.Model
 		public MediaItemType MediaItemType { get; set; }
 
 		[JsonProperty("itemId")]
-		public long ItemId { get; set; }
+		public int ItemId { get; set; }
 
 		[JsonProperty("artId")]
-		public long ArtId { get; set; }
+		public int ArtId { get; set; }
 
 		[JsonProperty("folderId")]
-		public long FolderId { get; set; }
+		public int FolderId { get; set; }
 
 		[JsonProperty("fileType")]
 		public FileType FileType { get; set; }
 
 		[JsonProperty("duration")]
-		public long Duration { get; set; }
+		public int Duration { get; set; }
 
 		[JsonProperty("bitrate")]
-		public long Bitrate { get; set; }
+		public int Bitrate { get; set; }
 
 		[JsonProperty("fileSize")]
 		public long FileSize { get; set; }
@@ -56,7 +56,7 @@ namespace WaveBox.DataModel.Model
 		/// Public methods
 		/// </summary>
 
-		public void AddToPlaylist(Playlist thePlaylist, long index)
+		public void AddToPlaylist(Playlist thePlaylist, int index)
 		{
 		}
 
@@ -65,7 +65,7 @@ namespace WaveBox.DataModel.Model
 			//var sw = new Stopwatch();
 			//sw.Start();
 			//Console.WriteLine("Checking to see if file needs updating: " + file.Name);
-			long folderId = new Folder(file.Directory.ToString()).FolderId;
+			int folderId = new Folder(file.Directory.ToString()).FolderId;
 			string fileName = file.Name;
 			long lastModified = Convert.ToInt64(file.LastWriteTime.Ticks);
 			bool needsUpdating = true;
@@ -74,37 +74,39 @@ namespace WaveBox.DataModel.Model
 			//Console.WriteLine("Get file information: {0} ms", sw.ElapsedMilliseconds);
 			//sw.Reset();
 
-			SqliteConnection conn = null;
-			SqliteDataReader reader = null;
+			IDbConnection conn = null;
+			IDataReader reader = null;
 
-			lock (Database.dbLock)
+			//lock (Database.dbLock)
 			{
 				try
 				{
 					//sw.Start();
-					var q = new SqliteCommand("SELECT COUNT(*) AS count FROM song WHERE song_folder_id = @folderid AND song_file_name = @filename AND song_last_modified = @lastmod");
-					q.Parameters.AddWithValue("@folderid", folderId);
-					q.Parameters.AddWithValue("@filename", fileName);
-					q.Parameters.AddWithValue("@lastmod", lastModified);
+					conn = Database.GetDbConnection();
+					IDbCommand q = Database.GetDbCommand("SELECT COUNT(*) AS count FROM song WHERE song_folder_id = @folderid AND song_file_name = @filename AND song_last_modified = @lastmod", conn);
+					q.AddNamedParam("@folderid", folderId);
+					q.AddNamedParam("@filename", fileName);
+					q.AddNamedParam("@lastmod", lastModified);
 					//sw.Stop();
 					//Console.WriteLine("Add parameters: {0} ms", sw.ElapsedMilliseconds);
 					//sw.Reset();
 
 					//sw.Start();
-					conn = Database.GetDbConnection();
+
 					//sw.Stop();
 					//Console.WriteLine("Get db connection: {0} ms", sw.ElapsedMilliseconds);
 					//sw.Reset();
 
 					//sw.Start();
-					q.Connection = conn;
 					q.Prepare();
-					long i = (long)q.ExecuteScalar();
+					reader = q.ExecuteReader();
 
-					if (i >= 1)
+					if (reader.Read())
 					{
-						needsUpdating = false;
+						if (reader.GetInt32(0) >= 1)
+							needsUpdating = false;
 					}
+
 					//sw.Stop();
 					//Console.WriteLine("Do query: {0} ms; count is {1}", sw.ElapsedMilliseconds, i);
 					//sw.Reset();

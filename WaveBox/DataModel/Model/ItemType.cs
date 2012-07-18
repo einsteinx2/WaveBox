@@ -16,17 +16,17 @@ namespace WaveBox.DataModel.Model
 
 	public static class ItemTypeExtensions
 	{
-		public static long GetItemTypeId(this ItemType val)
+		public static int GetItemTypeId(this ItemType val)
 		{
-			return (long)val;
+			return (int)val;
 		}
 
-		public static ItemType ItemTypeForId(long id)
+		public static ItemType ItemTypeForId(int id)
 		{
 			// check the id number against all the enum types
 			foreach (ItemType type in Enum.GetValues(typeof(ItemType)))
 			{
-				if ((long)type == id)
+				if ((int)type == id)
 				{
 					return type;
 				}

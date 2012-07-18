@@ -15,7 +15,7 @@ namespace WaveBox.ApiHandler.Handlers
 		private UriWrapper Uri { get; set; }
 		private List<Song> songs;
 
-		public AlbumsApiHandler(UriWrapper uri, HttpProcessor processor, long userId)
+		public AlbumsApiHandler(UriWrapper uri, HttpProcessor processor, int userId)
 		{
 			Processor = processor;
 			Uri = uri;
