@@ -47,9 +47,9 @@ namespace WaveBox.DataModel.Model
 				{
 					conn = Database.GetDbConnection();
 
-					IDbCommand q = Database.GetDbCommand("SELECT TOP(1) folder.*, song.song_art_id FROM folder " + 
+					IDbCommand q = Database.GetDbCommand("SELECT folder.*, song.song_art_id FROM folder " + 
 						"LEFT JOIN song ON song_folder_id = folder_id " +
-						"WHERE folder_id = @folderid", conn);
+						"WHERE folder_id = @folderid LIMIT 1", conn);
 
 					q.AddNamedParam("@folderid", folderId);
 					q.Prepare();
@@ -176,7 +176,7 @@ namespace WaveBox.DataModel.Model
 				return;
 			}
 
-			lock (Database.dbLock)
+			//lock (Database.dbLock)
 			{
 				try
 				{

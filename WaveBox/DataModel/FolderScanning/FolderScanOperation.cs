@@ -67,7 +67,7 @@ namespace WaveBox.DataModel.FolderScanning
 				if ((topFile.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
 				{
 					topFolder = new Folder(topFile.FullName);
-					//Console.WriteLine("scanning " + topFolder.FolderName + "  id: " + topFolder.FolderId);
+					Console.WriteLine("scanning " + topFolder.FolderName + "  id: " + topFolder.FolderId);
 
 					if (topFolder.FolderId == 0)
 					{
@@ -89,12 +89,12 @@ namespace WaveBox.DataModel.FolderScanning
 						}
 					}
 
-					foreach (var subfile in Directory.GetFiles(topFile.FullName))
+					/*foreach (var subfile in Directory.GetFiles(topFile.FullName))
 					{
 						// if the subfile is a directory...
 						ProcessFile(new FileInfo(subfile), topFolder.FolderId);
 						//Console.WriteLine(subfile);
-					}
+					}*/
 
 					//Parallel.ForEach(Directory.GetDirectories(topFile.FullName), currentFile =>
 					//    {
@@ -111,14 +111,16 @@ namespace WaveBox.DataModel.FolderScanning
 					//        }
 					//    });
 
-					//Parallel.ForEach(Directory.GetFiles(topFile.FullName), currentFile =>
-					//    {
-					//        processFile(new FileInfo(currentFile), topFolder.FolderId);
-					//    });
+					Parallel.ForEach(Directory.GetFiles(topFile.FullName), currentFile =>
+					    {
+					        ProcessFile(new FileInfo(currentFile), topFolder.FolderId);
+					    });
 
 
 
 				}
+
+				GC.Collect();
 			}
 
 			catch (FileNotFoundException e)

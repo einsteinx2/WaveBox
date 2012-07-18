@@ -54,7 +54,9 @@ namespace WaveBox
 			}
 			
 			Settings.SettingsSetup();
-			//User.CreateUser("test", "test");
+			User.CreateUser("test", "test");
+
+			//GC.Collect();
 
 			var sw = new Stopwatch();
 			Console.WriteLine("Scanning media directories...");

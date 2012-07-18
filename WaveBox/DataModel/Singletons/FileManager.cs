@@ -57,6 +57,8 @@ namespace WaveBox.DataModel.Singletons
 				}
 
 			}
+
+			GC.Collect();
 		}
 
 		private void OnChanged(object source, FileSystemEventArgs e)

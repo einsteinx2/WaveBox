@@ -137,10 +137,6 @@ namespace WaveBox.DataModel.Model
 						{
 							Console.WriteLine(e.ToString());
 						}
-						finally
-						{
-							Database.Close(conn, reader);
-						}
 
 						try
 						{

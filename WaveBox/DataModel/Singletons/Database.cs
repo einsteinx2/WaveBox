@@ -5,7 +5,8 @@ using System.Text;
 using System.Data;
 using System.Threading;
 //using System.Data.H2;
-using Mono.Data.Sqlite;
+//using Mono.Data.Sqlite;
+using System.Data.SQLite;
 
 namespace WaveBox.DataModel.Singletons
 {
@@ -13,7 +14,7 @@ namespace WaveBox.DataModel.Singletons
 	{
 		public static readonly Object dbLock = new Object();
 
-		public static int count = 0;
+		//public static int count = 0;
 
 		public static IDbConnection GetDbConnection ()
 		{
@@ -22,16 +23,18 @@ namespace WaveBox.DataModel.Singletons
 				//IDbConnection conn = new H2Connection("jdbc:h2:wavebox", "pms", "pms");
 
 				//string connString = "Data Source = \"wavebox.db\"";
-				string connString = "URI=file:wavebox.db,version=3,pooling=true";
-				IDbConnection conn = new SqliteConnection(connString);
+				//string connString = "Version=3,pooling=true,URI=file:wavebox.db";
+				//string connString = "Version=3,pooling=true,URI=file:wavebox.db";
+				string connString = "Data Source=wavebox.db;Version=3;Pooling=True;Max Pool Size=100;";
+				IDbConnection conn = new SQLiteConnection(connString);
 
 				while (conn.State == System.Data.ConnectionState.Closed)
 				{
 					conn.Open();
 				}
 
-				count++;
-				Console.WriteLine("getting connection   " + count);
+				//count++;
+				//Console.WriteLine("getting connection   " + count);
 				return conn;
 			}
 		}
@@ -39,7 +42,7 @@ namespace WaveBox.DataModel.Singletons
 		public static IDbCommand GetDbCommand(string queryString, IDbConnection connection)
 		{
 			//return new H2Command(queryString, (H2Connection)connection);
-			return new SqliteCommand(queryString, (SqliteConnection)connection);
+			return new SQLiteCommand(queryString, (SQLiteConnection)connection);
 		}
 
 		public static void Close (IDbConnection c, IDataReader r)
@@ -51,8 +54,8 @@ namespace WaveBox.DataModel.Singletons
 
 			if (!(c == null))// && !(c.State == System.Data.ConnectionState.Closed)) 
 			{
-				count--;
-				Console.WriteLine ("Closing connection  " + count);
+				//count--;
+				//Console.WriteLine ("Closing connection  " + count);
 				c.Close();
 			}
 		}
