@@ -169,11 +169,16 @@ namespace WaveBox.DataModel.Model
 
 			// check to see if the folder has art associated with it.  if it does, use that art.  if not,
 			// check to see if the tag contains art.
-			if (new Folder(folderId).ContainsImageFile == false)
+
+			var folder = new Folder(folderId);
+
+			if (folder.ContainsImageFile == false)
 			{
 				var art = new CoverArt(fsFile);
 				ArtId = art.ArtId;
 			}
+
+			else ArtId = folder.ArtId;
 
 
 		}

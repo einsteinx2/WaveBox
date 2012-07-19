@@ -202,7 +202,7 @@ namespace Bend.Util
 		public void WriteSuccess()
 		{
 			OutputStream.WriteLine("HTTP/1.0 200 OK");            
-			OutputStream.WriteLine("Content-Type: application/json");
+			OutputStream.WriteLine("Content-Type: application/json;charset=utf-8");
 			OutputStream.WriteLine("Access-Control-Allow-Origin: *");
 			OutputStream.WriteLine("Connection: close");
 			OutputStream.WriteLine("");
