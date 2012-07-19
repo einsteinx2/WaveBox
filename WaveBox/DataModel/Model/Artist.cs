@@ -155,7 +155,7 @@ namespace WaveBox.DataModel.Model
 				try
 				{
 					conn = Database.GetDbConnection();
-					IDbCommand q = Database.GetDbCommand("INSERT INTO artist (artist_name) VALUES (@artistname)", conn);
+					IDbCommand q = Database.GetDbCommand("INSERT OR IGNORE INTO artist (artist_name) VALUES (@artistname)", conn);
 					q.AddNamedParam("@artistname", artistName);
 					q.Prepare();
 					int affected = q.ExecuteNonQuery();
