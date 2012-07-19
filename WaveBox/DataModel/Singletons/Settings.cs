@@ -62,6 +62,34 @@ namespace WaveBox.DataModel.Singletons
 				}
 			}
 
+            if(!File.Exists("wavebox.db"))
+            {
+                try
+                {
+                    Console.WriteLine("[SETTINGS] " + "Database file doesn't exist; Creating it. (wavebox.db)");
+
+                    // new filestream on the template
+                    var dbTemplate = new FileStream("res/wavebox.db", FileMode.Open);
+
+                    // a new byte array
+                    byte[] dbData = new byte[dbTemplate.Length];
+
+                    // read the template file into memory
+                    dbTemplate.Read(dbData, 0, Convert.ToInt32(dbTemplate.Length));
+
+                    // write it all out
+                    System.IO.File.WriteAllBytes("wavebox.db", dbData);
+
+                    // close the template file
+                    dbTemplate.Close();
+                }
+
+                catch (Exception e)
+                {
+                    Console.WriteLine("[SETTINGS] " + e.ToString());
+                }
+            }
+
 			Reload();
 		}
 
