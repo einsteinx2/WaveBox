@@ -31,6 +31,8 @@ namespace WaveBox.DataModel.Model
 		[JsonProperty("artId")]
 		public int ArtId { get; set; }
 
+        public bool ContainsImageFile { get; set; }
+
 
 		/// <summary>
 		/// Constructors
@@ -71,6 +73,7 @@ namespace WaveBox.DataModel.Model
 						// if neither of these things, then sadly, we have no image file to show the user.
 						if (reader.GetValue(reader.GetOrdinal("folder_art_id")) == DBNull.Value)
 						{
+                            ContainsImageFile = false;
 							if (reader.GetValue(reader.GetOrdinal("song_art_id")) == DBNull.Value)
 								ArtId = 0;
 							else 
@@ -78,6 +81,7 @@ namespace WaveBox.DataModel.Model
 						}
 						else
 						{
+                            ContainsImageFile = true;
 							ArtId = reader.GetInt32(reader.GetOrdinal("folder_art_id"));
 						}
 					}
@@ -325,7 +329,7 @@ namespace WaveBox.DataModel.Model
 		}
 
 		private bool FolderContainsImages(string dir, out string firstImageFoundPath)
-		{
+        {
 			var validImageExtensions = new string[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
 			string ext = "";
 
@@ -335,11 +339,13 @@ namespace WaveBox.DataModel.Model
 				if (validImageExtensions.Contains(ext))
 				{
 					firstImageFoundPath = file;
+                    ContainsImageFile = true;
 					return true;
 				}
 			}
 
 			firstImageFoundPath = "";
+            ContainsImageFile = false;
 			return false;
 		}
 

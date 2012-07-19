@@ -66,7 +66,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 			Bitmap b = new Bitmap(destWidth, destHeight);
 			Graphics g = Graphics.FromImage((Image)b);
-			g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+			g.InterpolationMode = InterpolationMode.High;
 
 			g.DrawImage(imgToResize, 0, 0, destWidth, destHeight);
 			g.Dispose();
