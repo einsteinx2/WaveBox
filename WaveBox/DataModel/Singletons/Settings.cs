@@ -41,28 +41,26 @@ namespace WaveBox.DataModel.Singletons
 		}
 
 		public static void SettingsSetup()
-		{
-			if(!File.Exists("WaveBox.conf"))
-			{
-				try
-				{
-					Console.WriteLine("[SETTINGS] " + "Setting file doesn't exist; Creating it. (WaveBox.conf)");
-					var settingsTemplate = new StreamReader("res/WaveBox.conf");
-					var settingsOut = new StreamWriter("WaveBox.conf");
+        {
+            if (!File.Exists("WaveBox.conf"))
+            {
+                try
+                {
+                    Console.WriteLine("[SETTINGS] " + "Setting file doesn't exist; Creating it. (WaveBox.conf)");
+                    var settingsTemplate = new StreamReader("res/WaveBox.conf");
+                    var settingsOut = new StreamWriter("WaveBox.conf");
 
-					settingsOut.Write(settingsTemplate.ReadToEnd());
+                    settingsOut.Write(settingsTemplate.ReadToEnd());
 
-					settingsTemplate.Close();
-					settingsOut.Close();
-				}
+                    settingsTemplate.Close();
+                    settingsOut.Close();
+                } catch (Exception e)
+                {
+                    Console.WriteLine("[SETTINGS] " + e.ToString());
+                }
+            }
 
-				catch (Exception e)
-				{
-					Console.WriteLine("[SETTINGS] " + e.ToString());
-				}
-			}
-
-            if(!File.Exists("wavebox.db"))
+            if (!File.Exists("wavebox.db"))
             {
                 try
                 {
@@ -82,12 +80,15 @@ namespace WaveBox.DataModel.Singletons
 
                     // close the template file
                     dbTemplate.Close();
-                }
-
-                catch (Exception e)
+                } catch (Exception e)
                 {
                     Console.WriteLine("[SETTINGS] " + e.ToString());
                 }
+            }
+
+            if (!Directory.Exists("art"))
+            {
+                Directory.CreateDirectory("art");
             }
 
 			Reload();

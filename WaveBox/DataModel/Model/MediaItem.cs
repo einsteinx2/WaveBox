@@ -60,66 +60,48 @@ namespace WaveBox.DataModel.Model
 		{
 		}
 
-		public static bool FileNeedsUpdating(FileInfo file)
+		public static bool FileNeedsUpdating(FileInfo file, int folderId)
 		{
+            // We don't need to instantiate another folder to know what the folder id is.  This should be known when the method is called.
+
 			//var sw = new Stopwatch();
-			//sw.Start();
-			//Console.WriteLine("Checking to see if file needs updating: " + file.Name);
-			int folderId = new Folder(file.Directory.ToString()).FolderId;
 			string fileName = file.Name;
 			long lastModified = Convert.ToInt64(file.LastWriteTime.Ticks);
 			bool needsUpdating = true;
-			//sw.Stop();
-
-			//Console.WriteLine("Get file information: {0} ms", sw.ElapsedMilliseconds);
-			//sw.Reset();
 
 			IDbConnection conn = null;
 			IDataReader reader = null;
 
-			//lock (Database.dbLock)
+			try
 			{
-				try
+                // Turns out that COUNT(*) on large tables is REALLY slow in SQLite because it does a full table search.  I created an index on folder_id(because weirdly enough,
+                // even though it's a primary key, SQLite doesn't automatically make one!  :O).  We'll pull that, and if we get a row back, then we'll know that this thing exists.
+
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT song_id FROM song WHERE song_folder_id = @folderid AND song_file_name = @filename AND song_last_modified = @lastmod", conn);
+                //IDbCommand q = Database.GetDbCommand("SELECT COUNT(*) AS count FROM song WHERE song_folder_id = @folderid AND song_file_name = @filename AND song_last_modified = @lastmod", conn);
+
+                q.AddNamedParam("@folderid", folderId);
+				q.AddNamedParam("@filename", fileName);
+				q.AddNamedParam("@lastmod", lastModified);
+
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				if (reader.Read())
 				{
-					//sw.Start();
-					conn = Database.GetDbConnection();
-					IDbCommand q = Database.GetDbCommand("SELECT COUNT(*) AS count FROM song WHERE song_folder_id = @folderid AND song_file_name = @filename AND song_last_modified = @lastmod", conn);
-					q.AddNamedParam("@folderid", folderId);
-					q.AddNamedParam("@filename", fileName);
-					q.AddNamedParam("@lastmod", lastModified);
-					//sw.Stop();
-					//Console.WriteLine("Add parameters: {0} ms", sw.ElapsedMilliseconds);
-					//sw.Reset();
-
-					//sw.Start();
-
-					//sw.Stop();
-					//Console.WriteLine("Get db connection: {0} ms", sw.ElapsedMilliseconds);
-					//sw.Reset();
-
-					//sw.Start();
-					q.Prepare();
-					reader = q.ExecuteReader();
-
-					if (reader.Read())
-					{
-						if (reader.GetInt32(0) >= 1)
-							needsUpdating = false;
-					}
-
-					//sw.Stop();
-					//Console.WriteLine("Do query: {0} ms; count is {1}", sw.ElapsedMilliseconds, i);
-					//sw.Reset();
-				}
-				catch (Exception e)
-				{
-					Console.WriteLine(e.ToString());
-				}
-				finally
-				{
-					Database.Close(conn, reader);
+					needsUpdating = false;
 				}
 			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e.ToString());
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
 			return needsUpdating;
 		}
 

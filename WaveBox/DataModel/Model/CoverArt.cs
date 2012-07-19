@@ -15,8 +15,8 @@ namespace WaveBox.DataModel.Model
 {
 	public class CoverArt
 	{
-		public const string ART_PATH = "art";
-		public const string TMP_ART_PATH = "art/tmp";
+		public readonly string ART_PATH = "art" + Path.DirectorySeparatorChar;
+		public readonly string TMP_ART_PATH = "art" + Path.DirectorySeparatorChar + "tmp";
 
 		/// <summary>
 		/// Properties

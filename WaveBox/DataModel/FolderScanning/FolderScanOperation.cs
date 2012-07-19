@@ -67,13 +67,14 @@ namespace WaveBox.DataModel.FolderScanning
 				if ((topFile.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
 				{
 					topFolder = new Folder(topFile.FullName);
-					Console.WriteLine("scanning " + topFolder.FolderName + "  id: " + topFolder.FolderId);
+					//Console.WriteLine("scanning " + topFolder.FolderName + "  id: " + topFolder.FolderId);
 
 					if (topFolder.FolderId == 0)
 					{
 						topFolder.AddToDatabase(false);
 					}
 
+                    //var sw = new Stopwatch();
 					foreach (var subfolder in Directory.GetDirectories(topFile.FullName))
 					{
 						if (!(subfolder.Contains(".AppleDouble")))
@@ -85,16 +86,26 @@ namespace WaveBox.DataModel.FolderScanning
 							{
 								folder.AddToDatabase(false);
 							}
+                            //sw.Start();
 							ProcessFolder(subfolder);
+                            //Console.WriteLine("ProcessFolder ({0}) took {1}ms", subfolder, sw.ElapsedMilliseconds);
+                            //sw.Reset();
 						}
 					}
+                    //sw.Stop();
 
-					/*foreach (var subfile in Directory.GetFiles(topFile.FullName))
-					{
-						// if the subfile is a directory...
-						ProcessFile(new FileInfo(subfile), topFolder.FolderId);
-						//Console.WriteLine(subfile);
-					}*/
+
+                    //sw.Start();
+//					foreach (var subfile in Directory.GetFiles(topFile.FullName))
+//					{
+//						// if the subfile is a file...
+//						ProcessFile(new FileInfo(subfile), topFolder.FolderId);
+//                        //Console.WriteLine("ProcessFile took {0}ms", sw.ElapsedMilliseconds);
+//                        //sw.Restart();
+//						//Console.WriteLine(subfile);
+//					}
+
+                    //sw.Stop();
 
 					//Parallel.ForEach(Directory.GetDirectories(topFile.FullName), currentFile =>
 					//    {
@@ -155,12 +166,17 @@ namespace WaveBox.DataModel.FolderScanning
 				return;
 			}
 
+            //var sw = new Stopwatch();
+            //sw.Start();
+            bool needsUpdating = MediaItem.FileNeedsUpdating(file, folderId);
+            //Console.WriteLine("FileNeedsUpdating: {0} ms", sw.ElapsedMilliseconds);
+            //sw.Reset();
 
-			if (MediaItem.FileNeedsUpdating(file))
+			if (needsUpdating)
 			{
 				Console.WriteLine("[FOLDERSCAN] " + "File needs updating: " + file.Name);
-				var sw = new Stopwatch();
-				sw.Start();
+				
+				//sw.Start();
 				TagLib.File f = null;
 				try
 				{
@@ -178,10 +194,9 @@ namespace WaveBox.DataModel.FolderScanning
 				{
 					Console.WriteLine("[FOLDERSCAN] " + "Error processing file: " + e.ToString());
 				}
-				sw.Stop();
 				//Console.WriteLine("Get tag: {0} ms", sw.ElapsedMilliseconds);
 
-				sw.Reset();
+				//sw.Reset();
 
 				if (f == null)
 				{
@@ -191,16 +206,14 @@ namespace WaveBox.DataModel.FolderScanning
 				else
 				{
 					// It's a song!  Do yo thang.
-					sw.Start();
-					var song = new Song(file, folderId);
-					sw.Stop();
-					//Console.WriteLine("Create new song object: {0} ms", sw.ElapsedMilliseconds);
+				//	sw.Start();
+					var song = new Song(file, folderId, f);
+				//	Console.WriteLine("Create new song object: {0} ms", sw.ElapsedMilliseconds);
+				//	sw.Restart();
 
-					sw.Reset();
-					sw.Start();
 					song.updateDatabase();
-					sw.Stop();
-					//Console.WriteLine("Update database: {0} ms", sw.ElapsedMilliseconds);
+				//	sw.Stop();
+				//	Console.WriteLine("Update database: {0} ms", sw.ElapsedMilliseconds);
 				}
 			}
 		}

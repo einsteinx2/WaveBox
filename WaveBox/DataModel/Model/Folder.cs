@@ -245,6 +245,7 @@ namespace WaveBox.DataModel.Model
 			{
 				try
 				{
+                    conn = Database.GetDbConnection();
 					IDbCommand q = Database.GetDbCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " +
 						"LEFT JOIN artist ON song_artist_id = artist.artist_id " +
 						"LEFT JOIN album ON song_album_id = album.album_id " +
@@ -252,7 +253,7 @@ namespace WaveBox.DataModel.Model
 
 					q.AddNamedParam("@folderid", FolderId);
 
-					conn = Database.GetDbConnection();
+
 					q.Prepare();
 					reader = q.ExecuteReader();
 

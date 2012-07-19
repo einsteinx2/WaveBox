@@ -46,8 +46,13 @@ namespace WaveBox.ApiHandler.Handlers
 
 	class FoldersResponse
 	{
+        [JsonProperty("error")]
 		public string Error { get; set; }
+
+        [JsonProperty("folders")]
 		public List<Folder> Folders { get; set; }
+
+        [JsonProperty("songs")]
 		public List<Song> Songs { get; set; }
 
 		public FoldersResponse(string error, List<Folder> folders, List<Song> songs)

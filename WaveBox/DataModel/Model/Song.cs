@@ -86,9 +86,11 @@ namespace WaveBox.DataModel.Model
 			}
 		}
 
-		public Song(System.IO.FileInfo fsFile, int folderId)
+		public Song(System.IO.FileInfo fsFile, int folderId, TagLib.File file)
 		{
-            var file = TagLib.File.Create(fsFile.FullName);
+            // We need to check to make sure the tag isn't corrupt before handing off to this method, anyway, so just feed in the tag
+            // file that we checked for corruption.
+            //var file = TagLib.File.Create(fsFile.FullName);
 
 			var tag = file.Tag;
             //var lol = file.Properties.Codecs;
