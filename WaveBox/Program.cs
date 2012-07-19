@@ -16,33 +16,43 @@ namespace WaveBox
 {
 	class Program
 	{
-		// Store operating system platform for signal handling
-		static string platform = Environment.OSVersion.Platform.ToString();
-
 		/// <summary>
 		/// The main program for WaveBox.  Launches the HTTP server, initializes settings, creates default user,
 		/// begins file scan, and then sleeps forever while other threads handle the work.
 		/// </summary>
 		static void Main(string[] args)
 		{
-			// Initialize on given platform
-			Console.WriteLine("[MAIN] Initializing WaveBox on {0} platform...", platform);
+			Console.WriteLine("[MAIN] Initializing WaveBox on {0} platform...", Environment.OSVersion.Platform.ToString());
 
+			// Register the shutdown handler for the current platform
+			RegisterShutdownHandler();
+
+			// Start the HTTP server
+			StartHTTPServer();
+			
+			// Perform initial setup of Settings, create a user
+			Settings.SettingsSetup();
+			User.CreateUser("test", "test");
+
+			// Start file manager, calculate time it takes to run.
+			var sw = new Stopwatch();
+			Console.WriteLine("Scanning media directories...");
+			sw.Start();
+			FileManager.Instance.Setup();
+			sw.Stop();
+
+			// sleep the main thread so we can go about handling api calls and stuff on other threads.
+			Thread.Sleep(Timeout.Infinite);
+		}
+
+		private static void StartHTTPServer()
+		{
 			// define run port
 			int httpPort = 8080;
 
 			// thread for the HTTP server.  its listen operation is blocking, so we can't start it before
 			// we do any file scanning otherwise.
 			Thread httpSrv = null;
-
-			// If we're on UNIX, register the shutdown in a new thread
-			if(platform == "Unix")
-				new Thread(Shutdown).Start();
-				
-			/*// register application kill notifier
-			Console.WriteLine("Registering shutdown hook...");
-			_handler += new EventHandler(Handler);
-			SetConsoleCtrlHandler(_handler, true);*/
 
 			// Attempt to start the HTTP server thread
 			try
@@ -71,30 +81,34 @@ namespace WaveBox
 				Console.WriteLine(e.ToString());
 				Environment.Exit(-1);
 			}
-			
-			// Perform initial setup of Settings, create a user
-			Settings.SettingsSetup();
-			User.CreateUser("test", "test");
-
-			//GC.Collect();
-
-			// Start file manager, calculate time it takes to run.
-			var sw = new Stopwatch();
-			Console.WriteLine("Scanning media directories...");
-			sw.Start();
-			FileManager.Instance.Setup();
-			sw.Stop();
-
-			// sleep the main thread so we can go about handling api calls and stuff on other threads.
-			Thread.Sleep(Timeout.Infinite);
 		}
 
-		/*[DllImport("Kernel32")]
+		private static void RegisterShutdownHandler()
+		{
+			switch (Environment.OSVersion.Platform)
+			{
+				case PlatformID.Win32NT:
+		        case PlatformID.Win32S:
+		        case PlatformID.Win32Windows:
+					// register application kill notifier
+					Console.WriteLine("Registering shutdown hook for Windows...");
+					windowsShutdownHandler += new EventHandler(ShutdownWindows);
+					SetConsoleCtrlHandler(windowsShutdownHandler, true);
+					break;
+				case PlatformID.Unix:
+				case PlatformID.MacOSX:
+					new Thread(ShutdownUnix).Start();
+					break;
+			}
+		}
+
+		/// <summary>
+		/// Shutdown handler for Windows systems, terminates WaveBox gracefully.
+		/// </summary>
+		[DllImport("Kernel32")]
 		private static extern bool SetConsoleCtrlHandler(EventHandler handler, bool add);
-
 		private delegate bool EventHandler(CtrlType sig);
-		static EventHandler _handler;
-
+		static EventHandler windowsShutdownHandler;
 		enum CtrlType
 		{
 			CTRL_C_EVENT = 0,
@@ -103,33 +117,37 @@ namespace WaveBox
 			CTRL_LOGOFF_EVENT = 5,
 			CTRL_SHUTDOWN_EVENT = 6
 		}
-
-		private static bool Handler(CtrlType sig)
+		private static bool ShutdownWindows(CtrlType sig)
 		{
-			Shutdown();
+			ShutdownCommon();
 			return true;
-		}*/
+		}
 
 		/// <summary>
-		/// Shutdown handler terminates WaveBox gracefully.
+		/// Shutdown handler for UNIX systems, terminates WaveBox gracefully.
 		/// </summary>
-		public static void Shutdown()
+		private static void ShutdownUnix()
 		{
 			// When on UNIX platform, register the following signals:
 			// SIGINT -> Ctrl+C
 			// SIGTERM -> kill or killall
-			if(platform == "Unix")
+			UnixSignal[] unixSignals = new UnixSignal[]
 			{
-				UnixSignal[] unixSignals = new UnixSignal[]
-				{
-					new UnixSignal(Signum.SIGINT),
-					new UnixSignal(Signum.SIGTERM),
-				};
+				new UnixSignal(Signum.SIGINT),
+				new UnixSignal(Signum.SIGTERM),
+			};
 
-				// Block until one of the aforementioned signals is issued, then continue shutdown
-				UnixSignal.WaitAny(unixSignals, -1);
-			}
+			// Block until one of the aforementioned signals is issued, then continue shutdown
+			UnixSignal.WaitAny(unixSignals, -1);
 
+			ShutdownCommon();
+		}
+
+		/// <summary>
+		/// Common shutdown actions
+		/// </summary>
+		public static void ShutdownCommon()
+		{
 			Console.WriteLine("[MAIN] Executing shutdown hook!");
 			/*Console.WriteLine("Executing shutdown hook!");
 			SQLiteConnection dbconn = Database.GetDbConnection();
@@ -145,6 +163,5 @@ namespace WaveBox
 			// Gracefully terminate
 			Environment.Exit(0);
 		}
-
 	}
 }
