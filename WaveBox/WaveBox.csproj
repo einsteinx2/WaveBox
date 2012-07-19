@@ -124,7 +124,7 @@
     </Content>
     <Content Include="lib\Newtonsoft.Json.dll" />
     <Content Include="lib\taglib-sharp.dll" />
-    <Content Include="lib\wavebox-sqlite3.dylib">
+    <Content Include="libsqlite3.0.dylib">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -175,7 +175,4 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <ItemGroup>
-    <Folder Include="SqliteWrapper\" />
-  </ItemGroup>
 </Project>
