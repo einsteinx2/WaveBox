@@ -45,6 +45,9 @@ namespace WaveBox
 			Thread.Sleep(Timeout.Infinite);
 		}
 
+		/// <summary>
+		/// Initialize the HTTP server thread.
+		/// </summary>
 		private static void StartHTTPServer()
 		{
 			// define run port
@@ -83,6 +86,10 @@ namespace WaveBox
 			}
 		}
 
+		/// <summary>
+		/// Function to register shutdown handler for various platforms.  Windows uses its own, while UNIX variants
+		/// use a specialized Unix shutdown handler.
+		/// </summary>
 		private static void RegisterShutdownHandler()
 		{
 			switch (Environment.OSVersion.Platform)
@@ -119,6 +126,7 @@ namespace WaveBox
 		}
 		private static bool ShutdownWindows(CtrlType sig)
 		{
+			// Trigger common shutdown function
 			ShutdownCommon();
 			return true;
 		}
@@ -140,11 +148,12 @@ namespace WaveBox
 			// Block until one of the aforementioned signals is issued, then continue shutdown
 			UnixSignal.WaitAny(unixSignals, -1);
 
+			// Trigger common shutdown function once unblocked
 			ShutdownCommon();
 		}
 
 		/// <summary>
-		/// Common shutdown actions
+		/// Common shutdown actions.
 		/// </summary>
 		public static void ShutdownCommon()
 		{
