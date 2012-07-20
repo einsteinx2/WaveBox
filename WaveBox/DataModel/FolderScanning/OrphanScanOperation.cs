@@ -108,7 +108,7 @@ namespace WaveBox.DataModel.FolderScanning
 						try 
 						{
 							IDbCommand q1 = Database.GetDbCommand ("DELETE FROM folder WHERE folder_id = @folderid", conn);
-							q1.Parameters.Add (fid);
+							q1.AddNamedParam("@folderid", fid);
 
 							q1.Prepare ();
 							q1.ExecuteNonQuery ();
@@ -123,13 +123,7 @@ namespace WaveBox.DataModel.FolderScanning
 							Console.WriteLine ("[ORPHANSCAN] " + "Songs for {0} deleted", fid);
 
 							IDbCommand q2 = Database.GetDbCommand ("DELETE FROM song WHERE song_folder_id = @folderid", conn);
-
-							q2.CreateParameter();
-
-							var param = q2.CreateParameter();
-							param.ParameterName = "@folderid";
-							param.Value = fid;
-							q2.Parameters.Add(param);
+							q2.AddNamedParam("@folderid", fid);
 
 							q2.Prepare ();
 							q2.ExecuteNonQuery ();
