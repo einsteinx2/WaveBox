@@ -243,13 +243,13 @@ namespace Bend.Util
 				}
 
 				else Console.WriteLine("ERROR: " + e.Message);
-				Program.Shutdown();
+				Program.ShutdownCommon();
 			}
 
 			catch (Exception e)
 			{
 				Console.WriteLine(e.ToString());
-				Program.Shutdown();
+				Program.ShutdownCommon();
 			}
 			Console.WriteLine("HTTP server started");
 			while (IsActive) 
