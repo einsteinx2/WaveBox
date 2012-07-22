@@ -75,40 +75,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ApiHandler\ApiHandlerFactory.cs" />
-    <Compile Include="ApiHandler\Handlers\AlbumsApiHandler.cs" />
-    <Compile Include="ApiHandler\Handlers\ArtistsApiHandler.cs" />
-    <Compile Include="ApiHandler\Handlers\CoverArtApiHandler.cs" />
-    <Compile Include="ApiHandler\Handlers\ErrorApiHandler.cs" />
-    <Compile Include="ApiHandler\Handlers\FoldersApiHandler.cs" />
-    <Compile Include="ApiHandler\Handlers\JukeboxApiHandler.cs" />
-    <Compile Include="ApiHandler\Handlers\SongsApiHandler.cs" />
-    <Compile Include="ApiHandler\Handlers\StatusApiHandler.cs" />
-    <Compile Include="ApiHandler\Handlers\StreamApiHandler.cs" />
-    <Compile Include="ApiHandler\Handlers\TestApiHandler.cs" />
-    <Compile Include="ApiHandler\IApiHandler.cs" />
-    <Compile Include="ApiHandler\UriWrapper.cs" />
-    <Compile Include="DataModel\FolderScanning\FolderScanOperation.cs" />
-    <Compile Include="DataModel\FolderScanning\OrphanScanOperation.cs" />
-    <Compile Include="DataModel\FolderScanning\ScanOperation.cs" />
-    <Compile Include="DataModel\FolderScanning\ScanQueue.cs" />
-    <Compile Include="DataModel\Model\Album.cs" />
-    <Compile Include="DataModel\Model\Artist.cs" />
-    <Compile Include="DataModel\Model\CoverArt.cs" />
-    <Compile Include="DataModel\Model\FileType.cs" />
-    <Compile Include="DataModel\Model\Folder.cs" />
-    <Compile Include="DataModel\Model\ItemType.cs" />
-    <Compile Include="DataModel\Model\MediaItem.cs" />
-    <Compile Include="DataModel\Model\MediaItemType.cs" />
-    <Compile Include="DataModel\Model\Playlist.cs" />
-    <Compile Include="DataModel\Model\Song.cs" />
-    <Compile Include="DataModel\Model\User.cs" />
-    <Compile Include="DataModel\Model\Video.cs" />
-    <Compile Include="DataModel\Singletons\Database.cs" />
-    <Compile Include="DataModel\Singletons\FileManager.cs" />
-    <Compile Include="DataModel\Singletons\Jukebox.cs" />
-    <Compile Include="DataModel\Singletons\Settings.cs" />
-    <Compile Include="HTTPServer\SimpleHttpServer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
@@ -116,8 +82,43 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="HTTPServer\WaveBoxHttpHeader.cs" />
-    <Compile Include="HTTPServer\WaveBoxHttpServer.cs" />
+    <Compile Include="src\ApiHandler\ApiHandlerFactory.cs" />
+    <Compile Include="src\ApiHandler\IApiHandler.cs" />
+    <Compile Include="src\ApiHandler\UriWrapper.cs" />
+    <Compile Include="src\ApiHandler\Handlers\AlbumsApiHandler.cs" />
+    <Compile Include="src\ApiHandler\Handlers\ArtistsApiHandler.cs" />
+    <Compile Include="src\ApiHandler\Handlers\CoverArtApiHandler.cs" />
+    <Compile Include="src\ApiHandler\Handlers\ErrorApiHandler.cs" />
+    <Compile Include="src\ApiHandler\Handlers\FoldersApiHandler.cs" />
+    <Compile Include="src\ApiHandler\Handlers\JukeboxApiHandler.cs" />
+    <Compile Include="src\ApiHandler\Handlers\SongsApiHandler.cs" />
+    <Compile Include="src\ApiHandler\Handlers\StatusApiHandler.cs" />
+    <Compile Include="src\ApiHandler\Handlers\StreamApiHandler.cs" />
+    <Compile Include="src\ApiHandler\Handlers\TestApiHandler.cs" />
+    <Compile Include="src\DataModel\FolderScanning\FolderScanOperation.cs" />
+    <Compile Include="src\DataModel\FolderScanning\OrphanScanOperation.cs" />
+    <Compile Include="src\DataModel\Model\Album.cs" />
+    <Compile Include="src\DataModel\Model\Artist.cs" />
+    <Compile Include="src\DataModel\Model\CoverArt.cs" />
+    <Compile Include="src\DataModel\Model\FileType.cs" />
+    <Compile Include="src\DataModel\Model\Folder.cs" />
+    <Compile Include="src\DataModel\Model\ItemType.cs" />
+    <Compile Include="src\DataModel\Model\MediaItem.cs" />
+    <Compile Include="src\DataModel\Model\MediaItemType.cs" />
+    <Compile Include="src\DataModel\Model\Playlist.cs" />
+    <Compile Include="src\DataModel\Model\Song.cs" />
+    <Compile Include="src\DataModel\Model\User.cs" />
+    <Compile Include="src\DataModel\Model\Video.cs" />
+    <Compile Include="src\DataModel\Singletons\Database.cs" />
+    <Compile Include="src\DataModel\Singletons\FileManager.cs" />
+    <Compile Include="src\DataModel\Singletons\Jukebox.cs" />
+    <Compile Include="src\DataModel\Singletons\Settings.cs" />
+    <Compile Include="src\HttpServer\SimpleHttpServer.cs" />
+    <Compile Include="src\HttpServer\WaveBoxHttpHeader.cs" />
+    <Compile Include="src\HttpServer\WaveBoxHttpServer.cs" />
+    <Compile Include="src\OperationQueue\DelayedOperationQueue.cs" />
+    <Compile Include="src\OperationQueue\IDelayedOperation.cs" />
+    <Compile Include="src\DataModel\FolderScanning\AbstractOperation.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="bass.dll">
@@ -184,4 +185,7 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <ItemGroup>
+    <Folder Include="src\" />
+  </ItemGroup>
 </Project>
