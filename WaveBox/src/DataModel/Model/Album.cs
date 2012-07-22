@@ -230,10 +230,8 @@ namespace WaveBox.DataModel.Model
 			{
 				a = null;
 
-				if(InsertAlbum(albumName, artistId))
-				{
-					a = AlbumForName(albumName, artistId);
-				}
+				InsertAlbum(albumName, artistId);
+				a = AlbumForName(albumName, artistId);
 			}
 
 			return a;

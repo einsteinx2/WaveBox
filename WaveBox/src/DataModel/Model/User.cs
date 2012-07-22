@@ -19,6 +19,8 @@ namespace WaveBox.DataModel.Model
 
 		public string PasswordSalt { get; set; }
 
+		public string LastfmSession { get; set; }
+
 
 		public User()
 		{
@@ -84,12 +86,19 @@ namespace WaveBox.DataModel.Model
 			}
 		}
 
-		private void SetPropertiesFromQueryResult(IDataReader reader)
+		private void SetPropertiesFromQueryResult (IDataReader reader)
 		{
-			UserId = reader.GetInt32(reader.GetOrdinal("user_id"));
-			UserName = reader.GetString(reader.GetOrdinal("user_name"));
-			PasswordHash = reader.GetString(reader.GetOrdinal("user_password"));
-			PasswordSalt = reader.GetString(reader.GetOrdinal("user_salt"));
+			UserId = reader.GetInt32 (reader.GetOrdinal ("user_id"));
+			UserName = reader.GetString (reader.GetOrdinal ("user_name"));
+			PasswordHash = reader.GetString (reader.GetOrdinal ("user_password"));
+			PasswordSalt = reader.GetString (reader.GetOrdinal ("user_salt"));
+
+			if (reader.GetValue (reader.GetOrdinal ("user_lastfm_session")) != DBNull.Value) 
+			{
+				LastfmSession = reader.GetString (reader.GetOrdinal ("user_lastfm_session"));
+			}
+
+			else LastfmSession = null;
 		}
 
 		private static string Sha1(string sumthis)
@@ -150,6 +159,32 @@ namespace WaveBox.DataModel.Model
 
 			PasswordHash = hash;
 			PasswordSalt = salt;
+		}
+
+		public void UpdateLastfmSession(string sessionKey)
+		{
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("UPDATE users SET user_lastfm_session = @session WHERE user_name = @username", conn);
+				q.AddNamedParam("@session", sessionKey);
+				q.AddNamedParam("@username", UserName);
+				q.Prepare();
+				q.ExecuteNonQuery();
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine(e.ToString());
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			LastfmSession = sessionKey;
 		}
 
 		public static User CreateUser(string userName, string password)

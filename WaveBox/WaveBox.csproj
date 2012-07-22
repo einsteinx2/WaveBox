@@ -73,6 +73,7 @@
     <Reference Include="System.Data.SQLite">
       <HintPath>lib\System.Data.SQLite.dll</HintPath>
     </Reference>
+    <Reference Include="System.Web" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
@@ -119,6 +120,8 @@
     <Compile Include="src\OperationQueue\DelayedOperationQueue.cs" />
     <Compile Include="src\OperationQueue\IDelayedOperation.cs" />
     <Compile Include="src\DataModel\FolderScanning\AbstractOperation.cs" />
+    <Compile Include="src\DataModel\Singletons\Lastfm.cs" />
+    <Compile Include="src\ApiHandler\Handlers\ScrobbleApiHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="bass.dll">

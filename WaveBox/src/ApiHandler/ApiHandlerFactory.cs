@@ -52,6 +52,8 @@ namespace WaveBox.ApiHandler
 					returnHandler = new FoldersApiHandler(uriW, sh, user.UserId);
 				else if(part1 == "jukebox")
 					returnHandler = new JukeboxApiHandler(uriW, sh, user.UserId);
+				else if(part1 == "scrobble")
+					returnHandler = new ScrobbleApiHandler(uriW, sh, user.UserId);
 				else if(part1 == "songs")
 					returnHandler = new SongsApiHandler(uriW, sh, user.UserId);
 				else if(part1 == "status")

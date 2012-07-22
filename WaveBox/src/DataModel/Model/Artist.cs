@@ -260,10 +260,8 @@ namespace WaveBox.DataModel.Model
 			if (anArtist.ArtistId == 0)
 			{
 				anArtist = null;
-				if (InsertArtist(artistName))
-				{
-					anArtist = ArtistForName(artistName);
-				}
+				InsertArtist(artistName);
+				anArtist = ArtistForName(artistName);
 			}
 
 			// then return the artist object retrieved or created.
