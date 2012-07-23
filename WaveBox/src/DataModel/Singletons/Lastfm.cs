@@ -56,26 +56,26 @@ namespace WaveBox.ApiHandler.Handlers
 				return false;
 			}
 
-			var timestamp = (DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds;
+			long timestamp = Convert.ToInt64((DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds);
 			string requestUrl = "http://ws.audioscrobbler.com/2.0/";
 			string p, apiSig;
 
 
 			if (recordScrobble)
 			{
-				apiSig = md5("api_key" + apiKey + "artist[0]" + song.ArtistName + "method" + "track.scrobble" + "timestamp[0]" + timestamp + "track[0]" + song.SongName + secret);
+				apiSig = md5("api_key" + apiKey + "artist[0]" + song.ArtistName + "method" + "track.scrobble" + "sk" + sessionKey + "timestamp[0]" + timestamp + "track[0]" + song.SongName + secret);
 				p = String.Format("method=track.scrobble&api_key={0}&sk={1}&artist[0]={2}&track[0]={3}&timestamp[0]={4}&api_sig={5}", apiKey, sessionKey, 
-			                         song.ArtistName, song.SongName, timestamp, apiSig);
+			                         UrlEncode(song.ArtistName, Encoding.UTF8), UrlEncode(song.SongName, Encoding.UTF8), timestamp, apiSig);
 			} 
 
 			else
 			{
 				apiSig = md5("api_key" + apiKey + "artist" + song.ArtistName + "method" + "track.updateNowPlaying" + "sk" + sessionKey + "timestamp" + timestamp + "track" + song.SongName + secret);
 				p = String.Format("method=track.updateNowPlaying&format=json&api_key={0}&sk={1}&artist={2}&track={3}&timestamp={4}&api_sig={5}", apiKey, sessionKey, 
-			                         song.ArtistName, song.SongName, timestamp, apiSig);
+			                         UrlEncode(song.ArtistName, Encoding.UTF8), UrlEncode(song.SongName, Encoding.UTF8), timestamp, apiSig);
 			}
 
-			string a = DoPostRestRequest(p);
+			DoPostRestRequest(p);
 
 
 
@@ -152,30 +152,6 @@ namespace WaveBox.ApiHandler.Handlers
 			return string.Empty;
 		}
 
-//		private string DoPostRestRequest(string url, string parameters)
-//		{
-//			var request = (HttpWebRequest)WebRequest.Create(url);
-//			request.Method = "POST";
-//			request.ContentType = "application/x-www-form-urlencoded";
-//
-//            string urlEncoded = UrlEncode(parameters, Encoding.UTF8);
-//			var byteParams = UTF8Encoding.UTF8.GetBytes(urlEncoded);
-//
-//			request.ContentLength = byteParams.Length;
-//
-//			using (Stream pStream = request.GetRequestStream())
-//			{
-//				pStream.Write(byteParams, 0, byteParams.Length);
-//                pStream.Close();
-//			}
-//
-//            using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)  
-//            { 
-//    			var reader = new StreamReader(response.GetResponseStream());
-//    			return reader.ReadToEnd();
-//            }
-//		}
-
         private string DoPostRestRequest(string parameters)
         {
             string urlEncoded = UrlEncode(parameters + "\r\n", Encoding.UTF8);
@@ -185,20 +161,10 @@ namespace WaveBox.ApiHandler.Handlers
             try
             {
                 var s = new System.Net.Sockets.TcpClient("ws.audioscrobbler.com", 80);
-                string parms = parameters.Replace(" ", "+");
-
-                //                    $request = "POST /CiCoServerClientServiceEvent/Popup HTTP/1.1\r\n";
-                //                    $request .= "Accept: application/json, application/xml, text/json, text/x-json, text/javascript, text/xml\r\n";
-                //                    $request .= "User-Agent: SendPopup v1\r\n";
-                //                    $request .= "Host: " . $argv[1] . ":12459\r\n";
-                //                    $request .= "Content-Length: " . $contentlength . "\r\n";
-                //                    $request .= "Content-Type: text/xml\r\n";
-                //                    $request .= "Connection: keep-alive\r\n";
-                //                    $request .= "Accept-Encoding: gzip, deflate\r\n\r\n";
-                //                    $request .= $xml;
+                //string parms = parameters.Replace(" ", "+");
 
                 var req = new StringBuilder();
-                req.Append(string.Format("POST /2.0/?{0} HTTP/1.1\r\n", parms));
+                req.Append(string.Format("POST /2.0/?{0} HTTP/1.1\r\n", parameters));
                 req.Append("Accept: application/json; charset=utf-8\r\n");
                 req.Append("Host: ws.audioscrobbler.com\r\n");
                 req.Append("Content-Type: application/x-www-form-urlencoded; charset=utf-8;\r\n");
@@ -225,10 +191,13 @@ namespace WaveBox.ApiHandler.Handlers
                 Console.WriteLine(resp);
                 stream.Close();
                 s.Close();
-            } catch (Exception e)
+            } 
+
+            catch (Exception e)
             {
                 Console.WriteLine(e.ToString());
             }
+
             return resp;
     }
 
