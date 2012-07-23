@@ -6,6 +6,7 @@ using System.Web;
 using WaveBox.DataModel.Model;
 using Newtonsoft.Json;
 using System.Security.Cryptography;
+using System.Net.Sockets;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -69,12 +70,12 @@ namespace WaveBox.ApiHandler.Handlers
 
 			else
 			{
-				apiSig = md5("api_key" + apiKey + "artist[0]" + song.ArtistName + "method" + "track.updateNowPlaying" + "timestamp[0]" + timestamp + "track[0]" + song.SongName + secret);
-				p = String.Format("method=track.updateNowPlaying&api_key={0}&sk={1}&artist[0]={2}&track[0]={3}&timestamp[0]={4}&api_sig={5}", apiKey, sessionKey, 
+				apiSig = md5("api_key" + apiKey + "artist" + song.ArtistName + "method" + "track.updateNowPlaying" + "sk" + sessionKey + "timestamp" + timestamp + "track" + song.SongName + secret);
+				p = String.Format("method=track.updateNowPlaying&format=json&api_key={0}&sk={1}&artist={2}&track={3}&timestamp={4}&api_sig={5}", apiKey, sessionKey, 
 			                         song.ArtistName, song.SongName, timestamp, apiSig);
 			}
 
-			string a = DoPostRestRequest(requestUrl, p);
+			string a = DoPostRestRequest(p);
 
 
 
@@ -151,25 +152,107 @@ namespace WaveBox.ApiHandler.Handlers
 			return string.Empty;
 		}
 
-		private string DoPostRestRequest(string url, string parameters)
-		{
-			var request = (HttpWebRequest)WebRequest.Create(url);
-			request.Method = "POST";
-			request.ContentType = "application/x-www-form-urlencoded";
+//		private string DoPostRestRequest(string url, string parameters)
+//		{
+//			var request = (HttpWebRequest)WebRequest.Create(url);
+//			request.Method = "POST";
+//			request.ContentType = "application/x-www-form-urlencoded";
+//
+//            string urlEncoded = UrlEncode(parameters, Encoding.UTF8);
+//			var byteParams = UTF8Encoding.UTF8.GetBytes(urlEncoded);
+//
+//			request.ContentLength = byteParams.Length;
+//
+//			using (Stream pStream = request.GetRequestStream())
+//			{
+//				pStream.Write(byteParams, 0, byteParams.Length);
+//                pStream.Close();
+//			}
+//
+//            using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)  
+//            { 
+//    			var reader = new StreamReader(response.GetResponseStream());
+//    			return reader.ReadToEnd();
+//            }
+//		}
 
-			var byteParams = UTF8Encoding.UTF8.GetBytes(parameters);
-			request.ContentLength = byteParams.Length;
+        private string DoPostRestRequest(string parameters)
+        {
+            string urlEncoded = UrlEncode(parameters + "\r\n", Encoding.UTF8);
+            var byteParams = UTF8Encoding.UTF8.GetBytes(urlEncoded);
+            string resp = "";
 
-			using (Stream pStream = request.GetRequestStream())
-			{
-				pStream.Write(byteParams, 0, byteParams.Length);
-                pStream.Close();
-			}
+            try
+            {
+                var s = new System.Net.Sockets.TcpClient("ws.audioscrobbler.com", 80);
+                string parms = parameters.Replace(" ", "+");
 
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-			var reader = new StreamReader(response.GetResponseStream());
-			return reader.ReadToEnd();
-		}
+                //                    $request = "POST /CiCoServerClientServiceEvent/Popup HTTP/1.1\r\n";
+                //                    $request .= "Accept: application/json, application/xml, text/json, text/x-json, text/javascript, text/xml\r\n";
+                //                    $request .= "User-Agent: SendPopup v1\r\n";
+                //                    $request .= "Host: " . $argv[1] . ":12459\r\n";
+                //                    $request .= "Content-Length: " . $contentlength . "\r\n";
+                //                    $request .= "Content-Type: text/xml\r\n";
+                //                    $request .= "Connection: keep-alive\r\n";
+                //                    $request .= "Accept-Encoding: gzip, deflate\r\n\r\n";
+                //                    $request .= $xml;
+
+                var req = new StringBuilder();
+                req.Append(string.Format("POST /2.0/?{0} HTTP/1.1\r\n", parms));
+                req.Append("Accept: application/json; charset=utf-8\r\n");
+                req.Append("Host: ws.audioscrobbler.com\r\n");
+                req.Append("Content-Type: application/x-www-form-urlencoded; charset=utf-8;\r\n");
+                req.Append("Content-Length: 0\r\n");
+                req.Append("User-Agent: WaveBox/1.0\r\n");
+                req.Append("Connection: close\r\n\r\n");
+
+                var headerBytes = Encoding.ASCII.GetBytes(req.ToString());
+
+                var stream = s.GetStream();
+                stream.Write(headerBytes, 0, headerBytes.Length);
+                //stream.Write(byteParams, 0, byteParams.Length);
+
+                Console.WriteLine(req.ToString());
+                //Console.WriteLine(urlEncoded);
+
+                byte[] receive = new byte[256];
+
+                while (stream.Read(receive, 0, receive.Length) > 0)
+                {
+                    resp += Encoding.UTF8.GetString(receive);
+                }
+
+                Console.WriteLine(resp);
+                stream.Close();
+                s.Close();
+            } catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+            return resp;
+    }
+
+        // Thanks to: http://software.1713.n2.nabble.com/System-Web-HttpUtility-UrlEncode-equivalent-in-OS-X-td721075.html
+        // For some reason, Mono doesn't implement System.Web.HttpServerUtility.UrlEncode().  Weird.
+        public static string UrlEncode(string s, Encoding e) { 
+                StringBuilder sb = new StringBuilder(); 
+
+                foreach (byte i in e.GetBytes(s)) { 
+                        if (            (i >= 'A' && i <= 'Z') || 
+                                        (i >= 'a' && i <= 'z') || 
+                                        (i >= '0' && i <= '9') || 
+                                        i == '-' || i == '_') { 
+                                sb.Append((char) i); 
+                        } else if (i == ' ') { 
+                                sb.Append('+'); 
+                        } else { 
+                                sb.Append('%'); 
+                                sb.Append(i.ToString("X2")); 
+                        } 
+                } 
+
+                return sb.ToString(); 
+        } 
 	}
 }
 
