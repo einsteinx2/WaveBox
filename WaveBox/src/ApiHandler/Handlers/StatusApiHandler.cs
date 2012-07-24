@@ -29,7 +29,10 @@ namespace WaveBox.ApiHandler.Handlers
 
 	class StatusResponse
 	{
+		[JsonProperty("error")]
 		public string Error { get; set; }
+
+		[JsonProperty("version")]
 		public string Version { get; set; }
 
 		public StatusResponse(string error, string version)

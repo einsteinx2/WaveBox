@@ -203,30 +203,12 @@ namespace WaveBox.ApiHandler.Handlers
 	class JukeboxPlaylistResponse
 	{
 		[JsonProperty("isPlaying")]
-		public bool IsPlaying
-		{
-			get
-			{
-				return Jukebox.Instance.IsPlaying;
-			}
-		}
+		public bool IsPlaying { get { return Jukebox.Instance.IsPlaying; } }
 
 		[JsonProperty("currentIndex")]
-		public int CurrentIndex
-		{
-			get
-			{
-				return Jukebox.Instance.CurrentIndex;
-			}
-		}
+		public int CurrentIndex { get { return Jukebox.Instance.CurrentIndex; } }
 
 		[JsonProperty("songs")]
-		public List<MediaItem> Songs
-		{
-			get
-			{
-				return Jukebox.Instance.ListOfSongs();
-			}
-		}
+		public List<MediaItem> Songs { get { return Jukebox.Instance.ListOfSongs(); } }
 	}
 }

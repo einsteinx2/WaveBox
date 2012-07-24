@@ -83,6 +83,7 @@ namespace WaveBox.ApiHandler.Handlers
 
         [JsonProperty("authUrl")]
         public string AuthUrl { get; set; }
+
         public ScrobbleResponse(string error, bool success)
         {
             Error = error;

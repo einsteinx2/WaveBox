@@ -46,8 +46,13 @@ namespace WaveBox.ApiHandler.Handlers
 
 	class AlbumsResponse
 	{
+		[JsonProperty("error")]
 		public string Error { get; set; }
+
+		[JsonProperty("albums")]
 		public List<Album> Albums { get; set; }
+
+		[JsonProperty("songs")]
 		public List<Song> Songs { get; set; }
 
 		public AlbumsResponse(string error, List<Album> albums, List<Song> songs)

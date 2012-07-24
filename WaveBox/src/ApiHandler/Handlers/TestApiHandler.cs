@@ -38,7 +38,10 @@ namespace WaveBox.ApiHandler.Handlers
 
 	class TestResponse
 	{
+		[JsonProperty("error")]
 		public string Error { get; set; }
+
+		[JsonProperty("artists")]
 		public List<Artist> Artists { get; set; }
 
 		public TestResponse(string error, List<Artist> artists)
