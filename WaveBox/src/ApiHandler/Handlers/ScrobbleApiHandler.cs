@@ -26,9 +26,7 @@ namespace WaveBox.ApiHandler.Handlers
 		{
 			if (Uri.UriPart(1) == "scrobble")
 			{
-                var usr = new User(UserId);
 				var lfm = new Lastfm(UserId);
-
 
 				if(!lfm.SessionAuthenticated)
 				{

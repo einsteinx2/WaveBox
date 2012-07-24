@@ -24,13 +24,13 @@ namespace WaveBox.DataModel.Model
 		}
 
 		[JsonProperty("artistId")]
-		public int ArtistId { get; set; }
+		public int? ArtistId { get; set; }
 
 		[JsonProperty("artistName")]
 		public string ArtistName { get; set; }
 
 		[JsonProperty("artId")]
-		public int ArtId { get; set; }
+		public int? ArtId { get; set; }
 
 
 		/// <summary>
@@ -46,8 +46,10 @@ namespace WaveBox.DataModel.Model
 			SetPropertiesFromQueryResult(reader);
 		}
 
-		public Artist(int artistId)
+		public Artist(int? artistId)
 		{
+            if(artistId == null) return;
+
 			IDbConnection conn = null;
 			IDataReader reader = null;
 
@@ -128,7 +130,7 @@ namespace WaveBox.DataModel.Model
 				ArtistName = reader.GetString(reader.GetOrdinal("artist_name"));
 
 				if 
-					(reader.GetValue(reader.GetOrdinal("artist_art_id")) == DBNull.Value) ArtId = 0;
+					(reader.GetValue(reader.GetOrdinal("artist_art_id")) == DBNull.Value) ArtId = null;
 				else 
 					ArtId = reader.GetInt32(reader.GetOrdinal("artist_art_id"));
 			}
@@ -220,8 +222,8 @@ namespace WaveBox.DataModel.Model
 			{
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " + 
-					"LEFT JOIN artist ON song_artist_id = artist_id " +
-					"LEFT JOIN album ON song_album_id = album_id " +
+					"LEFT JOIN artist ON song_artist_id = artist.artist_id " +
+					"LEFT JOIN album ON song_album_id = album.album_id " +
 					"WHERE song_artist_id = @artistid", conn);
 				q.AddNamedParam("@artistid", ArtistId);
 
@@ -257,7 +259,7 @@ namespace WaveBox.DataModel.Model
 			var anArtist = new Artist(artistName);
 
 			// if not, create it.
-			if (anArtist.ArtistId == 0)
+			if (anArtist.ArtistId == null)
 			{
 				anArtist = null;
 				InsertArtist(artistName);

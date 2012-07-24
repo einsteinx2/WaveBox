@@ -24,13 +24,13 @@ namespace WaveBox.DataModel.Model
 		}
 
 		[JsonProperty("artistId")]
-		public int ArtistId { get; set; }
+		public int? ArtistId { get; set; }
 
 		[JsonProperty("artistName")]
 		public string ArtistName { get; set; }
 
 		[JsonProperty("albumId")]
-		public int AlbumId { get; set; }
+		public int? AlbumId { get; set; }
 
 		[JsonProperty("albumName")]
 		public string AlbumName { get; set; }
@@ -39,13 +39,13 @@ namespace WaveBox.DataModel.Model
 		public string SongName { get; set; }
 
 		[JsonProperty("trackNumber")]
-		public int TrackNumber { get; set; }
+		public int? TrackNumber { get; set; }
 
 		[JsonProperty("discNumber")]
-		public int DiscNumber { get; set; }
+		public int? DiscNumber { get; set; }
 
 		[JsonProperty("releaseYear")]
-		public int ReleaseYear { get; set; }
+		public int? ReleaseYear { get; set; }
 
 		public Song()
 		{
@@ -83,7 +83,7 @@ namespace WaveBox.DataModel.Model
 			}
 		}
 
-		public Song(System.IO.FileInfo fsFile, int folderId, TagLib.File file)
+		public Song(System.IO.FileInfo fsFile, int? folderId, TagLib.File file)
 		{
             // We need to check to make sure the tag isn't corrupt before handing off to this method, anyway, so just feed in the tag
             // file that we checked for corruption.
@@ -101,7 +101,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch
 			{
-                ArtistId = 0;
+                ArtistId = null;
                 ArtistName = null;
 			}
 
@@ -113,7 +113,7 @@ namespace WaveBox.DataModel.Model
             }
             catch
             {
-                AlbumId = 0;
+                AlbumId = null;
                 AlbumName = null;
             }
 
@@ -137,7 +137,7 @@ namespace WaveBox.DataModel.Model
             }
             catch
             {
-                TrackNumber = 0;
+                TrackNumber = null;
             }
 
             try
@@ -146,7 +146,7 @@ namespace WaveBox.DataModel.Model
             }
             catch
             {
-                DiscNumber = 0;
+                DiscNumber = null;
             }
 
 			try
@@ -155,7 +155,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch
 			{
-				ReleaseYear = 0;
+				ReleaseYear = null;
 			}
 
             Duration = Convert.ToInt32(file.Properties.Duration.TotalSeconds);
@@ -219,8 +219,7 @@ namespace WaveBox.DataModel.Model
 				FileName = reader.GetString(reader.GetOrdinal("song_file_name"));
 				ReleaseYear = reader.GetInt32(reader.GetOrdinal("song_release_year"));
 
-				if 
-					(reader.GetValue(reader.GetOrdinal("song_art_id")) == DBNull.Value) ArtId = 0;
+				if (reader.GetValue(reader.GetOrdinal("song_art_id")) == DBNull.Value) ArtId = null;
 				else 
 					ArtId = reader.GetInt32(reader.GetOrdinal("song_art_id"));
 				//_artId = 0;
@@ -248,21 +247,30 @@ namespace WaveBox.DataModel.Model
 				q.AddNamedParam("@artistid", ArtistId);
 				q.AddNamedParam("@albumid", AlbumId);
 				q.AddNamedParam("@filetype", (int)FileType);
+
 				if (SongName == null)
 					q.AddNamedParam("@songname", DBNull.Value);
 				else
 					q.AddNamedParam("@songname", SongName);
-				q.AddNamedParam("@tracknum", TrackNumber);
+
+                if (TrackNumber == null)
+                    q.AddNamedParam("@tracknum", DBNull.Value);
+                else
+                    q.AddNamedParam("@tracknum", TrackNumber);
 				q.AddNamedParam("@discnum", DiscNumber);
 				q.AddNamedParam("@duration", Duration);
 				q.AddNamedParam("@bitrate", Bitrate);
 				q.AddNamedParam("@filesize", FileSize);
 				q.AddNamedParam("@lastmod", LastModified);
 				q.AddNamedParam("@filename", FileName);
-				q.AddNamedParam("@releaseyear", ReleaseYear);
-				q.AddNamedParam("@artid", ArtId);
-
-
+                if (ReleaseYear == null)
+                    q.AddNamedParam("@releaseyear", DBNull.Value);
+                else
+                    q.AddNamedParam("@releaseyear", ReleaseYear);
+                if (ArtId == null)
+                    q.AddNamedParam("@artid", DBNull.Value);
+                else
+                    q.AddNamedParam("@artid", ArtId);
 
 				q.Prepare();
 				q.ExecuteNonQuery();

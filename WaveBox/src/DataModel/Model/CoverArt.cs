@@ -23,7 +23,7 @@ namespace WaveBox.DataModel.Model
 		/// </summary>
 
 		[JsonProperty("artId")]
-		public int ArtId { get; set; }
+		public int? ArtId { get; set; }
 
 		[JsonProperty("adlerHash")]
 		public long AdlerHash { get; set; }

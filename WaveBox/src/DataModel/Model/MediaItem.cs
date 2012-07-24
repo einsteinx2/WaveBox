@@ -28,10 +28,10 @@ namespace WaveBox.DataModel.Model
 		public int ItemId { get; set; }
 
 		[JsonProperty("artId")]
-		public int ArtId { get; set; }
+		public int? ArtId { get; set; }
 
 		[JsonProperty("folderId")]
-		public int FolderId { get; set; }
+		public int? FolderId { get; set; }
 
 		[JsonProperty("fileType")]
 		public FileType FileType { get; set; }
@@ -60,7 +60,7 @@ namespace WaveBox.DataModel.Model
 		{
 		}
 
-		public static bool FileNeedsUpdating(FileInfo file, int folderId)
+		public static bool FileNeedsUpdating(FileInfo file, int? folderId)
 		{
             // We don't need to instantiate another folder to know what the folder id is.  This should be known when the method is called.
 

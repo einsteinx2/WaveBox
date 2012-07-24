@@ -108,7 +108,7 @@ namespace WaveBox.DataModel.Singletons
 			for (int i = 0; i < json.mediaFolders.Count; i++)
 			{
 				mf = new Folder(json.mediaFolders[i].ToString(), true);
-				if (mf.FolderId == 0)
+				if (mf.FolderId == null)
 				{
 					mf.AddToDatabase(true);
 				}

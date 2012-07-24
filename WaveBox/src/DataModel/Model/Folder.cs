@@ -14,22 +14,22 @@ namespace WaveBox.DataModel.Model
 	public class Folder
 	{
 		[JsonProperty("folderId")]
-		public int FolderId { get; set; }
+		public int? FolderId { get; set; }
 
 		[JsonProperty("folderName")]
 		public string FolderName { get; set; }
 
 		[JsonProperty("parentFolderId")]
-		public int ParentFolderId { get; set; }
+		public int? ParentFolderId { get; set; }
 
 		[JsonProperty("mediaFolderId")]
-		public int MediaFolderId { get; set; }
+		public int? MediaFolderId { get; set; }
 
 		[JsonProperty("folderPath")]
 		public string FolderPath { get; set; }
 
 		[JsonProperty("artId")]
-		public int ArtId { get; set; }
+		public int? ArtId { get; set; }
 
         public bool ContainsImageFile { get; set; }
 
@@ -38,7 +38,7 @@ namespace WaveBox.DataModel.Model
 		/// Constructors
 		/// </summary>
 
-		public Folder(int folderId)
+		public Folder(int? folderId)
 		{
 			IDbConnection conn = null;
 			IDataReader reader = null;
@@ -61,10 +61,14 @@ namespace WaveBox.DataModel.Model
 					FolderName = reader.GetString(reader.GetOrdinal("folder_name"));
 					FolderPath = reader.GetString(reader.GetOrdinal("folder_path"));
 					if (reader.GetValue(reader.GetOrdinal("parent_folder_id")) == DBNull.Value)
-						ParentFolderId = 0;
+						ParentFolderId = null;
 					else 
 						ParentFolderId = reader.GetInt32(reader.GetOrdinal("parent_folder_id"));
-					MediaFolderId = reader.GetInt32(reader.GetOrdinal("folder_media_folder_id"));
+
+                    if (reader.GetValue(reader.GetOrdinal("folder_media_folder_id")) == DBNull.Value)
+                        MediaFolderId = null;
+                    else 
+                        MediaFolderId = reader.GetInt32(reader.GetOrdinal("parent_folder_id"));
 
 					// if the folder has no associated art, i.e. there is no image file in the folder,
 					// check to see if there was a song image available, i.e. there was an image in its tag
@@ -73,7 +77,7 @@ namespace WaveBox.DataModel.Model
 					{
                         ContainsImageFile = false;
 						if (reader.GetValue(reader.GetOrdinal("song_art_id")) == DBNull.Value)
-							ArtId = 0;
+							ArtId = null;
 						else 
 							ArtId = reader.GetInt32(reader.GetOrdinal("song_art_id"));
 					}
@@ -161,9 +165,9 @@ namespace WaveBox.DataModel.Model
 		{
 			FolderPath = path;
 			FolderName = Path.GetFileName(path);
-			ParentFolderId = 0;
-			MediaFolderId = 0;
-			FolderId = 0;
+			ParentFolderId = null;
+			MediaFolderId = null;
+			FolderId = null;
 
 			IDbCommand q = null;
 			IDbConnection conn = null;
@@ -177,7 +181,7 @@ namespace WaveBox.DataModel.Model
 			try
 			{
 				conn = Database.GetDbConnection();
-				q = Database.GetDbCommand("SELECT * FROM folder WHERE folder_path = \"" + path + "\" AND folder_media_folder_id = 0", conn);
+				q = Database.GetDbCommand("SELECT * FROM folder WHERE folder_path = \"" + path + "\" AND folder_media_folder_id IS NULL", conn);
 				//q = Database.GetDbCommand("SELECT * FROM folder WHERE folder_path = @folderpath AND folder_media_folder_id = 0", conn);
 				//q.AddNamedParam("@folderpath", path);
 				q.Prepare();
@@ -192,13 +196,13 @@ namespace WaveBox.DataModel.Model
 						FolderName = reader.GetString(reader.GetOrdinal("folder_path"));
 
 						if (reader.GetValue(reader.GetOrdinal("parent_folder_id")) == DBNull.Value)
-							ParentFolderId = 0;
+							ParentFolderId = null;
 						else 
 							ParentFolderId = reader.GetInt32(reader.GetOrdinal("parent_folder_id"));
 						MediaFolderId = reader.GetInt32(reader.GetOrdinal("folder_media_folder_id"));
 
 						if (reader.GetValue(reader.GetOrdinal("folder_art_id")) == DBNull.Value)
-							ArtId = 0;
+							ArtId = null;
 						else 
 							ParentFolderId = reader.GetInt32(reader.GetOrdinal("folder_art_id"));
 					}
@@ -366,7 +370,7 @@ namespace WaveBox.DataModel.Model
 
 				q.AddNamedParam("@folderid", MediaFolderId);
 
-				if (ArtId == 0) 
+				if (ArtId == null) 
 					q.AddNamedParam("@artid", DBNull.Value);
 				else 
 					q.AddNamedParam("@artid", ArtId);
@@ -392,13 +396,13 @@ namespace WaveBox.DataModel.Model
 			}
 		}
 
-		private int GetParentFolderId(string path)
+		private int? GetParentFolderId(string path)
 		{
 			string parentFolderPath = Directory.GetParent(path).FullName;
 
 			IDbConnection conn = null;
 			IDataReader reader = null;
-			int pFolderId = 0;
+			int? pFolderId = null;
 
 			try
 			{

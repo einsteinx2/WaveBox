@@ -64,7 +64,7 @@ namespace WaveBox.DataModel.FolderScanning
 					topFolder = new Folder(topFile.FullName);
 					//Console.WriteLine("scanning " + topFolder.FolderName + "  id: " + topFolder.FolderId);
 
-					if (topFolder.FolderId == 0)
+					if (topFolder.FolderId == null)
 					{
 						topFolder.AddToDatabase(false);
 					}
@@ -77,7 +77,7 @@ namespace WaveBox.DataModel.FolderScanning
 							var folder = new Folder(subfolder);
 
 							// if the folder isn't already in the database, add it.
-							if (folder.FolderId == 0)
+							if (folder.FolderId == null)
 							{
 								folder.AddToDatabase(false);
 							}
@@ -142,7 +142,7 @@ namespace WaveBox.DataModel.FolderScanning
 			}
 		}
 
-		public void ProcessFile(FileInfo file, int folderId)
+		public void ProcessFile(FileInfo file, int? folderId)
 		{
 			if (isRestart)
 			{
