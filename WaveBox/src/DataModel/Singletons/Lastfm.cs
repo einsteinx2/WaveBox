@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.IO;
 using System.Text;
@@ -18,13 +19,34 @@ namespace WaveBox.ApiHandler.Handlers
 		private User user;
 
 		private string authUrl;
-		public string AuthUrl { 
-			get 
-			{
-				return authUrl;
-			}
-		}
 
+        public string AuthUrl
+        {
+            get
+            {
+                if(authUrl == null)
+                {
+                    CreateAuthUrl();
+                    return authUrl;
+                }
+                else return authUrl;
+            }
+        }
+
+        private bool sessionAuthenticated;
+        public bool SessionAuthenticated
+        {
+            get
+            {
+                return sessionAuthenticated;
+            }
+        }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WaveBox.ApiHandler.Handlers.Lastfm"/> class.
+        /// </summary>
+        /// <param name='userId'>
+        /// User identifier.
+        /// </param>
 		public Lastfm(int userId)
 		{
 			user = new User(userId);
@@ -46,18 +68,27 @@ namespace WaveBox.ApiHandler.Handlers
 				string token = sessionKey.Substring(6);
 				GetSessionKeyAndUpdateUser(token);
 			}
+            else sessionAuthenticated = true;
 		}
 
-		public bool Scrobble(int songId, bool recordScrobble)
+        /// <summary>
+        /// Scrobble the specified songId and recordScrobble.
+        /// </summary>
+        /// <param name='songId'>
+        /// If set to <c>true</c> song identifier.
+        /// </param>
+        /// <param name='recordScrobble'>
+        /// If set to <c>true</c> record scrobble.
+        /// </param>
+		public string Scrobble(int songId, bool recordScrobble)
 		{
 			var song = new Song(songId);
 			if (song.ItemId == 0)
 			{
-				return false;
+				return null;
 			}
 
 			long timestamp = Convert.ToInt64((DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds);
-			string requestUrl = "http://ws.audioscrobbler.com/2.0/";
 			string p, apiSig;
 
 
@@ -75,13 +106,22 @@ namespace WaveBox.ApiHandler.Handlers
 			                         UrlEncode(song.ArtistName, Encoding.UTF8), UrlEncode(song.SongName, Encoding.UTF8), timestamp, apiSig);
 			}
 
-			DoPostRestRequest(p);
+			string resp = DoPostRestRequest(p);
 
-
-
-			return true;
+			return RemoveHttpHeaders(resp);
 		}
 
+        public string RemoveHttpHeaders(string resp)
+        {
+            return resp.Substring(resp.IndexOf("\r\n\r\n") + 4);
+        }
+
+        /// <summary>
+        /// Gets the session key and updates the user's lastfm session in the database.
+        /// </summary>
+        /// <param name='token'>
+        /// The session passed to the last.fm API when requesting a session key.
+        /// </param>
 		private void GetSessionKeyAndUpdateUser(string token)
 		{
 			string apiSigSource = "api_key" + apiKey + "method" + "auth.getSession" + "token" + token + secret;
@@ -100,21 +140,31 @@ namespace WaveBox.ApiHandler.Handlers
 				jsonResponse = JsonConvert.DeserializeObject(reader.ReadToEnd());
 			}
 
-			string sk = jsonResponse.session.key.ToString();
-			if (sk != null)
+			if (jsonResponse.session != null)
 			{
-				sessionKey = sk;
-				user.UpdateLastfmSession(sk);
-				Console.WriteLine ("[SCROBBLE] ({0}) Obtain session key: success");
+				sessionKey = jsonResponse.session.key.ToString();
+                sessionAuthenticated = true;
+				user.UpdateLastfmSession(sessionKey);
+				Console.WriteLine ("[SCROBBLE] ({0}) Obtain last.fm session key: success", user.UserName);
 			}
+            else sessionAuthenticated = false;
 		}
 
+        /// <summary>
+        /// Md5 the specified input.
+        /// </summary>
+        /// <param name='input'>
+        /// Input.
+        /// </param>
 		private string md5(string input)
 		{
 			var m = new MD5CryptoServiceProvider();
 			return BitConverter.ToString(m.ComputeHash(Encoding.ASCII.GetBytes(input))).Replace("-", string.Empty);
 		}
 
+        /// <summary>
+        /// Creates the auth URL.
+        /// </summary>
 		private void CreateAuthUrl()
 		{
 			string requestToken = null;
@@ -137,7 +187,7 @@ namespace WaveBox.ApiHandler.Handlers
 			if (requestToken != null)
 			{
 				user.UpdateLastfmSession("token:" + requestToken);
-				Console.WriteLine ("[SCROBBLE] ({0}) Obtain request token: success");
+				Console.WriteLine ("[SCROBBLE] ({0}) Obtain last.fm authentication request token: success", user.UserName);
 			}
 
 			string url = "http://www.last.fm/api/auth/?" + 
@@ -152,17 +202,22 @@ namespace WaveBox.ApiHandler.Handlers
 			return string.Empty;
 		}
 
+        /// <summary>
+        /// Executes rest requests using the POST method
+        /// </summary>
+        /// <returns>
+        /// The rest response.
+        /// </returns>
+        /// <param name='parameters'>
+        /// Parameters.
+        /// </param>
         private string DoPostRestRequest(string parameters)
         {
-            string urlEncoded = UrlEncode(parameters + "\r\n", Encoding.UTF8);
-            var byteParams = UTF8Encoding.UTF8.GetBytes(urlEncoded);
             string resp = "";
 
             try
             {
                 var s = new System.Net.Sockets.TcpClient("ws.audioscrobbler.com", 80);
-                //string parms = parameters.Replace(" ", "+");
-
                 var req = new StringBuilder();
                 req.Append(string.Format("POST /2.0/?{0} HTTP/1.1\r\n", parameters));
                 req.Append("Accept: application/json; charset=utf-8\r\n");
@@ -176,19 +231,22 @@ namespace WaveBox.ApiHandler.Handlers
 
                 var stream = s.GetStream();
                 stream.Write(headerBytes, 0, headerBytes.Length);
-                //stream.Write(byteParams, 0, byteParams.Length);
 
-                Console.WriteLine(req.ToString());
-                //Console.WriteLine(urlEncoded);
+                //Console.WriteLine(req.ToString());
 
                 byte[] receive = new byte[256];
+                var m = new MemoryStream();
+                int numRead = 0;
 
-                while (stream.Read(receive, 0, receive.Length) > 0)
+                while ((numRead = stream.Read(receive, 0, receive.Length)) > 0)
                 {
-                    resp += Encoding.UTF8.GetString(receive);
+                    m.Write(receive, 0, numRead);
                 }
 
-                Console.WriteLine(resp);
+                var finalByteArray = m.ToArray();
+                resp = Encoding.UTF8.GetString(finalByteArray, 0, finalByteArray.Length);
+
+                //Console.WriteLine(resp);
                 stream.Close();
                 s.Close();
             } 
