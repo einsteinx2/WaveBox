@@ -239,19 +239,19 @@ namespace WaveBox.HttpServer
 			{
 				if (e.SocketErrorCode.ToString() == "AddressAlreadyInUse")
 				{
-					Console.WriteLine("ERROR: Socket already in use.  Ensure that PMS is not already running.");
+					Console.WriteLine("[HTTPSERVER] Socket already in use, is WaveBox already running?");
 				}
 
 				else Console.WriteLine("ERROR: " + e.Message);
-				Program.ShutdownCommon();
+				Environment.Exit(-1);
 			}
 
 			catch (Exception e)
 			{
 				Console.WriteLine(e.ToString());
-				Program.ShutdownCommon();
+				Environment.Exit(-1);
 			}
-			Console.WriteLine("HTTP server started");
+			Console.WriteLine("[HTTPSERVER] HTTP server started");
 			while (IsActive) 
 			{                
 				TcpClient s = Listener.AcceptTcpClient();
