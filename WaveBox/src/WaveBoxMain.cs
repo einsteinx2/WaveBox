@@ -15,7 +15,7 @@ using WaveBox.DataModel.Model;
 
 namespace WaveBox
 {
-	class WaveBox
+	class WaveBoxMain
 	{
 		/// <summary>
 		/// The main program for WaveBox.  Launches the HTTP server, initializes settings, creates default user,

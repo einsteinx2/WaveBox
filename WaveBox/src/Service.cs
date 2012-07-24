@@ -11,7 +11,7 @@ namespace WaveBox
 	{
 		// Instance of WaveBox, and the thread which will run it
 		private Thread init;
-		private WaveBox wavebox;
+		private WaveBoxMain wavebox;
 
 		/// <summary>
 		/// Constructor for WaveBox service.  Initializes the service and sets up the graceful shutdown
@@ -28,7 +28,7 @@ namespace WaveBox
 				RegisterShutdownHandler();
 
 				// Instantiate a WaveBox object
-				wavebox = new WaveBox();
+				wavebox = new WaveBoxMain();
 
 				// Start it!
 				this.OnStart();
