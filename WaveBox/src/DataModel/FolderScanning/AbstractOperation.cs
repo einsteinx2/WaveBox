@@ -62,7 +62,7 @@ namespace WaveBox.OperationQueue
 			if (state == DelayedOperationState.Queued)
 			{
 				ResetWait();
-				Console.WriteLine("Extending wait period.");
+				Console.WriteLine("[ABSTRACTOPERATION] Extending wait period.");
 			}
 			else if (state == DelayedOperationState.Running)
 			{
