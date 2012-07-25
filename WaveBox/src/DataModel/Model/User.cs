@@ -48,7 +48,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[USER(1)] " + e.ToString());
 			}
 			finally
 			{
@@ -78,7 +78,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[USER(2)] " + e.ToString());
 			}
 			finally
 			{
@@ -150,7 +150,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[USER(3)] " + e.ToString());
 			}
 			finally
 			{
@@ -177,7 +177,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[USER(4)] " + e.ToString());
 			}
 			finally
 			{
@@ -207,7 +207,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[USER(5)] " + e.ToString());
 			}
 			finally
 			{

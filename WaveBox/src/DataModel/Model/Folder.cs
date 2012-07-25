@@ -90,7 +90,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[FOLDER] " + e.ToString());
+				Console.WriteLine("[FOLDER(1)] " + e.ToString());
 			}
 			finally
 			{
@@ -152,7 +152,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[FOLDER] " + e.ToString());
+				Console.WriteLine("[FOLDER(2)] " + e.ToString());
 			}
 			finally
 			{
@@ -216,7 +216,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[FOLDER] " + e.ToString());
+				Console.WriteLine("[FOLDER(3)] " + e.ToString());
 			}
 			finally
 			{
@@ -262,7 +262,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[FOLDER] " + e.ToString());
+				Console.WriteLine("[FOLDER(4)] " + e.ToString());
 			}
 			finally
 			{
@@ -296,7 +296,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[FOLDER] " + e.ToString());
+				Console.WriteLine("[FOLDER(5)] " + e.ToString());
 			}
 			finally
 			{
@@ -392,7 +392,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[FOLDER] " + e.ToString());
+				Console.WriteLine("[FOLDER(6)] " + e.ToString());
 			}
 			finally
 			{
@@ -431,7 +431,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[FOLDER] " + e.ToString());
+				Console.WriteLine("[FOLDER(7)] " + e.ToString());
 			}
 			finally
 			{
@@ -464,7 +464,7 @@ namespace WaveBox.DataModel.Model
 				} 
 				catch (Exception e) 
 				{
-					Console.WriteLine ("[FOLDER] " + e.ToString());
+					Console.WriteLine ("[FOLDER(8)] " + e.ToString());
 				} 
 				finally
 				{

@@ -64,7 +64,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[COVERART(1)] ERROR: " + e.ToString());
 			}
 			finally
 			{
@@ -130,7 +130,7 @@ namespace WaveBox.DataModel.Model
 					}
 					catch (Exception e)
 					{
-						Console.WriteLine(e.ToString());
+						Console.WriteLine("[COVERART(2)] ERROR: " + e.ToString());
 					}
 
 					try
@@ -155,6 +155,7 @@ namespace WaveBox.DataModel.Model
 						}
 						catch (Exception e)
 						{
+							Console.WriteLine("[COVERART(3)]");
 							Console.WriteLine("\r\n\r\nGetting identity: " + e.ToString() + "\r\n\r\n");
 						}
 						finally
@@ -164,13 +165,14 @@ namespace WaveBox.DataModel.Model
 					}
 					catch (Exception e)
 					{
+						Console.WriteLine("[COVERART(4)]");
 						Console.WriteLine("\r\n\r\n" + e.Message + "\r\n\r\n");
 					}
 				}
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[COVERART(5)] ERROR: " + e.ToString());
 			}
 			finally
 			{

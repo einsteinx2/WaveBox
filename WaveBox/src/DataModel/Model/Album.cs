@@ -64,7 +64,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[ALBUM(1)] ERROR: " + e.ToString());
 			}
 			finally
 			{
@@ -105,7 +105,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[ALBUM(2)] ERROR: " + e.ToString());
 			}
 			finally
 			{
@@ -134,7 +134,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[ALBUM(3)] ERROR: " + e.ToString());
 			}
 			finally
 			{
@@ -206,7 +206,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[ALBUM(4)] ERROR: " + e.ToString());
 			}
 			finally
 			{
@@ -258,7 +258,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[ALBUM(5)] ERROR: " + e.ToString());
 			}
 			finally
 			{
@@ -290,7 +290,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[ALBUM(6)] ERROR: " + e.ToString());
 			}
 			finally
 			{

@@ -21,9 +21,17 @@ namespace WaveBox.ApiHandler.Handlers
 
 		public void Process()
 		{
-			Console.WriteLine("Status: ok!");
-			string json = JsonConvert.SerializeObject(new StatusResponse(null, "1"), Formatting.None);
-			Processor.OutputStream.Write(json);
+			Console.WriteLine("[STATUS] OK!");
+			
+			try
+			{
+				string json = JsonConvert.SerializeObject(new StatusResponse(null, "1"), Formatting.None);
+				Processor.OutputStream.Write(json);
+			}
+			catch(Exception e)
+			{
+				Console.WriteLine("[STATUS(1)] ERROR: " + e.ToString());
+			}
 		}
 	}
 

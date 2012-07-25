@@ -33,8 +33,15 @@ namespace WaveBox.ApiHandler.Handlers
 				listOfSongs.Add(new Song(Convert.ToInt32(Uri.UriPart(2))));
 			}
 
-			json = JsonConvert.SerializeObject(new SongsResponse(null, listOfSongs), Formatting.None);
-			WaveBoxHttpServer.sendJson(Processor, json);
+			try
+			{
+				json = JsonConvert.SerializeObject(new SongsResponse(null, listOfSongs), Formatting.None);
+				WaveBoxHttpServer.sendJson(Processor, json);
+			}
+			catch(Exception e)
+			{
+				Console.WriteLine("[SONGAPI] ERROR: " + e.ToString());
+			}
 		}
 	}
 

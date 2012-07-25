@@ -126,19 +126,19 @@ namespace WaveBox.DataModel.FolderScanning
 			}
 			catch (FileNotFoundException e)
 			{
-				Console.WriteLine("\t" + "[FOLDERSCAN] " + folderPath + ": Directory does not exist. " + e.InnerException);
+				Console.WriteLine("\t" + "[FOLDERSCAN(1)] " + folderPath + ": Directory does not exist. " + e.InnerException);
 			}
 			catch (DirectoryNotFoundException e)
 			{
-				Console.WriteLine("\t" + "[FOLDERSCAN] " + folderPath + ": Directory does not exist. " + e.InnerException);
+				Console.WriteLine("\t" + "[FOLDERSCAN(2)] " + folderPath + ": Directory does not exist. " + e.InnerException);
 			}
 			catch (IOException e)
 			{
-				Console.WriteLine("\t" + "[FOLDERSCAN] " + folderPath + ": " + e.Message);
+				Console.WriteLine("\t" + "[FOLDERSCAN(3)] " + folderPath + ": " + e.Message);
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("\t" + "[FOLDERSCAN] " + "Error checking to see if the file was a directory: " + e.ToString());
+				Console.WriteLine("\t" + "[FOLDERSCAN(4)] " + "Error checking to see if the file was a directory: " + e.ToString());
 			}
 		}
 
@@ -175,13 +175,13 @@ namespace WaveBox.DataModel.FolderScanning
 				catch (TagLib.CorruptFileException e)
 				{
 					e.ToString();
-					Console.WriteLine("[FOLDERSCAN] " + file.Name + " has a corrupt tag and will not be inserted.");
+					Console.WriteLine("[FOLDERSCAN(5)] " + file.Name + " has a corrupt tag and will not be inserted.");
 					return;
 				}
 
 				catch (Exception e)
 				{
-					Console.WriteLine("[FOLDERSCAN] " + "Error processing file: " + e.ToString());
+					Console.WriteLine("[FOLDERSCAN(6)] " + "Error processing file: " + e.ToString());
 				}
 				//Console.WriteLine("Get tag: {0} ms", sw.ElapsedMilliseconds);
 
