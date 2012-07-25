@@ -199,7 +199,11 @@ namespace WaveBox.DataModel.Model
 							ParentFolderId = null;
 						else 
 							ParentFolderId = reader.GetInt32(reader.GetOrdinal("parent_folder_id"));
-						MediaFolderId = reader.GetInt32(reader.GetOrdinal("folder_media_folder_id"));
+
+                        if (reader.GetValue(reader.GetOrdinal("folder_media_folder_id")) == DBNull.Value)
+                            MediaFolderId = null;
+                        else 
+                            MediaFolderId = reader.GetInt32(reader.GetOrdinal("folder_media_folder_id"));
 
 						if (reader.GetValue(reader.GetOrdinal("folder_art_id")) == DBNull.Value)
 							ArtId = null;

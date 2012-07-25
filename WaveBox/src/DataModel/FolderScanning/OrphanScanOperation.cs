@@ -61,7 +61,7 @@ namespace WaveBox.DataModel.FolderScanning
 				{
 					// storage for stuff we'll get.
 					string path;
-					int folderId, mediaFolderId;
+					int? folderId, mediaFolderId;
 
 					// get ordinals
 					int pathOrdinal = reader.GetOrdinal ("folder_path");
@@ -83,19 +83,19 @@ namespace WaveBox.DataModel.FolderScanning
 					} 
 					else 
 					{
-						folderId = 0;
+						folderId = null;
 					}
 
-					if ((long)reader.GetValue (mediaFolderIdOrdinal) != 0) 
+					if (reader.GetValue (mediaFolderIdOrdinal) != DBNull.Value) 
 					{
 						mediaFolderId = reader.GetInt32 (reader.GetOrdinal ("folder_media_folder_id"));
 					} 
 					else
 					{
-						mediaFolderId = 0;
+						mediaFolderId = null;
 					}
 
-					if (mediaFolderId != 0)
+					if (mediaFolderId != null)
 					{
 						if (!mediaFolderIds.Contains (mediaFolderId) || !Directory.Exists (path)) 
 						{
