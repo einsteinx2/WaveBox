@@ -56,7 +56,7 @@ namespace WaveBox.DataModel.Singletons
                     settingsOut.Close();
                 } catch (Exception e)
                 {
-                    Console.WriteLine("[SETTINGS] " + e.ToString());
+                    Console.WriteLine("[SETTINGS(1)] " + e.ToString());
                 }
             }
 
@@ -82,7 +82,7 @@ namespace WaveBox.DataModel.Singletons
                     dbTemplate.Close();
                 } catch (Exception e)
                 {
-                    Console.WriteLine("[SETTINGS] " + e.ToString());
+                    Console.WriteLine("[SETTINGS(2)] " + e.ToString());
                 }
             }
 

@@ -39,8 +39,8 @@ namespace WaveBox.ApiHandler.Handlers
 
 			img.Save(Processor.Socket.GetStream(), System.Drawing.Imaging.ImageFormat.Jpeg);
 
-			Console.WriteLine("CoverArt: Not implemented yet.");
-			Processor.OutputStream.Write("CoverArt: Not implemented yet.");
+			Console.WriteLine("[COVERARTAPI] Not implemented yet.");
+			Processor.OutputStream.Write("[COVERARTAPI] Not implemented yet.");
 		}
 
 // Thanks to http://www.switchonthecode.com/tutorials/csharp-tutorial-image-editing-saving-cropping-and-resizing

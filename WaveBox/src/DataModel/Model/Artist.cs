@@ -73,7 +73,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[ARTIST(1)] ERROR: " +  e.ToString());
 			}
 			finally
 			{
@@ -110,7 +110,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[ARTIST(2)] ERROR: " + e.ToString());
 			}
 			finally
 			{
@@ -137,6 +137,7 @@ namespace WaveBox.DataModel.Model
 			catch (Exception e)
 			{
 				if (e.InnerException.ToString() == "SqlNullValueException") { }
+				Console.WriteLine("[ARTIST(3)] ERROR: " + e.ToString());
 			}
 		}
 
@@ -163,7 +164,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[ARTIST(4)] ERROR: " + e.ToString());
 			}
 			finally
 			{
@@ -199,7 +200,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[ARTIST(5)] ERROR: " + e.ToString());
 			}
 			finally
 			{
@@ -237,7 +238,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[ARTIST(6)] ERROR: " + e.ToString());
 			}
 			finally
 			{
@@ -291,7 +292,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[ARTIST(7)] ERROR: " + e.ToString());
 			}
 			finally
 			{

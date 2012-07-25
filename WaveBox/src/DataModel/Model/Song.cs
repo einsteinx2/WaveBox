@@ -75,7 +75,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[SONG] " + e.ToString());
+				Console.WriteLine("[SONG(1)] " + e.ToString());
 			}
 			finally
 			{
@@ -226,7 +226,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[SONG] " + e.ToString());
+				Console.WriteLine("[SONG(2)] " + e.ToString());
 			}
 		}
 
@@ -278,7 +278,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[SONG] " + e.ToString());
+				Console.WriteLine("[SONG(3)] " + e.ToString());
 			}
 			finally
 			{
@@ -314,7 +314,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[SONG] " + e.ToString());
+				Console.WriteLine("[SONG(4)] " + e.ToString());
 			}
 			finally
 			{

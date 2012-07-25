@@ -117,7 +117,7 @@ namespace WaveBox.DataModel.FolderScanning
 					} 
 					catch (Exception e) 
 					{
-						Console.WriteLine ("[ORPHANSCAN] " + e.ToString ());
+						Console.WriteLine ("[ORPHANSCAN(1)] " + e.ToString ());
 					}
 
 					try
@@ -132,14 +132,14 @@ namespace WaveBox.DataModel.FolderScanning
 					} 
 					catch (Exception e) 
 					{
-						Console.WriteLine ("[ORPHANSCAN] " + e.ToString ());
+						Console.WriteLine ("[ORPHANSCAN(2)] " + e.ToString ());
 					}
 
 				}
 			}
 			catch (Exception e) 
 			{
-				Console.WriteLine ("[ORPHANSCAN] " + e.ToString ());
+				Console.WriteLine ("[ORPHANSCAN(3)] " + e.ToString ());
 			}
 			finally
 			{
@@ -185,7 +185,7 @@ namespace WaveBox.DataModel.FolderScanning
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[ORPHANSCAN] " + e.ToString());
+				Console.WriteLine("[ORPHANSCAN(4)] " + e.ToString());
 			}
 			finally
 			{
@@ -205,7 +205,7 @@ namespace WaveBox.DataModel.FolderScanning
 				}
 				catch (Exception e)
 				{
-					Console.WriteLine("[ORPHANSCAN] " + e.ToString());
+					Console.WriteLine("[ORPHANSCAN(5)] " + e.ToString());
 				}
 				finally
 				{
