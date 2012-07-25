@@ -253,7 +253,7 @@ namespace WaveBox.ApiHandler.Handlers
 
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Console.WriteLine("[LASTFM(1)] " + e.ToString());
             }
 
             return resp;

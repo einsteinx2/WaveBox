@@ -21,7 +21,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 		public void Process()
 		{
-			Console.WriteLine("Test: Great success!");
+			Console.WriteLine("[TESTAPI] Great success!");
 
 			var a = new Artist();
 

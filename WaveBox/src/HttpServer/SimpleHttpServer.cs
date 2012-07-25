@@ -76,7 +76,7 @@ namespace WaveBox.HttpServer
 					HandlePOSTRequest();
 				}
 			} catch (Exception e) {
-				Console.WriteLine("Exception: " + e.ToString());
+				Console.WriteLine("[HTTPSERVER(1)] " + e.ToString());
 				WriteFailure();
 			}
 
@@ -92,14 +92,14 @@ namespace WaveBox.HttpServer
 					var se = (System.Net.Sockets.SocketException)e.InnerException;
 					if (se.SocketErrorCode == System.Net.Sockets.SocketError.ConnectionReset)
 					{
-						Console.WriteLine("[HTTPSERVER] " + "Connection was forcibly closed by the remote host");
+						Console.WriteLine("[HTTPSERVER(2)] " + "Connection was forcibly closed by the remote host");
 					}
 				}
 			}
 
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[HTTPSERVER(3)] " + e.ToString());
 			}
 			// bs.Flush(); // flush any remaining output
 			InputStream = null; OutputStream = null; // bs = null;
@@ -241,14 +241,15 @@ namespace WaveBox.HttpServer
 				{
 					Console.WriteLine("[HTTPSERVER] Socket already in use, is WaveBox already running?");
 				}
+				else
+					Console.WriteLine("[HTTPSERVER(4)] " + e.Message);
 
-				else Console.WriteLine("ERROR: " + e.Message);
 				Environment.Exit(-1);
 			}
 
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[HTTPSERVER(5)] " + e.ToString());
 				Environment.Exit(-1);
 			}
 			Console.WriteLine("[HTTPSERVER] HTTP server started");

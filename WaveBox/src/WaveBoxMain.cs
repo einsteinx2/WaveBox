@@ -71,9 +71,9 @@ namespace WaveBox
 				// If the address is in use, WaveBox (or another service) is probably bound to that port; error out
 				// For another sockets exception, just print the message
 				if (e.SocketErrorCode.ToString() == "AddressAlreadyInUse")
-					Console.WriteLine("[WAVEBOX] ERROR: Socket already in use.  Ensure that WaveBox is not already running.");
+					Console.WriteLine("[WAVEBOX(1)] ERROR: Socket already in use.  Ensure that WaveBox is not already running.");
 				else
-					Console.WriteLine("[WAVEBOX] ERROR: " + e.Message);
+					Console.WriteLine("[WAVEBOX(2)] ERROR: " + e.Message);
 
 				// Quit with error return code
 				Environment.Exit(-1);
@@ -82,7 +82,7 @@ namespace WaveBox
 			catch (Exception e)
 			{
 				// Print the message, quit.
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[WAVEBOX(3)] ERROR: " + e.ToString());
 				Environment.Exit(-1);
 			}
 		}

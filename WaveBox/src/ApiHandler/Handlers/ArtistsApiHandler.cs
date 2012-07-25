@@ -38,8 +38,15 @@ namespace WaveBox.ApiHandler.Handlers
 				listOfAlbums = artist.ListOfAlbums();
 			}
 
-			json = JsonConvert.SerializeObject(new ArtistsResponse(null, listOfArtists, listOfAlbums, listOfSongs), Formatting.None);
-			WaveBoxHttpServer.sendJson(Processor, json);
+			try
+			{
+				json = JsonConvert.SerializeObject(new ArtistsResponse(null, listOfArtists, listOfAlbums, listOfSongs), Formatting.None);
+				WaveBoxHttpServer.sendJson(Processor, json);
+			}
+			catch(Exception e)
+			{
+				Console.WriteLine("[ARTISTSAPI(1)] ERROR: " + e.ToString());
+			}
 		}
 	}
 
