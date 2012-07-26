@@ -130,6 +130,8 @@
     <Compile Include="src\Transcoding\TranscodeManager.cs" />
     <Compile Include="src\Transcoding\FFMpegTranscoder.cs" />
     <Compile Include="src\Transcoding\FFMpegMP3Transcoder.cs" />
+    <Compile Include="src\DataModel\Model\Podcast.cs" />
+    <Compile Include="src\DataModel\Model\PodcastEpisode.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="bass.dll">
