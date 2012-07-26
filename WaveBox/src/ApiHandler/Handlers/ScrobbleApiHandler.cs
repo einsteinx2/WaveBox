@@ -30,8 +30,16 @@ namespace WaveBox.ApiHandler.Handlers
 
 				if(!lfm.SessionAuthenticated)
 				{
-					Console.WriteLine ("[SCROBBLE] You must authenticate before you can scrobble.");
-                    WaveBoxHttpServer.sendJson(Processor, JsonConvert.SerializeObject(new ScrobbleResponse("LFMNotAuthenticated", false, lfm.AuthUrl)));
+					Console.WriteLine ("[SCROBBLE(1)] You must authenticate before you can scrobble.");
+
+					try
+					{
+	                    WaveBoxHttpServer.sendJson(Processor, JsonConvert.SerializeObject(new ScrobbleResponse("LFMNotAuthenticated", false, lfm.AuthUrl)));
+					}
+					catch(Exception e)
+					{
+						Console.WriteLine("[SCROBBLE(2)] ERROR: " + e.ToString());
+					}
                     return;
 				}
 
@@ -49,20 +57,41 @@ namespace WaveBox.ApiHandler.Handlers
 
                     if(result != null)
                     {
-					    resp = JsonConvert.DeserializeObject(result);
+						try
+						{
+						    resp = JsonConvert.DeserializeObject(result);
+						}
+						catch(Exception e)
+						{
+							Console.WriteLine("[SCROBBLE(3)] ERROR: " + e.ToString());
+						}
                     }
 
                     else return;
 
                     if(resp.nowplaying != null || (resp.scrobbles != null))
                     {
-                        WaveBoxHttpServer.sendJson(Processor, JsonConvert.SerializeObject(new ScrobbleResponse(null, true)));
+						try
+						{
+	                        WaveBoxHttpServer.sendJson(Processor, JsonConvert.SerializeObject(new ScrobbleResponse(null, true)));
+						}
+						catch(Exception e)
+						{
+							Console.WriteLine("[SCROBBLE(4)] ERROR: " + e.ToString());
+						}
                         return;
                     }
 
                     else
                     {
-                        WaveBoxHttpServer.sendJson(Processor, JsonConvert.SerializeObject(new ScrobbleResponse(string.Format("LFM{0}", resp.error.code), false)));
+						try
+						{
+	                        WaveBoxHttpServer.sendJson(Processor, JsonConvert.SerializeObject(new ScrobbleResponse(string.Format("LFM{0}", resp.error.code), false)));
+						}
+						catch(Exception e)
+						{
+							Console.WriteLine("[SCROBBLE(5)] ERROR: " + e.ToString());
+						}
                         return;
                     }
 

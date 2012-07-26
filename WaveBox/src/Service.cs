@@ -36,7 +36,7 @@ namespace WaveBox
 			// Catch any exceptions
 			catch(Exception e)
 			{
-				Console.WriteLine("[SERVICE] {0}", e.Message);
+				Console.WriteLine("[SERVICE(1)] {0}", e.Message);
 			}
 		}
 

@@ -30,10 +30,9 @@ namespace WaveBox.ApiHandler.Handlers
 					var fs = song.File();
 					WaveBoxHttpServer.sendFile(Processor, fs, 0);
 				}
-
 				catch (Exception e)
 				{
-					Console.WriteLine(e.ToString());
+					Console.WriteLine("[STREAMAPI] ERROR: " + e.ToString());
 				}
 			}
 		}

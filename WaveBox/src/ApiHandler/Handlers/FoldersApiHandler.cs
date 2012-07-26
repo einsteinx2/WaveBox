@@ -39,8 +39,15 @@ namespace WaveBox.ApiHandler.Handlers
 				listOfSongs = folder.ListOfSongs();
 			}
 
-			json = JsonConvert.SerializeObject(new FoldersResponse(null, listOfFolders, listOfSongs), Formatting.None);
-			WaveBoxHttpServer.sendJson(Processor, json);
+			try
+			{
+				json = JsonConvert.SerializeObject(new FoldersResponse(null, listOfFolders, listOfSongs), Formatting.None);
+				WaveBoxHttpServer.sendJson(Processor, json);
+			}
+			catch(Exception e)
+			{
+				Console.WriteLine("[FOLDERAPI(1)] ERROR: " + e.ToString());
+			}
 		}
 	}
 

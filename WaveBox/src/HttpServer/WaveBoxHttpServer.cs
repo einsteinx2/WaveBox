@@ -65,7 +65,7 @@ namespace WaveBox.HttpServer
 
 			catch (Exception e)
 			{
-				Console.WriteLine("[SENDFILE] " + e.ToString());
+				Console.WriteLine("[SENDFILE(1)] " + e.ToString());
 			}
 
 			// new http header object
@@ -126,7 +126,7 @@ namespace WaveBox.HttpServer
 						var se = (System.Net.Sockets.SocketException)e.InnerException;
 						if (se.SocketErrorCode == System.Net.Sockets.SocketError.ConnectionReset)
 						{
-							Console.WriteLine("[SENDFILE] " + "Connection was forcibly closed by the remote host");
+							Console.WriteLine("[SENDFILE(2)] " + "Connection was forcibly closed by the remote host");
 						}
 					}
 					exceptionHasOccurred = true;

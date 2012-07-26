@@ -95,7 +95,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine(e.ToString());
+				Console.WriteLine("[MEDIAITEM(1)] " + e.ToString());
 			}
 			finally
 			{

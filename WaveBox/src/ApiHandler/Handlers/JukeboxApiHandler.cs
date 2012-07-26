@@ -45,7 +45,7 @@ namespace WaveBox.ApiHandler.Handlers
 						}
 						catch (Exception e)
 						{
-							Console.WriteLine("[JUKEBOXAPI] (play) Error parsing part three of URI: " + e.Message);
+							Console.WriteLine("[JUKEBOXAPI(1)] (play) Error parsing part three of URI: " + e.Message);
 						}
 					}
 
@@ -130,7 +130,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 				catch(Exception e)
 				{
-					Console.WriteLine("[JUKEBOXAPI] Error getting songs to add: " + e.Message);
+					Console.WriteLine("[JUKEBOXAPI(2)] Error getting songs to add: " + e.Message);
 				}
 			}
 
@@ -148,7 +148,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 				catch (Exception e)
 				{
-					Console.WriteLine("[JUKEBOXAPI] Error getting songs to remove: " + e.Message);
+					Console.WriteLine("[JUKEBOXAPI(3)] Error getting songs to remove: " + e.Message);
 				}
 			}
 
@@ -165,7 +165,7 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 			catch(Exception e)
 			{
-				Console.WriteLine("[JUKEBOXAPI] Error moving songs: " + e.Message);
+				Console.WriteLine("[JUKEBOXAPI(4)] Error moving songs: " + e.Message);
 			}
 		}
 	}
