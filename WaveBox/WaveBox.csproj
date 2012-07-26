@@ -124,6 +124,12 @@
     <Compile Include="src\ApiHandler\Handlers\ScrobbleApiHandler.cs" />
     <Compile Include="src\Service.cs" />
     <Compile Include="src\WaveBoxMain.cs" />
+    <Compile Include="src\Transcoding\ITranscoder.cs" />
+    <Compile Include="src\Transcoding\ITranscoderDelegate.cs" />
+    <Compile Include="src\Transcoding\AbstractTranscoder.cs" />
+    <Compile Include="src\Transcoding\TranscodeManager.cs" />
+    <Compile Include="src\Transcoding\FFMpegTranscoder.cs" />
+    <Compile Include="src\Transcoding\FFMpegMP3Transcoder.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="bass.dll">
@@ -192,5 +198,6 @@
   -->
   <ItemGroup>
     <Folder Include="src\" />
+    <Folder Include="src\Transcoding\" />
   </ItemGroup>
 </Project>

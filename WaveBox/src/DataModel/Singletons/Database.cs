@@ -28,7 +28,7 @@ namespace WaveBox.DataModel.Singletons
 			return new SQLiteCommand(queryString, (SQLiteConnection)connection);
 		}
 
-		public static void Close (IDbConnection connection, IDataReader reader)
+		public static void Close(IDbConnection connection, IDataReader reader)
 		{
 			if ((object)reader != null && !reader.IsClosed) 
 			{

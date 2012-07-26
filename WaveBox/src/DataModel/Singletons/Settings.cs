@@ -10,25 +10,13 @@ namespace WaveBox.DataModel.Singletons
 {
 	public class Settings
 	{
-		public static string SETTINGS_PATH = "res/WaveBox.conf";
+		public static string SETTINGS_PATH = "res" + Path.DirectorySeparatorChar + "WaveBox.conf";
 
 		private static double version = 1.0;
-		public static double Version
-		{
-			get
-			{
-				return version;
-			}
-		}
+		public static double Version { get { return version; } }
 
 		private static List<Folder> mediaFolders;
-		public static List<Folder> MediaFolders
-		{
-			get
-			{
-				return mediaFolders;
-			}
-		}
+		public static List<Folder> MediaFolders { get { return mediaFolders; } }
 
 		public static void Reload()
 		{
@@ -47,14 +35,15 @@ namespace WaveBox.DataModel.Singletons
                 try
                 {
                     Console.WriteLine("[SETTINGS] " + "Setting file doesn't exist; Creating it. (WaveBox.conf)");
-                    var settingsTemplate = new StreamReader("res/WaveBox.conf");
+                    var settingsTemplate = new StreamReader("res" + Path.DirectorySeparatorChar + "WaveBox.conf");
                     var settingsOut = new StreamWriter("WaveBox.conf");
 
                     settingsOut.Write(settingsTemplate.ReadToEnd());
 
                     settingsTemplate.Close();
                     settingsOut.Close();
-                } catch (Exception e)
+                } 
+				catch (Exception e)
                 {
                     Console.WriteLine("[SETTINGS] " + e.ToString());
                 }
@@ -67,7 +56,7 @@ namespace WaveBox.DataModel.Singletons
                     Console.WriteLine("[SETTINGS] " + "Database file doesn't exist; Creating it. (wavebox.db)");
 
                     // new filestream on the template
-                    var dbTemplate = new FileStream("res/wavebox.db", FileMode.Open);
+                    var dbTemplate = new FileStream("res" + Path.DirectorySeparatorChar + "wavebox.db", FileMode.Open);
 
                     // a new byte array
                     byte[] dbData = new byte[dbTemplate.Length];
@@ -80,7 +69,8 @@ namespace WaveBox.DataModel.Singletons
 
                     // close the template file
                     dbTemplate.Close();
-                } catch (Exception e)
+                } 
+				catch (Exception e)
                 {
                     Console.WriteLine("[SETTINGS] " + e.ToString());
                 }

@@ -105,9 +105,14 @@ namespace WaveBox.DataModel.Model
 			return needsUpdating;
 		}
 
+		public string FilePath()
+		{
+			return new Folder(FolderId).FolderPath + Path.DirectorySeparatorChar + FileName;
+		}
+
 		public FileStream File()
 		{
-			return new FileStream(new Folder(FolderId).FolderPath + Path.DirectorySeparatorChar + FileName, FileMode.Open, FileAccess.Read);
+			return new FileStream(FilePath(), FileMode.Open, FileAccess.Read);
 		}
 	}
 }

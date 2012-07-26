@@ -18,19 +18,9 @@ namespace WaveBox.DataModel.Singletons
 		//private List<FileSystemWatcher> watcherList;
 
 		// FileManager singleton
-		private static FileManager instance;
-		public static FileManager Instance
-		{
-			get
-			{
-				if (instance == null)
-				{
-					instance = new FileManager();
-				}
-
-				return instance;
-			}
-		}
+		private FileManager() { }
+		private static readonly FileManager instance = new FileManager();
+		public static FileManager Instance { get { return instance; } }
 
 		/// <summary>
 		/// Setup() grabs the list of media folders from Settings, checks if they exist, and then begins to scan

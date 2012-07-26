@@ -9,19 +9,8 @@ namespace WaveBox.DataModel.Singletons
 {
 	class Jukebox
 	{
-		private static Jukebox instance;
-		public static Jukebox Instance
-		{
-			get
-			{
-				if (instance == null)
-				{
-					instance = new Jukebox();
-				}
-
-				return instance;
-			}
-		}
+	    private static readonly Jukebox instance = new Jukebox();
+		public static Jukebox Instance { get { return Instance; } }
 
 		public bool IsInitialized { get; set; }
 
@@ -29,14 +18,14 @@ namespace WaveBox.DataModel.Singletons
 
 		public int CurrentIndex { get; set; }
 
-		private const string _PLAYLIST_NAME = "jukeboxQPbjnbh2JPU5NGxhXiiQ";
+		private const string PLAYLIST_NAME = "jukeboxQPbjnbh2JPU5NGxhXiiQ";
 		private static Playlist playlist;
 
 		private int currentStream;
 
 		private Jukebox()
 		{
-			playlist = new Playlist(_PLAYLIST_NAME);
+			playlist = new Playlist(PLAYLIST_NAME);
 			if(playlist.PlaylistId == 0)
 			{
 				// playlist doesn't exist, so create it.
@@ -92,10 +81,13 @@ namespace WaveBox.DataModel.Singletons
 		{
 			CurrentIndex = CurrentIndex + 1;
 
-			if (CurrentIndex >= playlist.PlaylistCount) {
+			if (CurrentIndex >= playlist.PlaylistCount) 
+			{
 				CurrentIndex = CurrentIndex - 1;
 				Stop ();
-			} else {
+			} 
+			else
+			{
 				PlaySongAtIndex (CurrentIndex);
 			}
 		}

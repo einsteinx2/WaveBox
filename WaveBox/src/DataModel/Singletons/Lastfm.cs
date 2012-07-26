@@ -19,7 +19,6 @@ namespace WaveBox.ApiHandler.Handlers
 		private User user;
 
 		private string authUrl;
-
         public string AuthUrl
         {
             get
@@ -29,18 +28,16 @@ namespace WaveBox.ApiHandler.Handlers
                     CreateAuthUrl();
                     return authUrl;
                 }
-                else return authUrl;
+                else 
+				{
+					return authUrl;
+				}
             }
         }
 
         private bool sessionAuthenticated;
-        public bool SessionAuthenticated
-        {
-            get
-            {
-                return sessionAuthenticated;
-            }
-        }
+        public bool SessionAuthenticated { get { return sessionAuthenticated; } }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="WaveBox.ApiHandler.Handlers.Lastfm"/> class.
         /// </summary>
@@ -261,20 +258,27 @@ namespace WaveBox.ApiHandler.Handlers
 
         // Thanks to: http://software.1713.n2.nabble.com/System-Web-HttpUtility-UrlEncode-equivalent-in-OS-X-td721075.html
         // For some reason, Mono doesn't implement System.Web.HttpServerUtility.UrlEncode().  Weird.
-        public static string UrlEncode(string s, Encoding e) { 
+        public static string UrlEncode(string s, Encoding e) 
+		{ 
                 StringBuilder sb = new StringBuilder(); 
 
-                foreach (byte i in e.GetBytes(s)) { 
-                        if (            (i >= 'A' && i <= 'Z') || 
-                                        (i >= 'a' && i <= 'z') || 
-                                        (i >= '0' && i <= '9') || 
-                                        i == '-' || i == '_') { 
-                                sb.Append((char) i); 
-                        } else if (i == ' ') { 
-                                sb.Append('+'); 
-                        } else { 
-                                sb.Append('%'); 
-                                sb.Append(i.ToString("X2")); 
+                foreach (byte i in e.GetBytes(s)) 
+				{ 
+                        if ((i >= 'A' && i <= 'Z') || 
+                            (i >= 'a' && i <= 'z') || 
+                            (i >= '0' && i <= '9') || 
+                             i == '-' || i == '_') 
+						{ 
+                        	sb.Append((char) i); 
+                        } 
+						else if (i == ' ') 
+						{ 
+							sb.Append('+'); 
+                        } 
+						else 
+						{
+                        	sb.Append('%'); 
+                        	sb.Append(i.ToString("X2")); 
                         } 
                 } 
 
