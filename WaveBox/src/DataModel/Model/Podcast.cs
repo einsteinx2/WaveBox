@@ -46,7 +46,19 @@ namespace PodcastParsing
             if (!Directory.Exists(PodcastMediaDirectory)) Directory.CreateDirectory(PodcastMediaDirectory);
             if (!Directory.Exists(PodcastMediaDirectory + Path.DirectorySeparatorChar + Title)) Directory.CreateDirectory(PodcastMediaDirectory + Path.DirectorySeparatorChar + Title);
 
-            AddToDatabase();
+            int? existingPodcastId = PodcastIdForRssUrl(rss);
+            if (existingPodcastId != null)
+            {
+                var existing = new Podcast(existingPodcastId);
+                PodcastId = existingPodcastId;
+                ArtId = existing.ArtId;
+                EpisodeKeepCap = existing.EpisodeKeepCap;
+                Title = existing.Title;
+                Author = existing.Author;
+                Description = existing.Description;
+                return;
+            }
+            else AddToDatabase();
 
             Console.WriteLine(Title + "\r\n " + Author + "\r\n " + Description + "\r\n\r\n");
         }
@@ -55,7 +67,7 @@ namespace PodcastParsing
         {
             if(podcastId == null) return;
 
-            PodcastId = podcastId;
+            PodcastId = podcastId.Value;
 
             IDbConnection conn = null;
             IDataReader reader = null;
@@ -98,11 +110,12 @@ namespace PodcastParsing
             {
                 conn = Database.GetDbConnection();
 
-                IDbCommand q = Database.GetDbCommand("INSERT OR IGNORE INTO podcast (podcast_keep_cap, podcast_title, podcast_author, podcast_description) VALUES (@keepcap, @title, @author, @desc)", conn);
+                IDbCommand q = Database.GetDbCommand("INSERT OR IGNORE INTO podcast (podcast_keep_cap, podcast_title, podcast_author, podcast_description, podcast_rss_url) VALUES (@keepcap, @title, @author, @desc, @rss)", conn);
                 q.AddNamedParam("@keepcap", EpisodeKeepCap);
                 q.AddNamedParam("@title", Title);
                 q.AddNamedParam("@author", Author);
                 q.AddNamedParam("@desc", Description);
+                q.AddNamedParam("@rss", rssUrl);
                 q.Prepare();
 
                 int affected = q.ExecuteNonQuery();
@@ -145,7 +158,7 @@ namespace PodcastParsing
                 }
             }
 
-            if (stored.Count == EpisodeKeepCap)
+            if (stored.Count == EpisodeKeepCap && newEps.Count > 0)
             {
                 DeleteOldEpisodes(newEps.Count);
             } 
@@ -153,7 +166,7 @@ namespace PodcastParsing
             foreach(var episode in newEps)
             {
                 // episode will be added to database when it has successfully completed downloading
-                episode.Download();
+                episode.QueueDownload();
             }
         }
 
@@ -167,7 +180,7 @@ namespace PodcastParsing
 
                 IDbCommand q = Database.GetDbCommand("SELECT podcast_episode_id FROM podcast_episode WHERE podcast_episode_podcast_id = @podcastid ORDER BY podcast_episode_id LIMIT @count", conn);
                 q.AddNamedParam("@podcastid", PodcastId);
-                q.AddNamedParam("@podcastid", count);
+                q.AddNamedParam("@count", count);
                 q.Prepare();
                 reader = q.ExecuteReader();
 
@@ -175,6 +188,67 @@ namespace PodcastParsing
                 {
                     new PodcastEpisode(reader.GetInt32(0)).Delete();
                 }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("[PODCAST (2)] ERROR: " +  e.ToString());
+            }
+            finally
+            {
+                Database.Close(conn, reader);
+            }
+        }
+
+        public void Delete()
+        {
+            // remove any episodes of this podcast that might happen to be in the download queue
+            if(this.PodcastId != null)
+                PodcastEpisode.Dq.RemovePodcast(PodcastId.Value);
+
+            // then remove any episodes from the database and the disk
+            IDbConnection conn = null;
+            IDataReader reader = null;
+            List<int> toDelete = new List<int>();
+
+            try
+            {
+                conn = Database.GetDbConnection();
+
+                IDbCommand q = Database.GetDbCommand("SELECT podcast_episode_id FROM podcast_episode WHERE podcast_episode_podcast_id = @podcastid", conn);
+                q.AddNamedParam("@podcastid", PodcastId);
+                q.Prepare();
+                reader = q.ExecuteReader();
+
+
+
+                while (reader.Read())
+                {
+                    toDelete.Add(reader.GetInt32(0));
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("[PODCAST (2)] ERROR: " +  e.ToString());
+            }
+            finally
+            {
+                Database.Close(conn, reader);
+            }
+
+            foreach (int i in toDelete)
+            {
+                new PodcastEpisode(i).Delete();
+            }
+
+            // remove podcast entry
+            try
+            {
+                conn = Database.GetDbConnection();
+
+                IDbCommand q = Database.GetDbCommand("DELETE FROM podcast WHERE podcast_id = @podcastid", conn);
+                q.AddNamedParam("@podcastid", PodcastId);
+                q.Prepare();
+                q.ExecuteNonQuery();
             }
             catch (Exception e)
             {
@@ -259,6 +333,35 @@ namespace PodcastParsing
                 Database.Close(conn, reader);
             }
             return list;
+        }
+
+        private static int? PodcastIdForRssUrl(string rss)
+        {
+            IDbConnection conn = null;
+            IDataReader reader = null;
+            try
+            {
+                conn = Database.GetDbConnection();
+
+                IDbCommand q = Database.GetDbCommand("SELECT podcast_id FROM podcast WHERE podcast_rss_url = @rss", conn);
+                q.AddNamedParam("@rss", rss);
+                q.Prepare();
+                reader = q.ExecuteReader();
+
+                if (reader.Read())
+                {
+                    return reader.GetInt32(0);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("[PODCAST (3)] ERROR: " +  e.ToString());
+            }
+            finally
+            {
+                Database.Close(conn, reader);
+            }
+            return null;
         }
     }
 }

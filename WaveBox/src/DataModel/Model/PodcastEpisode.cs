@@ -6,6 +6,7 @@ using System.Net;
 using System.Web;
 using System.Xml;
 using System.Collections.Generic;
+using System.Threading;
 
 
 namespace PodcastParsing
@@ -20,20 +21,15 @@ namespace PodcastParsing
         public string MediaUrl { get; set; }
         public string FilePath { get; set; }
 
-        public static List<PodcastEpisode> CurrentlyDownloading { get; set; }
-        public static Object CurrentlyDownloadingLock = new Object();
-
+        public static DownloadQueue Dq { get; set; }
+        public static Object CurrentlyDownloadingLock = new Object();  
+        public static WebClient webClient = new WebClient();
         private long contentLength, totalBytesRead;
-        private Stream response;
-        private FileStream s;
-        private const int chunkSize = 8192;
-        byte[] buf = new byte[chunkSize];
-
 
         public PodcastEpisode(XmlNode episode, XmlNamespaceManager mgr, int? podcastId)
         {
             if(podcastId == null) return;
-            if(CurrentlyDownloading == null) CurrentlyDownloading = new List<PodcastEpisode>();
+            if(Dq == null) Dq = new DownloadQueue();
 
             PodcastId = podcastId;
             Title = episode.SelectSingleNode("title").InnerText;
@@ -55,7 +51,7 @@ namespace PodcastParsing
             {
                 conn = Database.GetDbConnection();
 
-                IDbCommand q = Database.GetDbCommand("SELECT * FROM podcast WHERE podcast_id = @podcastid", conn);
+                IDbCommand q = Database.GetDbCommand("SELECT * FROM podcast_episode WHERE podcast_episode_id = @podcastid", conn);
                 q.AddNamedParam("@podcastid", podcastId);
                 q.Prepare();
                 reader = q.ExecuteReader();
@@ -81,14 +77,17 @@ namespace PodcastParsing
 
         public void Delete()
         {
+//            // if we remove this item from the queue, then it's not in the database yet, so we can just return.
+//            if(Dq.RemoveItem(this, webClient)) return;
+
             IDbConnection conn = null;
             IDataReader reader = null;
             try
             {
                 conn = Database.GetDbConnection();
 
-                IDbCommand q = Database.GetDbCommand("DELETE FROM podcast WHERE podcast_id = @podcastid", conn);
-                q.AddNamedParam("@podcastid", PodcastId);
+                IDbCommand q = Database.GetDbCommand("DELETE FROM podcast_episode WHERE podcast_episode_id = @podcastid", conn);
+                q.AddNamedParam("@podcastid", EpisodeId);
                 q.Prepare();
                 q.ExecuteNonQuery();
             }
@@ -111,64 +110,82 @@ namespace PodcastParsing
             return true;
         }
 
-        public void Download()
+        public void StartDownload()
         {
-            if (PodcastId == null)
-                return;
+            webClient = new WebClient();
+            webClient.DownloadProgressChanged += new DownloadProgressChangedEventHandler((sender, e) => 
+            {
+                if (contentLength == 0)
+                    contentLength = e.TotalBytesToReceive;
+                Console.WriteLine(this.Title + ": " + ((double)e.BytesReceived / (double)e.TotalBytesToReceive) * 100 + "%");
+                totalBytesRead = e.BytesReceived;
+            });
+
+            webClient.DownloadFileCompleted += new System.ComponentModel.AsyncCompletedEventHandler((sender, e) => 
+            {
+                AddToDatabase();
+                if(Dq.Count > 0)
+                {
+                    webClient.CancelAsync();
+                    Dq.Dequeue();
+                    if(Dq.CurrentItem() != null)
+                        Dq.CurrentItem().StartDownload();
+                }
+            });
+
+            var uri = new Uri(MediaUrl);
+            string[] fns = MediaUrl.Split('/');
+            string fn = fns[fns.Length - 1];
             var pc = new Podcast(PodcastId);
-            s = new FileStream(Podcast.PodcastMediaDirectory + Path.DirectorySeparatorChar + pc.Title + Path.DirectorySeparatorChar + Title, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
-            var req = (HttpWebRequest)WebRequest.Create(MediaUrl);
-            byte[] buf = new byte[chunkSize];
+            FilePath = Podcast.PodcastMediaDirectory + Path.DirectorySeparatorChar + pc.Title + Path.DirectorySeparatorChar + fn;
 
-            lock (CurrentlyDownloadingLock)
-            {
-                CurrentlyDownloading.Add(this);     
-            }
-
-            req.BeginGetResponse(result => 
-            {
-                WebResponse f = req.EndGetResponse(result);
-                contentLength = f.ContentLength;
-                response = f.GetResponseStream();
-
-                response.BeginRead(buf, 0, chunkSize, new AsyncCallback(ResponseCallback), null);
-            }, 
-            null);
-
-
-
+            webClient.DownloadFileAsync(uri, FilePath);
         }
 
-        private void ResponseCallback(IAsyncResult asyncResult)
+        public void QueueDownload()
         {
-            int bytesRead = response.EndRead(asyncResult);
-            if (bytesRead > 0)
+            Dq.Enqueue(this);
+            if (!webClient.IsBusy)
             {
-                s.Write(buf, 0, bytesRead);
-                s.Flush();
-
-                // more to read, so keep going!
-                totalBytesRead += bytesRead;
-
-                response.BeginRead(buf, 0, chunkSize, new AsyncCallback(ResponseCallback), null);
-                Console.WriteLine(totalBytesRead + " / " + contentLength);
+                Dq.CurrentItem().StartDownload();
             }
 
-            // otherwise, we've read all the bytes in the stream, so we're done.
-            else
-            {
-                lock(CurrentlyDownloadingLock)
-                {
-                    CurrentlyDownloading.Remove(this);
-                }
-
-                response.Close();
-                s.Close();
-            }
         }
 
         public void AddToDatabase()
         {
+            IDbConnection conn = null;
+            IDataReader reader = null;
+            try
+            {
+                conn = Database.GetDbConnection();
+
+                IDbCommand q = Database.GetDbCommand("INSERT OR IGNORE INTO podcast_episode (podcast_episode_podcast_id, podcast_episode_title, podcast_episode_author, podcast_episode_subtitle, podcast_episode_media_url, podcast_episode_file_path) " + 
+                                                     "VALUES (@pe_pid, @pe_title, @pe_author, @pe_subtitle, @pe_mediaurl, @pe_filepath)", conn);
+                q.AddNamedParam("@pe_pid", PodcastId);
+                q.AddNamedParam("@pe_title", Title);
+                q.AddNamedParam("@pe_author", Author);
+                q.AddNamedParam("@pe_subtitle", Subtitle);
+                q.AddNamedParam("@pe_mediaurl", MediaUrl);
+                q.AddNamedParam("@pe_filepath", FilePath);
+                q.Prepare();
+
+                int affected = q.ExecuteNonQuery();
+
+                if (affected > 0)
+                {
+                    q.CommandText = "SELECT last_insert_rowid()";
+                    PodcastId = Convert.ToInt32(q.ExecuteScalar().ToString());
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("[PODCAST (1)] ERROR: " +  e.ToString());
+            }
+            finally
+            {
+                Database.Close(conn, reader);
+            }
         }
 
         public double DownloadProgress()
