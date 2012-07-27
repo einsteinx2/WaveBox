@@ -1,0 +1,3 @@
+[submodule "WaveBox/html"]
+	path = WaveBox/html
+	url = https://github.com/einsteinx2/WaveBoxHTML.git
