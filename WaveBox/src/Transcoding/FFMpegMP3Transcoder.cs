@@ -5,7 +5,11 @@ namespace WaveBox.Transcoding
 {
 	public class FFMpegMP3Transcoder : FFMpegTranscoder
 	{
-		public override TranscodeType Type { get { return TranscodeType.MP3; } }
+		public override TranscodeType Type
+		{
+			get { return TranscodeType.MP3; }
+			set { }
+		}
 
 		public FFMpegMP3Transcoder(MediaItem item, TranscodeQuality quality) : base(item, quality)
     	{

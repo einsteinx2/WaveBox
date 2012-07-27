@@ -75,7 +75,9 @@ namespace WaveBox.HttpServer
 				{
 					HandlePOSTRequest();
 				}
-			} catch (Exception e) {
+			} 
+			catch (Exception e) 
+			{
 				Console.WriteLine("[HTTPSERVER(1)] " + e.ToString());
 				WriteFailure();
 			}
@@ -84,7 +86,6 @@ namespace WaveBox.HttpServer
 			{
 				OutputStream.Flush();
 			}
-
 			catch (IOException e)
 			{
 				if (e.InnerException.GetType() == typeof(System.Net.Sockets.SocketException))
@@ -96,11 +97,11 @@ namespace WaveBox.HttpServer
 					}
 				}
 			}
-
 			catch (Exception e)
 			{
 				Console.WriteLine("[HTTPSERVER(3)] " + e.ToString());
 			}
+
 			// bs.Flush(); // flush any remaining output
 			InputStream = null; OutputStream = null; // bs = null;
 			Socket.Close();             
@@ -125,19 +126,23 @@ namespace WaveBox.HttpServer
 		{
 			//Console.WriteLine("readHeaders()");
 			String line;
-			while ((line = streamReadLine(InputStream)) != null) {
-				if (line.Equals("")) {
+			while ((line = streamReadLine(InputStream)) != null)
+			{
+				if (line.Equals("")) 
+				{
 					//Console.WriteLine("got headers");
 					return;
 				}
 				
 				int separator = line.IndexOf(':');
-				if (separator == -1) {
+				if (separator == -1) 
+				{
 					throw new Exception("invalid http header line: " + line);
 				}
 				String name = line.Substring(0, separator);
 				int pos = separator + 1;
-				while ((pos < line.Length) && (line[pos] == ' ')) {
+				while ((pos < line.Length) && (line[pos] == ' ')) 
+				{
 					pos++; // strip any spaces
 				}
 					
@@ -246,12 +251,12 @@ namespace WaveBox.HttpServer
 
 				Environment.Exit(-1);
 			}
-
 			catch (Exception e)
 			{
 				Console.WriteLine("[HTTPSERVER(5)] " + e.ToString());
 				Environment.Exit(-1);
 			}
+
 			Console.WriteLine("[HTTPSERVER] HTTP server started");
 			while (IsActive) 
 			{                

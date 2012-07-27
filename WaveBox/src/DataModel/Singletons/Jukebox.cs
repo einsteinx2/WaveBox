@@ -10,7 +10,7 @@ namespace WaveBox.DataModel.Singletons
 	class Jukebox
 	{
 	    private static readonly Jukebox instance = new Jukebox();
-		public static Jukebox Instance { get { return Instance; } }
+		public static Jukebox Instance { get { return instance; } }
 
 		public bool IsInitialized { get; set; }
 

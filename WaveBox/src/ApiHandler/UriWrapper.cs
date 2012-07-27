@@ -9,22 +9,13 @@ namespace WaveBox.ApiHandler
 	{
 		private List<string> UriParts { get; set; }
 		private string Uri { get; set; }
-
-		private Dictionary<string, string> parameters;
-		public Dictionary<string, string> Parameters
-		{
-			get
-			{
-				return parameters;
-			}
-		}
+		public Dictionary<string, string> Parameters { get; set; }
 
 		/// <summary>
 		/// Constructor for UriWrapper, takes in a URI string and enables methods to parse its pieces
 		/// </summary>
 		public UriWrapper(string uri)
 		{
-			//Console.WriteLine("uri: {0}", uri);
 			// Store the original URI in a string
 			Uri = uri;
 
@@ -44,7 +35,7 @@ namespace WaveBox.ApiHandler
 			if(Uri.Contains('?'))
 			{
 				// Initialize a dictionary
-				parameters = new Dictionary<string,string>();
+				Parameters = new Dictionary<string,string>();
 
 				// if we split the uri by the question mark, the second part of the split will be the params
 				string parametersString = Uri.Split('?')[1];
@@ -52,7 +43,9 @@ namespace WaveBox.ApiHandler
 
 				// Add parameters to the dictionary as we parse the parameters array
 				for(int i = 0; i <= splitParams.Length - 2; i = i + 2)
+				{
 					Parameters.Add(splitParams[i], splitParams[i + 1]);
+				}
 
 				// Store the URI before parameters in the Uri property
 				Uri = Uri.Substring(0, Uri.IndexOf('?'));
@@ -65,8 +58,10 @@ namespace WaveBox.ApiHandler
 		public string UriPart(int index)
 		{
 			// Make sure the URI's part count is greater than the index
-			if (UriParts.Count > index)
+			if (UriParts.Count > index) 
+			{
 				return UriParts.ElementAt(index);
+			}
 
 			// Return null if the index was out of range
 			return null;
@@ -98,7 +93,9 @@ namespace WaveBox.ApiHandler
 			foreach (string s in input)
 			{
 				if (s != null && s != "")
+				{
 					result.Add(s);
+				}
 			}
 
 			return result;

@@ -11,7 +11,7 @@ namespace WaveBox.Transcoding
 
 		private TranscodeManager() { }
 	    private static readonly TranscodeManager instance = new TranscodeManager();
-		public static TranscodeManager Instance { get { return Instance; } }
+		public static TranscodeManager Instance { get { return instance; } }
 
 	    private IList<ITranscoder> transcoders = new List<ITranscoder>();
 
@@ -61,6 +61,9 @@ namespace WaveBox.Transcoding
 
 	    public void ConsumedTranscode(ITranscoder transcoder)
 		{
+			if ((object)transcoder == null)
+				return;
+
 			lock (transcoders)
 			{
 				// Decrement the reference count
@@ -79,6 +82,9 @@ namespace WaveBox.Transcoding
 
 	    public void CancelTranscode(ITranscoder transcoder)
 		{
+			if ((object)transcoder == null)
+				return;
+
 			lock (transcoders)
 			{
 				if (transcoder.ReferenceCount == 1)

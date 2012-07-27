@@ -46,76 +46,148 @@ namespace WaveBox.HttpServer
 			processor.OutputStream.Write(json);
 		}
 
-		public static void sendFile(HttpProcessor processor, FileStream fs, int startOffset)
+		public static void sendFile (HttpProcessor processor, FileStream fs, int startOffset, long length)
 		{
-			FileInfo fsinfo = null;
-			if (fs == null)
-			{
+			if ((object)fs == null || length == 0 || startOffset >= length) 
 				return;
-			}
 
-			else fsinfo = new FileInfo(fs.Name);
+			FileInfo fsinfo = new FileInfo(fs.Name);
 
-			long fileLength = 0;
-
-			try
-			{
-				fileLength = fs.Length - startOffset;
-			}
-
-			catch (Exception e)
-			{
-				Console.WriteLine("[SENDFILE(1)] " + e.ToString());
-			}
-
-			// new http header object
-			WaveBoxHttpHeader h = new WaveBoxHttpHeader(WaveBoxHttpHeader.HttpStatusCode.OK, "", fileLength);
-			
-			// write the headers to output stream
+			// Write the headers to output stream
+			long contentLength = length - startOffset;
+			WaveBoxHttpHeader h = new WaveBoxHttpHeader(WaveBoxHttpHeader.HttpStatusCode.OK, "", contentLength);
 			h.WriteHeader(processor);
 
-			byte[] buf = new byte[8192];
+			// Read/Write in 8 KB chunks
+			const int chunkSize = 8192;
+
+			// Initialize everything
+			byte[] buf = new byte[chunkSize];
 			int bytesRead;
 			long bytesWritten = 0;
-			int offset = startOffset;
-			var lol = new System.IO.StreamWriter(Console.OpenStandardOutput());
 			var stream = processor.OutputStream.BaseStream;
 			int sinceLastReport = 0;
 			var sw = new Stopwatch();
 
-			if (processor.HttpHeaders.ContainsKey("Range"))
-			{
-				string range = (string)processor.HttpHeaders["Range"];
-				string start = range.Split(new char[]{'-', '='})[1];
-				Console.WriteLine("[SENDFILE] Connection retried.  Resuming from {0}", start);
-				fs.Seek(Convert.ToInt32(start), SeekOrigin.Begin);
-				bytesWritten = fs.Position;
-			}
+			// Seek to the start offset
+			fs.Seek(startOffset, SeekOrigin.Begin);
+			bytesWritten = fs.Position;
 
 			sw.Start();
-			bool exceptionHasOccurred = false;
-			while((bytesRead = fs.Read(buf, offset, 8192)) != 0 && !exceptionHasOccurred)
+			while(true)
 			{
 				try
 				{
-					stream.Write(buf, 0, 8192);
-					bytesWritten += bytesRead;
-					//offset += 8192;
+					// Attempt to read a chunk
+					bytesRead = fs.Read(buf, 0, chunkSize);
 
+					// Send the bytes out to the client
+					if (bytesRead > 0)
+					{
+						stream.Write(buf, 0, bytesRead);
+						bytesWritten += bytesRead;
+					}
+
+					// Log the progress (only for testing)
 					if (sw.ElapsedMilliseconds > 1000)
 					{
-						lol.WriteLine("[SENDFILE] " + fsinfo.Name + ": [ {0} / {1} | {2:F1}% | {3:F1} Mbps ]", bytesWritten, fileLength, (Convert.ToDouble(bytesWritten) / Convert.ToDouble(fileLength)) * 100, (((double)(sinceLastReport * 8) / 1024) / 1024) / (double)(sw.ElapsedMilliseconds / 1000));
-						lol.Flush();
+						Console.WriteLine("[SENDFILE] " + fsinfo.Name + ": [ {0} / {1} | {2:F1}% | {3:F1} Mbps ]", bytesWritten, contentLength+startOffset, (Convert.ToDouble(bytesWritten) / Convert.ToDouble(contentLength+startOffset)) * 100, (((double)(sinceLastReport * 8) / 1024) / 1024) / (double)(sw.ElapsedMilliseconds / 1000));
 						sinceLastReport = 0;
 						sw.Restart();
 					}
-
-					else sinceLastReport += bytesRead;
-
-					if (bytesWritten == fileLength)
+					else
 					{
-						Console.WriteLine("[SENDFILE] " + fsinfo.Name + ": Done.");
-						lol.Flush();
+						sinceLastReport += bytesRead;
+					}
+
+					// See if we're done
+					if (bytesRead < chunkSize)
+					{
+						// We read less than we asked for from the file
+						// Sleep 2 seconds and then see if the file grew
+						Thread.Sleep(2000);
+
+						// Check if the file is done
+						if (bytesWritten >= fs.Length)
+						{
+							// We've written the whole file, so break
+							Console.WriteLine("[SENDFILE] " + fsinfo.Name + ": Done.");
+							break;
+						}
+					}
+				}
+				catch (IOException e)
+				{
+					if (e.InnerException.GetType() == typeof(System.Net.Sockets.SocketException))
+					{
+						var se = (System.Net.Sockets.SocketException)e.InnerException;
+						if (se.SocketErrorCode == System.Net.Sockets.SocketError.ConnectionReset)
+						{
+							Console.WriteLine("[SENDFILE(2)] " + "Connection was forcibly closed by the remote host");
+						}
+					}
+
+					// Break the loop on error
+					break;
+				}
+			}
+			sw.Stop();
+			//_sh.writeFailure
+		}
+
+		public void sendBytes(HttpProcessor processor, byte[] bytes, int startOffset, long length)
+		{
+			if ((object)bytes == null || length == 0 || startOffset >= length)
+				return;
+
+			// Write the headers to output stream
+			long contentLength = length - startOffset;
+			WaveBoxHttpHeader h = new WaveBoxHttpHeader(WaveBoxHttpHeader.HttpStatusCode.OK, "", contentLength);
+			h.WriteHeader(processor);
+
+			// Read/Write in 8 KB chunks
+			const int chunkSize = 8192;
+
+			// Initialize everything
+			int bytesRead = 0;
+			long bytesWritten = 0;
+			Stream stream = processor.OutputStream.BaseStream;
+			int sinceLastReport = 0;
+			Stopwatch sw = new Stopwatch();
+
+			// Seek to the start offset
+			bytesWritten = startOffset;
+
+			sw.Start();
+			while(true)
+			{
+				try
+				{
+					// Either read the chunk size, or whatever's left
+					bytesRead = (int)(bytesWritten <= contentLength - chunkSize ? chunkSize : contentLength - bytesWritten);
+
+					// Send the bytes out to the client
+					// TODO: need to handle files larger than max int
+					stream.Write(bytes, (int)bytesWritten, bytesRead);
+					bytesWritten += bytesRead;
+
+					// Log the progress (only for testing)
+					if (sw.ElapsedMilliseconds > 1000)
+					{
+						Console.WriteLine("[SENDBYTES]: [ {0} / {1} | {2:F1}% | {3:F1} Mbps ]", bytesWritten, contentLength+startOffset, (Convert.ToDouble(bytesWritten) / Convert.ToDouble(contentLength+startOffset)) * 100, (((double)(sinceLastReport * 8) / 1024) / 1024) / (double)(sw.ElapsedMilliseconds / 1000));
+						sinceLastReport = 0;
+						sw.Restart();
+					}
+					else
+					{
+						sinceLastReport += bytesRead;
+					}
+
+					// See if we're done
+					if (bytesWritten >= length)
+					{
+						// We've written all the bytes, so break
+						Console.WriteLine("[SENDFILE]: Done.");
 						break;
 					}
 				}
@@ -129,7 +201,9 @@ namespace WaveBox.HttpServer
 							Console.WriteLine("[SENDFILE(2)] " + "Connection was forcibly closed by the remote host");
 						}
 					}
-					exceptionHasOccurred = true;
+
+					// Break the loop on error
+					break;
 				}
 			}
 			sw.Stop();

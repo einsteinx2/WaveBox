@@ -28,7 +28,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 		public void Process()
 		{
-			Console.WriteLine("Error: " + Err);
+			Console.WriteLine("[ERROR HANDLER]: " + Err);
 			Processor.OutputStream.Write(Err);
 		}
 	}

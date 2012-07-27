@@ -11,13 +11,7 @@ namespace WaveBox.DataModel.Model
 	public class Album
 	{
 		[JsonProperty("itemTypeId")]
-		public int ItemTypeId
-		{
-			get
-			{
-				return ItemType.ALBUM.GetItemTypeId();
-			}
-		}
+		public int ItemTypeId { get { return ItemType.ALBUM.ItemTypeId(); } }
 
 		[JsonProperty("artistId")]
 		public int? ArtistId { get; set; }

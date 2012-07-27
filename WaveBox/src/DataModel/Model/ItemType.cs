@@ -16,7 +16,7 @@ namespace WaveBox.DataModel.Model
 
 	public static class ItemTypeExtensions
 	{
-		public static int GetItemTypeId(this ItemType val)
+		public static int ItemTypeId(this ItemType val)
 		{
 			return (int)val;
 		}

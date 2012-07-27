@@ -105,7 +105,6 @@
     <Compile Include="src\DataModel\Model\Folder.cs" />
     <Compile Include="src\DataModel\Model\ItemType.cs" />
     <Compile Include="src\DataModel\Model\MediaItem.cs" />
-    <Compile Include="src\DataModel\Model\MediaItemType.cs" />
     <Compile Include="src\DataModel\Model\Playlist.cs" />
     <Compile Include="src\DataModel\Model\Song.cs" />
     <Compile Include="src\DataModel\Model\User.cs" />
