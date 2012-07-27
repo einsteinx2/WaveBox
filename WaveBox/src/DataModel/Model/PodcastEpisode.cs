@@ -5,6 +5,7 @@ using WaveBox.DataModel.Singletons;
 using System.Net;
 using System.Web;
 using System.Xml;
+using System.Collections.Generic;
 
 
 namespace PodcastParsing
@@ -19,13 +20,22 @@ namespace PodcastParsing
         public string MediaUrl { get; set; }
         public string FilePath { get; set; }
 
+        public static List<PodcastEpisode> CurrentlyDownloading { get; set; }
+        public static Object CurrentlyDownloadingLock = new Object();
+
         private long contentLength, totalBytesRead;
         private Stream response;
         private FileStream s;
-        byte[] buf = new byte[8192];
+        private const int chunkSize = 8192;
+        byte[] buf = new byte[chunkSize];
+
 
         public PodcastEpisode(XmlNode episode, XmlNamespaceManager mgr, int? podcastId)
         {
+            if(podcastId == null) return;
+            if(CurrentlyDownloading == null) CurrentlyDownloading = new List<PodcastEpisode>();
+
+            PodcastId = podcastId;
             Title = episode.SelectSingleNode("title").InnerText;
             Author = episode.SelectSingleNode("itunes:author", mgr).InnerText;
             Subtitle = episode.SelectSingleNode("itunes:subtitle", mgr).InnerText;
@@ -69,10 +79,6 @@ namespace PodcastParsing
             }
         }
 
-        public PodcastEpisode()
-        {
-        }
-
         public void Delete()
         {
             IDbConnection conn = null;
@@ -107,10 +113,17 @@ namespace PodcastParsing
 
         public void Download()
         {
-            s = new FileStream("lol.mp3", FileMode.Create, FileAccess.ReadWrite);
+            if (PodcastId == null)
+                return;
+            var pc = new Podcast(PodcastId);
+            s = new FileStream(Podcast.PodcastMediaDirectory + Path.DirectorySeparatorChar + pc.Title + Path.DirectorySeparatorChar + Title, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
             var req = (HttpWebRequest)WebRequest.Create(MediaUrl);
-            byte[] buf = new byte[8192];
-           
+            byte[] buf = new byte[chunkSize];
+
+            lock (CurrentlyDownloadingLock)
+            {
+                CurrentlyDownloading.Add(this);     
+            }
 
             req.BeginGetResponse(result => 
             {
@@ -118,7 +131,7 @@ namespace PodcastParsing
                 contentLength = f.ContentLength;
                 response = f.GetResponseStream();
 
-                response.BeginRead(buf, 0, 8192, new AsyncCallback(ResponseCallback), null);
+                response.BeginRead(buf, 0, chunkSize, new AsyncCallback(ResponseCallback), null);
             }, 
             null);
 
@@ -137,14 +150,18 @@ namespace PodcastParsing
                 // more to read, so keep going!
                 totalBytesRead += bytesRead;
 
-                response.BeginRead(buf, 0, 8192, new AsyncCallback(ResponseCallback), null);
+                response.BeginRead(buf, 0, chunkSize, new AsyncCallback(ResponseCallback), null);
                 Console.WriteLine(totalBytesRead + " / " + contentLength);
             }
 
             // otherwise, we've read all the bytes in the stream, so we're done.
             else
             {
-                Console.WriteLine("done!");
+                lock(CurrentlyDownloadingLock)
+                {
+                    CurrentlyDownloading.Remove(this);
+                }
+
                 response.Close();
                 s.Close();
             }
