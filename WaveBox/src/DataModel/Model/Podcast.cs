@@ -47,11 +47,43 @@ namespace PodcastParsing
         {
         }
 
-        public void DownloadNewEpisodes()  
+        public void DownloadNewEpisodes()
         {
+            AddToDatabase();
+
+            var current = ListOfCurrentEpisodes();
+            var stored = ListOfStoredEpisodes();
+            var newEps = new List<PodcastEpisode>();
+
+            // get new episodes
+            foreach (var currentEp in current)
+            {
+                bool epIsNew = true;
+                foreach (var storedEp in stored)
+                {
+                    if (storedEp.Title == currentEp.Title)
+                        epIsNew = false;
+                }
+
+                if (epIsNew)
+                {
+                    newEps.Add(currentEp);
+                }
+            }
+
+            if (stored.Count == EpisodeKeepCap)
+            {
+                DeleteOldEpisodes(newEps.Count);
+            } 
+
+            foreach(var episode in newEps)
+            {
+                // episode will be added to database when it has successfully completed downloading
+                episode.Download();
+            }
         }
 
-        private void DeleteOldEpisodes()
+        private void DeleteOldEpisodes(int count)
         {
         }
 
@@ -62,7 +94,7 @@ namespace PodcastParsing
             var list = new List<PodcastEpisode>();
 
             // Make sure we don't try to add more episodes than there actually are.
-            int j = EpisodeKeepCap <= list.Count ? EpisodeKeepCap : list.Count;
+            int j = EpisodeKeepCap <= xmlList.Count ? EpisodeKeepCap : list.Count;
             for(int i = 0; i < j; i++)
             {
                 list.Add(new PodcastEpisode(xmlList.Item(i), mgr, PodcastId));

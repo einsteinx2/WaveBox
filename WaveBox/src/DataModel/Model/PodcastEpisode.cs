@@ -19,8 +19,17 @@ namespace PodcastParsing
         public string MediaUrl { get; set; }
         public string FilePath { get; set; }
 
+        private long contentLength, totalBytesRead;
+        private Stream response;
+        private FileStream s;
+        byte[] buf = new byte[8192];
+
         public PodcastEpisode(XmlNode episode, XmlNamespaceManager mgr, int? podcastId)
         {
+            Title = episode.SelectSingleNode("title").InnerText;
+            Author = episode.SelectSingleNode("itunes:author", mgr).InnerText;
+            Subtitle = episode.SelectSingleNode("itunes:subtitle", mgr).InnerText;
+            MediaUrl = episode.SelectSingleNode("enclosure").Attributes["url"].InnerText;
             Console.WriteLine(episode.SelectSingleNode("title").InnerText);
             Console.WriteLine(episode.SelectSingleNode("itunes:author", mgr).InnerText);
             Console.WriteLine(episode.SelectSingleNode("itunes:subtitle", mgr).InnerText);
@@ -98,13 +107,18 @@ namespace PodcastParsing
 
         public void Download()
         {
-            IAsyncResult r = null;
+            s = new FileStream("lol.mp3", FileMode.Create, FileAccess.ReadWrite);
             var req = (HttpWebRequest)WebRequest.Create(MediaUrl);
+            byte[] buf = new byte[8192];
+           
 
             req.BeginGetResponse(result => 
             {
-                WebResponse f = req.EndGetResponse(r);
-                f.
+                WebResponse f = req.EndGetResponse(result);
+                contentLength = f.ContentLength;
+                response = f.GetResponseStream();
+
+                response.BeginRead(buf, 0, 8192, new AsyncCallback(ResponseCallback), null);
             }, 
             null);
 
@@ -112,9 +126,37 @@ namespace PodcastParsing
 
         }
 
-        public int DownloadProgress()
+        private void ResponseCallback(IAsyncResult asyncResult)
         {
-            return 1;
+            int bytesRead = response.EndRead(asyncResult);
+            if (bytesRead > 0)
+            {
+                s.Write(buf, 0, bytesRead);
+                s.Flush();
+
+                // more to read, so keep going!
+                totalBytesRead += bytesRead;
+
+                response.BeginRead(buf, 0, 8192, new AsyncCallback(ResponseCallback), null);
+                Console.WriteLine(totalBytesRead + " / " + contentLength);
+            }
+
+            // otherwise, we've read all the bytes in the stream, so we're done.
+            else
+            {
+                Console.WriteLine("done!");
+                response.Close();
+                s.Close();
+            }
+        }
+
+        public void AddToDatabase()
+        {
+        }
+
+        public double DownloadProgress()
+        {
+            return (double)totalBytesRead / (double)contentLength;
         }
 
         private void SetPropertiesFromQueryResult(IDataReader reader)
