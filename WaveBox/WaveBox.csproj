@@ -131,6 +131,7 @@
     <Compile Include="src\Transcoding\FFMpegMP3Transcoder.cs" />
     <Compile Include="src\DataModel\Model\Podcast.cs" />
     <Compile Include="src\DataModel\Model\PodcastEpisode.cs" />
+    <Compile Include="src\DataModel\Singletons\DownloadQueue.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="bass.dll">
