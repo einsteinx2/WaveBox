@@ -6,7 +6,7 @@ using WaveBox.DataModel.Singletons;
 using System.Data;
 using System.Collections.Concurrent;
 
-namespace PodcastParsing
+namespace WaveBox.Podcast
 {
     public class Podcast
     {
@@ -18,13 +18,14 @@ namespace PodcastParsing
         XmlNamespaceManager mgr;
 
         /* Properties */
-        public int? PodcastId { get; set; }
-        public int? ArtId { get; set; }
+        public long? PodcastId { get; set; }
+        public long? ArtId { get; set; }
         public int EpisodeKeepCap { get; set; } 
         public string Title { get; set; }
         public string Author { get; set; }
         public string Description { get; set; }
 
+        /* Constructors */
         public Podcast(string rss, int keepCap)
         {
             rssUrl = rss;
@@ -63,7 +64,7 @@ namespace PodcastParsing
             Console.WriteLine(Title + "\r\n " + Author + "\r\n " + Description + "\r\n\r\n");
         }
 
-        public Podcast(int? podcastId)
+        public Podcast(long? podcastId)
         {
             if(podcastId == null) return;
 
@@ -163,11 +164,7 @@ namespace PodcastParsing
                 DeleteOldEpisodes(newEps.Count);
             } 
 
-            foreach(var episode in newEps)
-            {
-                // episode will be added to database when it has successfully completed downloading
-                episode.QueueDownload();
-            }
+            DownloadQueue.Enqueue(newEps);
         }
 
         private void DeleteOldEpisodes(int count)
@@ -203,42 +200,15 @@ namespace PodcastParsing
         {
             // remove any episodes of this podcast that might happen to be in the download queue
             if(this.PodcastId != null)
-                PodcastEpisode.Dq.RemovePodcast(PodcastId.Value);
+                DownloadQueue.RemovePodcast(PodcastId.Value);
 
-            // then remove any episodes from the database and the disk
+            foreach (PodcastEpisode ep in ListOfStoredEpisodes())
+            {
+                ep.Delete();
+            }
+
             IDbConnection conn = null;
             IDataReader reader = null;
-            List<int> toDelete = new List<int>();
-
-            try
-            {
-                conn = Database.GetDbConnection();
-
-                IDbCommand q = Database.GetDbCommand("SELECT podcast_episode_id FROM podcast_episode WHERE podcast_episode_podcast_id = @podcastid", conn);
-                q.AddNamedParam("@podcastid", PodcastId);
-                q.Prepare();
-                reader = q.ExecuteReader();
-
-
-
-                while (reader.Read())
-                {
-                    toDelete.Add(reader.GetInt32(0));
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("[PODCAST (2)] ERROR: " +  e.ToString());
-            }
-            finally
-            {
-                Database.Close(conn, reader);
-            }
-
-            foreach (int i in toDelete)
-            {
-                new PodcastEpisode(i).Delete();
-            }
 
             // remove podcast entry
             try
@@ -258,6 +228,8 @@ namespace PodcastParsing
             {
                 Database.Close(conn, reader);
             }
+
+            if(Directory.Exists(PodcastMediaDirectory + Path.DirectorySeparatorChar + Title)) Directory.Delete(PodcastMediaDirectory + Path.DirectorySeparatorChar + Title);
         }
 
         public List<PodcastEpisode> ListOfCurrentEpisodes()
