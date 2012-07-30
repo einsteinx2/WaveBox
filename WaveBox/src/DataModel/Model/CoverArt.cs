@@ -30,7 +30,7 @@ namespace WaveBox.DataModel.Model
 
 		public string ArtFile()
 		{
-			string artf = ART_PATH + Path.DirectorySeparatorChar + AdlerHash;
+			string artf = ART_PATH + AdlerHash;
 			return artf;
 		}
 
@@ -71,6 +71,8 @@ namespace WaveBox.DataModel.Model
 				Database.Close(conn, reader);
 			}
 		}
+
+        
 
 		// used for getting art from a file.
 		public CoverArt(FileStream fs)
