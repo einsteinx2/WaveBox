@@ -191,38 +191,43 @@ namespace WaveBox.DataModel.Model
 			{
 				ItemId = reader.GetInt32(reader.GetOrdinal("song_id"));
 				FolderId = reader.GetInt32(reader.GetOrdinal("song_folder_id"));
-				ArtistId = reader.GetInt32(reader.GetOrdinal("song_artist_id"));
 
-				if 
-					(reader.GetValue(reader.GetOrdinal("artist_name")) == DBNull.Value) ArtistName = "";
-				else 
-					ArtistName = reader.GetString(reader.GetOrdinal("artist_name"));
+                if (reader.GetValue(reader.GetOrdinal("song_artist_id")) == DBNull.Value) ArtistId = null;
+                    else ArtistId = reader.GetInt32(reader.GetOrdinal("song_artist_id"));
 
-				AlbumId = reader.GetInt32(reader.GetOrdinal("song_album_id"));
+				if (reader.GetValue(reader.GetOrdinal("artist_name")) == DBNull.Value) ArtistName = "";
+				    else ArtistName = reader.GetString(reader.GetOrdinal("artist_name"));
 
-				if 
-					(reader.GetValue(reader.GetOrdinal("album_name")) == DBNull.Value) AlbumName = "";
-				else 
-					AlbumName = reader.GetString(reader.GetOrdinal("album_name"));
+                if (reader.GetValue(reader.GetOrdinal("song_album_id")) == DBNull.Value) AlbumId = null;
+                    else AlbumId = reader.GetInt32(reader.GetOrdinal("song_album_id"));
+
+				if (reader.GetValue(reader.GetOrdinal("album_name")) == DBNull.Value) AlbumName = "";
+				    else AlbumName = reader.GetString(reader.GetOrdinal("album_name"));
 
 				FileType = FileType.FileTypeForId(reader.GetInt32(reader.GetOrdinal("song_file_type_id")));
 
 				if (reader.GetValue(reader.GetOrdinal("song_name")) == DBNull.Value) SongName = "";
-				else SongName = reader.GetString(reader.GetOrdinal("song_name"));
+    				else SongName = reader.GetString(reader.GetOrdinal("song_name"));
 
-				TrackNumber = reader.GetInt32(reader.GetOrdinal("song_track_num"));
-				DiscNumber = reader.GetInt32(reader.GetOrdinal("song_disc_num"));
-				Duration = reader.GetInt32(reader.GetOrdinal("song_duration"));
-				Bitrate = reader.GetInt32(reader.GetOrdinal("song_bitrate"));
-				FileSize = reader.GetInt64(reader.GetOrdinal("song_file_size"));
-				LastModified = reader.GetInt64(reader.GetOrdinal("song_last_modified"));
-				FileName = reader.GetString(reader.GetOrdinal("song_file_name"));
-				ReleaseYear = reader.GetInt32(reader.GetOrdinal("song_release_year"));
+                if (reader.GetValue(reader.GetOrdinal("song_track_num")) == DBNull.Value) TrackNumber = null;
+                    else TrackNumber = reader.GetInt32(reader.GetOrdinal("song_track_num"));
+
+                if (reader.GetValue(reader.GetOrdinal("song_disc_num")) == DBNull.Value) DiscNumber = null;
+                    else DiscNumber = reader.GetInt32(reader.GetOrdinal("song_disc_num"));
+
+                Duration = reader.GetInt32(reader.GetOrdinal("song_duration"));
+                Bitrate = reader.GetInt32(reader.GetOrdinal("song_bitrate"));
+                FileSize = reader.GetInt64(reader.GetOrdinal("song_file_size"));
+                LastModified = reader.GetInt64(reader.GetOrdinal("song_last_modified"));
+
+                if (reader.GetValue(reader.GetOrdinal("song_file_name")) == DBNull.Value) FileName = null;
+                    else FileName = reader.GetString(reader.GetOrdinal("song_file_name"));
+
+                if (reader.GetValue(reader.GetOrdinal("song_release_year")) == DBNull.Value) ReleaseYear = null;
+                    else ReleaseYear = reader.GetInt32(reader.GetOrdinal("song_release_year"));
 
 				if (reader.GetValue(reader.GetOrdinal("song_art_id")) == DBNull.Value) ArtId = null;
-				else 
-					ArtId = reader.GetInt32(reader.GetOrdinal("song_art_id"));
-				//_artId = 0;
+				    else ArtId = reader.GetInt32(reader.GetOrdinal("song_art_id"));
 			}
 			catch (Exception e)
 			{
