@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Data;
-using WaveBox.HttpServer;
+using WaveBox.Http;
 using System.Threading;
 using Mono.Unix;
 using Mono.Unix.Native;
@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using WaveBox.DataModel.Model;
+using WaveBox.Transcoding;
 
 namespace WaveBox
 {
@@ -27,6 +28,8 @@ namespace WaveBox
 
 			// Start the HTTP server
 			StartHTTPServer();
+
+			TranscodeManager.Instance.Setup();
 			
 			// Perform initial setup of Settings, create a user
 			Settings.SettingsSetup();
@@ -60,7 +63,7 @@ namespace WaveBox
 			// Attempt to start the HTTP server thread
 			try
 			{
-				var http = new WaveBoxHttpServer(httpPort);
+				var http = new HttpServer(httpPort);
 				httpSrv = new Thread(new ThreadStart(http.Listen));
 				httpSrv.IsBackground = true;
 				httpSrv.Start();

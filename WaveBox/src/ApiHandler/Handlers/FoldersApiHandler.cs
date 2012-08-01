@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using WaveBox.DataModel.Model;
-using WaveBox.HttpServer;
+using WaveBox.Http;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -26,6 +26,7 @@ namespace WaveBox.ApiHandler.Handlers
 			string json = "";
 
 			var stuff = Uri.UriPart(2);
+			Console.WriteLine("[FOLDERAPI]: UriPart(2) = " + stuff);
 
 			// if the second part of the URI is null or contains GET parameters, we should ignore it and send the folder listing.
 			if (stuff == null || stuff.Contains('='))
@@ -42,7 +43,7 @@ namespace WaveBox.ApiHandler.Handlers
 			try
 			{
 				json = JsonConvert.SerializeObject(new FoldersResponse(null, listOfFolders, listOfSongs), Formatting.None);
-				WaveBoxHttpServer.sendJson(Processor, json);
+				Processor.WriteJson(json);
 			}
 			catch(Exception e)
 			{

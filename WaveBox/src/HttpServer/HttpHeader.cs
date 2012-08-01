@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace WaveBox.HttpServer
+namespace WaveBox.Http
 {
-	class WaveBoxHttpHeader
+	class HttpHeader
 	{
 		public long ContentLength { get; set; }
 		public HttpStatusCode StatusCode { get; set; }
@@ -17,14 +17,14 @@ namespace WaveBox.HttpServer
 			NOTFOUND = 1
 		}
 
-		public WaveBoxHttpHeader()
+		public HttpHeader()
 		{
 			StatusCode = HttpStatusCode.OK;
 			ContentType = "text/html";
 			ContentLength = 0;
 		}
 
-		public WaveBoxHttpHeader(HttpStatusCode s, string cType, long cLen)
+		public HttpHeader(HttpStatusCode s, string cType, long cLen)
 		{
 			StatusCode = s;
 			ContentType = cType;

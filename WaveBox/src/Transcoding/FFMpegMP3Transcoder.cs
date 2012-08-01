@@ -68,6 +68,14 @@ namespace WaveBox.Transcoding
 		        return bitrate;
 			}
 	    }
+
+		public override string OutputExtension
+		{
+			get
+			{
+				return "mp3";
+			}
+		}
 	}
 }
 

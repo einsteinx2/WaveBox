@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using WaveBox.HttpServer;
+using WaveBox.Http;
+using Newtonsoft.Json;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -29,7 +30,12 @@ namespace WaveBox.ApiHandler.Handlers
 		public void Process()
 		{
 			Console.WriteLine("[ERROR HANDLER]: " + Err);
-			Processor.OutputStream.Write(Err);
+
+			var response = new Dictionary<string, string>();
+			response["error"] = Err;
+
+			var json = JsonConvert.SerializeObject(response, Formatting.None);
+			Processor.WriteJson(json);
 		}
 	}
 }

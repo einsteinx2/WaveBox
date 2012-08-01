@@ -5,7 +5,7 @@ using System.Text;
 using WaveBox.ApiHandler;
 using WaveBox.DataModel.Model;
 using Newtonsoft.Json;
-using WaveBox.HttpServer;
+using WaveBox.Http;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -34,7 +34,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 					try
 					{
-	                    WaveBoxHttpServer.sendJson(Processor, JsonConvert.SerializeObject(new ScrobbleResponse("LFMNotAuthenticated", false, lfm.AuthUrl)));
+	                    Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMNotAuthenticated", false, lfm.AuthUrl)));
 					}
 					catch(Exception e)
 					{
@@ -73,7 +73,7 @@ namespace WaveBox.ApiHandler.Handlers
                     {
 						try
 						{
-	                        WaveBoxHttpServer.sendJson(Processor, JsonConvert.SerializeObject(new ScrobbleResponse(null, true)));
+	                        Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse(null, true)));
 						}
 						catch(Exception e)
 						{
@@ -86,7 +86,7 @@ namespace WaveBox.ApiHandler.Handlers
                     {
 						try
 						{
-	                        WaveBoxHttpServer.sendJson(Processor, JsonConvert.SerializeObject(new ScrobbleResponse(string.Format("LFM{0}", resp.error.code), false)));
+	                        Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse(string.Format("LFM{0}", resp.error.code), false)));
 						}
 						catch(Exception e)
 						{

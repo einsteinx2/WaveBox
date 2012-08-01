@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using WaveBox.DataModel.Model;
 using WaveBox.DataModel.Singletons;
-using WaveBox.HttpServer;
+using WaveBox.Http;
 using Newtonsoft.Json;
 
 namespace WaveBox.ApiHandler.Handlers
@@ -111,12 +111,12 @@ namespace WaveBox.ApiHandler.Handlers
 
 		public void _status()
 		{
-			WaveBoxHttpServer.sendJson(Processor, JsonConvert.SerializeObject(new JukeboxStatusResponse()));
+			Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxStatusResponse()));
 		}
 
 		public void _playlist()
 		{
-			WaveBoxHttpServer.sendJson(Processor, JsonConvert.SerializeObject(new JukeboxPlaylistResponse()));
+			Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxPlaylistResponse()));
 		}
 
 		public void AddSongs(string songIds)

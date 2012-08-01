@@ -113,9 +113,6 @@
     <Compile Include="src\DataModel\Singletons\FileManager.cs" />
     <Compile Include="src\DataModel\Singletons\Jukebox.cs" />
     <Compile Include="src\DataModel\Singletons\Settings.cs" />
-    <Compile Include="src\HttpServer\SimpleHttpServer.cs" />
-    <Compile Include="src\HttpServer\WaveBoxHttpHeader.cs" />
-    <Compile Include="src\HttpServer\WaveBoxHttpServer.cs" />
     <Compile Include="src\OperationQueue\DelayedOperationQueue.cs" />
     <Compile Include="src\OperationQueue\IDelayedOperation.cs" />
     <Compile Include="src\DataModel\FolderScanning\AbstractOperation.cs" />
@@ -131,6 +128,9 @@
     <Compile Include="src\Transcoding\FFMpegMP3Transcoder.cs" />
     <Compile Include="src\DataModel\Model\Podcast.cs" />
     <Compile Include="src\DataModel\Model\PodcastEpisode.cs" />
+    <Compile Include="src\HttpServer\HttpHeader.cs" />
+    <Compile Include="src\HttpServer\HttpProcessor.cs" />
+    <Compile Include="src\HttpServer\HttpServer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="bass.dll">

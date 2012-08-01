@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using WaveBox.DataModel.Model;
 using Newtonsoft.Json;
-using WaveBox.HttpServer;
+using WaveBox.Http;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -36,7 +36,7 @@ namespace WaveBox.ApiHandler.Handlers
 			try
 			{
 				json = JsonConvert.SerializeObject(new SongsResponse(null, listOfSongs), Formatting.None);
-				WaveBoxHttpServer.sendJson(Processor, json);
+				Processor.WriteJson(json);
 			}
 			catch(Exception e)
 			{

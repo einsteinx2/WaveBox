@@ -5,7 +5,7 @@ using System.Text;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using WaveBox.DataModel.Model;
-using WaveBox.HttpServer;
+using WaveBox.Http;
 
 namespace WaveBox.ApiHandler.Handlers
 {

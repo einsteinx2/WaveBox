@@ -5,7 +5,8 @@ using System.Text;
 using WaveBox.DataModel.Model;
 using WaveBox.Transcoding;
 using System.IO;
-using WaveBox.HttpServer;
+using WaveBox.Http;
+using System.Threading;
 
 
 namespace WaveBox.ApiHandler.Handlers
@@ -55,9 +56,21 @@ namespace WaveBox.ApiHandler.Handlers
 							quality = (TranscodeQuality)Enum.Parse(typeof(TranscodeQuality), Uri.Parameters["transQuality"], true);
 
 						// Create the transcoder
-						Transcoder = TranscodeManager.Instance.CreateTranscoder(item, type, quality);
-						file = new FileStream(Transcoder.OutputPath, FileMode.Open, FileAccess.Read);
+						Transcoder = TranscodeManager.Instance.TranscodeItem(item, type, quality);
 						length = (long)Transcoder.EstimatedOutputSize;
+
+						// Wait up 5 seconds for file to appear
+						for (int i = 0; i < 20; i++)
+						{
+							Console.WriteLine("[STREAM API] Checking if file exists");
+							if (File.Exists(Transcoder.OutputPath))
+							    break;
+
+							Thread.Sleep(250);
+						}
+
+						if (File.Exists(Transcoder.OutputPath)) 
+							file = new FileStream(Transcoder.OutputPath, FileMode.Open, FileAccess.Read);
 					}
 					else
 					{
@@ -67,7 +80,10 @@ namespace WaveBox.ApiHandler.Handlers
 					}
 
 					// Send the file
-					WaveBoxHttpServer.sendFile(Processor, file, startOffset, length);
+					if (File.Exists(Transcoder.OutputPath))
+						Processor.WriteFile(file, startOffset, length);
+					else
+						Processor.WriteErrorHeader();
 
 					// Consume the transcode (if transcoded)
 					TranscodeManager.Instance.ConsumedTranscode(Transcoder);

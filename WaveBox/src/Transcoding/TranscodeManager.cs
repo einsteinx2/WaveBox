@@ -15,8 +15,17 @@ namespace WaveBox.Transcoding
 
 	    private IList<ITranscoder> transcoders = new List<ITranscoder>();
 
+		public void Setup()
+		{
+			if (!Directory.Exists(TRANSCODE_PATH)) 
+			{
+				Directory.CreateDirectory(TRANSCODE_PATH);
+			}
+		}
+
 		public ITranscoder CreateTranscoder(MediaItem item, TranscodeType type, TranscodeQuality quality)
 	    {
+			Console.WriteLine("[TRANSCODE] Creating transcoder for " + item.FileName);
 	        switch (type)
 	        {
 	            case TranscodeType.MP3: 
@@ -33,12 +42,15 @@ namespace WaveBox.Transcoding
 
 	    public ITranscoder TranscodeItem(MediaItem item, TranscodeType type, TranscodeQuality quality)
 		{
+			Console.WriteLine("[TRANSCODE] Asked to transcode " + item.FileName);
 			lock (transcoders) 
 			{
 				ITranscoder transcoder = CreateTranscoder(item, type, quality);
 
 				if (transcoders.Contains(transcoder))
 				{
+					Console.WriteLine("[TRANSCODE] Using existing transcoder");
+
 					// Get the existing transcoder
 					int index = transcoders.IndexOf(transcoder);
 					transcoder = transcoders[index];
@@ -48,6 +60,8 @@ namespace WaveBox.Transcoding
 				}
 				else
 				{
+					Console.WriteLine("[TRANSCODE] Creating a new transcoder");
+
 					// Increment the reference count
 					transcoder.ReferenceCount++;
 
@@ -66,6 +80,8 @@ namespace WaveBox.Transcoding
 
 			lock (transcoders)
 			{
+				Console.WriteLine("[TRANSCODE] Consumed transcoder for " + transcoder.Item.FileName);
+
 				// Decrement the reference count
 				transcoder.ReferenceCount--;
 
@@ -87,6 +103,8 @@ namespace WaveBox.Transcoding
 
 			lock (transcoders)
 			{
+				Console.WriteLine("[TRANSCODE] Cancelling transcoder for " + transcoder.Item.FileName);
+
 				if (transcoder.ReferenceCount == 1)
 				{
 					// No one else is using this transcoder, so cancel it
@@ -105,11 +123,13 @@ namespace WaveBox.Transcoding
 	    public void TranscodeFinished(ITranscoder transcoder)
 	    {
 			// Do something
+			Console.WriteLine("[TRANSCODE] Transcode finished for " + transcoder.Item.FileName);
 	    }
 
 	    public void TranscodeFailed(ITranscoder transcoder)
 	    {
 	        // Do something
+			Console.WriteLine("[TRANSCODE] Transcode failed for " + transcoder.Item.FileName);
 	    }
 	}
 }
