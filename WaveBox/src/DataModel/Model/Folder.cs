@@ -318,7 +318,7 @@ namespace WaveBox.DataModel.Model
 			else return false;
 		}
 
-		private bool FolderContainsImages(string dir, out string firstImageFoundPath)
+		public bool FolderContainsImages(string dir, out string firstImageFoundPath)
         {
 			var validImageExtensions = new string[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
 			string ext = "";
@@ -326,7 +326,7 @@ namespace WaveBox.DataModel.Model
 			foreach (string file in Directory.GetFiles(dir))
 			{
 				ext = Path.GetExtension(file).ToLower();
-				if (validImageExtensions.Contains(ext))
+				if (validImageExtensions.Contains(ext) && !Path.GetFileName(file).StartsWith("._"))
 				{
 					firstImageFoundPath = file;
                     ContainsImageFile = true;
@@ -338,6 +338,25 @@ namespace WaveBox.DataModel.Model
             ContainsImageFile = false;
 			return false;
 		}
+
+        public static bool ContainsImages(string dir, out string firstImageFoundPath)
+        {
+            var validImageExtensions = new string[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
+            string ext = "";
+
+            foreach (string file in Directory.GetFiles(dir))
+            {
+                ext = Path.GetExtension(file).ToLower();
+                if (validImageExtensions.Contains(ext) && !Path.GetFileName(file).StartsWith("._"))
+                {
+                    firstImageFoundPath = file;
+                    return true;
+                }
+            }
+
+            firstImageFoundPath = "";
+            return false;
+        }
 
 		private Folder MediaFolder()
 		{

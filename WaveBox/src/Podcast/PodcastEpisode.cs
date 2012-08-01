@@ -9,27 +9,22 @@ using System.Collections.Generic;
 using System.Threading;
 
 
-namespace PodcastParsing
+namespace WaveBox.Podcast
 {
     public class PodcastEpisode
     {
-        public int? EpisodeId { get; set; }
-        public int? PodcastId { get; set; }
+        public long? EpisodeId { get; set; }
+        public long? PodcastId { get; set; }
         public string Title { get; set; }
         public string Author { get; set; }
         public string Subtitle { get; set; }
         public string MediaUrl { get; set; }
         public string FilePath { get; set; }
 
-        public static DownloadQueue Dq { get; set; }
-        public static Object CurrentlyDownloadingLock = new Object();  
-        public static WebClient webClient = new WebClient();
-        private long contentLength, totalBytesRead;
-
-        public PodcastEpisode(XmlNode episode, XmlNamespaceManager mgr, int? podcastId)
+        /* Constructors */
+        public PodcastEpisode(XmlNode episode, XmlNamespaceManager mgr, long? podcastId)
         {
             if(podcastId == null) return;
-            if(Dq == null) Dq = new DownloadQueue();
 
             PodcastId = podcastId;
             Title = episode.SelectSingleNode("title").InnerText;
@@ -43,7 +38,7 @@ namespace PodcastParsing
             Console.WriteLine();
         }
 
-        public PodcastEpisode(int podcastId)
+        public PodcastEpisode(long podcastId)
         {
             IDbConnection conn = null;
             IDataReader reader = null;
@@ -74,6 +69,8 @@ namespace PodcastParsing
                 Database.Close(conn, reader);
             }
         }
+
+        /* Public methods */
 
         public void Delete()
         {
@@ -110,47 +107,7 @@ namespace PodcastParsing
             return true;
         }
 
-        public void StartDownload()
-        {
-            webClient = new WebClient();
-            webClient.DownloadProgressChanged += new DownloadProgressChangedEventHandler((sender, e) => 
-            {
-                if (contentLength == 0)
-                    contentLength = e.TotalBytesToReceive;
-                Console.WriteLine(this.Title + ": " + ((double)e.BytesReceived / (double)e.TotalBytesToReceive) * 100 + "%");
-                totalBytesRead = e.BytesReceived;
-            });
 
-            webClient.DownloadFileCompleted += new System.ComponentModel.AsyncCompletedEventHandler((sender, e) => 
-            {
-                AddToDatabase();
-                if(Dq.Count > 0)
-                {
-                    webClient.CancelAsync();
-                    Dq.Dequeue();
-                    if(Dq.CurrentItem() != null)
-                        Dq.CurrentItem().StartDownload();
-                }
-            });
-
-            var uri = new Uri(MediaUrl);
-            string[] fns = MediaUrl.Split('/');
-            string fn = fns[fns.Length - 1];
-            var pc = new Podcast(PodcastId);
-            FilePath = Podcast.PodcastMediaDirectory + Path.DirectorySeparatorChar + pc.Title + Path.DirectorySeparatorChar + fn;
-
-            webClient.DownloadFileAsync(uri, FilePath);
-        }
-
-        public void QueueDownload()
-        {
-            Dq.Enqueue(this);
-            if (!webClient.IsBusy)
-            {
-                Dq.CurrentItem().StartDownload();
-            }
-
-        }
 
         public void AddToDatabase()
         {
@@ -188,10 +145,7 @@ namespace PodcastParsing
             }
         }
 
-        public double DownloadProgress()
-        {
-            return (double)totalBytesRead / (double)contentLength;
-        }
+        /* Private methods */
 
         private void SetPropertiesFromQueryResult(IDataReader reader)
         {
@@ -201,6 +155,7 @@ namespace PodcastParsing
             Author = reader.GetString(reader.GetOrdinal("podcast_episode_author"));
             Subtitle = reader.GetString(reader.GetOrdinal("podcast_episode_subtitle"));
             MediaUrl = reader.GetString(reader.GetOrdinal("podcast_episode_media_url"));
+            FilePath = reader.GetString(reader.GetOrdinal("podcast_episode_file_path"));
         }
     }
 }

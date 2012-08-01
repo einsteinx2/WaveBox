@@ -1,9 +1,0 @@
-07-17 21:49:22 jdbc[2]: exception
-org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "ALTER TABLE FOLDER RENAME MEDIA_FOLDER_ID[*] TO FOLDER_MEDIA_FOLDER_ID "; expected "TO"; SQL statement:
-alter table folder rename media_folder_id to folder_media_folder_id [42001-168]
-07-17 21:56:11 jdbc[2]: exception
-org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "DELETE *[*] FROM ALBUM "; expected "identifier"; SQL statement:
-delete * from album [42001-168]
-07-17 21:56:11 jdbc[2]: exception
-org.h2.jdbc.JdbcSQLException: Syntax error in SQL statement "DELETE *[*] FROM ART "; expected "identifier"; SQL statement:
-delete * from art [42001-168]
