@@ -80,7 +80,7 @@ namespace WaveBox.ApiHandler.Handlers
 					}
 
 					// Send the file
-					if (File.Exists(Transcoder.OutputPath))
+					if (this.Transcoder == null || File.Exists(Transcoder.OutputPath))
 						Processor.WriteFile(file, startOffset, length);
 					else
 						Processor.WriteErrorHeader();

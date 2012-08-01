@@ -74,9 +74,6 @@ namespace WaveBox.Podcast
 
         public void Delete()
         {
-//            // if we remove this item from the queue, then it's not in the database yet, so we can just return.
-//            if(Dq.RemoveItem(this, webClient)) return;
-
             IDbConnection conn = null;
             IDataReader reader = null;
             try
@@ -96,6 +93,7 @@ namespace WaveBox.Podcast
             {
                 Database.Close(conn, reader);
             }
+
             if (File.Exists(FilePath))
             {
                 File.Delete(FilePath);
