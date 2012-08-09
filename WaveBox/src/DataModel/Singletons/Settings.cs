@@ -15,6 +15,9 @@ namespace WaveBox.DataModel.Singletons
 		private static double version = 1.0;
 		public static double Version { get { return version; } }
 
+        private static string podcastFolder = null;
+        public static string PodcastFolder { get { return podcastFolder; } }
+
 		private static List<Folder> mediaFolders;
 		public static List<Folder> MediaFolders { get { return mediaFolders; } }
 
@@ -25,6 +28,12 @@ namespace WaveBox.DataModel.Singletons
 
 		private static void ParseSettings()
 		{
+            StreamReader reader = new StreamReader("WaveBox.conf");
+            string configFile = RemoveJsonComments(reader);
+
+            dynamic json = JsonConvert.DeserializeObject(configFile);
+
+            podcastFolder = json.podcastFolder;
 			mediaFolders = PopulateMediaFolders();
 		}
 
@@ -89,7 +98,7 @@ namespace WaveBox.DataModel.Singletons
 			var folders = new List<Folder>();
 			Folder mf = null;
 			StreamReader reader = new StreamReader("WaveBox.conf");
-			string configFile = reader.ReadToEnd();
+            string configFile = RemoveJsonComments(reader);
 
 			dynamic json = JsonConvert.DeserializeObject(configFile);
 
@@ -107,6 +116,87 @@ namespace WaveBox.DataModel.Singletons
 
 			return folders;
 		}
-		
+
+        private static string RemoveJsonComments(StreamReader reader)
+        {
+            var js = new StringBuilder();
+            string line = null;
+            bool inBlockComment = false;
+            bool inStringLiteral = false;
+
+            Action<char> AppendDiscardingWhitespace = (c) => 
+            {
+                if(c != '\t' && c != ' ') js.Append(c);
+            };
+
+            while ((line = reader.ReadLine()) != null)
+            {
+                char curr, next;
+                for(int i = 0; i < line.Length; i++)
+                {
+                    curr = line[i];
+
+                    try
+                    {
+                        next = line[i + 1];
+                    }
+                    catch
+                    {
+                        if(line.Length == 1 || curr == '"' || curr == ',')
+                            AppendDiscardingWhitespace(curr);
+                        break;
+                    }
+
+                    if(!inBlockComment)
+                    {
+                        if(!inStringLiteral)
+                        {
+                            if(curr == '"')
+                            {
+                                inStringLiteral = true;
+                            }
+
+                            else if(curr == '/')
+                            {
+                                // this is a line comment.  throw out the rest of the line.
+                                if(next == '/') break;
+
+                                // this is a block comment.  flip the block comment switch and continue to the next char
+                                if(next == '*')
+                                {
+                                    inBlockComment = true;
+                                    continue;
+                                }
+                            }
+
+                            // if the combination of this char and the next char doesn't make a comment token, append to the string and continue.
+                            AppendDiscardingWhitespace(curr);
+                            continue;
+                        }
+
+                        else
+                        {
+                            if(curr == '"')
+                            {
+                                inStringLiteral = false;
+                            }
+                            AppendDiscardingWhitespace(curr);
+                            continue;
+                        }
+                    }
+
+                    else 
+                    {
+                        // if we are in a block comment, make sure that we shouldn't be ending the block comment
+                        if(curr == '*' && next == '/')
+                        {
+                            inBlockComment = false;
+                            continue;
+                        }
+                    }
+                }
+            }
+            return js.ToString();
+        }
 	}
 }

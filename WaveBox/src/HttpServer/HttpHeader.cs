@@ -15,7 +15,8 @@ namespace WaveBox.Http
 		public enum HttpStatusCode
 		{
 			OK = 0, 
-			NOTFOUND = 1
+			NOTFOUND = 1,
+            PARTIALCONTENT = 2
 		}
 
         public enum HttpContentType
@@ -88,6 +89,7 @@ namespace WaveBox.Http
 			{
 				case HttpStatusCode.OK: return "HTTP/1.0 200 OK";
 				case HttpStatusCode.NOTFOUND: return "HTTP/1.0 404 File not found";
+                case HttpStatusCode.PARTIALCONTENT: return "HTTP/1.1 206 Partial content";
 				default: return null;
 			}
 		}

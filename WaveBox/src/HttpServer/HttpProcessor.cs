@@ -263,9 +263,10 @@ namespace WaveBox.Http
 
 			// Write the headers to output stream
             long contentLength = length - startOffset;
-            var header = new HttpHeader(HttpHeader.HttpStatusCode.OK, HttpHeader.ContentTypeForExtension(fsinfo.Extension), contentLength);
+            var header = new HttpHeader(HttpHeader.HttpStatusCode.PARTIALCONTENT, HttpHeader.ContentTypeForExtension(fsinfo.Extension), contentLength);
+
             header.WriteHeader(OutputStream);
-            Console.WriteLine("[HTTPSERVER] File header, contentLength: {0}, contentType: {1}", contentLength, header.ContentType);
+            Console.WriteLine("[HTTPSERVER] File header, contentLength: {0}, contentType: {1}, status: {2}", contentLength, header.ContentType, header.StatusCode);
 
 			// Read/Write in 8 KB chunks
 			const int chunkSize = 8192;
