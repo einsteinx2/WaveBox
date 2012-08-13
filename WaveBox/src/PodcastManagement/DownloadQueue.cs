@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.IO;
 
-namespace WaveBox.Podcast
+namespace WaveBox.PodcastManagement
 {
     /// <summary>
     /// The podcast download queue.  This class wraps a list and implements some queue functions.  The reason for doing this is that we needed the queue to be mutable in other ways than pushing and popping.

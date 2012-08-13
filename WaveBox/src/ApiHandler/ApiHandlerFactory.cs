@@ -48,6 +48,8 @@ namespace WaveBox.ApiHandler
 					return new FoldersApiHandler(uriW, sh, user.UserId);
 				else if(part1 == "jukebox")
 					return new JukeboxApiHandler(uriW, sh, user.UserId);
+                else if(part1 == "podcast")
+                    return new PodcastApiHandler(uriW, sh, user.UserId);
 				else if(part1 == "scrobble")
 					return new ScrobbleApiHandler(uriW, sh, user.UserId);
 				else if(part1 == "songs")

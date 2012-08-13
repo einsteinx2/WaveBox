@@ -129,9 +129,10 @@
     <Compile Include="src\HttpServer\HttpHeader.cs" />
     <Compile Include="src\HttpServer\HttpProcessor.cs" />
     <Compile Include="src\HttpServer\HttpServer.cs" />
-    <Compile Include="src\Podcast\PodcastEpisode.cs" />
-    <Compile Include="src\Podcast\Podcast.cs" />
-    <Compile Include="src\Podcast\DownloadQueue.cs" />
+    <Compile Include="src\ApiHandler\Handlers\PodcastApiHandler.cs" />
+    <Compile Include="src\PodcastManagement\PodcastEpisode.cs" />
+    <Compile Include="src\PodcastManagement\Podcast.cs" />
+    <Compile Include="src\PodcastManagement\DownloadQueue.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="bass.dll">
@@ -201,6 +202,6 @@
   <ItemGroup>
     <Folder Include="src\" />
     <Folder Include="src\Transcoding\" />
-    <Folder Include="src\Podcast\" />
+    <Folder Include="src\PodcastManagement\" />
   </ItemGroup>
 </Project>

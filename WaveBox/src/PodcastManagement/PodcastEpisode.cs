@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Threading;
 
 
-namespace WaveBox.Podcast
+namespace WaveBox.PodcastManagement
 {
     public class PodcastEpisode
     {

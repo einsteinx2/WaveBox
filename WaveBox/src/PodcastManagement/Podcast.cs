@@ -6,7 +6,7 @@ using WaveBox.DataModel.Singletons;
 using System.Data;
 using System.Collections.Concurrent;
 
-namespace WaveBox.Podcast
+namespace WaveBox.PodcastManagement
 {
     public class Podcast
     {
@@ -20,7 +20,7 @@ namespace WaveBox.Podcast
         /* Properties */
         public long? PodcastId { get; set; }
         public long? ArtId { get; set; }
-        public int EpisodeKeepCap { get; set; } 
+        public long? EpisodeKeepCap { get; set; } 
         public string Title { get; set; }
         public string Author { get; set; }
         public string Description { get; set; }
@@ -43,9 +43,6 @@ namespace WaveBox.Podcast
             Title = channel.SelectSingleNode("title").InnerText;
             Author = channel.SelectSingleNode("itunes:author", mgr).InnerText;
             Description = channel.SelectSingleNode("description").InnerText;
-
-            if (!Directory.Exists(PodcastMediaDirectory)) Directory.CreateDirectory(PodcastMediaDirectory);
-            if (!Directory.Exists(PodcastMediaDirectory + Path.DirectorySeparatorChar + Title)) Directory.CreateDirectory(PodcastMediaDirectory + Path.DirectorySeparatorChar + Title);
 
             int? existingPodcastId = PodcastIdForRssUrl(rss);
             if (existingPodcastId != null)
@@ -102,6 +99,11 @@ namespace WaveBox.Podcast
             }
         }
 
+        public Podcast(IDataReader reader)
+        {
+            SetPropertiesFromQueryResult(reader);
+        }
+
         /* Instance methods */
         public void AddToDatabase()
         {
@@ -139,6 +141,9 @@ namespace WaveBox.Podcast
 
         public void DownloadNewEpisodes()
         {
+            if (!Directory.Exists(PodcastMediaDirectory)) Directory.CreateDirectory(PodcastMediaDirectory);
+            if (!Directory.Exists(PodcastMediaDirectory + Path.DirectorySeparatorChar + Title)) Directory.CreateDirectory(PodcastMediaDirectory + Path.DirectorySeparatorChar + Title);
+
             var current = ListOfCurrentEpisodes();
             var stored = ListOfStoredEpisodes();
             var newEps = new List<PodcastEpisode>();
@@ -239,7 +244,7 @@ namespace WaveBox.Podcast
             var list = new List<PodcastEpisode>();
 
             // Make sure we don't try to add more episodes than there actually are.
-            int j = EpisodeKeepCap <= xmlList.Count ? EpisodeKeepCap : list.Count;
+            long? j = EpisodeKeepCap <= xmlList.Count ? EpisodeKeepCap : list.Count;
             for(int i = 0; i < j; i++)
             {
                 list.Add(new PodcastEpisode(xmlList.Item(i), mgr, PodcastId));
@@ -275,6 +280,17 @@ namespace WaveBox.Podcast
                 Database.Close(conn, reader);
             }
             return list;
+        }
+
+        public void SetPropertiesFromQueryResult(IDataReader reader)
+        {
+            PodcastId = reader.GetInt64(reader.GetOrdinal("podcast_id"));
+            ArtId = reader.GetInt64(reader.GetOrdinal("podcast_art_id"));
+            EpisodeKeepCap = reader.GetInt64(reader.GetOrdinal("podcast_keep_cap"));
+            Title = reader.GetString(reader.GetOrdinal("podcast_title"));
+            Author = reader.GetString(reader.GetOrdinal("podcast_author"));
+            Description = reader.GetString(reader.GetOrdinal("podcast_description"));
+            rssUrl = reader.GetString(reader.GetOrdinal("podcast_rss_url"));
         }
 
         /* Class methods */
