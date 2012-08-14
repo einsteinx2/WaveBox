@@ -11,6 +11,8 @@ namespace WaveBox.DataModel.Model
 		ALBUM = 2,
 		SONG = 3,
 		VIDEO = 4,
+        PODCAST = 5,
+        PODCASTEPISODE = 6,
 		UNKNOWN = -1
 	}
 

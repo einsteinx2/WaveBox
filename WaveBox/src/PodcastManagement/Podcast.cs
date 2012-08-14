@@ -176,6 +176,7 @@ namespace WaveBox.PodcastManagement
         {
             IDbConnection conn = null;
             IDataReader reader = null;
+
             try
             {
                 conn = Database.GetDbConnection();
@@ -193,7 +194,7 @@ namespace WaveBox.PodcastManagement
             }
             catch (Exception e)
             {
-                Console.WriteLine("[PODCAST (2)] ERROR: " +  e.ToString());
+                Console.WriteLine("[PODCAST (2)] ERROR: " + e.ToString());
             }
             finally
             {
@@ -201,7 +202,7 @@ namespace WaveBox.PodcastManagement
             }
         }
 
-        public void Delete()
+        public bool Delete()
         {
             // remove any episodes of this podcast that might happen to be in the download queue
             if(this.PodcastId != null)
@@ -214,6 +215,7 @@ namespace WaveBox.PodcastManagement
 
             IDbConnection conn = null;
             IDataReader reader = null;
+            bool success = false;
 
             // remove podcast entry
             try
@@ -223,7 +225,7 @@ namespace WaveBox.PodcastManagement
                 IDbCommand q = Database.GetDbCommand("DELETE FROM podcast WHERE podcast_id = @podcastid", conn);
                 q.AddNamedParam("@podcastid", PodcastId);
                 q.Prepare();
-                q.ExecuteNonQuery();
+                success = q.ExecuteNonQuery() >= 1;
             }
             catch (Exception e)
             {
@@ -235,6 +237,8 @@ namespace WaveBox.PodcastManagement
             }
 
             if(Directory.Exists(PodcastMediaDirectory + Path.DirectorySeparatorChar + Title)) Directory.Delete(PodcastMediaDirectory + Path.DirectorySeparatorChar + Title);
+
+            return success;
         }
 
         public List<PodcastEpisode> ListOfCurrentEpisodes()

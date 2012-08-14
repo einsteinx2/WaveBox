@@ -72,10 +72,12 @@ namespace WaveBox.PodcastManagement
 
         /* Public methods */
 
-        public void Delete()
+        public bool Delete()
         {
             IDbConnection conn = null;
             IDataReader reader = null;
+            bool success = false;
+
             try
             {
                 conn = Database.GetDbConnection();
@@ -83,7 +85,7 @@ namespace WaveBox.PodcastManagement
                 IDbCommand q = Database.GetDbCommand("DELETE FROM podcast_episode WHERE podcast_episode_id = @podcastid", conn);
                 q.AddNamedParam("@podcastid", EpisodeId);
                 q.Prepare();
-                q.ExecuteNonQuery();
+                success = q.ExecuteNonQuery() >= 1;
             }
             catch (Exception e)
             {
@@ -98,6 +100,8 @@ namespace WaveBox.PodcastManagement
             {
                 File.Delete(FilePath);
             }
+
+            return success;
         }
 
         public bool IsDownloaded()
