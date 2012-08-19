@@ -31,7 +31,7 @@ namespace WaveBox.DataModel.Model
 			try
 			{
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT * FROM users WHERE user_id = @userid", conn);
+				IDbCommand q = Database.GetDbCommand("SELECT * FROM user WHERE user_id = @userid", conn);
 				q.AddNamedParam("@userid", UserId);
 				q.Prepare();
 				reader = q.ExecuteReader();
@@ -61,7 +61,7 @@ namespace WaveBox.DataModel.Model
 			try
 			{
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT * FROM users WHERE user_name = @username", conn);
+				IDbCommand q = Database.GetDbCommand("SELECT * FROM user WHERE user_name = @username", conn);
 				q.AddNamedParam("@username", userName);
 				q.Prepare();
 				reader = q.ExecuteReader();
@@ -136,7 +136,7 @@ namespace WaveBox.DataModel.Model
 			try
 			{
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("UPDATE users SET user_password = @hash, user_salt = @salt WHERE user_name = @username", conn);
+				IDbCommand q = Database.GetDbCommand("UPDATE user SET user_password = @hash, user_salt = @salt WHERE user_name = @username", conn);
 				q.AddNamedParam("@hash", hash);
 				q.AddNamedParam("@salt", salt);
 				q.AddNamedParam("@username", UserName);
@@ -164,7 +164,7 @@ namespace WaveBox.DataModel.Model
 			try
 			{
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("UPDATE users SET user_lastfm_session = @session WHERE user_name = @username", conn);
+				IDbCommand q = Database.GetDbCommand("UPDATE user SET user_lastfm_session = @session WHERE user_name = @username", conn);
 				q.AddNamedParam("@session", sessionKey);
 				q.AddNamedParam("@username", UserName);
 				q.Prepare();
@@ -184,16 +184,20 @@ namespace WaveBox.DataModel.Model
 
 		public static User CreateUser(string userName, string password)
 		{
+			int? itemId = Database.GenerateItemId(ItemType.User);
+			if (itemId == null)
+				return null;
+
 			var salt = GeneratePasswordSalt();
 			var hash = ComputePasswordHash(password, salt);
 
 			IDbConnection conn = null;
 			IDataReader reader = null;
-
 			try
 			{
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("INSERT INTO users (user_name, user_password, user_salt) VALUES (@username, @userhash, @usersalt)", conn);
+				IDbCommand q = Database.GetDbCommand("INSERT INTO user (user_id, user_name, user_password, user_salt) VALUES (@userid, @username, @userhash, @usersalt)", conn);
+				q.AddNamedParam("@userid", itemId);
 				q.AddNamedParam("@username", userName);
 				q.AddNamedParam("@userhash", hash);
 				q.AddNamedParam("@usersalt", salt);

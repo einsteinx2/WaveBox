@@ -11,11 +11,11 @@ namespace WaveBox.ApiHandler.Handlers
 {
 	class ScrobbleApiHandler : IApiHandler
 	{
-		private HttpProcessor Processor { get; set; }
+		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 		private int UserId { get; set; }
 
-		public ScrobbleApiHandler(UriWrapper uri, HttpProcessor processor, int userId)
+		public ScrobbleApiHandler(UriWrapper uri, IHttpProcessor processor, int userId)
 		{
 			Processor = processor;
 			Uri = uri;

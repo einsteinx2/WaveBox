@@ -19,7 +19,6 @@ namespace WaveBox.PodcastManagement
 
         /* Properties */
         public long? PodcastId { get; set; }
-        public long? ArtId { get; set; }
         public long? EpisodeKeepCap { get; set; } 
         public string Title { get; set; }
         public string Author { get; set; }
@@ -49,7 +48,6 @@ namespace WaveBox.PodcastManagement
             {
                 var existing = new Podcast(existingPodcastId);
                 PodcastId = existingPodcastId;
-                ArtId = existing.ArtId;
                 EpisodeKeepCap = existing.EpisodeKeepCap;
                 Title = existing.Title;
                 Author = existing.Author;
@@ -80,9 +78,6 @@ namespace WaveBox.PodcastManagement
 
                 if (reader.Read())
                 {
-                    if(reader.GetValue(reader.GetOrdinal("podcast_art_id")) == DBNull.Value) ArtId = null;
-                    else ArtId = reader.GetInt32(reader.GetOrdinal("podcast_art_id"));
-
                     EpisodeKeepCap = reader.GetInt32(reader.GetOrdinal("podcast_keep_cap"));
                     Title = reader.GetString(reader.GetOrdinal("podcast_title"));
                     Author = reader.GetString(reader.GetOrdinal("podcast_author"));
@@ -289,7 +284,6 @@ namespace WaveBox.PodcastManagement
         public void SetPropertiesFromQueryResult(IDataReader reader)
         {
             PodcastId = reader.GetInt64(reader.GetOrdinal("podcast_id"));
-            ArtId = reader.GetInt64(reader.GetOrdinal("podcast_art_id"));
             EpisodeKeepCap = reader.GetInt64(reader.GetOrdinal("podcast_keep_cap"));
             Title = reader.GetString(reader.GetOrdinal("podcast_title"));
             Author = reader.GetString(reader.GetOrdinal("podcast_author"));

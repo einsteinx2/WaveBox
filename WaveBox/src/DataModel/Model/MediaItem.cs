@@ -18,9 +18,6 @@ namespace WaveBox.DataModel.Model
 		[JsonProperty("itemId")]
 		public int ItemId { get; set; }
 
-		[JsonProperty("artId")]
-		public int? ArtId { get; set; }
-
 		[JsonProperty("folderId")]
 		public int? FolderId { get; set; }
 

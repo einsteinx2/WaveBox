@@ -10,10 +10,10 @@ namespace WaveBox.ApiHandler.Handlers
 {
 	class SongsApiHandler : IApiHandler
 	{
-		private HttpProcessor Processor { get; set; }
+		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 
-		public SongsApiHandler(UriWrapper uri, HttpProcessor processor, int userId)
+		public SongsApiHandler(UriWrapper uri, IHttpProcessor processor, int userId)
 		{
 			Processor = processor;
 			Uri = uri;

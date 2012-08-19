@@ -12,11 +12,11 @@ namespace WaveBox.ApiHandler.Handlers
 	class JukeboxApiHandler : IApiHandler
 	{
 		private Jukebox Juke;
-		private HttpProcessor Processor { get; set; }
+		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 		//private int _userId;
 
-		public JukeboxApiHandler(UriWrapper uri, HttpProcessor processor, int userId)
+		public JukeboxApiHandler(UriWrapper uri, IHttpProcessor processor, int userId)
 		{
 			Juke = Jukebox.Instance;
 			Processor = processor;

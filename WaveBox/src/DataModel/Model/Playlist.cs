@@ -10,17 +10,17 @@ namespace WaveBox.DataModel.Model
 {
 	public class Playlist
 	{
-		public int PlaylistId { get; set; }
+		public int? PlaylistId { get; set; }
 
 		public string PlaylistName { get; set; }
 
-		public int PlaylistCount { get; set; }
+		public int? PlaylistCount { get; set; }
 
-		public int PlaylistDuration { get; set; }
+		public int? PlaylistDuration { get; set; }
 
 		public string Md5Hash { get; set; }
 
-		public long LastUpdateTime { get; set; }
+		public long? LastUpdateTime { get; set; }
 
 
 		public Playlist()
@@ -155,14 +155,14 @@ namespace WaveBox.DataModel.Model
 		public void UpdateProperties(int itemsAdded, int durationAdded)
 		{
 			// update playlist count
-			int playlistCount = PlaylistCount;
+			int? playlistCount = PlaylistCount;
 			PlaylistCount = playlistCount + itemsAdded;
 
 			// update last update time
 			LastUpdateTime = ((DateTime.Now.Ticks / 10) - (new DateTime(1970, 1, 1).Ticks / 10));	// correct?
 
 			// update playlist duration
-			int playlistDuration = PlaylistDuration;
+			int? playlistDuration = PlaylistDuration;
 			PlaylistDuration = (playlistDuration + durationAdded);
 		}
 
@@ -177,8 +177,13 @@ namespace WaveBox.DataModel.Model
 
 				IDbCommand q = null;
 				//q.Parameters.AddWithValue("@playlistid", PlaylistId);
-				if (PlaylistId == 0)
+				if (PlaylistId == null)
 				{
+					int? itemId = Database.GenerateItemId(ItemType.Playlist);
+					if (itemId == null)
+						return;
+
+					PlaylistId = itemId;
 					q = Database.GetDbCommand("INSERT INTO playlist (playlist_name, playlist_count, playlist_duration, md5_hash, last_update) " +
 											"VALUES (@playlistname, @playlistcount, @playlistduration, @md5, @lastupdate)", conn);
 					//q = Database.GetDbCommand("INSERT INTO playlist VALUES (@playlistid, @playlistname, @playlistcount, @playlistduration, @md5, @lastupdate)");
@@ -205,18 +210,10 @@ namespace WaveBox.DataModel.Model
 				q.AddNamedParam("@playlistduration", PlaylistDuration);
 				q.AddNamedParam("@md5", PlaylistId == 0 ? "" : CalculateHash());
 				q.AddNamedParam("@lastupdate", LastUpdateTime);
-
-				if (PlaylistId != 0)
-					q.AddNamedParam("@playlistid", PlaylistId);
+				q.AddNamedParam("@playlistid", PlaylistId);
 
 				q.Prepare();
 				q.ExecuteNonQuery();
-
-				if (PlaylistId == 0)
-				{
-					q.CommandText = "SELECT last_insert_rowid()";
-					PlaylistId = Convert.ToInt32(q.ExecuteScalar().ToString());
-				}
 			}
 			catch (Exception e)
 			{
@@ -288,11 +285,11 @@ namespace WaveBox.DataModel.Model
 
 					switch (it)
 					{
-					case ItemType.SONG:
+					case ItemType.Song:
 						item = new Song(itemid);
 						break;
 
-					case ItemType.VIDEO:
+					case ItemType.Video:
 							// nothing for now
 						break;
 
@@ -333,11 +330,11 @@ namespace WaveBox.DataModel.Model
 					var itemid = reader.GetInt32(reader.GetOrdinal("item_id"));
 					switch (reader.GetInt32(reader.GetOrdinal("item_type_id")))
 					{
-						case (int)ItemType.SONG:
+						case (int)ItemType.Song:
 							items.Add(new Song(itemid));
 							break;
 
-						case (int)ItemType.VIDEO:
+						case (int)ItemType.Video:
 								// nothing for now
 							break;
 

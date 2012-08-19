@@ -95,12 +95,10 @@
     <Compile Include="src\ApiHandler\Handlers\SongsApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\StatusApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\StreamApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\TestApiHandler.cs" />
     <Compile Include="src\DataModel\FolderScanning\FolderScanOperation.cs" />
     <Compile Include="src\DataModel\FolderScanning\OrphanScanOperation.cs" />
     <Compile Include="src\DataModel\Model\Album.cs" />
     <Compile Include="src\DataModel\Model\Artist.cs" />
-    <Compile Include="src\DataModel\Model\CoverArt.cs" />
     <Compile Include="src\DataModel\Model\FileType.cs" />
     <Compile Include="src\DataModel\Model\Folder.cs" />
     <Compile Include="src\DataModel\Model\ItemType.cs" />
@@ -133,6 +131,7 @@
     <Compile Include="src\PodcastManagement\PodcastEpisode.cs" />
     <Compile Include="src\PodcastManagement\Podcast.cs" />
     <Compile Include="src\PodcastManagement\DownloadQueue.cs" />
+    <Compile Include="src\HttpServer\IHttpProcessor.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="bass.dll">

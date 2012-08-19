@@ -11,11 +11,11 @@ namespace WaveBox.ApiHandler.Handlers
 {
 	class AlbumsApiHandler : IApiHandler
 	{
-		private HttpProcessor Processor { get; set; }
+		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 		private List<Song> songs;
 
-		public AlbumsApiHandler(UriWrapper uri, HttpProcessor processor, int userId)
+		public AlbumsApiHandler(UriWrapper uri, IHttpProcessor processor, int userId)
 		{
 			Processor = processor;
 			Uri = uri;

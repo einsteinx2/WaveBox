@@ -6,7 +6,7 @@ using System.IO;
 
 namespace WaveBox.Http
 {
-	class HttpHeader
+	public class HttpHeader
 	{
 		public long ContentLength { get; set; }
 		public HttpStatusCode StatusCode { get; set; }

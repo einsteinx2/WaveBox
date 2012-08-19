@@ -16,7 +16,7 @@ using WaveBox.ApiHandler;
 
 namespace WaveBox.Http
 {
-	public class HttpProcessor 
+	public class HttpProcessor : IHttpProcessor
 	{
 		public TcpClient Socket { get; set; }
 		public HttpServer Srv { get; set; }
@@ -254,19 +254,27 @@ namespace WaveBox.Http
 			OutputStream.Write(json);
 		}
 
-		public void WriteFile(FileStream fs, int startOffset, long length)
+		public void WriteFile (Stream fs, int startOffset, long length)
 		{
-			if ((object)fs == null || length == 0 || startOffset >= length) 
+			if ((object)fs == null || !fs.CanRead || length == 0 || startOffset >= length) 
 				return;
 
-			FileInfo fsinfo = new FileInfo(fs.Name);
+			HttpHeader header = null;
+			long contentLength = length - startOffset;
+			if (fs is FileStream) 
+			{
+				FileInfo fsinfo = new FileInfo (((FileStream)fs).Name);
 
-			// Write the headers to output stream
-            long contentLength = length - startOffset;
-            var header = new HttpHeader(HttpHeader.HttpStatusCode.PARTIALCONTENT, HttpHeader.ContentTypeForExtension(fsinfo.Extension), contentLength);
+				// Write the headers to output stream
 
-            header.WriteHeader(OutputStream);
-            Console.WriteLine("[HTTPSERVER] File header, contentLength: {0}, contentType: {1}, status: {2}", contentLength, header.ContentType, header.StatusCode);
+				header = new HttpHeader (HttpHeader.HttpStatusCode.PARTIALCONTENT, HttpHeader.ContentTypeForExtension (fsinfo.Extension), contentLength);
+			} 
+			else
+			{
+				header = new HttpHeader (HttpHeader.HttpStatusCode.PARTIALCONTENT, HttpHeader.HttpContentType.UNKNOWN, length);
+			}
+			header.WriteHeader (OutputStream);
+			Console.WriteLine ("[HTTPSERVER] File header, contentLength: {0}, contentType: {1}, status: {2}", contentLength, header.ContentType, header.StatusCode);
 
 			// Read/Write in 8 KB chunks
 			const int chunkSize = 8192;
@@ -277,11 +285,14 @@ namespace WaveBox.Http
 			long bytesWritten = 0;
 			var stream = OutputStream.BaseStream;
 			int sinceLastReport = 0;
-			var sw = new Stopwatch();
+			var sw = new Stopwatch ();
 
-			// Seek to the start offset
-			fs.Seek(startOffset, SeekOrigin.Begin);
-			bytesWritten = fs.Position;
+			if (fs.CanSeek) 
+			{
+				// Seek to the start offset
+				fs.Seek (startOffset, SeekOrigin.Begin);
+				bytesWritten = fs.Position;
+			}
 
 			sw.Start();
 			while(true)
@@ -301,7 +312,7 @@ namespace WaveBox.Http
 					// Log the progress (only for testing)
 					if (sw.ElapsedMilliseconds > 1000)
 					{
-						Console.WriteLine("[SENDFILE] " + fsinfo.Name + ": [ {0} / {1} | {2:F1}% | {3:F1} Mbps ]", bytesWritten, contentLength+startOffset, (Convert.ToDouble(bytesWritten) / Convert.ToDouble(contentLength+startOffset)) * 100, (((double)(sinceLastReport * 8) / 1024) / 1024) / (double)(sw.ElapsedMilliseconds / 1000));
+						Console.WriteLine("[SENDFILE]: [ {0} / {1} | {2:F1}% | {3:F1} Mbps ]", bytesWritten, contentLength+startOffset, (Convert.ToDouble(bytesWritten) / Convert.ToDouble(contentLength+startOffset)) * 100, (((double)(sinceLastReport * 8) / 1024) / 1024) / (double)(sw.ElapsedMilliseconds / 1000));
 						sinceLastReport = 0;
 						sw.Restart();
 					}
@@ -315,13 +326,14 @@ namespace WaveBox.Http
 					{
 						// We read less than we asked for from the file
 						// Sleep 2 seconds and then see if the file grew
-						Thread.Sleep(2000);
+						if (fs is FileStream)
+							Thread.Sleep(2000);
 
-						// Check if the file is done
-						if (bytesWritten >= fs.Length)
+						// Check if the stream is done
+						if (bytesWritten >= fs.Length || !(fs is FileStream))
 						{
 							// We've written the whole file, so break
-							Console.WriteLine("[SENDFILE] " + fsinfo.Name + ": Done.");
+							Console.WriteLine("[SENDFILE]: Done.");
 							break;
 						}
 					}

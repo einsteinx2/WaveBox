@@ -66,7 +66,7 @@ namespace WaveBox.DataModel.FolderScanning
 
 					if (topFolder.FolderId == null)
 					{
-						topFolder.AddToDatabase(false);
+						topFolder.InsertFolder(false);
 					}
 
                     //var sw = new Stopwatch();
@@ -79,7 +79,7 @@ namespace WaveBox.DataModel.FolderScanning
 							// if the folder isn't already in the database, add it.
 							if (folder.FolderId == null)
 							{
-								folder.AddToDatabase(false);
+								folder.InsertFolder(false);
 							}
                             //sw.Start();
 							ProcessFolder(subfolder);
@@ -200,7 +200,7 @@ namespace WaveBox.DataModel.FolderScanning
 				//	Console.WriteLine("Create new song object: {0} ms", sw.ElapsedMilliseconds);
 				//	sw.Restart();
 
-					song.updateDatabase();
+					song.InsertSong();
 				//	sw.Stop();
 				//	Console.WriteLine("Update database: {0} ms", sw.ElapsedMilliseconds);
 				}

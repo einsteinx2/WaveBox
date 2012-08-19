@@ -58,8 +58,6 @@ namespace WaveBox.ApiHandler
 					return new StatusApiHandler(uriW, sh, user.UserId);
 				else if(part1 == "stream")
 					return new StreamApiHandler(uriW, sh, user.UserId);
-				else if(part1 == "test")
-					return new TestApiHandler(uriW, sh, user.UserId);
 			}
 
 			// If the handler wasn't returned yet, return an error handler

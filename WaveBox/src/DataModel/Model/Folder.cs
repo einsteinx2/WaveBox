@@ -28,9 +28,6 @@ namespace WaveBox.DataModel.Model
 		[JsonProperty("folderPath")]
 		public string FolderPath { get; set; }
 
-		[JsonProperty("artId")]
-		public int? ArtId { get; set; }
-
         public bool ContainsImageFile { get; set; }
 
 
@@ -47,8 +44,7 @@ namespace WaveBox.DataModel.Model
 			{
 				conn = Database.GetDbConnection();
 
-				IDbCommand q = Database.GetDbCommand("SELECT folder.*, song.song_art_id FROM folder " + 
-					"LEFT JOIN song ON song_folder_id = folder_id " +
+				IDbCommand q = Database.GetDbCommand("SELECT * FROM folder " + 
 					"WHERE folder_id = @folderid LIMIT 1", conn);
 
 				q.AddNamedParam("@folderid", folderId);
@@ -69,23 +65,6 @@ namespace WaveBox.DataModel.Model
                         MediaFolderId = null;
                     else 
                         MediaFolderId = reader.GetInt32(reader.GetOrdinal("parent_folder_id"));
-
-					// if the folder has no associated art, i.e. there is no image file in the folder,
-					// check to see if there was a song image available, i.e. there was an image in its tag
-					// if neither of these things, then sadly, we have no image file to show the user.
-					if (reader.GetValue(reader.GetOrdinal("folder_art_id")) == DBNull.Value)
-					{
-                        ContainsImageFile = false;
-						if (reader.GetValue(reader.GetOrdinal("song_art_id")) == DBNull.Value)
-							ArtId = null;
-						else 
-							ArtId = reader.GetInt32(reader.GetOrdinal("song_art_id"));
-					}
-					else
-					{
-                        ContainsImageFile = true;
-						ArtId = reader.GetInt32(reader.GetOrdinal("folder_art_id"));
-					}
 				}
 			}
 			catch (Exception e)
@@ -118,12 +97,6 @@ namespace WaveBox.DataModel.Model
 				{
 					MediaFolderId = mf.FolderId;
 				}
-			}
-
-			string folderImageName;
-			if (FolderContainsImages(path, out folderImageName))
-			{
-				ArtId = new CoverArt(new FileStream(folderImageName, FileMode.Open, FileAccess.Read)).ArtId;
 			}
 
 			try
@@ -204,11 +177,6 @@ namespace WaveBox.DataModel.Model
                             MediaFolderId = null;
                         else 
                             MediaFolderId = reader.GetInt32(reader.GetOrdinal("folder_media_folder_id"));
-
-						if (reader.GetValue(reader.GetOrdinal("folder_art_id")) == DBNull.Value)
-							ArtId = null;
-						else 
-							ParentFolderId = reader.GetInt32(reader.GetOrdinal("folder_art_id"));
 					}
 				}
 				reader.Close();
@@ -371,32 +339,30 @@ namespace WaveBox.DataModel.Model
 			return null;
 		}
 
-		public void AddToDatabase(bool mediaf)
+		public void InsertFolder(bool isMediaFolder)
 		{
+			int? itemId = Database.GenerateItemId(ItemType.Folder);
+			if (itemId == null)
+				return;
+
 			IDbConnection conn = null;
 			IDataReader reader = null;
 			int affected;
-
 			try
 			{
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("INSERT INTO folder (folder_name, folder_path, parent_folder_id, folder_media_folder_id, folder_art_id) " +
-													 "VALUES (@foldername, @folderpath, @parentfolderid, @folderid, @artid)", conn);
-
+				IDbCommand q = Database.GetDbCommand("INSERT INTO folder (folder_id, folder_name, folder_path, parent_folder_id, folder_media_folder_id) " +
+													 "VALUES (@folderid, @foldername, @folderpath, @parentfolderid, @mediafolderid)", conn);
+				q.AddNamedParam("@folderid", itemId);
 				q.AddNamedParam("@foldername", FolderName);
 				q.AddNamedParam("@folderpath", FolderPath);
 
-				if (mediaf == true)
+				if (isMediaFolder == true)
 					q.AddNamedParam("@parentfolderid", DBNull.Value);
 				else
 					q.AddNamedParam("@parentfolderid", GetParentFolderId(FolderPath));
 
-				q.AddNamedParam("@folderid", MediaFolderId);
-
-				if (ArtId == null) 
-					q.AddNamedParam("@artid", DBNull.Value);
-				else 
-					q.AddNamedParam("@artid", ArtId);
+				q.AddNamedParam("@mediafolderid", MediaFolderId);
 				
 				q.Prepare();
 				affected = q.ExecuteNonQuery();
@@ -444,7 +410,7 @@ namespace WaveBox.DataModel.Model
 				{
 					Console.WriteLine("No db result for parent folder.  Constructing parent folder object.");
 					var f = new Folder(parentFolderPath);
-					f.AddToDatabase(false);
+					f.InsertFolder(false);
 					pFolderId = f.FolderId;
 				}
 			}

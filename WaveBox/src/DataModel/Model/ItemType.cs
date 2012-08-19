@@ -7,13 +7,19 @@ namespace WaveBox.DataModel.Model
 {
 	public enum ItemType
 	{
-		ARTIST = 1,
-		ALBUM = 2,
-		SONG = 3,
-		VIDEO = 4,
-        PODCAST = 5,
-        PODCASTEPISODE = 6,
-		UNKNOWN = -1
+		Artist = 1, // Starts with 1 for database compatibility
+		Album = 2,
+		Song = 3,
+		Folder = 4,
+		Playlist = 5,
+		PlaylistItem = 6,
+        Podcast = 7,
+        PodcastEpisode = 8,
+		User = 9,
+		Video = 10,
+		Bookmark = 11,
+		BookmarkItem = 12,
+		Unknown = 2147483647 // Int32.MaxValue used for database compatibility
 	}
 
 	public static class ItemTypeExtensions
@@ -35,7 +41,7 @@ namespace WaveBox.DataModel.Model
 			}
 
 			// if there's no match, return unknown.
-			return ItemType.UNKNOWN;
+			return ItemType.Unknown;
 		}
 	}
 }

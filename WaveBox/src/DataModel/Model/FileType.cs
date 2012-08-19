@@ -7,17 +7,16 @@ namespace WaveBox.DataModel.Model
 {
 	public enum FileType
 	{
-        // Alphabetized, lossy first, then lossless, then unknown
-        AAC = 0,
-        MP3 = 1,
-        MPC = 2,
-        OGG = 3,
-        WMA = 4,
-        ALAC = 5,
-        APE = 6,
-        FLAC = 7,
-        WV = 8,
-		UNKNOWN = -1
+        AAC = 1, // Starts with 1 for database compatibility
+        MP3 = 2,
+        MPC = 3,
+        OGG = 4,
+        WMA = 5,
+        ALAC = 6,
+        APE = 7,
+        FLAC = 8,
+        WV = 9,
+		Unknown = 2147483647 // Int32.MaxValue used for database compatibility
 	}
 
 	public static class FileTypeExtensions
@@ -46,7 +45,7 @@ namespace WaveBox.DataModel.Model
             else if (audioFormatString.Substring(0, 14) == "Monkey's Audio")
 				return FileType.APE;
             else
-				return FileType.UNKNOWN;
+				return FileType.Unknown;
 		}
 
 		public static FileType FileTypeForId(this FileType ft, int id)
@@ -58,7 +57,7 @@ namespace WaveBox.DataModel.Model
 					return type;
 				}
 			}
-			return FileType.UNKNOWN;
+			return FileType.Unknown;
 		}
 	}
 }

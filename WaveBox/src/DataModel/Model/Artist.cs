@@ -15,16 +15,13 @@ namespace WaveBox.DataModel.Model
 		/// </summary>
 		/// 
 		[JsonProperty("itemTypeId")]
-		public int ItemTypeId { get { return ItemType.ARTIST.ItemTypeId(); } }
+		public int ItemTypeId { get { return ItemType.Artist.ItemTypeId(); } }
 
 		[JsonProperty("artistId")]
 		public int? ArtistId { get; set; }
 
 		[JsonProperty("artistName")]
 		public string ArtistName { get; set; }
-
-		[JsonProperty("artId")]
-		public int? ArtId { get; set; }
 
 
 		/// <summary>
@@ -122,11 +119,6 @@ namespace WaveBox.DataModel.Model
 			{
 				ArtistId = reader.GetInt32(reader.GetOrdinal("artist_id"));
 				ArtistName = reader.GetString(reader.GetOrdinal("artist_name"));
-
-				if 
-					(reader.GetValue(reader.GetOrdinal("artist_art_id")) == DBNull.Value) ArtId = null;
-				else 
-					ArtId = reader.GetInt32(reader.GetOrdinal("artist_art_id"));
 			}
 			catch (Exception e)
 			{
@@ -137,14 +129,18 @@ namespace WaveBox.DataModel.Model
 
 		private static bool InsertArtist(string artistName)
 		{
+			int? itemId = Database.GenerateItemId(ItemType.Artist);
+			if (itemId == null)
+				return false;
+			
 			bool success = false;
 			IDbConnection conn = null;
 			IDataReader reader = null;
-
 			try
 			{
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("INSERT OR IGNORE INTO artist (artist_name) VALUES (@artistname)", conn);
+				IDbCommand q = Database.GetDbCommand("INSERT OR IGNORE INTO artist (artist_id, artist_name) VALUES (@artistid, @artistname)", conn);
+				q.AddNamedParam("@artistid", itemId);
 				q.AddNamedParam("@artistname", artistName);
 				q.Prepare();
 				int affected = q.ExecuteNonQuery();

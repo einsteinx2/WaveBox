@@ -11,7 +11,7 @@ namespace WaveBox.DataModel.Model
 	public class Album
 	{
 		[JsonProperty("itemTypeId")]
-		public int ItemTypeId { get { return ItemType.ALBUM.ItemTypeId(); } }
+		public int ItemTypeId { get { return ItemType.Album.ItemTypeId(); } }
 
 		[JsonProperty("artistId")]
 		public int? ArtistId { get; set; }
@@ -24,9 +24,6 @@ namespace WaveBox.DataModel.Model
 
 		[JsonProperty("releaseYear")]
 		public int? ReleaseYear { get; set; }
-
-		[JsonProperty("artId")]
-		public int? ArtId { get; set; }
 
 		public Album()
 		{
@@ -109,15 +106,19 @@ namespace WaveBox.DataModel.Model
 
 		private static bool InsertAlbum(string albumName, int? artistId)
 		{
+			int? itemId = Database.GenerateItemId(ItemType.Album);
+			if (itemId == null)
+				return false;
+
 			bool success = false;
 
 			IDbConnection conn = null;
 			IDataReader result = null;
-
 			try
 			{
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("INSERT INTO album (album_name, artist_id) VALUES(@albumname, @artistid)", conn);
+				IDbCommand q = Database.GetDbCommand("INSERT INTO album (album_id, album_name, artist_id) VALUES (@albumid, @albumname, @artistid)", conn);
+				q.AddNamedParam("@albumid", itemId);
 				q.AddNamedParam("@albumname", albumName);
 				q.AddNamedParam("@artistid", artistId);
 				q.Prepare();
@@ -157,12 +158,6 @@ namespace WaveBox.DataModel.Model
 				this.AlbumName = "";
 			}
 			else this.AlbumName = reader.GetString(reader.GetOrdinal("album_name"));
-
-			if (reader.IsDBNull(reader.GetOrdinal("album_art_id")))
-			{
-				this.ArtId = null;
-			}
-			else this.ArtId = reader.GetInt32(reader.GetOrdinal("album_art_id"));
 		}
 
 		public Artist Artist()

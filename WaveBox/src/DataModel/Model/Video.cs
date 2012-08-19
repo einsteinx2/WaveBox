@@ -7,6 +7,6 @@ namespace WaveBox.DataModel.Model
 {
 	public class Video
 	{
-		// I heard this thingamajigger was gonna do videos.  Crazy. - matt
+		// I heard this thingamajigger was gonna do videos.  Crazy. - matt   // LOL - ben
 	}
 }

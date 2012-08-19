@@ -99,7 +99,7 @@ namespace WaveBox.DataModel.Singletons
 
 			if (item != null)
 			{
-				if (item.ItemTypeId == (int)ItemType.SONG)
+				if (item.ItemTypeId == (int)ItemType.Song)
 				{
 					// set the current index
 					CurrentIndex = index;

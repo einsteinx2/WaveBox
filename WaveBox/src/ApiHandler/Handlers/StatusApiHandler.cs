@@ -10,10 +10,10 @@ namespace WaveBox.ApiHandler.Handlers
 {
 	class StatusApiHandler : IApiHandler
 	{
-		private HttpProcessor Processor { get; set; }
+		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 
-		public StatusApiHandler(UriWrapper uri, HttpProcessor processor, int userId)
+		public StatusApiHandler(UriWrapper uri, IHttpProcessor processor, int userId)
 		{
 			Processor = processor;
 			Uri = uri;
@@ -26,7 +26,7 @@ namespace WaveBox.ApiHandler.Handlers
 			try
 			{
 				string json = JsonConvert.SerializeObject(new StatusResponse(null, "1"), Formatting.None);
-				Processor.OutputStream.Write(json);
+				Processor.WriteJson(json);
 			}
 			catch(Exception e)
 			{

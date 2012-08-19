@@ -6,132 +6,97 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using WaveBox.DataModel.Model;
 using WaveBox.Http;
+using WaveBox.DataModel.Singletons;
 using TagLib;
 
 namespace WaveBox.ApiHandler.Handlers
 {
 	class CoverArtApiHandler : IApiHandler
 	{
-		private HttpProcessor Processor { get; set; }
+		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 
-		public CoverArtApiHandler(UriWrapper uri, HttpProcessor processor, int userId)
+		public CoverArtApiHandler(UriWrapper uri, IHttpProcessor processor, int userId)
 		{
 			Processor = processor;
 			Uri = uri;
 		}
 
-		public void Process()
-        {
-            Image img = null;
+		public void Process ()
+		{
+			// Check for the itemId
+			if (!Uri.Parameters.ContainsKey ("id")) {
+				Processor.WriteErrorHeader ();
+				return;
+			}
 
-            if (Uri.Parameters.ContainsKey("song"))
-            {
-                string songIdString = null;
-                Uri.Parameters.TryGetValue("song", out songIdString);
+			// Convert to integer
+			int itemId = Int32.MaxValue;
+			Int32.TryParse (Uri.Parameters ["id"], out itemId);
+			if (itemId == Int32.MaxValue) {
+				Processor.WriteErrorHeader ();
+				return;
+			}
 
-                if (songIdString != null)
-                {
-                    int songId = Int32.MaxValue;
-                    Int32.TryParse(songIdString, out songId);
+			// Get the item type
+			ItemType type = Database.ItemTypeForItemId (itemId);
 
-                    if (songId != Int32.MaxValue) 
-                    {
-                        var stream = GetSongArt(new Song(songId));
-                        if(stream != null)
-                            img = new Bitmap(stream);
-                    }
-                }
-            }
-            else
-            if (Uri.Parameters.ContainsKey("folder"))
-            {
-                string folderIdString = null;
-                Uri.Parameters.TryGetValue("folder", out folderIdString);
-                if (folderIdString != null)
-                {
-                    int folderId = Int32.MaxValue;
-                    Int32.TryParse(folderIdString, out folderId);
+			// Send the appropriate art
+			Stream stream = null;
+			if (type == ItemType.Song) {
+				stream = GetSongArt (new Song (itemId));
+			} else if (type == ItemType.Folder) {
+				stream = GetFolderArt (new Folder (itemId));
+			} else if (type == ItemType.Album) {
+				stream = GetAlbumArt (new Album (itemId));
+			}
 
-                    if (folderId != Int32.MaxValue)
-                    {
-                        var stream = GetFolderArt(new Folder(folderId));
-                        if(stream != null)
-                            img = new Bitmap(stream);
-                    }
+			if (stream == null) {
+				Processor.WriteErrorHeader ();
+				return;
+			}
 
-                }
-            }
-            else
-            if (Uri.Parameters.ContainsKey("album"))
-            {
-                string albumIdString = null;
-                Uri.Parameters.TryGetValue("album", out albumIdString);
-                if (albumIdString != null)
-                {
-                    int albumId = Int32.MaxValue;
-                    Int32.TryParse(albumIdString, out albumId);
-
-                    if (albumId != Int32.MaxValue)
-                        img = new Bitmap(GetAlbumArt(new Album(albumId)));
-                }
-            }
-            else
-            {
-                var artid = int.Parse(Uri.UriPart(2));
-                var art = new CoverArt(artid);
-                var ms = new MemoryStream(System.IO.File.ReadAllBytes(art.ArtFile()));
-                img = new Bitmap(ms);
-            }
-
-            if(img == null) return;
-
-			if (Uri.Parameters.ContainsKey("size"))
-			{
-				string size = null; 
-				Uri.Parameters.TryGetValue("size", out size);
-
-				if (size != null)
-				{
-					img = ResizeImage(img, new Size(int.Parse(size), int.Parse(size)));
+			if (Uri.Parameters.ContainsKey ("size")) {
+				int size = Int32.MaxValue;
+				Int32.TryParse (Uri.Parameters ["size"], out size);	
+				if (size != Int32.MaxValue) {
+					Image resized = ResizeImage (new Bitmap (stream), new Size (size, size));
+					stream = new MemoryStream ();
+					resized.Save (stream, System.Drawing.Imaging.ImageFormat.Jpeg);
 				}
 			}
 
-			img.Save(Processor.Socket.GetStream(), System.Drawing.Imaging.ImageFormat.Jpeg);
-
-			Console.WriteLine("[COVERARTAPI] Not implemented yet.");
-			Processor.OutputStream.Write("[COVERARTAPI] Not implemented yet.");
+			Processor.WriteFile(stream, 0, stream.Length);
 		}
 
-        private Bitmap GetSongArt(Song song)
+        private Stream GetSongArt(Song song)
         {
             var file = TagLib.File.Create(song.FilePath());
             string folderImagePath = null;
 
             if (Folder.ContainsImages(Path.GetDirectoryName(song.FilePath()), out folderImagePath))
             {
-                return new Bitmap(folderImagePath);
+                return new FileStream(folderImagePath, FileMode.Open);
             }
-
             else if (file.Tag.Pictures.Length > 0)
             {
-                return new Bitmap(new MemoryStream(file.Tag.Pictures[0].Data.Data));
+                return new MemoryStream(file.Tag.Pictures[0].Data.Data);
             } 
 
             return null;
         }
 
-        private Bitmap GetAlbumArt(Album album)
+        private Stream GetAlbumArt(Album album)
         {
             return null;
         }
 
-        private Bitmap GetFolderArt(Folder folder)
+        private Stream GetFolderArt(Folder folder)
         {
             string imagePath = null;
             if (Folder.ContainsImages(folder.FolderPath, out imagePath))
             {
-                return new Bitmap(imagePath);
+                return new FileStream(imagePath, FileMode.Open);
             }
             else
             {
@@ -140,7 +105,7 @@ namespace WaveBox.ApiHandler.Handlers
                     var tag = TagLib.File.Create(file);
                     if (tag.Tag.Pictures.Length > 0)
                     {
-                        return new Bitmap(new MemoryStream(tag.Tag.Pictures[0].Data.Data));
+                        return new MemoryStream(tag.Tag.Pictures[0].Data.Data);
                     } 
                 }
             }
