@@ -49,12 +49,7 @@ Global
 		$3.BeforeDelegateDeclarationParentheses = False
 		$3.AfterDelegateDeclarationParameterComma = True
 		$3.NewParentheses = False
-		$3.IfParentheses = False
-		$3.WhileParentheses = False
-		$3.ForParentheses = False
-		$3.ForeachParentheses = False
 		$3.CatchParentheses = False
-		$3.SwitchParentheses = False
 		$3.LockParentheses = False
 		$3.UsingParentheses = False
 		$3.SpacesBeforeBrackets = False

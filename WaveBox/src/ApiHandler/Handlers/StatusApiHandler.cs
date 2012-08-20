@@ -1,10 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using System.Text;
 using WaveBox.Http;
 using WaveBox.DataModel.Singletons;
 using Newtonsoft.Json;
+using WaveBox.DataModel.Model;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -13,7 +14,7 @@ namespace WaveBox.ApiHandler.Handlers
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 
-		public StatusApiHandler(UriWrapper uri, IHttpProcessor processor, int userId)
+		public StatusApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;
@@ -25,7 +26,10 @@ namespace WaveBox.ApiHandler.Handlers
 			
 			try
 			{
-				string json = JsonConvert.SerializeObject(new StatusResponse(null, "1"), Formatting.None);
+				Hashtable status = new Hashtable();
+				status["version"] = "1";
+
+				string json = JsonConvert.SerializeObject(new StatusResponse(null, status), Settings.JsonFormatting);
 				Processor.WriteJson(json);
 			}
 			catch(Exception e)
@@ -33,20 +37,20 @@ namespace WaveBox.ApiHandler.Handlers
 				Console.WriteLine("[STATUS(1)] ERROR: " + e.ToString());
 			}
 		}
-	}
 
-	class StatusResponse
-	{
-		[JsonProperty("error")]
-		public string Error { get; set; }
-
-		[JsonProperty("version")]
-		public string Version { get; set; }
-
-		public StatusResponse(string error, string version)
+		private class StatusResponse
 		{
-			Error = error;
-			Version = version;
+			[JsonProperty("error")]
+			public string Error { get; set; }
+
+			[JsonProperty("status")]
+			public Hashtable Status { get; set; }
+
+			public StatusResponse(string error, Hashtable status)
+			{
+				Error = error;
+				Status = status;
+			}
 		}
 	}
 }

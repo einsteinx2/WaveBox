@@ -16,7 +16,7 @@ namespace WaveBox.ApiHandler.Handlers
 		private UriWrapper Uri { get; set; }
 		//private int _userId;
 
-		public JukeboxApiHandler(UriWrapper uri, IHttpProcessor processor, int userId)
+		public JukeboxApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Juke = Jukebox.Instance;
 			Processor = processor;
@@ -168,47 +168,47 @@ namespace WaveBox.ApiHandler.Handlers
 				Console.WriteLine("[JUKEBOXAPI(4)] Error moving songs: " + e.Message);
 			}
 		}
-	}
 
-	class JukeboxStatusResponse
-	{
-		[JsonProperty("isPlaying")]
-		public bool IsPlaying
+		private class JukeboxStatusResponse
 		{
-			get
+			[JsonProperty("isPlaying")]
+			public bool IsPlaying
 			{
-				return Jukebox.Instance.IsPlaying;
+				get
+				{
+					return Jukebox.Instance.IsPlaying;
+				}
+			}
+
+			[JsonProperty("currentIndex")]
+			public int CurrentIndex
+			{
+				get
+				{
+					return Jukebox.Instance.CurrentIndex;
+				}
+			}
+
+			[JsonProperty("progress")]
+			public double Progress
+			{
+				get
+				{
+					return Jukebox.Instance.Progress();
+				}
 			}
 		}
 
-		[JsonProperty("currentIndex")]
-		public int CurrentIndex
+		private class JukeboxPlaylistResponse
 		{
-			get
-			{
-				return Jukebox.Instance.CurrentIndex;
-			}
+			[JsonProperty("isPlaying")]
+			public bool IsPlaying { get { return Jukebox.Instance.IsPlaying; } }
+
+			[JsonProperty("currentIndex")]
+			public int CurrentIndex { get { return Jukebox.Instance.CurrentIndex; } }
+
+			[JsonProperty("songs")]
+			public List<MediaItem> Songs { get { return Jukebox.Instance.ListOfSongs(); } }
 		}
-
-		[JsonProperty("progress")]
-		public double Progress
-		{
-			get
-			{
-				return Jukebox.Instance.Progress();
-			}
-		}
-	}
-
-	class JukeboxPlaylistResponse
-	{
-		[JsonProperty("isPlaying")]
-		public bool IsPlaying { get { return Jukebox.Instance.IsPlaying; } }
-
-		[JsonProperty("currentIndex")]
-		public int CurrentIndex { get { return Jukebox.Instance.CurrentIndex; } }
-
-		[JsonProperty("songs")]
-		public List<MediaItem> Songs { get { return Jukebox.Instance.ListOfSongs(); } }
 	}
 }

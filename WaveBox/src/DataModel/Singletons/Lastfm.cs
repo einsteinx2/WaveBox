@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 using System.Security.Cryptography;
 using System.Net.Sockets;
 
-namespace WaveBox.ApiHandler.Handlers
+namespace WaveBox.DataModel.Singletons
 {
 	public class Lastfm
 	{
@@ -44,9 +44,9 @@ namespace WaveBox.ApiHandler.Handlers
         /// <param name='userId'>
         /// User identifier.
         /// </param>
-		public Lastfm(int userId)
+		public Lastfm(User theUser)
 		{
-			user = new User(userId);
+			user = theUser;
 			sessionKey = user.LastfmSession;
 
 			// If the session key is prepended by 'token:', then the user has already generated a request token.
@@ -58,14 +58,16 @@ namespace WaveBox.ApiHandler.Handlers
 			{
 				CreateAuthUrl();
 				Console.WriteLine(this.AuthUrl);
-			} 
-
-			else if(sessionKey.Substring(0, 6) == "token:")
+			}
+			else if (sessionKey.Substring(0, 6) == "token:")
 			{
 				string token = sessionKey.Substring(6);
 				GetSessionKeyAndUpdateUser(token);
 			}
-            else sessionAuthenticated = true;
+			else
+			{
+				sessionAuthenticated = true;
+			}
 		}
 
         /// <summary>

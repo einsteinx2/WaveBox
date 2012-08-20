@@ -34,7 +34,7 @@ namespace WaveBox.DataModel.Model
 
 		public Artist(IDataReader reader)
 		{
-			SetPropertiesFromQueryResult(reader);
+			SetPropertiesFromQueryReader(reader);
 		}
 
 		public Artist(int? artistId)
@@ -55,7 +55,7 @@ namespace WaveBox.DataModel.Model
 
 				if (reader.Read())
 				{
-					SetPropertiesFromQueryResult(reader);
+					SetPropertiesFromQueryReader(reader);
 				}
 				else
 				{
@@ -92,7 +92,7 @@ namespace WaveBox.DataModel.Model
 
 				if (reader.Read())
 				{
-					SetPropertiesFromQueryResult(reader);
+					SetPropertiesFromQueryReader(reader);
 				}
 				else
 				{
@@ -113,7 +113,7 @@ namespace WaveBox.DataModel.Model
 		/// Private methods
 		/// </summary>
 
-		private void SetPropertiesFromQueryResult(IDataReader reader)
+		private void SetPropertiesFromQueryReader(IDataReader reader)
 		{
 			try
 			{
@@ -266,18 +266,18 @@ namespace WaveBox.DataModel.Model
 			var artists = new List<Artist>();
 
 			IDbConnection conn = null;
-			IDataReader result = null;
+			IDataReader reader = null;
 
 			try
 			{
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT * FROM artist", conn);
 				q.Prepare();
-				result = q.ExecuteReader();
+				reader = q.ExecuteReader();
 
-				while (result.Read())
+				while (reader.Read())
 				{
-					artists.Add(new Artist(result));
+					artists.Add(new Artist(reader));
 				}
 			}
 			catch (Exception e)
@@ -286,7 +286,7 @@ namespace WaveBox.DataModel.Model
 			}
 			finally
 			{
-				Database.Close(conn, result);
+				Database.Close(conn, reader);
 			}
 
 			artists.Sort(Artist.CompareArtistsByName);

@@ -10,58 +10,125 @@ namespace WaveBox.ApiHandler
 {
 	class ApiHandlerFactory
 	{
-		public static IApiHandler CreateApiHandler(string uri, HttpProcessor sh)
+		public static IApiHandler CreateApiHandler(string uri, HttpProcessor processor)
 		{
+			Console.WriteLine("[ApiHandlerFactory] uri: " + uri);
+
 			// Turn the input string into a UriWrapper, so we can parse its components with ease
 			UriWrapper uriW = new UriWrapper(uri);
-			
-			// authenticate before anything happens.  If no parameters are passed, or a username isn't provided,
-			// or a password isn't provided, return an error handler.
-			if (uriW.Parameters == null || (!uriW.Parameters.ContainsKey("u") || !uriW.Parameters.ContainsKey("p")))
-				return new ErrorApiHandler(uriW, sh, "Missing authentication data");
-
-			// Grab username and password from the URL parameters
-			string username = uriW.Parameters["u"];
-			string password = uriW.Parameters["p"];
-
-			// Generate a User object given the username from the URL.  If the User is invalid, or a bad password
-			// is provided then return an error handler.
-			var user = new User(username);
-			if (user.UserId == 0 || !user.Authenticate(password))
-				return new ErrorApiHandler(uriW, sh, "Bad username or password");
 
 			// Ensure URL contains API call
-			if (uriW.FirstPart() == "api")
+			if (uriW.IsApiCall)
 			{
-				// Store API call type in a temporary string.  Left this assignment in case the URL format
-				// changes at some point.
-				string part1 = uriW.UriPart(1);
+				// Grab the action and authentication info
+				string action = uriW.Action;
 
-				// Determine call type.  Note that the repeated if/else is more efficient than a switch. <-- Actually switch for strings is much more efficent in Mono than .NET, so it's a wash, but in either case it's such a small portion of the total API call time as to be meaningless 
-				if(part1 == "artists")
-					return new ArtistsApiHandler(uriW, sh, user.UserId);
-				else if(part1 == "albums")
-					return new AlbumsApiHandler(uriW, sh, user.UserId);
-				else if(part1 == "cover")
-					return new CoverArtApiHandler(uriW, sh, user.UserId);
-				else if(part1 == "folders")
-					return new FoldersApiHandler(uriW, sh, user.UserId);
-				else if(part1 == "jukebox")
-					return new JukeboxApiHandler(uriW, sh, user.UserId);
-                else if(part1 == "podcast")
-                    return new PodcastApiHandler(uriW, sh, user.UserId);
-				else if(part1 == "scrobble")
-					return new ScrobbleApiHandler(uriW, sh, user.UserId);
-				else if(part1 == "songs")
-					return new SongsApiHandler(uriW, sh, user.UserId);
-				else if(part1 == "status")
-					return new StatusApiHandler(uriW, sh, user.UserId);
-				else if(part1 == "stream")
-					return new StreamApiHandler(uriW, sh, user.UserId);
+				string sessionId = null;
+				string username = null;
+				string password = null;
+				string clientName = null;
+				uriW.Parameters.TryGetValue("s", out sessionId);
+				uriW.Parameters.TryGetValue("u", out username);
+				uriW.Parameters.TryGetValue("p", out password);
+				uriW.Parameters.TryGetValue("c", out clientName);
+
+				User user = Authenticate(action, sessionId, username, password, clientName);
+				if (user == null)
+				{
+					// No user object returned, so we failed to authenticate
+					return new ErrorApiHandler(uriW, processor, "Authentication failed");
+				}
+				else
+				{
+					// Determine call type.  Note that the repeated if/else is more efficient than a switch. <-- Actually switch for strings is much more efficent in Mono than .NET, so it's a wash, but in either case it's such a small portion of the total API call time as to be meaningless 
+					if (action == "login")
+					{
+						return new LoginApiHandler(uriW, processor, user);
+					}
+					else if (action == "artists")
+					{
+						return new ArtistsApiHandler(uriW, processor, user);
+					}
+					else if (action == "albums")
+					{
+						return new AlbumsApiHandler(uriW, processor, user);
+					}
+					else if (action == "cover")
+					{
+						return new CoverArtApiHandler(uriW, processor, user);
+					}
+					else if (action == "folders")
+					{
+						return new FoldersApiHandler(uriW, processor, user);
+					}
+					else if (action == "jukebox")
+					{
+						return new JukeboxApiHandler(uriW, processor, user);
+					}
+					else if (action == "podcast")
+					{
+						return new PodcastApiHandler(uriW, processor, user);
+					}
+					else if (action == "scrobble")
+					{
+						return new ScrobbleApiHandler(uriW, processor, user);
+					}
+					else if (action == "songs")
+					{
+						return new SongsApiHandler(uriW, processor, user);
+					}
+					else if (action == "status")
+					{
+						return new StatusApiHandler(uriW, processor, user);
+					}
+					else if (action == "stream")
+					{
+						return new StreamApiHandler(uriW, processor, user);
+					}
+				}
+			}
+			else
+			{
+				// Serve the web interface
+				return new WebInterfaceHandler(uriW, processor);
 			}
 
 			// If the handler wasn't returned yet, return an error handler
-			return new ErrorApiHandler(uriW, sh);
+			return new ErrorApiHandler(uriW, processor);
+		}
+
+		public static User Authenticate(string action, string sessionId, string username, string password, string clientName)
+		{
+			User user = null;
+			if (action == "login" || action == "users")
+			{
+				// Must use username and password, and create a session
+				user = new User(username);
+				if (user.UserId == null || !user.CreateSession(password, clientName))
+				{
+					user = null;
+				}
+			}
+			else if (action == "users")
+			{
+				// Must use username and password, but don't create a session
+				user = new User(username);
+				if (user.UserId == null || !user.Authenticate(password))
+				{
+					user = null;
+				}
+			}
+			else
+			{
+				// Must use sessionId
+				username = User.UserNameForSessionid(sessionId);
+				if ((object)username != null)
+				{
+					user = new User(username);
+				}
+			}
+
+			return user;
 		}
 	}
 }

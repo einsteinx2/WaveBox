@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
 using Newtonsoft.Json;
 using WaveBox.Http;
@@ -13,7 +14,7 @@ namespace WaveBox.ApiHandler.Handlers
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 
-		public SongsApiHandler(UriWrapper uri, IHttpProcessor processor, int userId)
+		public SongsApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;
@@ -22,20 +23,27 @@ namespace WaveBox.ApiHandler.Handlers
 		public void Process()
 		{
 			List<Song> listOfSongs = new List<Song>();
-			string json = "";
 
-			if (Uri.UriPart(2) == null)
+			// Try to get the album id
+			bool success = false;
+			int id = 0;
+			if (Uri.Parameters.ContainsKey("id"))
 			{
-				listOfSongs = Song.allSongs();
+				success = Int32.TryParse(Uri.Parameters["id"], out id);
+			}
+
+			if (success)
+			{
+				listOfSongs.Add(new Song(Convert.ToInt32(Uri.UriPart(2))));
 			}
 			else
 			{
-				listOfSongs.Add(new Song(Convert.ToInt32(Uri.UriPart(2))));
+				listOfSongs = Song.allSongs();
 			}
 
 			try
 			{
-				json = JsonConvert.SerializeObject(new SongsResponse(null, listOfSongs), Formatting.None);
+				string json = JsonConvert.SerializeObject(new SongsResponse(null, listOfSongs), Settings.JsonFormatting);
 				Processor.WriteJson(json);
 			}
 			catch(Exception e)
@@ -43,20 +51,20 @@ namespace WaveBox.ApiHandler.Handlers
 				Console.WriteLine("[SONGAPI] ERROR: " + e.ToString());
 			}
 		}
-	}
 
-	class SongsResponse
-	{
-		[JsonProperty("error")]
-		public string Error { get; set; }
-
-		[JsonProperty("songs")]
-		public List<Song> Songs { get; set; }
-
-		public SongsResponse(string error, List<Song> songs)
+		private class SongsResponse
 		{
-			Error = error;
-			Songs = songs;
+			[JsonProperty("error")]
+			public string Error { get; set; }
+
+			[JsonProperty("songs")]
+			public List<Song> Songs { get; set; }
+
+			public SongsResponse(string error, List<Song> songs)
+			{
+				Error = error;
+				Songs = songs;
+			}
 		}
 	}
 }

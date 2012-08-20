@@ -5,25 +5,31 @@ using System.Text;
 
 namespace WaveBox.ApiHandler
 {
-	class UriWrapper
+	public class UriWrapper
 	{
-		private List<string> UriParts { get; set; }
-		private string Uri { get; set; }
+		public List<string> UriParts { get; set; }
+		public string UriString { get; set; }
 		public Dictionary<string, string> Parameters { get; set; }
+
+		public string FirstPart { get { return UriPart(0); } }
+		public string LastPart { get { return UriPart(UriParts.Count - 1); } }
+
+		public bool IsApiCall { get { return FirstPart == "api"; } }
+		public string Action { get { return IsApiCall ? UriPart(1).ToLower() : null; } }
 
 		/// <summary>
 		/// Constructor for UriWrapper, takes in a URI string and enables methods to parse its pieces
 		/// </summary>
-		public UriWrapper(string uri)
+		public UriWrapper(string uriString)
 		{
 			// Store the original URI in a string
-			Uri = uri;
+			UriString = uriString;
 
 			// Parse parameters in the URI
 			ParseParameters();
 
 			// Store the parts of the URI in a List of strings
-			UriParts = RemoveEmptyElements(Uri.Split('/'));
+			UriParts = RemoveEmptyElements(UriString.Split('/'));
 		}
 
 		/// <summary>
@@ -32,13 +38,13 @@ namespace WaveBox.ApiHandler
 		private void ParseParameters()
 		{
 			// Make sure the URI contains parameters
-			if(Uri.Contains('?'))
+			if(UriString.Contains('?'))
 			{
 				// Initialize a dictionary
 				Parameters = new Dictionary<string,string>();
 
 				// if we split the uri by the question mark, the second part of the split will be the params
-				string parametersString = Uri.Split('?')[1];
+				string parametersString = UriString.Split('?')[1];
 				string[] splitParams = parametersString.Split(new char[]{'=', '&'});
 
 				// Add parameters to the dictionary as we parse the parameters array
@@ -47,8 +53,8 @@ namespace WaveBox.ApiHandler
 					Parameters.Add(splitParams[i], splitParams[i + 1]);
 				}
 
-				// Store the URI before parameters in the Uri property
-				Uri = Uri.Substring(0, Uri.IndexOf('?'));
+				// Store the URI before parameters in the UriString property
+				UriString = UriString.Substring(0, UriString.IndexOf('?'));
 			}
 		}
 
@@ -65,22 +71,6 @@ namespace WaveBox.ApiHandler
 
 			// Return null if the index was out of range
 			return null;
-		}
-
-		/// <summary>
-		/// Return the first part of the URI
-		/// </summary>
-		public string FirstPart()
-		{
-			return UriPart(0);
-		}
-
-		/// <summary>
-		/// Return the last part of the URI
-		/// </summary>
-		public string LastPart()
-		{
-			return UriPart(UriParts.Count - 1);
 		}
 
 		/// <summary>

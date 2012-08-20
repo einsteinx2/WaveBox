@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
 using Newtonsoft.Json;
 using WaveBox.Http;
@@ -13,7 +14,7 @@ namespace WaveBox.ApiHandler.Handlers
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 
-		public ArtistsApiHandler(UriWrapper uri, IHttpProcessor processor, int userId)
+		public ArtistsApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;
@@ -24,23 +25,37 @@ namespace WaveBox.ApiHandler.Handlers
 			List<Artist> listOfArtists = new List<Artist>();
 			List<Song> listOfSongs = new List<Song>();
 			List<Album> listOfAlbums = new List<Album>();
-			string json = "";
 
-			if (Uri.UriPart(2) == null)
+			// Try to get the artist id
+			bool success = false;
+			int id = 0;
+			if (Uri.Parameters.ContainsKey("id"))
 			{
-				listOfArtists = new Artist().AllArtists();
+				success = Int32.TryParse(Uri.Parameters["id"], out id);
+			}
+
+			if (success)
+			{
+				Artist artist = new Artist(id);
+				listOfArtists.Add(artist);
+				listOfAlbums = artist.ListOfAlbums();
+
+				string includeSongs;
+				Uri.Parameters.TryGetValue("includeSongs", out includeSongs);
+
+				if ((object)includeSongs != null && includeSongs.ToLower() == "true")
+				{
+					listOfSongs = artist.ListOfSongs();
+				}
 			}
 			else
 			{
-				var artist = new Artist(Convert.ToInt32(Uri.UriPart(2)));
-				listOfArtists.Add(artist);
-				listOfSongs = artist.ListOfSongs();
-				listOfAlbums = artist.ListOfAlbums();
+				listOfArtists = new Artist().AllArtists();
 			}
 
 			try
 			{
-				json = JsonConvert.SerializeObject(new ArtistsResponse(null, listOfArtists, listOfAlbums, listOfSongs), Formatting.None);
+				string json = JsonConvert.SerializeObject(new ArtistsResponse(null, listOfArtists, listOfAlbums, listOfSongs), Settings.JsonFormatting);
 				Processor.WriteJson(json);
 			}
 			catch(Exception e)
@@ -48,28 +63,28 @@ namespace WaveBox.ApiHandler.Handlers
 				Console.WriteLine("[ARTISTSAPI(1)] ERROR: " + e.ToString());
 			}
 		}
-	}
 
-	class ArtistsResponse
-	{
-		[JsonProperty("error")]
-		public string Error { get; set; }
-
-		[JsonProperty("artists")]
-		public List<Artist> Artists { get; set; }
-
-		[JsonProperty("albums")]
-		public List<Album> Albums { get; set; }
-
-		[JsonProperty("songs")]
-		public List<Song> Songs { get; set; }
-
-		public ArtistsResponse(string error, List<Artist> artists, List<Album> albums, List<Song> songs)
+		private class ArtistsResponse
 		{
-			Error = error;
-			Artists = artists;
-			Songs = songs;
-			Albums = albums;
+			[JsonProperty("error")]
+			public string Error { get; set; }
+
+			[JsonProperty("artists")]
+			public List<Artist> Artists { get; set; }
+
+			[JsonProperty("albums")]
+			public List<Album> Albums { get; set; }
+
+			[JsonProperty("songs")]
+			public List<Song> Songs { get; set; }
+
+			public ArtistsResponse(string error, List<Artist> artists, List<Album> albums, List<Song> songs)
+			{
+				Error = error;
+				Artists = artists;
+				Songs = songs;
+				Albums = albums;
+			}
 		}
 	}
 }

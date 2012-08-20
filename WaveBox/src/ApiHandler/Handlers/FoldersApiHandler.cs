@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
+using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
 using WaveBox.Http;
 
@@ -13,7 +14,7 @@ namespace WaveBox.ApiHandler.Handlers
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 
-		public FoldersApiHandler(UriWrapper uri, IHttpProcessor processor, int userId)
+		public FoldersApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;
@@ -22,27 +23,32 @@ namespace WaveBox.ApiHandler.Handlers
 		public void Process()
 		{
 			List<Folder> listOfFolders = new List<Folder>();
-			List<Song> listOfSongs = new List<Song>();
-			string json = "";
+			List<MediaItem> listOfMediaItems = new List<MediaItem>();
 
-			var stuff = Uri.UriPart(2);
-			Console.WriteLine("[FOLDERAPI]: UriPart(2) = " + stuff);
-
-			// if the second part of the URI is null or contains GET parameters, we should ignore it and send the folder listing.
-			if (stuff == null || stuff.Contains('='))
+			// Try to get the folder id
+			bool success = false;
+			int id = 0;
+			if (Uri.Parameters.ContainsKey("id"))
 			{
-				listOfFolders = Folder.TopLevelFolders();
+				success = Int32.TryParse(Uri.Parameters["id"], out id);
+			}
+
+			if (success)
+			{
+				// Return the folder for this id
+				var folder = new Folder(id);
+				listOfFolders = folder.ListOfSubFolders();
+				listOfMediaItems = folder.ListOfMediaItems();
 			}
 			else
 			{
-				var folder = new Folder(Convert.ToInt32(stuff));
-				listOfFolders = folder.ListOfSubFolders();
-				listOfSongs = folder.ListOfSongs();
+				// If no id parameter, return media folders
+				listOfFolders = Folder.MediaFolders();
 			}
 
 			try
 			{
-				json = JsonConvert.SerializeObject(new FoldersResponse(null, listOfFolders, listOfSongs), Formatting.None);
+				string json = JsonConvert.SerializeObject(new FoldersResponse(null, listOfFolders, listOfMediaItems), Settings.JsonFormatting);
 				Processor.WriteJson(json);
 			}
 			catch(Exception e)
@@ -50,24 +56,24 @@ namespace WaveBox.ApiHandler.Handlers
 				Console.WriteLine("[FOLDERAPI(1)] ERROR: " + e.ToString());
 			}
 		}
-	}
 
-	class FoldersResponse
-	{
-        [JsonProperty("error")]
-		public string Error { get; set; }
-
-        [JsonProperty("folders")]
-		public List<Folder> Folders { get; set; }
-
-        [JsonProperty("songs")]
-		public List<Song> Songs { get; set; }
-
-		public FoldersResponse(string error, List<Folder> folders, List<Song> songs)
+		private class FoldersResponse
 		{
-			Error = error;
-			Folders = folders;
-			Songs = songs;
+	        [JsonProperty("error")]
+			public string Error { get; set; }
+
+	        [JsonProperty("folders")]
+			public List<Folder> Folders { get; set; }
+
+	        [JsonProperty("mediaItems")]
+			public List<MediaItem> MediaItems { get; set; }
+
+			public FoldersResponse(string error, List<Folder> folders, List<MediaItem> mediaItems)
+			{
+				Error = error;
+				Folders = folders;
+				MediaItems = mediaItems;
+			}
 		}
 	}
 }

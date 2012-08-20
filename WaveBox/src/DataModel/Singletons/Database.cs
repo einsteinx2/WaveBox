@@ -31,7 +31,7 @@ namespace WaveBox.DataModel.Singletons
 
 		public static void Close(IDbConnection connection, IDataReader reader)
 		{
-			if ((object)reader != null && !reader.IsClosed) 
+			if ((object)reader != null && !reader.IsClosed)
 			{
 				reader.Close();
 			}
@@ -45,7 +45,7 @@ namespace WaveBox.DataModel.Singletons
 		// IDbCommand extension to add named parameters without writing a bunch of code each time
 		public static void AddNamedParam(this IDbCommand command, string name, Object value)
 		{
-		    IDataParameter param = command.CreateParameter();
+			IDataParameter param = command.CreateParameter();
 			param.ParameterName = name;
 			param.Value = value;
 			command.Parameters.Add(param);
@@ -54,44 +54,46 @@ namespace WaveBox.DataModel.Singletons
 		public static int? GenerateItemId(ItemType itemType)
 		{
 			int? itemId = null;
-			bool success = false;
 			IDbConnection conn = null;
-			IDataReader result = null;
-			try 
+			IDataReader reader = null;
+			try
 			{
-				conn = Database.GetDbConnection ();
-				IDbCommand q = Database.GetDbCommand ("INSERT INTO item (item_type) VALUES (@itemType)", conn);
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("INSERT INTO item (item_type_id) VALUES (@itemType)", conn);
 				q.AddNamedParam("@itemType", itemType);
-				q.Prepare ();
+				q.Prepare();
 				int affected = (int)q.ExecuteNonQuery();
 
 				if (affected >= 1)
-					success = true;
-			} 
-			catch (Exception e) 
-			{
-				Console.WriteLine ("[ALBUM(3)] ERROR: " + e.ToString());
-			} 
-			finally 
-			{
-				Database.Close(conn, result);
-			}
+				{
+					IDataReader reader2 = null;
+					try
+					{
+						q.CommandText = "SELECT last_insert_rowid()";
+						reader2 = q.ExecuteReader();
 
-			if (success) 
-			{
-				try 
-				{
-					IDbCommand q = Database.GetDbCommand("SELECT last_insert_rowid()", conn);
-					itemId = Convert.ToInt32((q.ExecuteScalar()).ToString());
-				} 
-				catch (Exception e)
-				{
-					Console.WriteLine ("[DATABASE] ERROR generating item id: " + e.ToString ());
-				} 
-				finally 
-				{
-					Database.Close (conn, result);
+						if (reader2.Read())
+						{
+							itemId = reader2.GetInt32(0);
+						}
+					}
+					catch(Exception e)
+					{
+						Console.WriteLine("[ITEMID] GenerateItemId ERROR: " + e.ToString());
+					}
+					finally
+					{
+						Database.Close(null, reader2);
+					}
 				}
+			}
+			catch(Exception e)
+			{
+				Console.WriteLine("[ITEMID] GenerateItemId ERROR: " + e.ToString());
+			}
+			finally
+			{
+				Database.Close(conn, reader);
 			}
 
 			return itemId;
@@ -101,27 +103,27 @@ namespace WaveBox.DataModel.Singletons
 		{
 			int itemTypeId = 0;
 			IDbConnection conn = null;
-			IDataReader result = null;
-			try 
+			IDataReader reader = null;
+			try
 			{
-				conn = Database.GetDbConnection ();
-				IDbCommand q = Database.GetDbCommand ("SELECT itemTypeId FROM item WHERE item_id = @itemid)", conn);
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT itemTypeId FROM item WHERE item_id = @itemid)", conn);
 				q.AddNamedParam("@itemid", itemId);
-				q.Prepare ();
-				result = q.ExecuteReader();
+				q.Prepare();
+				reader = q.ExecuteReader();
 
-				if (result.Read())
+				if (reader.Read())
 				{
-					itemTypeId = result.GetInt32(0);
+					itemTypeId = reader.GetInt32(0);
 				}
-			} 
-			catch (Exception e) 
+			}
+			catch(Exception e)
 			{
-				Console.WriteLine ("[ALBUM(3)] ERROR: " + e.ToString());
-			} 
-			finally 
+				Console.WriteLine("[ALBUM(3)] ERROR: " + e.ToString());
+			}
+			finally
 			{
-				Database.Close(conn, result);
+				Database.Close(conn, reader);
 			}
 
 			return ItemTypeExtensions.ItemTypeForId(itemTypeId);
@@ -131,7 +133,7 @@ namespace WaveBox.DataModel.Singletons
 		{
 			bool success = false;
 			IDbConnection conn = null;
-			IDataReader result = null;
+			IDataReader reader = null;
 			try 
 			{
 				conn = Database.GetDbConnection ();
@@ -149,7 +151,7 @@ namespace WaveBox.DataModel.Singletons
 			} 
 			finally 
 			{
-				Database.Close(conn, result);
+				Database.Close(conn, reader);
 			}
 
 			return success;

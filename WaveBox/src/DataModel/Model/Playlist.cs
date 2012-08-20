@@ -29,7 +29,7 @@ namespace WaveBox.DataModel.Model
 
 		public Playlist(IDataReader reader)
 		{
-			SetPropertiesFromQueryResult(reader);
+			SetPropertiesFromQueryReader(reader);
 		}
 
 		public Playlist(int playlistId)
@@ -48,7 +48,7 @@ namespace WaveBox.DataModel.Model
 
 				if (reader.Read())
 				{
-					SetPropertiesFromQueryResult(reader);
+					SetPropertiesFromQueryReader(reader);
 				}
 			}
 			catch (Exception e)
@@ -79,7 +79,7 @@ namespace WaveBox.DataModel.Model
 
 				if (reader.Read())
 				{
-					SetPropertiesFromQueryResult(reader);
+					SetPropertiesFromQueryReader(reader);
 				}
 			}
 			catch (Exception e)
@@ -94,7 +94,7 @@ namespace WaveBox.DataModel.Model
 
 		// Private methods
 
-		private void SetPropertiesFromQueryResult(IDataReader reader)
+		private void SetPropertiesFromQueryReader(IDataReader reader)
 		{
 			try
 			{

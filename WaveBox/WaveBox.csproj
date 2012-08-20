@@ -132,6 +132,8 @@
     <Compile Include="src\PodcastManagement\Podcast.cs" />
     <Compile Include="src\PodcastManagement\DownloadQueue.cs" />
     <Compile Include="src\HttpServer\IHttpProcessor.cs" />
+    <Compile Include="src\ApiHandler\Handlers\LoginApiHandler.cs" />
+    <Compile Include="src\ApiHandler\Handlers\WebInterfaceHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="bass.dll">

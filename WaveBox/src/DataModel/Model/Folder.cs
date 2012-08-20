@@ -202,13 +202,16 @@ namespace WaveBox.DataModel.Model
 			// TO DO: scanning!  yay!
 		}
 
-		public List<Song> ListOfSongs()
+		public List<MediaItem> ListOfMediaItems()
 		{
-			var songs = new List<Song>();
+			List<MediaItem> mediaItems = new List<MediaItem>();
+
+			List<Song> songs = new List<Song>();
 
 			IDbConnection conn = null;
 			IDataReader reader = null;
 
+			// For now just get songs
 			try
 			{
                 conn = Database.GetDbConnection();
@@ -218,8 +221,6 @@ namespace WaveBox.DataModel.Model
 				    "WHERE song_folder_id = @folderid", conn);
 
 				q.AddNamedParam("@folderid", FolderId);
-
-
 				q.Prepare();
 				reader = q.ExecuteReader();
 
@@ -238,7 +239,9 @@ namespace WaveBox.DataModel.Model
 			}
 
 			songs.Sort(Song.CompareSongsByDiscAndTrack);
-			return songs;
+
+			mediaItems.AddRange(songs);
+			return mediaItems;
 		}
 
 		public List<Folder> ListOfSubFolders()

@@ -31,13 +31,13 @@ namespace WaveBox.DataModel.Model
 
 		public Album(IDataReader reader)
 		{
-			SetPropertiesFromQueryResult(reader);
+			SetPropertiesFromQueryReader(reader);
 		}
 
 		public Album(int albumId)
 		{
 			IDbConnection conn = null;
-			IDataReader result = null;
+			IDataReader reader = null;
 
 			try
 			{
@@ -46,11 +46,11 @@ namespace WaveBox.DataModel.Model
 				q.AddNamedParam("@albumid", albumId);
 
 				q.Prepare();
-				result = q.ExecuteReader();
+				reader = q.ExecuteReader();
 
-				if (result.Read())
+				if (reader.Read())
 				{
-					SetPropertiesFromQueryResult(result);
+					SetPropertiesFromQueryReader(reader);
 				}
 			}
 			catch (Exception e)
@@ -59,7 +59,7 @@ namespace WaveBox.DataModel.Model
 			}
 			finally
 			{
-				Database.Close(conn, result);
+				Database.Close(conn, reader);
 			}
 		}
 
@@ -73,7 +73,7 @@ namespace WaveBox.DataModel.Model
 			AlbumName = albumName;
 
 			IDbConnection conn = null;
-			IDataReader result = null;
+			IDataReader reader = null;
 
 			try
 			{
@@ -82,11 +82,11 @@ namespace WaveBox.DataModel.Model
 				//q.Parameters.AddWithValue("@itemtypeid", ItemTypeId);
 				q.AddNamedParam("@albumname", AlbumName);
 				q.Prepare();
-				result = q.ExecuteReader();
+				reader = q.ExecuteReader();
 
-				if (result.Read())
+				if (reader.Read())
 				{
-					SetPropertiesFromQueryResult(result);
+					SetPropertiesFromQueryReader(reader);
 				}
 				else
 				{
@@ -100,7 +100,7 @@ namespace WaveBox.DataModel.Model
 			}
 			finally
 			{
-				Database.Close(conn, result);
+				Database.Close(conn, reader);
 			}
 		}
 
@@ -113,7 +113,7 @@ namespace WaveBox.DataModel.Model
 			bool success = false;
 
 			IDbConnection conn = null;
-			IDataReader result = null;
+			IDataReader reader = null;
 			try
 			{
 				conn = Database.GetDbConnection();
@@ -133,13 +133,13 @@ namespace WaveBox.DataModel.Model
 			}
 			finally
 			{
-				Database.Close(conn, result);
+				Database.Close(conn, reader);
 			}
 
 			return success;
 		}
 
-		private void SetPropertiesFromQueryResult(IDataReader reader)
+		private void SetPropertiesFromQueryReader(IDataReader reader)
 		{
 			if(reader.IsDBNull(reader.GetOrdinal("artist_id")))
 			{

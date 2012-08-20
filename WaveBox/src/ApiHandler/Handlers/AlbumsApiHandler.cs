@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using WaveBox.DataModel.Singletons;
 using WaveBox.ApiHandler;
 using WaveBox.DataModel.Model;
 using Newtonsoft.Json;
@@ -13,9 +14,9 @@ namespace WaveBox.ApiHandler.Handlers
 	{
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
-		private List<Song> songs;
 
-		public AlbumsApiHandler(UriWrapper uri, IHttpProcessor processor, int userId)
+
+		public AlbumsApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;
@@ -23,24 +24,31 @@ namespace WaveBox.ApiHandler.Handlers
 
 		public void Process()
 		{
-			List<Album> listToReturn = new List<Album>();
-			string json;
+			List<Song> songs = new List<Song>();
+			List<Album> albums = new List<Album>();
 
-			if (Uri.UriPart(2) == null)
+			// Try to get the album id
+			bool success = false;
+			int id = 0;
+			if (Uri.Parameters.ContainsKey("id"))
 			{
-				listToReturn = Album.AllAlbums();
+				success = Int32.TryParse(Uri.Parameters["id"], out id);
 			}
 
+			if (success)
+			{
+				Album album = new Album(id);
+				albums.Add(album);
+				songs = album.ListOfSongs();
+			}
 			else
 			{
-				var album = new Album(int.Parse(Uri.UriPart(2)));
-				listToReturn.Add(album);
-				songs = album.ListOfSongs();
+				albums = Album.AllAlbums();
 			}
 
 			try
 			{
-				json = JsonConvert.SerializeObject(new AlbumsResponse(null, listToReturn, songs), Formatting.None);
+				string json = JsonConvert.SerializeObject(new AlbumsResponse(null, albums, songs), Settings.JsonFormatting);
 				Processor.WriteJson(json);
 			}
 			catch(Exception e)
@@ -48,24 +56,24 @@ namespace WaveBox.ApiHandler.Handlers
 				Console.WriteLine("[ALBUMSAPI(1)] ERROR: " + e.ToString());
 			}
 		}
-	}
 
-	class AlbumsResponse
-	{
-		[JsonProperty("error")]
-		public string Error { get; set; }
-
-		[JsonProperty("albums")]
-		public List<Album> Albums { get; set; }
-
-		[JsonProperty("songs")]
-		public List<Song> Songs { get; set; }
-
-		public AlbumsResponse(string error, List<Album> albums, List<Song> songs)
+		private class AlbumsResponse
 		{
-			Error = error;
-			Albums = albums;
-			Songs = songs;
+			[JsonProperty("error")]
+			public string Error { get; set; }
+
+			[JsonProperty("albums")]
+			public List<Album> Albums { get; set; }
+
+			[JsonProperty("songs")]
+			public List<Song> Songs { get; set; }
+
+			public AlbumsResponse(string error, List<Album> albums, List<Song> songs)
+			{
+				Error = error;
+				Albums = albums;
+				Songs = songs;
+			}
 		}
 	}
 }

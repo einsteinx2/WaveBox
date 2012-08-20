@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using WaveBox.DataModel.Model;
 using Newtonsoft.Json;
+using WaveBox.DataModel.Model;
 using System.IO;
 
 namespace WaveBox.DataModel.Singletons
@@ -14,6 +14,9 @@ namespace WaveBox.DataModel.Singletons
 
 		private static double version = 1.0;
 		public static double Version { get { return version; } }
+
+		private static bool prettyJson = true;
+		public static Formatting JsonFormatting { get { return prettyJson ? Formatting.Indented : Formatting.None; } }
 
         private static string podcastFolder = null;
         public static string PodcastFolder { get { return podcastFolder; } }

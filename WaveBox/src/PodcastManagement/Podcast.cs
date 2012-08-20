@@ -96,7 +96,7 @@ namespace WaveBox.PodcastManagement
 
         public Podcast(IDataReader reader)
         {
-            SetPropertiesFromQueryResult(reader);
+            SetPropertiesFromQueryReader(reader);
         }
 
         /* Instance methods */
@@ -281,7 +281,7 @@ namespace WaveBox.PodcastManagement
             return list;
         }
 
-        public void SetPropertiesFromQueryResult(IDataReader reader)
+        public void SetPropertiesFromQueryReader(IDataReader reader)
         {
             PodcastId = reader.GetInt64(reader.GetOrdinal("podcast_id"));
             EpisodeKeepCap = reader.GetInt64(reader.GetOrdinal("podcast_keep_cap"));

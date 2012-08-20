@@ -64,7 +64,7 @@ namespace WaveBox.DataModel.Model
 
 				if (reader.Read())
 				{
-					SetPropertiesFromQueryResult(reader);
+					SetPropertiesFromQueryReader(reader);
 				}
 			}
 			catch (Exception e)
@@ -166,10 +166,10 @@ namespace WaveBox.DataModel.Model
 
 		public Song(IDataReader reader)
 		{
-			SetPropertiesFromQueryResult(reader);
+			SetPropertiesFromQueryReader(reader);
 		}
 
-		private void SetPropertiesFromQueryResult(IDataReader reader)
+		private void SetPropertiesFromQueryReader(IDataReader reader)
 		{
 			try
 			{

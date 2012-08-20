@@ -9,13 +9,45 @@ using System.Security.Cryptography;
 
 namespace WaveBox.DataModel.Model
 {
-	class User
+	public class User
 	{
-		public int UserId { get; set; }
+		public int? UserId { get; set; }
 		public string UserName { get; set; }
 		public string PasswordHash { get; set; }
 		public string PasswordSalt { get; set; }
+		public string SessionId { get; set; }
 		public string LastfmSession { get; set; }
+
+		public static string UserNameForSessionid(string sessionId)
+		{
+			string userName = null;
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT user.user_name FROM session JOIN user USING (user_id) WHERE session_id = @sessionid", conn);
+				q.AddNamedParam("@sessionid", sessionId);
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				if (reader.Read())
+				{
+					userName = reader.GetString(0);
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("[USER(1)] " + e.ToString());
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			return userName;
+		}
 		
 		public User()
 		{
@@ -38,7 +70,7 @@ namespace WaveBox.DataModel.Model
 
 				if (reader.Read())
 				{
-					SetPropertiesFromQueryResult(reader);
+					SetPropertiesFromQueryReader(reader);
 				}
 			}
 			catch (Exception e)
@@ -68,7 +100,7 @@ namespace WaveBox.DataModel.Model
 
 				if (reader.Read())
 				{
-					SetPropertiesFromQueryResult(reader);
+					SetPropertiesFromQueryReader(reader);
 				}
 			}
 			catch (Exception e)
@@ -81,19 +113,21 @@ namespace WaveBox.DataModel.Model
 			}
 		}
 
-		private void SetPropertiesFromQueryResult (IDataReader reader)
+		private void SetPropertiesFromQueryReader(IDataReader reader)
 		{
-			UserId = reader.GetInt32 (reader.GetOrdinal ("user_id"));
-			UserName = reader.GetString (reader.GetOrdinal ("user_name"));
-			PasswordHash = reader.GetString (reader.GetOrdinal ("user_password"));
-			PasswordSalt = reader.GetString (reader.GetOrdinal ("user_salt"));
+			UserId = reader.GetInt32(reader.GetOrdinal("user_id"));
+			UserName = reader.GetString(reader.GetOrdinal("user_name"));
+			PasswordHash = reader.GetString(reader.GetOrdinal("user_password"));
+			PasswordSalt = reader.GetString(reader.GetOrdinal("user_salt"));
 
-			if (reader.GetValue (reader.GetOrdinal ("user_lastfm_session")) != DBNull.Value) 
+			if (reader.GetValue(reader.GetOrdinal("user_lastfm_session")) != DBNull.Value)
 			{
-				LastfmSession = reader.GetString (reader.GetOrdinal ("user_lastfm_session"));
+				LastfmSession = reader.GetString(reader.GetOrdinal("user_lastfm_session"));
 			}
-
-			else LastfmSession = null;
+			else
+			{
+				LastfmSession = null;
+			}
 		}
 
 		private static string Sha1(string sumthis)
@@ -104,7 +138,7 @@ namespace WaveBox.DataModel.Model
 			}
 
 			var provider = new SHA1CryptoServiceProvider();
-			return BitConverter.ToString(provider.ComputeHash(Encoding.ASCII.GetBytes(sumthis)));
+			return BitConverter.ToString(provider.ComputeHash(Encoding.ASCII.GetBytes(sumthis))).Replace("-", "");
 		}
 
 		private static string ComputePasswordHash(string password, string salt)
@@ -219,7 +253,59 @@ namespace WaveBox.DataModel.Model
 		public bool Authenticate(string password)
 		{
 			var hash = ComputePasswordHash(password, PasswordSalt);
-			return hash == PasswordHash ? true : false;
+			return hash == PasswordHash;
+		}
+
+		public bool CreateSession(string password, string clientName)
+		{
+			if (Authenticate(password))
+			{
+				// Generate a random string to seed the SHA1 hash, rather than using 
+				// something like the current system time which would make it easier to 
+				// guess or brute force session ids
+				string randomString = RandomString(100);
+				SessionId = Sha1(randomString);
+
+				IDbConnection conn = null;
+				IDataReader reader = null;
+				try
+				{
+					conn = Database.GetDbConnection();
+					IDbCommand q = Database.GetDbCommand("INSERT INTO session (session_id, user_id, client_name) VALUES (@sessionid, @userid, @clientname)", conn);
+					q.AddNamedParam("@sessionid", SessionId);
+					q.AddNamedParam("@userid", UserId);
+					q.AddNamedParam("@clientname", clientName);
+					q.Prepare();
+					
+					int affected = q.ExecuteNonQuery();
+					if (affected > 0)
+					{
+						return true;
+					}
+				}
+				catch (Exception e)
+				{
+					Console.WriteLine("[USER(6)] " + e.ToString());
+					return false;
+				}
+				finally
+				{
+					Database.Close(conn, reader);
+				}
+			}
+			return false;
+		}
+
+		private readonly Random rng = new Random();
+		private const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789!@#$%^&*()";
+		private string RandomString(int size)
+		{
+		    char[] buffer = new char[size];
+		    for (int i = 0; i < size; i++)
+		    {
+		        buffer[i] = chars[rng.Next(chars.Length)];
+		    }
+		    return new string(buffer);
 		}
 	}
 }

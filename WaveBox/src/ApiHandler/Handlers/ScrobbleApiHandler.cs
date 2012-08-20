@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using WaveBox.ApiHandler;
 using WaveBox.DataModel.Model;
+using WaveBox.DataModel.Singletons;
 using Newtonsoft.Json;
 using WaveBox.Http;
 
@@ -13,20 +14,20 @@ namespace WaveBox.ApiHandler.Handlers
 	{
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
-		private int UserId { get; set; }
+		private User User { get; set; }
 
-		public ScrobbleApiHandler(UriWrapper uri, IHttpProcessor processor, int userId)
+		public ScrobbleApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;
-			UserId = userId;
+			User = user;
 		}
 
 		public void Process()
 		{
 			if (Uri.UriPart(1) == "scrobble")
 			{
-				var lfm = new Lastfm(UserId);
+				Lastfm lfm = new Lastfm(User);
 
 				if(!lfm.SessionAuthenticated)
 				{
@@ -98,31 +99,31 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 			}
 		}
+
+		private class ScrobbleResponse
+	    {
+	        [JsonProperty("error")]
+	        public string Error { get; set; }
+
+	        [JsonProperty("success")]
+	        public bool Success { get; set; }
+
+	        [JsonProperty("authUrl")]
+	        public string AuthUrl { get; set; }
+
+	        public ScrobbleResponse(string error, bool success)
+	        {
+	            Error = error;
+	            Success = success;
+	            AuthUrl = null;
+	        }
+
+	        public ScrobbleResponse(string error, bool success, string authUrl)
+	        {
+	            Error = error;
+	            Success = success;
+	            AuthUrl = authUrl;
+	        }
+	    }
 	}
-
-    class ScrobbleResponse
-    {
-        [JsonProperty("error")]
-        public string Error { get; set; }
-
-        [JsonProperty("success")]
-        public bool Success { get; set; }
-
-        [JsonProperty("authUrl")]
-        public string AuthUrl { get; set; }
-
-        public ScrobbleResponse(string error, bool success)
-        {
-            Error = error;
-            Success = success;
-            AuthUrl = null;
-        }
-
-        public ScrobbleResponse(string error, bool success, string authUrl)
-        {
-            Error = error;
-            Success = success;
-            AuthUrl = authUrl;
-        }
-    }
 }

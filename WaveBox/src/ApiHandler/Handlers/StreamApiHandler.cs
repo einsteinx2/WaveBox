@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using WaveBox.DataModel.Model;
 using WaveBox.Transcoding;
+using WaveBox.DataModel.Singletons;
 using System.IO;
 using WaveBox.Http;
 using System.Threading;
@@ -17,7 +18,7 @@ namespace WaveBox.ApiHandler.Handlers
 		private UriWrapper Uri { get; set; }
 		private ITranscoder Transcoder { get; set; }
 
-		public StreamApiHandler(UriWrapper uri, IHttpProcessor processor, int userId)
+		public StreamApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;
@@ -25,12 +26,34 @@ namespace WaveBox.ApiHandler.Handlers
 
 		public void Process()
 		{
-			if (Uri.UriPart(2) != null)
+			// Try to get the media item id
+			bool success = false;
+			int id = 0;
+			if (Uri.Parameters.ContainsKey("id"))
+			{
+				success = Int32.TryParse(Uri.Parameters["id"], out id);
+			}
+
+			if (success)
 			{
 				try
 				{
+					// Get the media item associated with this id
+					ItemType itemType = Database.ItemTypeForItemId(id);
+					MediaItem item = null;
+					if (itemType == ItemType.Song)
+					{
+						item = new Song(id);
+					}
+
+					// Return an error if none exists
+					if (item == null)
+					{
+						new ErrorApiHandler(Uri, Processor, "No media item exists for id: " + id).Process();
+						return;
+					}
+
 					// This will really be a mediaitem object, but it's just a song for now.
-					MediaItem item = new Song(Convert.ToInt32(Uri.UriPart(2)));
 					FileStream file = null;
 					int startOffset = 0;
 					long length = 0;
@@ -53,7 +76,9 @@ namespace WaveBox.ApiHandler.Handlers
 						// Get the quality
 						TranscodeQuality quality = TranscodeQuality.Medium; // Default to medium
 						if (Uri.Parameters.ContainsKey("transQuality"))
+						{
 							quality = (TranscodeQuality)Enum.Parse(typeof(TranscodeQuality), Uri.Parameters["transQuality"], true);
+						}
 
 						// Create the transcoder
 						Transcoder = TranscodeManager.Instance.TranscodeItem(item, type, quality);
@@ -64,13 +89,17 @@ namespace WaveBox.ApiHandler.Handlers
 						{
 							Console.WriteLine("[STREAM API] Checking if file exists");
 							if (File.Exists(Transcoder.OutputPath))
-							    break;
+							{
+								break;
+							}
 
 							Thread.Sleep(250);
 						}
 
-						if (File.Exists(Transcoder.OutputPath)) 
+						if (File.Exists(Transcoder.OutputPath))
+						{ 
 							file = new FileStream(Transcoder.OutputPath, FileMode.Open, FileAccess.Read);
+						}
 					}
 					else
 					{
@@ -81,17 +110,25 @@ namespace WaveBox.ApiHandler.Handlers
 
 					// Send the file
 					if (this.Transcoder == null || File.Exists(Transcoder.OutputPath))
+					{
 						Processor.WriteFile(file, startOffset, length);
+					}
 					else
+					{
 						Processor.WriteErrorHeader();
+					}
 
 					// Consume the transcode (if transcoded)
 					TranscodeManager.Instance.ConsumedTranscode(Transcoder);
 				}
-				catch (Exception e)
+				catch(Exception e)
 				{
 					Console.WriteLine("[STREAMAPI] ERROR: " + e.ToString());
 				}
+			}
+			else
+			{
+				new ErrorApiHandler(Uri, Processor, "Missing parameter: \"id\"").Process();
 			}
 		}
 	}

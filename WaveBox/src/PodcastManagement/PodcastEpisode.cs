@@ -53,7 +53,7 @@ namespace WaveBox.PodcastManagement
 
                 if (reader.Read())
                 {
-                    SetPropertiesFromQueryResult(reader);
+                    SetPropertiesFromQueryReader(reader);
                 }
                 else
                 {
@@ -149,7 +149,7 @@ namespace WaveBox.PodcastManagement
 
         /* Private methods */
 
-        private void SetPropertiesFromQueryResult(IDataReader reader)
+        private void SetPropertiesFromQueryReader(IDataReader reader)
         {
             EpisodeId = reader.GetInt32(reader.GetOrdinal("podcast_episode_id"));
             PodcastId = reader.GetInt32(reader.GetOrdinal("podcast_episode_podcast_id"));

@@ -54,7 +54,7 @@ namespace WaveBox.Http
                 return HttpContentType.VIDEOOGG;
             else if (ext == ".webm" || ext == ".webmv")
                 return HttpContentType.VIDEOWEBM;
-            else return HttpContentType.UNKNOWN;
+			else return HttpContentType.UNKNOWN;
         }
 
 		public HttpHeader()

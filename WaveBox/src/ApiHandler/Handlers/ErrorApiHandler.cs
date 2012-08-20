@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using WaveBox.DataModel.Singletons;
 using WaveBox.Http;
 using Newtonsoft.Json;
 
@@ -34,7 +35,7 @@ namespace WaveBox.ApiHandler.Handlers
 			var response = new Dictionary<string, string>();
 			response["error"] = Err;
 
-			var json = JsonConvert.SerializeObject(response, Formatting.None);
+			var json = JsonConvert.SerializeObject(response, Settings.JsonFormatting);
 			Processor.WriteJson(json);
 		}
 	}

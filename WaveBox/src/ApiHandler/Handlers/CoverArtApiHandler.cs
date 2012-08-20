@@ -16,53 +16,63 @@ namespace WaveBox.ApiHandler.Handlers
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 
-		public CoverArtApiHandler(UriWrapper uri, IHttpProcessor processor, int userId)
+		public CoverArtApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;
 		}
 
-		public void Process ()
+		public void Process()
 		{
 			// Check for the itemId
-			if (!Uri.Parameters.ContainsKey ("id")) {
-				Processor.WriteErrorHeader ();
+			if (!Uri.Parameters.ContainsKey("id"))
+			{
+				Processor.WriteErrorHeader();
 				return;
 			}
 
 			// Convert to integer
 			int itemId = Int32.MaxValue;
-			Int32.TryParse (Uri.Parameters ["id"], out itemId);
-			if (itemId == Int32.MaxValue) {
-				Processor.WriteErrorHeader ();
+			Int32.TryParse(Uri.Parameters["id"], out itemId);
+			if (itemId == Int32.MaxValue)
+			{
+				Processor.WriteErrorHeader();
 				return;
 			}
 
 			// Get the item type
-			ItemType type = Database.ItemTypeForItemId (itemId);
+			ItemType type = Database.ItemTypeForItemId(itemId);
 
 			// Send the appropriate art
 			Stream stream = null;
-			if (type == ItemType.Song) {
-				stream = GetSongArt (new Song (itemId));
-			} else if (type == ItemType.Folder) {
-				stream = GetFolderArt (new Folder (itemId));
-			} else if (type == ItemType.Album) {
-				stream = GetAlbumArt (new Album (itemId));
+			if (type == ItemType.Song)
+			{
+				stream = GetSongArt(new Song(itemId));
+			}
+			else if (type == ItemType.Folder)
+			{
+				stream = GetFolderArt(new Folder(itemId));
+			}
+			else if (type == ItemType.Album)
+			{
+				stream = GetAlbumArt(new Album(itemId));
 			}
 
-			if (stream == null) {
-				Processor.WriteErrorHeader ();
+			if (stream == null)
+			{
+				Processor.WriteErrorHeader();
 				return;
 			}
 
-			if (Uri.Parameters.ContainsKey ("size")) {
+			if (Uri.Parameters.ContainsKey("size"))
+			{
 				int size = Int32.MaxValue;
-				Int32.TryParse (Uri.Parameters ["size"], out size);	
-				if (size != Int32.MaxValue) {
-					Image resized = ResizeImage (new Bitmap (stream), new Size (size, size));
-					stream = new MemoryStream ();
-					resized.Save (stream, System.Drawing.Imaging.ImageFormat.Jpeg);
+				Int32.TryParse(Uri.Parameters["size"], out size);	
+				if (size != Int32.MaxValue)
+				{
+					Image resized = ResizeImage(new Bitmap(stream), new Size(size, size));
+					stream = new MemoryStream();
+					resized.Save(stream, System.Drawing.Imaging.ImageFormat.Jpeg);
 				}
 			}
 
@@ -70,21 +80,21 @@ namespace WaveBox.ApiHandler.Handlers
 		}
 
         private Stream GetSongArt(Song song)
-        {
-            var file = TagLib.File.Create(song.FilePath());
-            string folderImagePath = null;
+		{
+			var file = TagLib.File.Create(song.FilePath());
+			string folderImagePath = null;
 
-            if (Folder.ContainsImages(Path.GetDirectoryName(song.FilePath()), out folderImagePath))
-            {
-                return new FileStream(folderImagePath, FileMode.Open);
-            }
-            else if (file.Tag.Pictures.Length > 0)
-            {
-                return new MemoryStream(file.Tag.Pictures[0].Data.Data);
-            } 
+			if (Folder.ContainsImages(Path.GetDirectoryName(song.FilePath()), out folderImagePath))
+			{
+				return new FileStream(folderImagePath, FileMode.Open);
+			}
+			else if (file.Tag.Pictures.Length > 0)
+			{
+				return new MemoryStream(file.Tag.Pictures[0].Data.Data);
+			} 
 
-            return null;
-        }
+			return null;
+		}
 
         private Stream GetAlbumArt(Album album)
         {
@@ -92,25 +102,25 @@ namespace WaveBox.ApiHandler.Handlers
         }
 
         private Stream GetFolderArt(Folder folder)
-        {
-            string imagePath = null;
-            if (Folder.ContainsImages(folder.FolderPath, out imagePath))
-            {
-                return new FileStream(imagePath, FileMode.Open);
-            }
-            else
-            {
-                foreach(string file in Directory.GetFiles(folder.FolderPath))
-                {
-                    var tag = TagLib.File.Create(file);
-                    if (tag.Tag.Pictures.Length > 0)
-                    {
-                        return new MemoryStream(tag.Tag.Pictures[0].Data.Data);
-                    } 
-                }
-            }
-            return null;
-        }
+		{
+			string imagePath = null;
+			if (Folder.ContainsImages(folder.FolderPath, out imagePath))
+			{
+				return new FileStream(imagePath, FileMode.Open);
+			}
+			else
+			{
+				foreach (string file in Directory.GetFiles(folder.FolderPath))
+				{
+					var tag = TagLib.File.Create(file);
+					if (tag.Tag.Pictures.Length > 0)
+					{
+						return new MemoryStream(tag.Tag.Pictures[0].Data.Data);
+					} 
+				}
+			}
+			return null;
+		}
 
 		// Thanks to http://www.switchonthecode.com/tutorials/csharp-tutorial-image-editing-saving-cropping-and-resizing
 		private static Image ResizeImage(Image imgToResize, Size size)
@@ -126,9 +136,13 @@ namespace WaveBox.ApiHandler.Handlers
 			nPercentH = ((float)size.Height / (float)sourceHeight);
 
 			if (nPercentH < nPercentW)
+			{
 				nPercent = nPercentH;
+			}
 			else
+			{
 				nPercent = nPercentW;
+			}
 
 			int destWidth = (int)(sourceWidth * nPercent);
 			int destHeight = (int)(sourceHeight * nPercent);
@@ -136,7 +150,7 @@ namespace WaveBox.ApiHandler.Handlers
 			Bitmap b = new Bitmap(destWidth, destHeight);
 			Graphics g = Graphics.FromImage((Image)b);
 			g.InterpolationMode = InterpolationMode.HighQualityBilinear;
-            g.CompositingMode = CompositingMode.SourceCopy;
+			g.CompositingMode = CompositingMode.SourceCopy;
 
 			g.DrawImage(imgToResize, 0, 0, destWidth, destHeight);
 			g.Dispose();
