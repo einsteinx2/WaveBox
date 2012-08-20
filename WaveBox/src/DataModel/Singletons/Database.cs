@@ -107,7 +107,7 @@ namespace WaveBox.DataModel.Singletons
 			try
 			{
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT itemTypeId FROM item WHERE item_id = @itemid)", conn);
+				IDbCommand q = Database.GetDbCommand("SELECT item_type_id FROM item WHERE item_id = @itemid", conn);
 				q.AddNamedParam("@itemid", itemId);
 				q.Prepare();
 				reader = q.ExecuteReader();

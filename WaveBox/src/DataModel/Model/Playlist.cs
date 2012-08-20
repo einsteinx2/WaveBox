@@ -184,8 +184,11 @@ namespace WaveBox.DataModel.Model
 						return;
 
 					PlaylistId = itemId;
-					q = Database.GetDbCommand("INSERT INTO playlist (playlist_name, playlist_count, playlist_duration, md5_hash, last_update) " +
-											"VALUES (@playlistname, @playlistcount, @playlistduration, @md5, @lastupdate)", conn);
+                    PlaylistCount = 0;
+                    PlaylistDuration = 0;
+                    LastUpdateTime = ((DateTime.Now.Ticks / 10) - (new DateTime(1970, 1, 1).Ticks / 10));
+					q = Database.GetDbCommand("INSERT INTO playlist (playlist_id, playlist_name, playlist_count, playlist_duration, md5_hash, last_update) " +
+											"VALUES (@playlistid, @playlistname, @playlistcount, @playlistduration, @md5, @lastupdate)", conn);
 					//q = Database.GetDbCommand("INSERT INTO playlist VALUES (@playlistid, @playlistname, @playlistcount, @playlistduration, @md5, @lastupdate)");
 					//q.Parameters.AddWithValue("@playlistid", DBNull.Value);
 				}
@@ -549,14 +552,16 @@ namespace WaveBox.DataModel.Model
 
 			try
 			{
+                int? id = Database.GenerateItemId(ItemType.PlaylistItem);
 				// to do - better way of knowing whether or not a query has been successfully completed.
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("INSERT INTO playlist_item (playlist_id, item_type_id, item_id, item_position) VALUES " +
-													"(@playlistid, @itemtypeid, @itemid, @itempos)", conn);
+				IDbCommand q = Database.GetDbCommand("INSERT INTO playlist_item (playlist_item_id, playlist_id, item_type_id, item_id, item_position) VALUES " +
+													"(@playlistitemid, @playlistid, @itemtypeid, @itemid, @itempos)", conn);
+                q.AddNamedParam("@playlistitemid", id);
 				q.AddNamedParam("@playlistid", PlaylistId);
 				q.AddNamedParam("@itemtypeid", item.ItemTypeId);
 				q.AddNamedParam("@itemid", item.ItemId);
-				q.AddNamedParam("@itempos", PlaylistCount);
+				q.AddNamedParam("@itempos", PlaylistCount == null ? 0 : PlaylistCount);
 
 				q.Prepare();
 				q.ExecuteNonQuery();
@@ -616,6 +621,10 @@ namespace WaveBox.DataModel.Model
 			{
 				Database.Close(conn, reader);
 			}
+
+            PlaylistCount = 0;
+            PlaylistDuration = 0;
+            UpdateDatabase();
 		}
 
 		public void createPlaylist()

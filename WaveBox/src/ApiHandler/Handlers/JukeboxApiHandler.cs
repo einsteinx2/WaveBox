@@ -39,7 +39,7 @@ namespace WaveBox.ApiHandler.Handlers
                     {
                         case "play":
                             string indexString = null;
-                            if(Uri.UriPart(3) != null)
+                            if(Uri.Parameters.ContainsKey("index"))
                             {
                                 Uri.Parameters.TryGetValue("index", out indexString);
                                 Int32.TryParse(indexString, out index);
@@ -79,8 +79,8 @@ namespace WaveBox.ApiHandler.Handlers
                             {
                                 s = "";
                                 Uri.Parameters.TryGetValue("id", out s);
-                                AddSongs(s);
-                                Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, true, false)));
+                                if(AddSongs(s))
+                                    Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, true, false)));
                             }
                             break;
                         case "remove":
@@ -141,23 +141,36 @@ namespace WaveBox.ApiHandler.Handlers
 			Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, true, false)));
 		}
 
-		public void AddSongs(string songIds)
+		public bool AddSongs(string songIds)
 		{
+            bool allSongsAddedSuccessfully = true;
 			List<Song> songs = new List<Song>();
 			foreach(string p in songIds.Split(','))
 			{
 				try
 				{
-					songs.Add(new Song(int.Parse(p)));
+                    if(Database.ItemTypeForItemId(int.Parse(p)) == ItemType.Song)
+                    {
+                        var s = new Song(int.Parse(p));
+    					songs.Add(s);
+                    }
+                    else
+                    {
+                        allSongsAddedSuccessfully = false;
+                    }
 				}
 				catch(Exception e)
 				{
 					Console.WriteLine("[JUKEBOXAPI(2)] Error getting songs to add: " + e.Message);
                     Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("Error getting songs to add", false, false)));
+                    return false;
 				}
 			}
 			Juke.AddSongs(songs);
-            Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, true, false)));
+
+            if(!allSongsAddedSuccessfully)
+                Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("One or more items provided were not of the appropriate type and were not added to the playlist.", true, false)));
+            return allSongsAddedSuccessfully;
 		}
 
 		public void RemoveSongs(string songIds)

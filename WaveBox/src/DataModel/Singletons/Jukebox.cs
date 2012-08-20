@@ -21,7 +21,7 @@ namespace WaveBox.DataModel.Singletons
 		private const string PLAYLIST_NAME = "jukeboxQPbjnbh2JPU5NGxhXiiQ";
 		private static Playlist playlist;
 
-		private int currentStream;
+		private int? currentStream;
 
 		private Jukebox()
 		{
@@ -35,10 +35,10 @@ namespace WaveBox.DataModel.Singletons
 
 		public double Progress()
 		{
-			if (IsInitialized && currentStream != 0)
+			if (IsInitialized && currentStream != null)
 			{
-				long bytePosition = Bass.BASS_ChannelGetPosition(currentStream, BASSMode.BASS_POS_BYTES | BASSMode.BASS_POS_DECODE);
-				double seconds = Bass.BASS_ChannelBytes2Seconds(currentStream, bytePosition);
+				long bytePosition = Bass.BASS_ChannelGetPosition(currentStream.Value, BASSMode.BASS_POS_BYTES | BASSMode.BASS_POS_DECODE);
+				double seconds = Bass.BASS_ChannelBytes2Seconds(currentStream.Value, bytePosition);
 				return seconds;
 			}
 
@@ -47,7 +47,7 @@ namespace WaveBox.DataModel.Singletons
 
 		public void Play()
 		{
-			if (currentStream != 0)
+			if (currentStream != null)
 			{
 				Bass.BASS_Start();
 				IsPlaying = true;
@@ -125,8 +125,8 @@ namespace WaveBox.DataModel.Singletons
 								Next();
 							});
 
-						Bass.BASS_ChannelSetSync(currentStream, BASSSync.BASS_SYNC_END, 0, end, System.IntPtr.Zero);
-						Bass.BASS_ChannelPlay(currentStream, true);
+						Bass.BASS_ChannelSetSync(currentStream.Value, BASSSync.BASS_SYNC_END, 0, end, System.IntPtr.Zero);
+						Bass.BASS_ChannelPlay(currentStream.Value, true);
 						IsPlaying = true;
 					}
 				}
