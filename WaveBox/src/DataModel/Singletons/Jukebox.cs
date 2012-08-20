@@ -26,7 +26,7 @@ namespace WaveBox.DataModel.Singletons
 		private Jukebox()
 		{
 			playlist = new Playlist(PLAYLIST_NAME);
-			if(playlist.PlaylistId == 0)
+			if(playlist.PlaylistId == null)
 			{
 				// playlist doesn't exist, so create it.
 				playlist.createPlaylist();

@@ -24,99 +24,121 @@ namespace WaveBox.ApiHandler.Handlers
 		}
 
 		public void Process()
-		{
-			int index = 0;
-			string s = "";
+        {
+            int index = 0;
+            string s = "";
 
-			string part2 = Uri.UriPart(2);
-			//string part3 = Uri.UriPart(3);
+            if (Uri.Parameters.ContainsKey("action"))
+            {
+                string action = null;
+                Uri.Parameters.TryGetValue("action", out action);
 
-			switch(part2)
-			{
-				case "play":
-					string p3 = null;
-					if(Uri.UriPart(3) != null)
-					{
-						try
-						{
-							p3 = Uri.UriPart(3);
-							if(p3 != null)
-								index = int.Parse(Uri.UriPart(3));
-						}
-						catch (Exception e)
-						{
-							Console.WriteLine("[JUKEBOXAPI(1)] (play) Error parsing part three of URI: " + e.Message);
-						}
-					}
+                if (new string[] {"play", "pause", "stop", "prev", "next", "status", "add", "remove", "move", "clear"}.Contains(action))
+                {
+                    switch(action)
+                    {
+                        case "play":
+                            string indexString = null;
+                            if(Uri.UriPart(3) != null)
+                            {
+                                Uri.Parameters.TryGetValue("index", out indexString);
+                                Int32.TryParse(indexString, out index);
+                            }
 
-					if 
-						(p3 == null) Juke.Play();
-					else 
-						Juke.PlaySongAtIndex(index);
-					break;
-				case "pause":
-					Juke.Pause();
-					break;
-				case "stop":
-					Juke.Stop();
-					break;
-				case "prev":
-					Juke.Prev();
-					break;
-				case "next":
-					Juke.Next();
-					break;
-				case "status":
-					_status();
-					break;
-				case "playlist":
-					_playlist();
-					break;
-				case "add":
-					if (Uri.Parameters.ContainsKey("i"))
-					{
-						s = "";
-						Uri.Parameters.TryGetValue("i", out s);
-						AddSongs(s);
-					}
-					break;
-				case "remove":
-					if (Uri.Parameters.ContainsKey("i"))
-					{
-						s = "";
-						Uri.Parameters.TryGetValue("i", out s);
-						RemoveSongs(s);
-					}
-					break;
-				case "move":
-					if (Uri.Parameters.ContainsKey("from") && Uri.Parameters.ContainsKey("to"))
-					{
-						string to, from;
-						Uri.Parameters.TryGetValue("from", out from);
-						Uri.Parameters.TryGetValue("to", out to);
+                            if 
+                                (indexString == null) Juke.Play();
+                            else 
+                                Juke.PlaySongAtIndex(index);
 
-						if (to != null && from != null)
-						{
-							Move(to, from);
-						}
-					}
-					break;
-				case "clear":
-					Juke.ClearPlaylist();
-					break;
-				default: break;
+                            Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, false, true)));
+                            break;
+                        case "pause":
+                            Juke.Pause();
+                            Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, false, true)));
+                            break;
+                        case "stop":
+                            Juke.Stop();
+                            Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, false, true)));
+                            break;
+                        case "prev":
+                            Juke.Prev();
+                            Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, false, true)));
+                            break;
+                        case "next":
+                            Juke.Next();
+                            Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, false, true)));
+                            break;
+                        case "status":
+                            _status();
+                            break;
+                        case "playlist":
+                            _playlist();
+                            break;
+                        case "add":
+                            if (Uri.Parameters.ContainsKey("id"))
+                            {
+                                s = "";
+                                Uri.Parameters.TryGetValue("id", out s);
+                                AddSongs(s);
+                                Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, true, false)));
+                            }
+                            break;
+                        case "remove":
+                            if (Uri.Parameters.ContainsKey("index"))
+                            {
+                                s = "";
+                                Uri.Parameters.TryGetValue("index", out s);
+                                RemoveSongs(s);
+                                Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, true, false)));
+                            }
+                            break;
+                        case "move":
+                            if (Uri.Parameters.ContainsKey("index"))
+                            {
+                                string[] arr = null;
+                                if(Uri.Parameters.TryGetValue("index", out s))
+                                {
+                                    arr = s.Split(',');
+                                    if(arr.Length == 2)
+                                    {
+                                        if(Move(arr[0], arr[1]))
+                                        {
+                                            Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, true, false)));
+                                        }
+                                    }
+                                    else 
+                                    {
+                                        Console.WriteLine("[JUKEBOXAPI] Move: Invalid number of indices");
+                                        Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("Invalid number of indices for action 'move'", false, false)));
+                                    }
 
-			}
+                                }
+                            }
+                            else 
+                            {
+                                Console.WriteLine("[JUKEBOXAPI] Move: Missing 'index' parameter");
+                                Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("Missing 'index' parameter for action 'move'", false, false)));
+                            }
+                            break;
+                        case "clear":
+                            Juke.ClearPlaylist();
+                            Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, false, false)));
+                            break;
+                        default: break;
+
+                    }
+                }
+            }
 		}
 
 		public void _status()
 		{
-			Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxStatusResponse()));
+			Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, false, true)));
 		}
 
 		public void _playlist()
 		{
-			Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxPlaylistResponse()));
+			Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, true, false)));
 		}
 
 		public void AddSongs(string songIds)
@@ -131,10 +153,11 @@ namespace WaveBox.ApiHandler.Handlers
 				catch(Exception e)
 				{
 					Console.WriteLine("[JUKEBOXAPI(2)] Error getting songs to add: " + e.Message);
+                    Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("Error getting songs to add", false, false)));
 				}
 			}
-
 			Juke.AddSongs(songs);
+            Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, true, false)));
 		}
 
 		public void RemoveSongs(string songIds)
@@ -155,21 +178,23 @@ namespace WaveBox.ApiHandler.Handlers
 			Juke.RemoveSongsAtIndexes(indices);
 		}
 
-		public void Move(string from, string to)
+		public bool Move(string from, string to)
 		{
 			try
 			{
 				int fromI = int.Parse(from);
 				int toI = int.Parse(to);
 				Juke.MoveSong(fromI, toI);
+                return true;
 			}
 			catch(Exception e)
 			{
 				Console.WriteLine("[JUKEBOXAPI(4)] Error moving songs: " + e.Message);
+                return false;
 			}
 		}
 
-		private class JukeboxStatusResponse
+		private class JukeboxStatus
 		{
 			[JsonProperty("isPlaying")]
 			public bool IsPlaying
@@ -199,16 +224,44 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 		}
 
-		private class JukeboxPlaylistResponse
+		private class JukeboxResponse
 		{
-			[JsonProperty("isPlaying")]
-			public bool IsPlaying { get { return Jukebox.Instance.IsPlaying; } }
+            bool includePlaylist, includeStatus;
 
-			[JsonProperty("currentIndex")]
-			public int CurrentIndex { get { return Jukebox.Instance.CurrentIndex; } }
+            [JsonProperty("error")]
+            public string Error { get; set; }
 
-			[JsonProperty("songs")]
-			public List<MediaItem> Songs { get { return Jukebox.Instance.ListOfSongs(); } }
+			[JsonProperty("jukeboxStatus")]
+            public JukeboxStatus JukeboxStatus 
+            { 
+                get 
+                { 
+                    if(includeStatus) 
+                        return new JukeboxStatus(); 
+                    else 
+                        return null;
+                } 
+            }
+
+			[JsonProperty("jukeboxPlaylist")]
+			public List<MediaItem> JukeboxPlaylist 
+            { 
+                get 
+                { 
+                    if(includePlaylist)
+                        return Jukebox.Instance.ListOfSongs(); 
+                    else
+                        return null;
+                } 
+            }
+
+            public JukeboxResponse(string error, bool _includePlaylist, bool _includeStatus)
+            {
+
+                Error = error;
+                includePlaylist = _includePlaylist;
+                includeStatus = _includeStatus;
+            }
 		}
 	}
 }

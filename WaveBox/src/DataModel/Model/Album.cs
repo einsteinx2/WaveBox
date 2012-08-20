@@ -140,24 +140,41 @@ namespace WaveBox.DataModel.Model
 		}
 
 		private void SetPropertiesFromQueryReader(IDataReader reader)
-		{
-			if(reader.IsDBNull(reader.GetOrdinal("artist_id")))
-			{
-				this.ArtistId = null;
-			}
-			else ArtistId = reader.GetInt32(reader.GetOrdinal("artist_id"));
+        {
+            try
+            {
+                if (reader.IsDBNull(reader.GetOrdinal("artist_id")))
+                {
+                    this.ArtistId = null;
+                }
+                else
+                {
+                    ArtistId = reader.GetInt32(reader.GetOrdinal("artist_id"));
+                }
 
-			if (reader.IsDBNull(reader.GetOrdinal("album_id")))
-			{
-				this.AlbumId = null;
-			}
-			else this.AlbumId = reader.GetInt32(reader.GetOrdinal("album_id"));
+                if (reader.IsDBNull(reader.GetOrdinal("album_id")))
+                {
+                    this.AlbumId = null;
+                }
+                else
+                {
+                    this.AlbumId = reader.GetInt32(reader.GetOrdinal("album_id"));
+                }
 
-			if (reader.IsDBNull(reader.GetOrdinal("album_name")))
-			{
-				this.AlbumName = "";
-			}
-			else this.AlbumName = reader.GetString(reader.GetOrdinal("album_name"));
+                if (reader.IsDBNull(reader.GetOrdinal("album_name")))
+                {
+                    this.AlbumName = "";
+                }
+                else
+                {
+                    int ord = reader.GetOrdinal("album_name");
+                    this.AlbumName = reader.GetString(ord);
+                }
+            }
+            catch
+            {
+                Console.WriteLine("weirdness setting properties");
+            }
 		}
 
 		public Artist Artist()

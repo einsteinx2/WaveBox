@@ -157,11 +157,6 @@ namespace WaveBox.DataModel.Model
             FileSize = fsFile.Length;
             LastModified = Convert.ToInt64(fsFile.LastWriteTime.Ticks);
             FileName = fsFile.Name;
-
-			// check to see if the folder has art associated with it.  if it does, use that art.  if not,
-			// check to see if the tag contains art.
-
-			var folder = new Folder(folderId);
 		}
 
 		public Song(IDataReader reader)

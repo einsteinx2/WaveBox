@@ -40,7 +40,7 @@ namespace WaveBox.ApiHandler
 				}
 				else
 				{
-					// Determine call type.  Note that the repeated if/else is more efficient than a switch. <-- Actually switch for strings is much more efficent in Mono than .NET, so it's a wash, but in either case it's such a small portion of the total API call time as to be meaningless 
+					// Determine call type
 					if (action == "login")
 					{
 						return new LoginApiHandler(uriW, processor, user);

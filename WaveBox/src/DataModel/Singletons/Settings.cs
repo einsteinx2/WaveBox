@@ -145,7 +145,8 @@ namespace WaveBox.DataModel.Singletons
                     }
                     catch
                     {
-                        if(line.Length == 1 || curr == '"' || curr == ',')
+                        //curr == '"' || curr == ','
+                        if(line.Length == 1 || !inBlockComment)
                             AppendDiscardingWhitespace(curr);
                         break;
                     }
@@ -183,7 +184,7 @@ namespace WaveBox.DataModel.Singletons
                             {
                                 inStringLiteral = false;
                             }
-                            AppendDiscardingWhitespace(curr);
+                            js.Append(curr);
                             continue;
                         }
                     }
@@ -193,6 +194,8 @@ namespace WaveBox.DataModel.Singletons
                         // if we are in a block comment, make sure that we shouldn't be ending the block comment
                         if(curr == '*' && next == '/')
                         {
+                            // advance the read position so we don't write the /
+                            i++;
                             inBlockComment = false;
                             continue;
                         }
