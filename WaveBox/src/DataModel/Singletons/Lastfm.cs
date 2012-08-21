@@ -7,6 +7,7 @@ using System.Web;
 using WaveBox.DataModel.Model;
 using Newtonsoft.Json;
 using System.Security.Cryptography;
+using System.Web.Services;
 using System.Net.Sockets;
 
 namespace WaveBox.DataModel.Singletons
@@ -79,36 +80,90 @@ namespace WaveBox.DataModel.Singletons
         /// <param name='recordScrobble'>
         /// If set to <c>true</c> record scrobble.
         /// </param>
-		public string Scrobble(int songId, bool recordScrobble)
-		{
-			var song = new Song(songId);
-			if (song.ItemId == 0)
-			{
-				return null;
-			}
+		public string Scrobble(List<LfmScrobbleData> scrobbles, LfmScrobbleType scrobbleType)
+        {
+            if (scrobbles.Count == 0)
+            {
+                return null;
+            }
 
-			long timestamp = Convert.ToInt64((DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds);
-			string p, apiSig;
+            Song song = null;
 
+            var parameters = new SortedDictionary<string, string>();
 
-			if (recordScrobble)
-			{
-				apiSig = md5("api_key" + apiKey + "artist[0]" + song.ArtistName + "method" + "track.scrobble" + "sk" + sessionKey + "timestamp[0]" + timestamp + "track[0]" + song.SongName + secret);
-				p = String.Format("method=track.scrobble&api_key={0}&sk={1}&artist[0]={2}&track[0]={3}&timestamp[0]={4}&api_sig={5}", apiKey, sessionKey, 
-			                         UrlEncode(song.ArtistName, Encoding.UTF8), UrlEncode(song.SongName, Encoding.UTF8), timestamp, apiSig);
-			} 
+            // add the scrobble data to the parameter list
+            int limit = scrobbleType == LfmScrobbleType.NOWPLAYING ? 1 : scrobbles.Count > 100 ? 100 : scrobbles.Count;
+            long timestamp = Convert.ToInt64((DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds);
 
-			else
-			{
-				apiSig = md5("api_key" + apiKey + "artist" + song.ArtistName + "method" + "track.updateNowPlaying" + "sk" + sessionKey + "timestamp" + timestamp + "track" + song.SongName + secret);
-				p = String.Format("method=track.updateNowPlaying&format=json&api_key={0}&sk={1}&artist={2}&track={3}&timestamp={4}&api_sig={5}", apiKey, sessionKey, 
-			                         UrlEncode(song.ArtistName, Encoding.UTF8), UrlEncode(song.SongName, Encoding.UTF8), timestamp, apiSig);
-			}
+            for (int i = 0; i < limit; i++)
+            {
+                song = new Song(scrobbles[i].SongId);
+                parameters.Add("artist" + (scrobbleType == LfmScrobbleType.NOWPLAYING ? "" : string.Format("[{0}]", i)), HttpUtility.UrlEncode(song.ArtistName, Encoding.UTF8));
+                parameters.Add("timestamp" + (scrobbleType == LfmScrobbleType.NOWPLAYING ? "" : string.Format("[{0}]", i)), HttpUtility.UrlEncode(timestamp.ToString(), Encoding.UTF8));
+                parameters.Add("track" + (scrobbleType == LfmScrobbleType.NOWPLAYING ? "" : string.Format("[{0}]", i)), HttpUtility.UrlEncode(song.SongName, Encoding.UTF8));
+            }
 
-			string resp = DoPostRestRequest(p);
+            // add the api and session keys to the parameter list
+            parameters.Add("api_key", apiKey);
+            parameters.Add("sk", sessionKey);
+
+            // choose the appropriate method and add it to the parameter list
+            if (scrobbleType == LfmScrobbleType.SUBMIT)
+            {
+                parameters.Add("method", "track.scrobble");
+            }
+            else if (scrobbleType == LfmScrobbleType.NOWPLAYING)
+            {
+                parameters.Add("method", "track.updateNowPlaying");
+            }
+
+            // or if it's invalid, return without doing anything.
+            else 
+                return null;
+			
+            // then compile the request and do it
+            string p = CompileApiCall(parameters);
+            string resp = DoPostRestRequest(p);
 
 			return RemoveHttpHeaders(resp);
 		}
+
+        private string CompileApiCall(SortedDictionary<string, string> parameters)
+        {
+            string sig = "";
+            string cmd = "";
+
+            // create the API signature from the given parameters
+            var enumerator = parameters.GetEnumerator();
+            while(enumerator.MoveNext())
+            {
+                sig += enumerator.Current.Key + HttpUtility.UrlDecode(enumerator.Current.Value);
+            }
+
+            sig += secret;
+            sig = md5(sig);
+
+            parameters.Add("api_sig", sig);
+            parameters.Add("format", "json");
+
+
+            // using the API signature that was just added to the parameter dictionary, compile the command.
+            enumerator = parameters.GetEnumerator();
+
+            bool firstKey = true;
+            while(enumerator.MoveNext())
+            {
+                if(!firstKey)
+                {
+                    cmd += "&";
+                }
+                else firstKey = false;
+
+                cmd += string.Format("{0}={1}", enumerator.Current.Key, enumerator.Current.Value);
+            }
+
+            return cmd;
+        }
 
         public string RemoveHttpHeaders(string resp)
         {
@@ -258,34 +313,31 @@ namespace WaveBox.DataModel.Singletons
             return resp;
     }
 
-        // Thanks to: http://software.1713.n2.nabble.com/System-Web-HttpUtility-UrlEncode-equivalent-in-OS-X-td721075.html
-        // For some reason, Mono doesn't implement System.Web.HttpServerUtility.UrlEncode().  Weird.
-        public static string UrlEncode(string s, Encoding e) 
-		{ 
-                StringBuilder sb = new StringBuilder(); 
-
-                foreach (byte i in e.GetBytes(s)) 
-				{ 
-                        if ((i >= 'A' && i <= 'Z') || 
-                            (i >= 'a' && i <= 'z') || 
-                            (i >= '0' && i <= '9') || 
-                             i == '-' || i == '_') 
-						{ 
-                        	sb.Append((char) i); 
-                        } 
-						else if (i == ' ') 
-						{ 
-							sb.Append('+'); 
-                        } 
-						else 
-						{
-                        	sb.Append('%'); 
-                        	sb.Append(i.ToString("X2")); 
-                        } 
-                } 
-
-                return sb.ToString(); 
-        } 
+        public static LfmScrobbleType ScrobbleTypeForString(string input)
+        {
+            if(input.ToLower() == "nowplaying") return LfmScrobbleType.NOWPLAYING;
+            else if (input.ToLower() == "submit") return LfmScrobbleType.SUBMIT;
+            else return LfmScrobbleType.INVALID;
+        }
 	}
+
+    public class LfmScrobbleData
+    {
+        public int SongId { get; set; }
+        public long Timestamp { get; set; }
+
+        public LfmScrobbleData(int songId, long timestamp)
+        {
+            SongId = songId;
+            Timestamp = timestamp;
+        }
+    }
+
+    public enum LfmScrobbleType
+    {
+        NOWPLAYING = 0,
+        SUBMIT = 1,
+        INVALID = 2
+    }
 }
 

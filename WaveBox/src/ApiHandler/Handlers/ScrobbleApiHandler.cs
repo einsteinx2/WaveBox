@@ -24,80 +24,114 @@ namespace WaveBox.ApiHandler.Handlers
 		}
 
 		public void Process()
-		{
-			if (Uri.UriPart(1) == "scrobble")
-			{
-				Lastfm lfm = new Lastfm(User);
+        {
+            Lastfm lfm = new Lastfm(User);
 
-				if(!lfm.SessionAuthenticated)
-				{
-					Console.WriteLine ("[SCROBBLE(1)] You must authenticate before you can scrobble.");
+            string action = null;
+            string eve = null;
+            string eveType = null;
 
-					try
-					{
-	                    Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMNotAuthenticated", false, lfm.AuthUrl)));
-					}
-					catch(Exception e)
-					{
-						Console.WriteLine("[SCROBBLE(2)] ERROR: " + e.ToString());
-					}
+            Uri.Parameters.TryGetValue("action", out action);
+            Uri.Parameters.TryGetValue("event", out eve);
+            Uri.Parameters.TryGetValue("eventType", out eveType);
+
+            if (action == null || action == "auth")
+            {
+                if (!lfm.SessionAuthenticated)
+                {
+                    Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse(null, lfm.AuthUrl)));
+                }
+                else
+                {
+                    Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMAlreadyAuthenticated")));
+                }
+
+                return;
+            }
+
+            if (eve != null && eveType == null)
+            {
+                Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMEventTypeNotSpecifiedForEvent")));
+                return;
+            }
+
+            if (!lfm.SessionAuthenticated)
+            {
+                Console.WriteLine("[SCROBBLE(1)] You must authenticate before you can scrobble.");
+
+                Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMNotAuthenticated", lfm.AuthUrl)));
+                return;
+            }
+
+            if (eve != null && eveType != null)
+            {
+                var input = eve.Split(',');
+                var scrobbles = new List<LfmScrobbleData>();
+
+                if(input.Length % 2 != 0)
+                {
+                    Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMInvalidInput")));
                     return;
-				}
+                }
 
-				else if(Uri.UriPart(2) != null && Uri.Parameters.ContainsKey("insert"))
-				{
-                    string insertString = "";
-                    Uri.Parameters.TryGetValue("insert", out insertString);
-                    bool insertScrobble;
+                int i = 0;
+                while(i < input.Length)
+                {
+                    scrobbles.Add(new LfmScrobbleData(int.Parse(input[i]), long.Parse(input[i + 1])));
+                    i = i + 2;
+                }
 
-                    if(insertString == "0") insertScrobble = false;
-                    else insertScrobble = true;
-					
-                    string result = lfm.Scrobble(Int32.Parse(Uri.UriPart(2)), insertScrobble);
-                    dynamic resp;
+                var scrobbleType = Lastfm.ScrobbleTypeForString(eveType);
+                if(scrobbleType == LfmScrobbleType.INVALID)
+                {
+                    Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMInvalidScrobbleType")));
+                    return;
+                }
 
-                    if(result != null)
+                string result = lfm.Scrobble(scrobbles, scrobbleType);
+                dynamic resp;
+
+                if(result != null)
+                {
+                    try
                     {
-						try
-						{
-						    resp = JsonConvert.DeserializeObject(result);
-						}
-						catch(Exception e)
-						{
-							Console.WriteLine("[SCROBBLE(3)] ERROR: " + e.ToString());
-						}
+                        resp = JsonConvert.DeserializeObject(result);
                     }
-
-                    else return;
-
-                    if(resp.nowplaying != null || (resp.scrobbles != null))
+                    catch(Exception e)
                     {
-						try
-						{
-	                        Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse(null, true)));
-						}
-						catch(Exception e)
-						{
-							Console.WriteLine("[SCROBBLE(4)] ERROR: " + e.ToString());
-						}
-                        return;
+                        Console.WriteLine("[SCROBBLE(3)] ERROR: " + e.ToString());
                     }
+                }
 
-                    else
+                else return;
+
+                if(resp.nowplaying != null || (resp.scrobbles != null))
+                {
+                    try
                     {
-						try
-						{
-	                        Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse(string.Format("LFM{0}", resp.error.code), false)));
-						}
-						catch(Exception e)
-						{
-							Console.WriteLine("[SCROBBLE(5)] ERROR: " + e.ToString());
-						}
-                        return;
+                        Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse()));
                     }
+                    catch(Exception e)
+                    {
+                        Console.WriteLine("[SCROBBLE(4)] ERROR: " + e.ToString());
+                    }
+                    return;
+                }
 
-				}
-			}
+                else if (resp.error != null)
+                {
+                    try
+                    {
+                        Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse(string.Format("LFM{0}: {1}", resp.error, resp.message))));
+                    }
+                    catch(Exception e)
+                    {
+                        Console.WriteLine("[SCROBBLE(5)] ERROR: " + e.ToString());
+                    }
+                    return;
+                }
+
+            }
 		}
 
 		private class ScrobbleResponse
@@ -105,23 +139,24 @@ namespace WaveBox.ApiHandler.Handlers
 	        [JsonProperty("error")]
 	        public string Error { get; set; }
 
-	        [JsonProperty("success")]
-	        public bool Success { get; set; }
-
 	        [JsonProperty("authUrl")]
 	        public string AuthUrl { get; set; }
 
-	        public ScrobbleResponse(string error, bool success)
+            public ScrobbleResponse()
+            {
+                Error = null;
+                AuthUrl = null;
+            }
+
+	        public ScrobbleResponse(string error)
 	        {
 	            Error = error;
-	            Success = success;
 	            AuthUrl = null;
 	        }
 
-	        public ScrobbleResponse(string error, bool success, string authUrl)
+	        public ScrobbleResponse(string error, string authUrl)
 	        {
 	            Error = error;
-	            Success = success;
 	            AuthUrl = authUrl;
 	        }
 	    }
