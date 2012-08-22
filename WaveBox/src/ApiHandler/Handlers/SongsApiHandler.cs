@@ -34,7 +34,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 			if (success)
 			{
-				listOfSongs.Add(new Song(Convert.ToInt32(Uri.UriPart(2))));
+				listOfSongs.Add(new Song(id));
 			}
 			else
 			{
