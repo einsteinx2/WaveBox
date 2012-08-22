@@ -89,7 +89,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 			if (Folder.ContainsImages(Path.GetDirectoryName(song.FilePath()), out folderImagePath))
 			{
-				return new FileStream(folderImagePath, FileMode.Open);
+				return new FileStream(folderImagePath, FileMode.Open, FileAccess.Read);
 			}
 			else if (file.Tag.Pictures.Length > 0)
 			{
