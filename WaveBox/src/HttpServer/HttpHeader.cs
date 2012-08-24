@@ -29,10 +29,14 @@ namespace WaveBox.Http
             VIDEOWEBM = 5,
             VIDEOMP4 = 6,
             VIDEOOGG = 7,
-            UNKNOWN = 8
+            HTML = 8,
+            CSS = 9,
+            JAVASCRIPT = 10,
+            PLAINTEXT = 11, 
+            UNKNOWN = 12
         }
 
-        private string[] HttpContentTypeStrings = { "audio/mpeg", "audio/mp4", "audio/ogg", "audio/webm", "audio/wav", "video/webm", "video/mp4", "video/ogg", "octet-stream" };
+        private string[] HttpContentTypeStrings = { "audio/mpeg", "audio/mp4", "audio/ogg", "audio/webm", "audio/wav", "video/webm", "video/mp4", "video/ogg", "text/html", "text/css", "text/javascript", "text/plain", "octet-stream" };
 
         public static HttpContentType ContentTypeForExtension(string extension)
         {
@@ -54,6 +58,14 @@ namespace WaveBox.Http
                 return HttpContentType.VIDEOOGG;
             else if (ext == ".webm" || ext == ".webmv")
                 return HttpContentType.VIDEOWEBM;
+            else if (ext == ".html" || ext == ".htm")
+                return HttpContentType.HTML;
+            else if (ext == ".css")
+                return HttpContentType.CSS;
+            else if (ext == ".js")
+                return HttpContentType.JAVASCRIPT;
+            else if (ext == ".txt")
+                return HttpContentType.PLAINTEXT;
 			else return HttpContentType.UNKNOWN;
         }
 
