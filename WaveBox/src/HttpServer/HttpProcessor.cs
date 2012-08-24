@@ -254,7 +254,7 @@ namespace WaveBox.Http
 			OutputStream.Write(json);
 		}
 
-		public void WriteFile (Stream fs, int startOffset, long length, bool binary)
+		public void WriteFile (Stream fs, int startOffset, long length)
 		{
 			if ((object)fs == null || !fs.CanRead || length == 0 || startOffset >= length) 
 				return;
@@ -267,12 +267,13 @@ namespace WaveBox.Http
 
 				// Write the headers to output stream
 
-				header = new HttpHeader (HttpHeader.HttpStatusCode.PARTIALCONTENT, HttpHeader.ContentTypeForExtension(fsinfo.Extension), contentLength);
+				header = new HttpHeader (HttpHeader.HttpStatusCode.OK, HttpHeader.ContentTypeForExtension(fsinfo.Extension), contentLength);
 			} 
 			else
 			{
-				header = new HttpHeader (HttpHeader.HttpStatusCode.PARTIALCONTENT, HttpHeader.HttpContentType.UNKNOWN, length);
+				header = new HttpHeader (HttpHeader.HttpStatusCode.OK, HttpHeader.HttpContentType.UNKNOWN, length);
 			}
+
 			header.WriteHeader (OutputStream);
             OutputStream.Flush();
 			Console.WriteLine ("[HTTPSERVER] File header, contentLength: {0}, contentType: {1}, status: {2}", contentLength, header.ContentType, header.StatusCode);
@@ -304,13 +305,9 @@ namespace WaveBox.Http
 					bytesRead = fs.Read(buf, 0, chunkSize);
 
 					// Send the bytes out to the client
-					if (bytesRead > 0)
-					{
-                        if(binary)
-						    stream.Write(buf, 0, bytesRead);
-                        else OutputStream.Write(buf);
-						bytesWritten += bytesRead;
-					}
+				    stream.Write(buf, 0, bytesRead);
+                    stream.Flush();
+					bytesWritten += bytesRead;
 
 					// Log the progress (only for testing)
 					if (sw.ElapsedMilliseconds > 1000)
@@ -327,12 +324,11 @@ namespace WaveBox.Http
 					// See if we're done
 					if (bytesRead < chunkSize)
 					{
-                        OutputStream.Flush();
 						// We read less than we asked for from the file
 						// Sleep 2 seconds and then see if the file grew
 						if (fs is FileStream)
                         {
-                            OutputStream.Flush();
+                            Thread.Sleep(2);
                         }
 
 						// Check if the stream is done

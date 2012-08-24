@@ -12,6 +12,12 @@ namespace WaveBox.Http
 		public HttpStatusCode StatusCode { get; set; }
 		public string ContentType { get; set; }
 
+        private bool isBinary = false;
+        public bool IsBinary
+        {
+            get { return isBinary; }
+        }
+
 		public enum HttpStatusCode
 		{
 			OK = 0, 
@@ -81,6 +87,7 @@ namespace WaveBox.Http
 			StatusCode = s;
 			ContentType = HttpContentTypeStrings[(int)cType];
 			ContentLength = cLen;
+            isBinary = ContentTypeIsBinary(cType);
 		}
 
 		public void WriteHeader(StreamWriter outputStream)
@@ -90,6 +97,8 @@ namespace WaveBox.Http
 			outputStream.Write("Content-Length: " + ContentLength + "\r\n");
 			if(ContentType != "")
 				outputStream.Write("Content-Type: " + ContentType + "\r\n");
+            if(IsBinary)
+                outputStream.Write("Accept-Ranges: bytes\r\n");
 
 			// write the last newline signifying the end of the headers
 			outputStream.Write("\r\n");
@@ -105,5 +114,27 @@ namespace WaveBox.Http
 				default: return null;
 			}
 		}
+
+        public static bool ContentTypeIsBinary(HttpHeader.HttpContentType theType)
+        {
+            HttpHeader.HttpContentType[] binaryTypes = new HttpHeader.HttpContentType[] 
+            { 
+                HttpHeader.HttpContentType.AUDIOMP3,
+                HttpHeader.HttpContentType.AUDIOMP4,
+                HttpHeader.HttpContentType.AUDIOOGG,
+                HttpHeader.HttpContentType.AUDIOWAV,
+                HttpHeader.HttpContentType.AUDIOWEBM,
+                HttpHeader.HttpContentType.VIDEOMP4,
+                HttpHeader.HttpContentType.VIDEOOGG,
+                HttpHeader.HttpContentType.VIDEOWEBM,
+            };
+
+            foreach (var type in binaryTypes)
+            {
+                if(theType == type) return true;
+            }
+
+            return false;
+        }
 	}
 }

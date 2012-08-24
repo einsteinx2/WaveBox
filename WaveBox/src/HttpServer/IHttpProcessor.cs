@@ -17,7 +17,7 @@ namespace WaveBox
 
 		// Body writing methods
 		void WriteJson(string json);
-		void WriteFile(Stream fs, int startOffset, long length, bool binary);
+		void WriteFile(Stream fs, int startOffset, long length);
 	}
 }
 
