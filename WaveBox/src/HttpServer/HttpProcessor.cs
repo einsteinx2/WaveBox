@@ -254,7 +254,7 @@ namespace WaveBox.Http
 			OutputStream.Write(json);
 		}
 
-		public void WriteFile (Stream fs, int startOffset, long length)
+		public void WriteFile (Stream fs, int startOffset, long length, bool binary)
 		{
 			if ((object)fs == null || !fs.CanRead || length == 0 || startOffset >= length) 
 				return;
@@ -267,13 +267,14 @@ namespace WaveBox.Http
 
 				// Write the headers to output stream
 
-				header = new HttpHeader (HttpHeader.HttpStatusCode.PARTIALCONTENT, HttpHeader.ContentTypeForExtension (fsinfo.Extension), contentLength);
+				header = new HttpHeader (HttpHeader.HttpStatusCode.PARTIALCONTENT, HttpHeader.ContentTypeForExtension(fsinfo.Extension), contentLength);
 			} 
 			else
 			{
 				header = new HttpHeader (HttpHeader.HttpStatusCode.PARTIALCONTENT, HttpHeader.HttpContentType.UNKNOWN, length);
 			}
 			header.WriteHeader (OutputStream);
+            OutputStream.Flush();
 			Console.WriteLine ("[HTTPSERVER] File header, contentLength: {0}, contentType: {1}, status: {2}", contentLength, header.ContentType, header.StatusCode);
 
 			// Read/Write in 8 KB chunks
@@ -305,7 +306,9 @@ namespace WaveBox.Http
 					// Send the bytes out to the client
 					if (bytesRead > 0)
 					{
-						stream.Write(buf, 0, bytesRead);
+                        if(binary)
+						    stream.Write(buf, 0, bytesRead);
+                        else OutputStream.Write(buf);
 						bytesWritten += bytesRead;
 					}
 
@@ -324,15 +327,18 @@ namespace WaveBox.Http
 					// See if we're done
 					if (bytesRead < chunkSize)
 					{
+                        OutputStream.Flush();
 						// We read less than we asked for from the file
 						// Sleep 2 seconds and then see if the file grew
 						if (fs is FileStream)
-							Thread.Sleep(2000);
+                        {
+                            OutputStream.Flush();
+                        }
 
 						// Check if the stream is done
 						if (bytesWritten >= fs.Length || !(fs is FileStream))
 						{
-							// We've written the whole file, so break
+							// We've written the whole file, so flush the buffer and break
 							Console.WriteLine("[SENDFILE]: Done.");
 							break;
 						}
