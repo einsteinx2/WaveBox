@@ -16,6 +16,8 @@ namespace WaveBox.DataModel.FolderScanning
 	{
 		public override string OperationType { get { return "OrphanScanOperation"; } }
 
+		long totalExistsTime = 0;
+
 		public OrphanScanOperation(int secondsDelay) : base(secondsDelay)
 		{
 		}
@@ -31,6 +33,7 @@ namespace WaveBox.DataModel.FolderScanning
 			CheckSongs();
 			sw.Stop();
 			Console.WriteLine("[ORPHANSCAN] check songs: {0}ms", sw.ElapsedMilliseconds);
+			Console.WriteLine("[ORPHANSCAN] check songs exists calls total time: {0}ms", (totalExistsTime / 10000)); // Convert ticks to milliseconds, divide by 10,000
 		}
 
 		public void CheckFolders()
@@ -176,8 +179,11 @@ namespace WaveBox.DataModel.FolderScanning
 					filename = reader.GetString(reader.GetOrdinal("song_file_name"));
 					path = reader.GetString(reader.GetOrdinal("folder_path")) + Path.DirectorySeparatorChar + filename;
 
+					long timestamp = DateTime.Now.Ticks;
+					bool exists = File.Exists(path);
+					totalExistsTime += DateTime.Now.Ticks - timestamp;
 
-					if (!File.Exists(path))
+					if (!exists)
 					{
 						orphanSongIds.Add(songid);
 					}

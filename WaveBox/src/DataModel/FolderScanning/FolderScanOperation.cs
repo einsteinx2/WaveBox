@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using WaveBox.OperationQueue;
 using TagLib;
+using System.Security;
 
 namespace WaveBox.DataModel.FolderScanning
 {
@@ -42,103 +43,86 @@ namespace WaveBox.DataModel.FolderScanning
 
 		public void ProcessFolder(string folderPath)
 		{
-			if (isRestart)
+			if (isRestart || folderPath == null)
 			{
 				return;
 			}
 
 			try
 			{
-				FileInfo topFile = new FileInfo(folderPath);
-
-				if (topFile.Directory.Exists == false)
+				// Must be a valid directory
+				if (!Directory.Exists(folderPath))
 				{
 					return;
 				}
+			}
+			catch(Exception e)
+			{
+				Console.WriteLine("\t" + "[FOLDERSCAN(1)] " + folderPath + ": Error checking if Directory exists. " + e.InnerException);
+			}
 
-				Folder topFolder;
+			// Queue to hold folder names to process
+			Queue<DirectoryInfo> processQueue = new Queue<DirectoryInfo>();
 
-				// if the file is a directory
-				if ((topFile.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+			// Access the top directory's information
+			DirectoryInfo topDirectory = null;
+			try
+			{
+				topDirectory = new DirectoryInfo(folderPath);
+			}
+			catch(SecurityException e)
+			{
+				Console.WriteLine("\t" + "[FOLDERSCAN(2)] " + folderPath + ": Do not have permission to access directory. " + e.InnerException);
+			}
+			catch(ArgumentException e)
+			{
+				Console.WriteLine("\t" + "[FOLDERSCAN(3)] " + folderPath + ": Invalid characters in path. " + e.InnerException);
+			}
+			catch(PathTooLongException e)
+			{
+				Console.WriteLine("\t" + "[FOLDERSCAN(4)] " + folderPath + ": Path is too long. " + e.InnerException);
+			}
+
+			// Enqueue the top directory to start processing
+			if (topDirectory != null)
+			{
+				processQueue.Enqueue(topDirectory);
+			}
+
+			while(processQueue.Count > 0)
+			{
+				try
 				{
-					topFolder = new Folder(topFile.FullName);
-					//Console.WriteLine("scanning " + topFolder.FolderName + "  id: " + topFolder.FolderId);
-
-					if (topFolder.FolderId == null)
+					DirectoryInfo directory = processQueue.Dequeue();
+					//Console.WriteLine("\t" + "processQueue count: " + processQueue.Count + " directory: " + directory.Name);
+					Folder folder = new Folder(directory.FullName);
+					if (folder.FolderId == null)
 					{
-						topFolder.InsertFolder(false);
+						folder.InsertFolder(false);
 					}
 
-                    //var sw = new Stopwatch();
-					foreach (var subfolder in Directory.GetDirectories(topFile.FullName))
-					{
-						if (!(subfolder.Contains(".AppleDouble")))
-						{
-							var folder = new Folder(subfolder);
+					// Process any files this folder contains
+					Parallel.ForEach(directory.EnumerateFiles(), fileInfo =>
+				    {
+				        ProcessFile(fileInfo, folder.FolderId);
+				    });
 
-							// if the folder isn't already in the database, add it.
-							if (folder.FolderId == null)
-							{
-								folder.InsertFolder(false);
-							}
-                            //sw.Start();
-							ProcessFolder(subfolder);
-                            //Console.WriteLine("ProcessFolder ({0}) took {1}ms", subfolder, sw.ElapsedMilliseconds);
-                            //sw.Reset();
+					// Queue up any subdirectories
+					foreach(DirectoryInfo subDir in directory.EnumerateDirectories())
+					{
+						if (subDir.Name != ".AppleDouble")
+						{
+							processQueue.Enqueue(subDir);
 						}
 					}
-                    //sw.Stop();
-
-                    //sw.Start();
-					//foreach (var subfile in Directory.GetFiles(topFile.FullName))
-					//{
-					//	// if the subfile is a file...
-					//	ProcessFile(new FileInfo(subfile), topFolder.FolderId);
-					//	//Console.WriteLine("ProcessFile took {0}ms", sw.ElapsedMilliseconds);
-					//	//sw.Restart();
-					//	//Console.WriteLine(subfile);
-					//}
-
-                    //sw.Stop();
-
-					//Parallel.ForEach(Directory.GetDirectories(topFile.FullName), currentFile =>
-					//    {
-					//        if (!(currentFile.Contains(".AppleDouble")))
-					//        {
-					//            var folder = new Folder(currentFile);
-					//
-					//            // if the folder isn't already in the database, add it.
-					//            if (folder.FolderId == 0)
-					//            {
-					//                folder.addToDatabase(false);
-					//            }
-					//            processFolder(currentFile);
-					//        }
-					//    });
-
-					Parallel.ForEach(Directory.GetFiles(topFile.FullName), currentFile =>
-					    {
-					        ProcessFile(new FileInfo(currentFile), topFolder.FolderId);
-					    });
+				}
+				catch(Exception e)
+				{
+					Console.WriteLine("\t" + "[FOLDERSCAN(5)] " + folderPath + ": Error processing directory. " + e.InnerException);
 				}
 
+				// Garbage collect before continuing
 				GC.Collect();
-			}
-			catch (FileNotFoundException e)
-			{
-				Console.WriteLine("\t" + "[FOLDERSCAN(1)] " + folderPath + ": Directory does not exist. " + e.InnerException);
-			}
-			catch (DirectoryNotFoundException e)
-			{
-				Console.WriteLine("\t" + "[FOLDERSCAN(2)] " + folderPath + ": Directory does not exist. " + e.InnerException);
-			}
-			catch (IOException e)
-			{
-				Console.WriteLine("\t" + "[FOLDERSCAN(3)] " + folderPath + ": " + e.Message);
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine("\t" + "[FOLDERSCAN(4)] " + "Error checking to see if the file was a directory: " + e.ToString());
 			}
 		}
 
@@ -158,12 +142,12 @@ namespace WaveBox.DataModel.FolderScanning
             //var sw = new Stopwatch();
             //sw.Start();
             bool needsUpdating = MediaItem.FileNeedsUpdating(file, folderId);
-            //Console.WriteLine("FileNeedsUpdating: {0} ms", sw.ElapsedMilliseconds);
+			//Console.WriteLine("Processing file: " + file.Name);
             //sw.Reset();
 
 			if (needsUpdating)
 			{
-				Console.WriteLine("[FOLDERSCAN] " + "File needs updating: " + file.Name);
+				Console.WriteLine("[FOLDERSCAN(6)] " + "File needs updating: " + file.Name);
 				
 				//sw.Start();
 				TagLib.File f = null;
@@ -175,13 +159,13 @@ namespace WaveBox.DataModel.FolderScanning
 				catch (TagLib.CorruptFileException e)
 				{
 					e.ToString();
-					Console.WriteLine("[FOLDERSCAN(5)] " + file.Name + " has a corrupt tag and will not be inserted.");
+					Console.WriteLine("[FOLDERSCAN(7)] " + file.Name + " has a corrupt tag and will not be inserted.");
 					return;
 				}
 
 				catch (Exception e)
 				{
-					Console.WriteLine("[FOLDERSCAN(6)] " + "Error processing file: " + e.ToString());
+					Console.WriteLine("[FOLDERSCAN(8)] " + "Error processing file: " + e.ToString());
 				}
 				//Console.WriteLine("Get tag: {0} ms", sw.ElapsedMilliseconds);
 

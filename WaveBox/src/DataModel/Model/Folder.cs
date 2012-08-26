@@ -8,6 +8,7 @@ using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
 using Newtonsoft.Json;
 using System.IO;
+using NUnit.Framework;
 
 namespace WaveBox.DataModel.Model
 {
@@ -28,6 +29,7 @@ namespace WaveBox.DataModel.Model
 		[JsonProperty("folderPath")]
 		public string FolderPath { get; set; }
 
+		[JsonIgnore]
         public bool ContainsImageFile { get; set; }
 
 
@@ -483,6 +485,18 @@ namespace WaveBox.DataModel.Model
 		public static int CompareFolderByName(Folder x, Folder y)
 		{
 			return StringComparer.OrdinalIgnoreCase.Compare(x.FolderName, y.FolderName);
+		}
+	}
+
+	// Example NUnit test
+	[TestFixture]
+	public class FolderTest
+	{
+		[Test]
+		public void CompareFolderByName()
+		{
+			int result = Folder.CompareFolderByName(new Folder(1), new Folder(1));
+			Assert.AreEqual(0, result);
 		}
 	}
 }

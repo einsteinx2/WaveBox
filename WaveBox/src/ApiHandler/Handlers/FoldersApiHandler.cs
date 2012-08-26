@@ -42,8 +42,17 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 			else
 			{
-				// If no id parameter, return media folders
-				listOfFolders = Folder.MediaFolders();
+				// No id parameter
+				if (Uri.Parameters.ContainsKey("mediaFolders") && this.IsTrue(Uri.Parameters["mediaFolders"]))
+				{
+					// They asked for the media folders
+					listOfFolders = Folder.MediaFolders();
+				}
+				else
+				{
+					// They didn't ask for media folders, so send top level folders
+					listOfFolders = Folder.TopLevelFolders();
+				}
 			}
 
 			try

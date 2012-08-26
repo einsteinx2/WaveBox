@@ -163,3 +163,7 @@ pip-log.txt
 
 # MonoDevelop user prefs
 WaveBox.userprefs
+
+# NUnit tests
+test-results
+WaveBox/test-results
