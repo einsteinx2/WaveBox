@@ -111,7 +111,7 @@ namespace WaveBox.ApiHandler.Handlers
 					// Send the file
 					if (this.Transcoder == null || File.Exists(Transcoder.OutputPath))
 					{
-						Processor.WriteFile(file, startOffset, length);
+						Processor.WriteFile(file, startOffset, length, true);
 					}
 					else
 					{
