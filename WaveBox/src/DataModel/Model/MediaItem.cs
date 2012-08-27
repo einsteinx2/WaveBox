@@ -48,13 +48,13 @@ namespace WaveBox.DataModel.Model
 		{
 		}
 
-		public static bool FileNeedsUpdating(FileInfo file, int? folderId)
+		public static bool FileNeedsUpdating(string filePath, int? folderId)
 		{
             // We don't need to instantiate another folder to know what the folder id is.  This should be known when the method is called.
 
 			//var sw = new Stopwatch();
-			string fileName = file.Name;
-			long lastModified = Convert.ToInt64(file.LastWriteTime.Ticks);
+            string fileName = Path.GetFileName(filePath);
+			long lastModified = Convert.ToInt64(System.IO.File.GetLastWriteTime(filePath).Ticks);
 			bool needsUpdating = true;
 
 			IDbConnection conn = null;

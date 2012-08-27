@@ -64,7 +64,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 				long length = file.Length - startOffset;
 
-				Processor.WriteFile(file, startOffset, length, true);
+				Processor.WriteFile(file, startOffset, length);
 			}
 			else
 			{

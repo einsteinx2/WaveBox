@@ -76,7 +76,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 			}
 
-			Processor.WriteFile(stream, 0, stream.Length, true);
+			Processor.WriteFile(stream, 0, stream.Length);
 
             // close the file so we don't get sharing violations on future accesses
             stream.Close();
