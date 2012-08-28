@@ -31,6 +31,9 @@ namespace WaveBox.DataModel.Model
 		[JsonProperty("fileSize")]
 		public long? FileSize { get; set; }
 
+		[JsonIgnore]
+		public Stream Stream { get { return CreateStream(); } }
+
 		/// <summary>
 		/// Constructors
 		/// </summary>
@@ -78,7 +81,7 @@ namespace WaveBox.DataModel.Model
 			Md5Hash = CalcMd5Hash(fs);
 			FileSize = fs.Length;
 			LastModified = Convert.ToInt64(System.IO.File.GetLastWriteTime(fs.Name).Ticks);
-			ArtId = ArtIdFromMd5(Md5Hash);
+			ArtId = Database.ArtIdForMd5(Md5Hash);
 		}
 
 		// used for getting art from a tag.
@@ -91,7 +94,7 @@ namespace WaveBox.DataModel.Model
 				FileSize = data.Length;
 				LastModified = Convert.ToInt64(System.IO.File.GetLastWriteTime(file.Name).Ticks);
 
-				ArtId = ArtIdFromMd5(Md5Hash);
+				ArtId = Database.ArtIdForMd5(Md5Hash);
 				if (ArtId == null)
 				{
 					// This art isn't in the database yet, so add it
@@ -100,37 +103,114 @@ namespace WaveBox.DataModel.Model
 			}
 		}
 
-		static int? ArtIdFromMd5(string hash)
-		{
+		public void InsertArt()
+		{			
+			int? itemId = Database.GenerateItemId(ItemType.Art);
+			if (itemId == null)
+				return;
+
 			IDbConnection conn = null;
 			IDataReader reader = null;
-
-			int? artId = null;
-
 			try
 			{
+				// insert the song into the database
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT art_id FROM art WHERE md5_hash = @md5hash", conn);
-				q.AddNamedParam("@md5hash", hash);
+				IDbCommand q = Database.GetDbCommand("INSERT INTO art (art_id, md5_hash, art_last_modified, art_file_size)" + 
+													 "VALUES (@artid, @md5hash, @lastmodified, @filesize)"
+													, conn);
 
+				q.AddNamedParam("@artid", itemId);
+				q.AddNamedParam("@md5hash", Md5Hash);
+				q.AddNamedParam("@lastmodified", LastModified);
+				q.AddNamedParam("@filesize", FileSize);
 				q.Prepare();
-				reader = q.ExecuteReader();
 
-				if (reader.Read())
+				if (q.ExecuteNonQuery() > 0)
 				{
-					artId = reader.GetInt32(0);
+					ArtId = itemId;
 				}
+
+				return;
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[COVERART(1)] ERROR: " + e.ToString());
+				Console.WriteLine("[SONG(3)] " + e.ToString());
 			}
 			finally
 			{
 				Database.Close(conn, reader);
 			}
+		}
 
-			return artId;
+		private Stream CreateStream()
+		{
+			if ((object)ArtId == null)
+			{
+				return null;
+			}
+
+			int? itemId = Database.ItemIdForArtId((int)ArtId);
+
+			if ((object)itemId == null)
+			{
+				return null;
+			}
+
+			ItemType type = Database.ItemTypeForItemId((int)itemId);
+
+			Stream stream = null;
+
+			if (type == ItemType.Song)
+			{
+				stream = StreamForSong((int)itemId);
+			}
+			else if (type == ItemType.Folder)
+			{
+				stream = StreamForFolder((int)itemId);
+			}
+
+			return stream;
+		}
+
+		private Stream StreamForSong(int songId)
+		{
+			Song song = new Song(songId);
+			Stream stream = null;
+
+			// Open the image from the tag
+			TagLib.File f = null;
+			try
+			{
+				f = TagLib.File.Create(song.FilePath);
+				byte[] data = f.Tag.Pictures[0].Data.Data;
+
+				stream = new MemoryStream(data);
+			}
+			catch(TagLib.CorruptFileException e)
+			{
+				Console.WriteLine("[ART(1)] " + song.FileName + " has a corrupt tag so can't return the art. " + e.ToString());
+			}
+			catch(Exception e)
+			{
+				Console.WriteLine("[ART(2)] " + "Error processing file: " + e.ToString());
+			}
+
+			return stream;
+		}
+
+		private Stream StreamForFolder(int folderId)
+		{
+			Folder folder = new Folder(folderId);
+			Stream stream = null;
+
+			string artPath = folder.ArtPath;
+
+			if ((object)artPath != null)
+			{
+				stream = new FileStream(artPath, FileMode.Open, FileAccess.Read);
+			}
+
+			return stream;
 		}
 
 		// Based off of example at http://msdn.microsoft.com/en-us/library/s02tk69a.aspx
@@ -180,44 +260,7 @@ namespace WaveBox.DataModel.Model
 			}
 		}
 
-		public void InsertArt()
-		{			
-			int? itemId = Database.GenerateItemId(ItemType.Art);
-			if (itemId == null)
-				return;
-
-			IDbConnection conn = null;
-			IDataReader reader = null;
-			try
-			{
-				// insert the song into the database
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("INSERT INTO art (art_id, md5_hash, art_last_modified, art_file_size)" + 
-													 "VALUES (@artid, @md5hash, @lastmodified, @filesize)"
-													, conn);
-
-				q.AddNamedParam("@artid", itemId);
-				q.AddNamedParam("@md5hash", Md5Hash);
-				q.AddNamedParam("@lastmodified", LastModified);
-				q.AddNamedParam("@filesize", FileSize);
-				q.Prepare();
-
-				if (q.ExecuteNonQuery() > 0)
-				{
-					ArtId = itemId;
-				}
-
-				return;
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine("[SONG(3)] " + e.ToString());
-			}
-			finally
-			{
-				Database.Close(conn, reader);
-			}
-		}
+		
 
 		/*public bool NeedsUpdatingQuick()
 		{

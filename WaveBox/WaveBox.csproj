@@ -92,7 +92,6 @@
     <Compile Include="src\ApiHandler\UriWrapper.cs" />
     <Compile Include="src\ApiHandler\Handlers\AlbumsApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\ArtistsApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\CoverArtApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\ErrorApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\FoldersApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\JukeboxApiHandler.cs" />
@@ -139,6 +138,7 @@
     <Compile Include="src\ApiHandler\Handlers\LoginApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\WebInterfaceHandler.cs" />
     <Compile Include="src\DataModel\Model\Art.cs" />
+    <Compile Include="src\ApiHandler\Handlers\ArtApiHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="bass.dll">

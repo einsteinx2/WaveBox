@@ -53,9 +53,9 @@ namespace WaveBox.ApiHandler
 					{
 						return new AlbumsApiHandler(uriW, processor, user);
 					}
-					else if (action == "cover")
+					else if (action == "art")
 					{
-						return new CoverArtApiHandler(uriW, processor, user);
+						return new ArtApiHandler(uriW, processor, user);
 					}
 					else if (action == "folders")
 					{

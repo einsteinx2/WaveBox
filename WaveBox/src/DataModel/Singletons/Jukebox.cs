@@ -108,7 +108,7 @@ namespace WaveBox.DataModel.Singletons
 					BassInit();
 
 					// create the stream
-					string path = item.File().Name;
+					string path = item.File.Name;
 					currentStream = Bass.BASS_StreamCreateFile(path, 0, 0, BASSFlag.BASS_STREAM_PRESCAN);
 					if (currentStream == 0)
 					{

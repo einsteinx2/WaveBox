@@ -30,8 +30,7 @@ namespace WaveBox.DataModel.Model
 		public string FolderPath { get; set; }
 
 		[JsonIgnore]
-        public bool ContainsImageFile { get; set; }
-
+		public string ArtPath { get { return FindArtPath(); } }
 
 		/// <summary>
 		/// Constructors
@@ -291,27 +290,6 @@ namespace WaveBox.DataModel.Model
 			else return false;
 		}
 
-		public bool FolderContainsImages(string dir, out string firstImageFoundPath)
-        {
-			string[] validImageExtensions = new string[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
-			string ext = "";
-
-			foreach (string file in Directory.GetFiles(dir))
-			{
-				ext = Path.GetExtension(file).ToLower();
-				if (validImageExtensions.Contains(ext) && !Path.GetFileName(file).StartsWith("._"))
-				{
-					firstImageFoundPath = file;
-                    ContainsImageFile = true;
-					return true;
-				}
-			}
-
-			firstImageFoundPath = "";
-            ContainsImageFile = false;
-			return false;
-		}
-
         public static bool ContainsImages(string dir, out string firstImageFoundPath)
         {
             string[] validImageExtensions = new string[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
@@ -330,6 +308,29 @@ namespace WaveBox.DataModel.Model
             firstImageFoundPath = "";
             return false;
         }
+
+		private string FindArtPath()
+		{
+			string[] files = Directory.GetFiles(FolderPath);
+			string artPath = null;
+
+			foreach (string path in Settings.FolderArtNames)
+			{
+				if (files.Contains(FolderPath + Path.DirectorySeparatorChar + path))
+				{
+					// Use this one
+					artPath = path;
+				}
+			}
+
+			if ((object)artPath == null)
+			{
+				// Check for any images
+				Folder.ContainsImages(FolderPath, out artPath);
+			}
+
+			return artPath;
+		}
 
 		private Folder MediaFolder()
 		{

@@ -129,6 +129,77 @@ namespace WaveBox.DataModel.Singletons
 			return ItemTypeExtensions.ItemTypeForId(itemTypeId);
 		}
 
+		public static int? ItemIdForArtId(int artId)
+		{
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			int? itemId = null;
+
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT item_id FROM art_item WHERE art_id = @artid", conn);
+				q.AddNamedParam("@artid", artId);
+
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				if (reader.Read())
+				{
+					// Grab the first available item id that is associated with this art id
+					// doesn't matter which one because they all have the same art
+					itemId = reader.GetInt32(0);
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("[COVERART(1)] ERROR: " + e.ToString());
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			return itemId;
+		}
+
+		public static int? ArtIdForMd5(string hash)
+		{
+			if ((object)hash == null)
+				return null;
+
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			int? artId = null;
+
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT art_id FROM art WHERE md5_hash = @md5hash", conn);
+				q.AddNamedParam("@md5hash", hash);
+
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				if (reader.Read())
+				{
+					artId = reader.GetInt32(0);
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("[COVERART(1)] ERROR: " + e.ToString());
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			return artId;
+		}
+
 		/* public bool DeleteItemId (int itemId)
 		{
 			bool success = false;

@@ -104,7 +104,7 @@ namespace WaveBox.ApiHandler.Handlers
 					else
 					{
 						// Stream the original file
-						file = item.File();
+						file = item.File;
 						length = file.Length;
 					}
 

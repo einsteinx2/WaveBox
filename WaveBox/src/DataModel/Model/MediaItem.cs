@@ -42,6 +42,12 @@ namespace WaveBox.DataModel.Model
 		[JsonProperty("artId")]
 		public int? ArtId { get; set; }
 
+		[JsonIgnore]
+		public string FilePath { get { return new Folder(FolderId).FolderPath + Path.DirectorySeparatorChar + FileName; } }
+
+		[JsonIgnore]
+		public FileStream File { get { return new FileStream(FilePath, FileMode.Open, FileAccess.Read); } }
+
 
 		/// <summary>
 		/// Public methods
@@ -96,14 +102,6 @@ namespace WaveBox.DataModel.Model
 			return needsUpdating;
 		}
 
-		public string FilePath()
-		{
-			return new Folder(FolderId).FolderPath + Path.DirectorySeparatorChar + FileName;
-		}
 
-		public FileStream File()
-		{
-			return new FileStream(FilePath(), FileMode.Open, FileAccess.Read);
-		}
 	}
 }

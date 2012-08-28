@@ -14,7 +14,7 @@ namespace WaveBox.Transcoding
 
 	    protected string FFMpegOptionsWith(String codec, int qualityLevel)
 	    {
-	        return "-i \"" + Item.FilePath() + "\" -acodec " + codec + " -aq " + qualityLevel + " \"" + OutputPath + "\"";
+	        return "-i \"" + Item.FilePath + "\" -acodec " + codec + " -aq " + qualityLevel + " \"" + OutputPath + "\"";
 	    }
 	}
 }

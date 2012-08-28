@@ -24,6 +24,9 @@ namespace WaveBox.DataModel.Singletons
 		private static List<Folder> mediaFolders;
 		public static List<Folder> MediaFolders { get { return mediaFolders; } }
 
+		private static List<string> folderArtNames;
+		public static List<string> FolderArtNames { get { return folderArtNames; } }
+
 		public static void Reload()
 		{
 			ParseSettings();
@@ -31,13 +34,18 @@ namespace WaveBox.DataModel.Singletons
 
 		private static void ParseSettings()
 		{
-            StreamReader reader = new StreamReader("WaveBox.conf");
-            string configFile = RemoveJsonComments(reader);
+			StreamReader reader = new StreamReader("WaveBox.conf");
+			string configFile = RemoveJsonComments(reader);
 
-            dynamic json = JsonConvert.DeserializeObject(configFile);
+			dynamic json = JsonConvert.DeserializeObject(configFile);
 
-            podcastFolder = json.podcastFolder;
+			podcastFolder = json.podcastFolder;
 			mediaFolders = PopulateMediaFolders();
+			folderArtNames = new List<string>();
+			foreach (string name in json.folderArtNames)
+			{
+				folderArtNames.Add(name);
+			}
 		}
 
 		public static void SettingsSetup()

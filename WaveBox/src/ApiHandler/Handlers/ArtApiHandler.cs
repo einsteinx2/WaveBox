@@ -11,12 +11,12 @@ using TagLib;
 
 namespace WaveBox.ApiHandler.Handlers
 {
-	class CoverArtApiHandler : IApiHandler
+	class ArtApiHandler : IApiHandler
 	{
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 
-		public CoverArtApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
+		public ArtApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;
@@ -32,33 +32,17 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 
 			// Convert to integer
-			int itemId = Int32.MaxValue;
-			Int32.TryParse(Uri.Parameters["id"], out itemId);
-			if (itemId == Int32.MaxValue)
+			int artId = Int32.MaxValue;
+			Int32.TryParse(Uri.Parameters["id"], out artId);
+			if (artId == Int32.MaxValue)
 			{
 				Processor.WriteErrorHeader();
 				return;
 			}
 
-			// Get the item type
-			ItemType type = Database.ItemTypeForItemId(itemId);
-
-			// Send the appropriate art
-			Stream stream = null;
-			if (type == ItemType.Song)
-			{
-				stream = GetSongArt(new Song(itemId));
-			}
-			else if (type == ItemType.Folder)
-			{
-				stream = GetFolderArt(new Folder(itemId));
-			}
-			else if (type == ItemType.Album)
-			{
-				stream = GetAlbumArt(new Album(itemId));
-			}
-
-			if (stream == null)
+			Art art = new Art(artId);
+			Stream stream = art.Stream;
+			if ((object)stream == null)
 			{
 				Processor.WriteErrorHeader();
 				return;
@@ -80,49 +64,6 @@ namespace WaveBox.ApiHandler.Handlers
 
             // close the file so we don't get sharing violations on future accesses
             stream.Close();
-		}
-
-        private Stream GetSongArt(Song song)
-		{
-			TagLib.File file = TagLib.File.Create(song.FilePath());
-			string folderImagePath = null;
-
-			if (Folder.ContainsImages(Path.GetDirectoryName(song.FilePath()), out folderImagePath))
-			{
-				return new FileStream(folderImagePath, FileMode.Open, FileAccess.Read);
-			}
-			else if (file.Tag.Pictures.Length > 0)
-			{
-				return new MemoryStream(file.Tag.Pictures[0].Data.Data);
-			} 
-
-			return null;
-		}
-
-        private Stream GetAlbumArt(Album album)
-        {
-            return null;
-        }
-
-        private Stream GetFolderArt(Folder folder)
-		{
-			string imagePath = null;
-			if (Folder.ContainsImages(folder.FolderPath, out imagePath))
-			{
-				return new FileStream(imagePath, FileMode.Open);
-			}
-			else
-			{
-				foreach (string file in Directory.GetFiles(folder.FolderPath))
-				{
-					TagLib.File tag = TagLib.File.Create(file);
-					if (tag.Tag.Pictures.Length > 0)
-					{
-						return new MemoryStream(tag.Tag.Pictures[0].Data.Data);
-					} 
-				}
-			}
-			return null;
 		}
 
 		// Thanks to http://www.switchonthecode.com/tutorials/csharp-tutorial-image-editing-saving-cropping-and-resizing
