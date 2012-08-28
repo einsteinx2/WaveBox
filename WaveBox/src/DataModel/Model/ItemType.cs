@@ -19,6 +19,7 @@ namespace WaveBox.DataModel.Model
 		Video = 10,
 		Bookmark = 11,
 		BookmarkItem = 12,
+		Art = 13,
 		Unknown = 2147483647 // Int32.MaxValue used for database compatibility
 	}
 

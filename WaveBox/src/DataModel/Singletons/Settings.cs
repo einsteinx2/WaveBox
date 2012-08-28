@@ -47,8 +47,8 @@ namespace WaveBox.DataModel.Singletons
                 try
                 {
                     Console.WriteLine("[SETTINGS] " + "Setting file doesn't exist; Creating it. (WaveBox.conf)");
-                    var settingsTemplate = new StreamReader("res" + Path.DirectorySeparatorChar + "WaveBox.conf");
-                    var settingsOut = new StreamWriter("WaveBox.conf");
+                    StreamReader settingsTemplate = new StreamReader("res" + Path.DirectorySeparatorChar + "WaveBox.conf");
+                    StreamWriter settingsOut = new StreamWriter("WaveBox.conf");
 
                     settingsOut.Write(settingsTemplate.ReadToEnd());
 
@@ -68,7 +68,7 @@ namespace WaveBox.DataModel.Singletons
                     Console.WriteLine("[SETTINGS] " + "Database file doesn't exist; Creating it. (wavebox.db)");
 
                     // new filestream on the template
-                    var dbTemplate = new FileStream("res" + Path.DirectorySeparatorChar + "wavebox.db", FileMode.Open);
+                    FileStream dbTemplate = new FileStream("res" + Path.DirectorySeparatorChar + "wavebox.db", FileMode.Open);
 
                     // a new byte array
                     byte[] dbData = new byte[dbTemplate.Length];
@@ -98,7 +98,7 @@ namespace WaveBox.DataModel.Singletons
 
 		private static List<Folder> PopulateMediaFolders()
 		{
-			var folders = new List<Folder>();
+			List<Folder> folders = new List<Folder>();
 			Folder mf = null;
 			StreamReader reader = new StreamReader("WaveBox.conf");
             string configFile = RemoveJsonComments(reader);
@@ -122,7 +122,7 @@ namespace WaveBox.DataModel.Singletons
 
         private static string RemoveJsonComments(StreamReader reader)
         {
-            var js = new StringBuilder();
+            StringBuilder js = new StringBuilder();
             string line = null;
             bool inBlockComment = false;
             bool inStringLiteral = false;

@@ -81,16 +81,16 @@ namespace WaveBox.DataModel.Model
 		{
             // We need to check to make sure the tag isn't corrupt before handing off to this method, anyway, so just feed in the tag
             // file that we checked for corruption.
-            //var file = TagLib.File.Create(fsFile.FullName);
+            //TagLib.File file = TagLib.File.Create(fsFile.FullName);
 
-            var fsFile = new FileInfo(filePath);
-			var tag = file.Tag;
+            FileInfo fsFile = new FileInfo(filePath);
+			TagLib.Tag tag = file.Tag;
             //var lol = file.Properties.Codecs;
 			FolderId = folderId;
 
 			try
 			{
-				var artist = Artist.ArtistForName(tag.FirstPerformer);
+				Artist artist = Artist.ArtistForName(tag.FirstPerformer);
                 ArtistId = artist.ArtistId;
                 ArtistName = artist.ArtistName;
 			}
@@ -102,7 +102,7 @@ namespace WaveBox.DataModel.Model
 
             try
             {
-                var album = Album.AlbumForName(tag.Album, ArtistId);
+                Album album = Album.AlbumForName(tag.Album, ArtistId);
                 AlbumId = album.AlbumId;
                 AlbumName = album.AlbumName;
             }
@@ -158,6 +158,7 @@ namespace WaveBox.DataModel.Model
             FileSize = fsFile.Length;
             LastModified = Convert.ToInt64(fsFile.LastWriteTime.Ticks);
             FileName = fsFile.Name;
+			ArtId = new Art(file).ArtId;
 		}
 
 		public Song(IDataReader reader)
@@ -220,7 +221,9 @@ namespace WaveBox.DataModel.Model
 		{			
 			int? itemId = Database.GenerateItemId(ItemType.Song);
 			if (itemId == null)
+			{
 				return;
+			}
 
 			IDbConnection conn = null;
 			IDataReader reader = null;
@@ -228,9 +231,9 @@ namespace WaveBox.DataModel.Model
 			{
 				// insert the song into the database
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("INSERT INTO song (song_id, song_folder_id, song_artist_id, song_album_id, song_file_type_id, song_name, song_track_num, song_disc_num, song_duration, song_bitrate, song_file_size, song_last_modified, song_file_name, song_release_year)" + 
-					"VALUES (@songid, @folderid, @artistid, @albumid, @filetype, @songname, @tracknum, @discnum, @duration, @bitrate, @filesize, @lastmod, @filename, @releaseyear)"
-				, conn);
+				IDbCommand q = Database.GetDbCommand("INSERT INTO song (song_id, song_folder_id, song_artist_id, song_album_id, song_file_type_id, song_name, song_track_num, song_disc_num, song_duration, song_bitrate, song_file_size, song_last_modified, song_file_name, song_release_year) " + 
+													 "VALUES (@songid, @folderid, @artistid, @albumid, @filetype, @songname, @tracknum, @discnum, @duration, @bitrate, @filesize, @lastmod, @filename, @releaseyear)"
+													 , conn);
 
 				q.AddNamedParam("@songid", itemId);
 				q.AddNamedParam("@folderid", FolderId);
@@ -239,30 +242,45 @@ namespace WaveBox.DataModel.Model
 				q.AddNamedParam("@filetype", (int)FileType);
 
 				if (SongName == null)
+				{
 					q.AddNamedParam("@songname", DBNull.Value);
+				}
 				else
+				{
 					q.AddNamedParam("@songname", SongName);
+				}
 
-                if (TrackNumber == null)
-                    q.AddNamedParam("@tracknum", DBNull.Value);
-                else
-                    q.AddNamedParam("@tracknum", TrackNumber);
+				if (TrackNumber == null)
+				{
+					q.AddNamedParam("@tracknum", DBNull.Value);
+				}
+				else
+				{
+					q.AddNamedParam("@tracknum", TrackNumber);
+				}
 				q.AddNamedParam("@discnum", DiscNumber);
 				q.AddNamedParam("@duration", Duration);
 				q.AddNamedParam("@bitrate", Bitrate);
 				q.AddNamedParam("@filesize", FileSize);
 				q.AddNamedParam("@lastmod", LastModified);
 				q.AddNamedParam("@filename", FileName);
-                if (ReleaseYear == null)
-                    q.AddNamedParam("@releaseyear", DBNull.Value);
-                else
-                    q.AddNamedParam("@releaseyear", ReleaseYear);
+				if (ReleaseYear == null)
+				{
+					q.AddNamedParam("@releaseyear", DBNull.Value);
+				}
+				else
+				{
+					q.AddNamedParam("@releaseyear", ReleaseYear);
+				}
 
 				q.Prepare();
-				q.ExecuteNonQuery();
-				return;
+
+				if (q.ExecuteNonQuery() > 0)
+				{
+					ItemId = itemId;
+				}
 			}
-			catch (Exception e)
+			catch(Exception e)
 			{
 				Console.WriteLine("[SONG(3)] " + e.ToString());
 			}
@@ -270,11 +288,37 @@ namespace WaveBox.DataModel.Model
 			{
 				Database.Close(conn, reader);
 			}
+
+			if (ArtId != null)
+			{
+				try
+				{
+					// insert the song into the database
+					conn = Database.GetDbConnection();
+					IDbCommand q = Database.GetDbCommand("INSERT INTO art_item (art_id, item_id) " + 
+														 "VALUES (@artid, @itemid)"
+														 , conn);
+
+					q.AddNamedParam("@artid", ArtId);
+					q.AddNamedParam("@itemid", ItemId);
+					q.Prepare();
+
+					q.ExecuteNonQuery();
+				}
+				catch(Exception e)
+				{
+					Console.WriteLine("[SONG(3)] " + e.ToString());
+				}
+				finally
+				{
+					Database.Close(conn, reader);
+				}
+			}
 		}
 
 		public static List<Song> allSongs()
 		{
-			var allsongs = new List<Song>();
+			List<Song> allsongs = new List<Song>();
 			IDbConnection conn = null;
 			IDataReader reader = null;
 
@@ -288,7 +332,7 @@ namespace WaveBox.DataModel.Model
 				q.Prepare();
 				reader = q.ExecuteReader();
 
-				//	var sw = new Stopwatch();
+				//	Stopwatch sw = new Stopwatch();
 				while (reader.Read())
 				{
 					//		sw.Start();

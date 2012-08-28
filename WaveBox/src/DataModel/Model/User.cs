@@ -137,14 +137,14 @@ namespace WaveBox.DataModel.Model
 				return "";
 			}
 
-			var provider = new SHA1CryptoServiceProvider();
+			SHA1CryptoServiceProvider provider = new SHA1CryptoServiceProvider();
 			return BitConverter.ToString(provider.ComputeHash(Encoding.ASCII.GetBytes(sumthis))).Replace("-", "");
 		}
 
 		private static string ComputePasswordHash(string password, string salt)
 		{
 			//long startTime = DateTime.Now.Ticks;
-			var hash = Sha1(password + salt);
+			string hash = Sha1(password + salt);
 
 			for (int i = 0; i < 50; i++)
 			{
@@ -164,8 +164,8 @@ namespace WaveBox.DataModel.Model
 			IDbConnection conn = null;
 			IDataReader reader = null;
 
-			var salt = GeneratePasswordSalt();
-			var hash = ComputePasswordHash(password, salt);
+			string salt = GeneratePasswordSalt();
+			string hash = ComputePasswordHash(password, salt);
 
 			try
 			{
@@ -222,8 +222,8 @@ namespace WaveBox.DataModel.Model
 			if (itemId == null)
 				return null;
 
-			var salt = GeneratePasswordSalt();
-			var hash = ComputePasswordHash(password, salt);
+			string salt = GeneratePasswordSalt();
+			string hash = ComputePasswordHash(password, salt);
 
 			IDbConnection conn = null;
 			IDataReader reader = null;
@@ -252,7 +252,7 @@ namespace WaveBox.DataModel.Model
 
 		public bool Authenticate(string password)
 		{
-			var hash = ComputePasswordHash(password, PasswordSalt);
+			string hash = ComputePasswordHash(password, PasswordSalt);
 			return hash == PasswordHash;
 		}
 

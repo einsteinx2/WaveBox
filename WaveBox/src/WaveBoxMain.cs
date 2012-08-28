@@ -37,7 +37,7 @@ namespace WaveBox
 			User.CreateUser("test", "test");
 
 			// Start file manager, calculate time it takes to run.
-			var sw = new Stopwatch();
+			Stopwatch sw = new Stopwatch();
 			Console.WriteLine("[WAVEBOX] Scanning media directories...");
 			sw.Start();
 			FileManager.Instance.Setup();
@@ -64,7 +64,7 @@ namespace WaveBox
 			// Attempt to start the HTTP server thread
 			try
 			{
-				var http = new HttpServer(httpPort);
+				HttpServer http = new HttpServer(httpPort);
 				httpSrv = new Thread(new ThreadStart(http.Listen));
 				httpSrv.IsBackground = true;
 				httpSrv.Start();

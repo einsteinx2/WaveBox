@@ -78,7 +78,7 @@ namespace WaveBox.ApiHandler
 		/// </summary>
 		private List<string> RemoveEmptyElements(string[] input)
 		{
-			var result = new List<string>();
+			List<string> result = new List<string>();
 
 			foreach (string s in input)
 			{

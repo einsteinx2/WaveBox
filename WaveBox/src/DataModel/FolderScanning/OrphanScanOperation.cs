@@ -24,7 +24,7 @@ namespace WaveBox.DataModel.FolderScanning
 
 		public override void Start()
 		{
-			var sw = new Stopwatch();
+			Stopwatch sw = new Stopwatch();
 			sw.Start();
 			CheckFolders();
 			sw.Stop();
@@ -45,8 +45,8 @@ namespace WaveBox.DataModel.FolderScanning
 
 			IDbConnection conn = null;
 			IDataReader reader = null;
-			var mediaFolderIds = new ArrayList ();
-			var orphanFolderIds = new ArrayList ();
+			ArrayList mediaFolderIds = new ArrayList();
+			ArrayList orphanFolderIds = new ArrayList();
 
 			foreach (Folder mediaFolder in Settings.MediaFolders) {
 				mediaFolderIds.Add (mediaFolder.FolderId);
@@ -159,7 +159,7 @@ namespace WaveBox.DataModel.FolderScanning
 
 			IDbConnection conn = null;
 			IDataReader reader = null;
-			var orphanSongIds = new ArrayList();
+			ArrayList orphanSongIds = new ArrayList();
 			int songid;
 			string path, filename;
 

@@ -46,7 +46,7 @@ namespace WaveBox.PodcastManagement
             int? existingPodcastId = PodcastIdForRssUrl(rss);
             if (existingPodcastId != null)
             {
-                var existing = new Podcast(existingPodcastId);
+                Podcast existing = new Podcast(existingPodcastId);
                 PodcastId = existingPodcastId;
                 EpisodeKeepCap = existing.EpisodeKeepCap;
                 Title = existing.Title;
@@ -139,15 +139,15 @@ namespace WaveBox.PodcastManagement
             if (!Directory.Exists(PodcastMediaDirectory)) Directory.CreateDirectory(PodcastMediaDirectory);
             if (!Directory.Exists(PodcastMediaDirectory + Path.DirectorySeparatorChar + Title)) Directory.CreateDirectory(PodcastMediaDirectory + Path.DirectorySeparatorChar + Title);
 
-            var current = ListOfCurrentEpisodes();
-            var stored = ListOfStoredEpisodes();
-            var newEps = new List<PodcastEpisode>();
+            List<PodcastEpisode> current = ListOfCurrentEpisodes();
+            List<PodcastEpisode> stored = ListOfStoredEpisodes();
+            List<PodcastEpisode> newEps = new List<PodcastEpisode>();
 
             // get new episodes
-            foreach (var currentEp in current)
+            foreach (PodcastEpisode currentEp in current)
             {
                 bool epIsNew = true;
-                foreach (var storedEp in stored)
+                foreach (PodcastEpisode storedEp in stored)
                 {
                     if (storedEp.Title == currentEp.Title)
                         epIsNew = false;
@@ -240,7 +240,7 @@ namespace WaveBox.PodcastManagement
         {            
             XmlNodeList xmlList;
             xmlList = doc.SelectNodes("//item");
-            var list = new List<PodcastEpisode>();
+            List<PodcastEpisode> list = new List<PodcastEpisode>();
 
             // Make sure we don't try to add more episodes than there actually are.
             long? j = EpisodeKeepCap <= xmlList.Count ? EpisodeKeepCap : list.Count;
@@ -253,7 +253,7 @@ namespace WaveBox.PodcastManagement
 
         public List<PodcastEpisode> ListOfStoredEpisodes()
         {
-            var list = new List<PodcastEpisode>();
+            List<PodcastEpisode> list = new List<PodcastEpisode>();
             IDbConnection conn = null;
             IDataReader reader = null;
             try
@@ -294,7 +294,7 @@ namespace WaveBox.PodcastManagement
         /* Class methods */
         public static List<Podcast> ListOfStoredPodcasts()
         {   
-            var list = new List<Podcast>();
+            List<Podcast> list = new List<Podcast>();
             IDbConnection conn = null;
             IDataReader reader = null;
             try

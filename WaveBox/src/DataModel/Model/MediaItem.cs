@@ -16,7 +16,7 @@ namespace WaveBox.DataModel.Model
 		public virtual int ItemTypeId { get { return 0; } }
 
 		[JsonProperty("itemId")]
-		public int ItemId { get; set; }
+		public int? ItemId { get; set; }
 
 		[JsonProperty("folderId")]
 		public int? FolderId { get; set; }
@@ -25,19 +25,22 @@ namespace WaveBox.DataModel.Model
 		public FileType FileType { get; set; }
 
 		[JsonProperty("duration")]
-		public int Duration { get; set; }
+		public int? Duration { get; set; }
 
 		[JsonProperty("bitrate")]
-		public int Bitrate { get; set; }
+		public int? Bitrate { get; set; }
 
 		[JsonProperty("fileSize")]
-		public long FileSize { get; set; }
+		public long? FileSize { get; set; }
 
 		[JsonProperty("lastModified")]
-		public long LastModified { get; set; }
+		public long? LastModified { get; set; }
 		
 		[JsonProperty("fileName")]
 		public string FileName { get; set; }
+
+		[JsonProperty("artId")]
+		public int? ArtId { get; set; }
 
 
 		/// <summary>
@@ -52,7 +55,7 @@ namespace WaveBox.DataModel.Model
 		{
             // We don't need to instantiate another folder to know what the folder id is.  This should be known when the method is called.
 
-			//var sw = new Stopwatch();
+			//Stopwatch sw = new Stopwatch();
             string fileName = Path.GetFileName(filePath);
 			long lastModified = Convert.ToInt64(System.IO.File.GetLastWriteTime(filePath).Ticks);
 			bool needsUpdating = true;
@@ -66,7 +69,7 @@ namespace WaveBox.DataModel.Model
                 // even though it's a primary key, SQLite doesn't automatically make one!  :O).  We'll pull that, and if we get a row back, then we'll know that this thing exists.
 
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT song_id FROM song WHERE song_folder_id = @folderid AND song_file_name = @filename AND song_last_modified = @lastmod", conn);
+				IDbCommand q = Database.GetDbCommand("SELECT song_id FROM song WHERE song_folder_id = @folderid AND song_last_modified = @lastmod AND song_file_name = @filename", conn);
                 //IDbCommand q = Database.GetDbCommand("SELECT COUNT(*) AS count FROM song WHERE song_folder_id = @folderid AND song_file_name = @filename AND song_last_modified = @lastmod", conn);
 
                 q.AddNamedParam("@folderid", folderId);

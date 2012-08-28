@@ -13,7 +13,7 @@ using Newtonsoft.Json;
 
 namespace WaveBox.DataModel.Model
 {
-	public class CoverArt
+	public class Art
 	{
 		/// <summary>
 		/// Properties
@@ -25,15 +25,21 @@ namespace WaveBox.DataModel.Model
 		[JsonProperty("md5Hash")]
 		public string Md5Hash { get; set; }
 
+		[JsonProperty("lastModified")]
+		public long? LastModified { get; set; }
+
+		[JsonProperty("fileSize")]
+		public long? FileSize { get; set; }
+
 		/// <summary>
 		/// Constructors
 		/// </summary>
 
-		public CoverArt()
+		public Art()
 		{
 		}
 
-		public CoverArt(int artId)
+		public Art(int artId)
 		{
 			IDbConnection conn = null;
 			IDataReader reader = null;
@@ -49,8 +55,10 @@ namespace WaveBox.DataModel.Model
 
 				if (reader.Read())
 				{
-					ArtId = reader.GetInt32(0);
-					Md5Hash = reader.GetString(1);
+					ArtId = reader.GetInt32(reader.GetOrdinal("art_id"));
+					Md5Hash = reader.GetString(reader.GetOrdinal("md5_hash"));
+					LastModified = reader.GetInt64(reader.GetOrdinal("art_last_modified"));
+					FileSize = reader.GetInt64(reader.GetOrdinal("art_file_size"));
 				}
 			}
 			catch (Exception e)
@@ -64,25 +72,69 @@ namespace WaveBox.DataModel.Model
 		}
 
 		// used for getting art from a file.
-		public CoverArt(FileStream fs)
+		public Art(FileStream fs)
 		{
 			// compute the hash of the file stream
-			this.Md5Hash = GetMd5Hash(fs);
+			Md5Hash = CalcMd5Hash(fs);
+			FileSize = fs.Length;
+			LastModified = Convert.ToInt64(System.IO.File.GetLastWriteTime(fs.Name).Ticks);
+			ArtId = ArtIdFromMd5(Md5Hash);
 		}
 
 		// used for getting art from a tag.
-		public CoverArt(FileInfo af)
+		public Art(TagLib.File file)
 		{
-			var file = TagLib.File.Create(af.FullName);
 			if (file.Tag.Pictures.Length > 0)
 			{
-				var data = file.Tag.Pictures[0].Data.Data;
-				this.Md5Hash = GetMd5Hash(data);
+				byte[] data = file.Tag.Pictures[0].Data.Data;
+				Md5Hash = CalcMd5Hash(data);
+				FileSize = data.Length;
+				LastModified = Convert.ToInt64(System.IO.File.GetLastWriteTime(file.Name).Ticks);
+
+				ArtId = ArtIdFromMd5(Md5Hash);
+				if (ArtId == null)
+				{
+					// This art isn't in the database yet, so add it
+					InsertArt();
+				}
 			}
+		}
+
+		static int? ArtIdFromMd5(string hash)
+		{
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			int? artId = null;
+
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT art_id FROM art WHERE md5_hash = @md5hash", conn);
+				q.AddNamedParam("@md5hash", hash);
+
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				if (reader.Read())
+				{
+					artId = reader.GetInt32(0);
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("[COVERART(1)] ERROR: " + e.ToString());
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			return artId;
 		}
 
 		// Based off of example at http://msdn.microsoft.com/en-us/library/s02tk69a.aspx
-		string GetMd5Hash(byte[] input)
+		static string CalcMd5Hash(byte[] input)
 		{
 			using(MD5 md5 = MD5.Create())
 			{
@@ -105,7 +157,7 @@ namespace WaveBox.DataModel.Model
 			}
 		}
 
-		string GetMd5Hash(Stream input)
+		static string CalcMd5Hash(Stream input)
 		{
 			using(MD5 md5 = MD5.Create())
 			{
@@ -127,6 +179,125 @@ namespace WaveBox.DataModel.Model
 				return sBuilder.ToString();
 			}
 		}
+
+		public void InsertArt()
+		{			
+			int? itemId = Database.GenerateItemId(ItemType.Art);
+			if (itemId == null)
+				return;
+
+			IDbConnection conn = null;
+			IDataReader reader = null;
+			try
+			{
+				// insert the song into the database
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("INSERT INTO art (art_id, md5_hash, art_last_modified, art_file_size)" + 
+													 "VALUES (@artid, @md5hash, @lastmodified, @filesize)"
+													, conn);
+
+				q.AddNamedParam("@artid", itemId);
+				q.AddNamedParam("@md5hash", Md5Hash);
+				q.AddNamedParam("@lastmodified", LastModified);
+				q.AddNamedParam("@filesize", FileSize);
+				q.Prepare();
+
+				if (q.ExecuteNonQuery() > 0)
+				{
+					ArtId = itemId;
+				}
+
+				return;
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("[SONG(3)] " + e.ToString());
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+		}
+
+		/*public bool NeedsUpdatingQuick()
+		{
+			if (ArtId == null)
+				return true;
+
+			bool needsUpdating = true;
+
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT art_id FROM art WHERE art_id = @art_id AND md5_hash = @md5hash", conn);
+
+                q.AddNamedParam("@folderid", folderId);
+				q.AddNamedParam("@filename", fileName);
+				q.AddNamedParam("@lastmod", lastModified);
+
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				if (reader.Read())
+				{
+					needsUpdating = false;
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("[MEDIAITEM(1)] " + e.ToString());
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			return needsUpdating;
+		}
+
+		public bool NeedsUpdatingHash()
+		{
+			if (ArtId == null)
+				return true;
+
+			bool needsUpdating = true;
+
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT art_id FROM art WHERE art_id = @art_id AND md5_hash = @md5hash", conn);
+
+                q.AddNamedParam("@folderid", folderId);
+				q.AddNamedParam("@filename", fileName);
+				q.AddNamedParam("@lastmod", lastModified);
+
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				if (reader.Read())
+				{
+					needsUpdating = false;
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("[MEDIAITEM(1)] " + e.ToString());
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			return needsUpdating;
+		}*/
+
+
 
 		/*private void CheckDatabaseAndPerformCopy(byte[] data)
 		{

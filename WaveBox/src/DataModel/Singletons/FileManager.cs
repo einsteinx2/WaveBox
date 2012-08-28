@@ -35,7 +35,7 @@ namespace WaveBox.DataModel.Singletons
 			scanQueue.queueOperation(new FolderScanning.OrphanScanOperation(0));
 
 			// Iterate the list of folders
-			foreach (var folder in mediaFolders)
+			foreach (Folder folder in mediaFolders)
 			{
 				// Sanity check, for my sanity.  Why start a scanning operation if the folder doesn't exist?
 				if(Directory.Exists(folder.FolderPath))
@@ -44,7 +44,7 @@ namespace WaveBox.DataModel.Singletons
 					scanQueue.queueOperation(new FolderScanning.FolderScanOperation(folder.FolderPath, 0));
 
 					// Create filesystem watchers, begin watching the files for changes
-					var watch = new FileSystemWatcher(folder.FolderPath);
+					FileSystemWatcher watch = new FileSystemWatcher(folder.FolderPath);
 					watch.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName;
 					watch.Changed += new FileSystemEventHandler(OnChanged);
 					watch.Created += new FileSystemEventHandler(OnCreated);
@@ -91,7 +91,7 @@ namespace WaveBox.DataModel.Singletons
 			{
 				Console.WriteLine("[FILEMANAGER] New file detected, starting scanning operation.");
 
-				var dir = new FileInfo(e.FullPath).DirectoryName;
+				string dir = new FileInfo(e.FullPath).DirectoryName;
 				scanQueue.queueOperation(new FolderScanOperation(dir, DelayedOperationQueue.DEFAULT_DELAY));
 			}
 			// If a directory is created, start a scan of the directory
@@ -135,7 +135,7 @@ namespace WaveBox.DataModel.Singletons
 
 			if (File.Exists(e.FullPath))
 			{
-				var dir = new FileInfo(e.FullPath).DirectoryName;
+				string dir = new FileInfo(e.FullPath).DirectoryName;
 				scanQueue.queueOperation(new FolderScanOperation(dir, DelayedOperationQueue.DEFAULT_DELAY));
 			}
 

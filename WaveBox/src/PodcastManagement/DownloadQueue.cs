@@ -40,7 +40,7 @@ namespace WaveBox.PodcastManagement
 
             lock (listLock)
             {
-                foreach (var ep in p)
+                foreach (PodcastEpisode ep in p)
                 {
                     q.Add(ep);
                 }
@@ -147,10 +147,10 @@ namespace WaveBox.PodcastManagement
                 }
             });
 
-            var uri = new Uri(ep.MediaUrl);
+            Uri uri = new Uri(ep.MediaUrl);
             string[] fns = ep.MediaUrl.Split('/');
             string fn = fns[fns.Length - 1];
-            var pc = new Podcast(ep.PodcastId);
+            Podcast pc = new Podcast(ep.PodcastId);
             ep.FilePath = Podcast.PodcastMediaDirectory + Path.DirectorySeparatorChar + pc.Title + Path.DirectorySeparatorChar + fn;
 
             webClient.DownloadFileAsync(uri, ep.FilePath);

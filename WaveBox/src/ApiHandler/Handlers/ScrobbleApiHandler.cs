@@ -65,8 +65,8 @@ namespace WaveBox.ApiHandler.Handlers
 
             if (eve != null && eveType != null)
             {
-                var input = eve.Split(',');
-                var scrobbles = new List<LfmScrobbleData>();
+                string[] input = eve.Split(',');
+                List<LfmScrobbleData> scrobbles = new List<LfmScrobbleData>();
 
                 if(input.Length % 2 != 0)
                 {
@@ -81,7 +81,7 @@ namespace WaveBox.ApiHandler.Handlers
                     i = i + 2;
                 }
 
-                var scrobbleType = Lastfm.ScrobbleTypeForString(eveType);
+                LfmScrobbleType scrobbleType = Lastfm.ScrobbleTypeForString(eveType);
                 if(scrobbleType == LfmScrobbleType.INVALID)
                 {
                     Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMInvalidScrobbleType")));

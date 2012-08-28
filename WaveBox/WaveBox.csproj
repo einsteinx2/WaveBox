@@ -138,7 +138,7 @@
     <Compile Include="src\HttpServer\IHttpProcessor.cs" />
     <Compile Include="src\ApiHandler\Handlers\LoginApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\WebInterfaceHandler.cs" />
-    <Compile Include="src\DataModel\Model\CoverArt.cs" />
+    <Compile Include="src\DataModel\Model\Art.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="bass.dll">

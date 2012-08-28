@@ -29,7 +29,7 @@ namespace WaveBox.DataModel.Singletons
 			if(playlist.PlaylistId == null)
 			{
 				// playlist doesn't exist, so create it.
-				playlist.createPlaylist();
+				playlist.CreatePlaylist();
 			}
 		}
 
@@ -163,7 +163,7 @@ namespace WaveBox.DataModel.Singletons
 
 		public void AddSongs(List<Song> songs)
 		{
-			var mediaItems = new List<MediaItem>();
+			List<MediaItem> mediaItems = new List<MediaItem>();
 			mediaItems.AddRange(songs);
 			playlist.AddMediaItems(mediaItems);
 		}

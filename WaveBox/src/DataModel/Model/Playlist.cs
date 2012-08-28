@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Data;
 using WaveBox.DataModel.Singletons;
+using System.Security.Cryptography;
 
 namespace WaveBox.DataModel.Model
 {
@@ -114,7 +115,7 @@ namespace WaveBox.DataModel.Model
 
 		public string Md5OfString(string input)
 		{
-			var md5 = new System.Security.Cryptography.MD5CryptoServiceProvider();
+			MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider();
 			return BitConverter.ToString(md5.ComputeHash(System.Text.Encoding.ASCII.GetBytes(input)), 0);
 		}
 
@@ -282,7 +283,7 @@ namespace WaveBox.DataModel.Model
 
 				if (reader.Read())
 				{
-					var itemid = reader.GetInt32(reader.GetOrdinal("item_id"));
+					int itemid = reader.GetInt32(reader.GetOrdinal("item_id"));
 					int itemtypeid = reader.GetInt32(reader.GetOrdinal("item_type_id"));
 					ItemType it = ItemTypeExtensions.ItemTypeForId(itemtypeid);
 
@@ -330,7 +331,7 @@ namespace WaveBox.DataModel.Model
 
 				while (reader.Read())
 				{
-					var itemid = reader.GetInt32(reader.GetOrdinal("item_id"));
+					int itemid = reader.GetInt32(reader.GetOrdinal("item_id"));
 					switch (reader.GetInt32(reader.GetOrdinal("item_type_id")))
 					{
 						case (int)ItemType.Song:
@@ -365,7 +366,7 @@ namespace WaveBox.DataModel.Model
 
 		public void RemoveMediaItems(List<MediaItem> items)
 		{
-			var indexes = new List<int>();
+			List<int> indexes = new List<int>();
 			if (PlaylistId == 0 || items == null)
 			{
 				return;
@@ -373,7 +374,10 @@ namespace WaveBox.DataModel.Model
 
 			foreach (MediaItem item in items)
 			{
-				indexes.Add(item.ItemId);
+				if (item.ItemId != null)
+				{
+					indexes.Add((int)item.ItemId);
+				}
 			}
 
 			RemoveMediaItemAtIndexes(indexes);
@@ -587,7 +591,8 @@ namespace WaveBox.DataModel.Model
 			foreach(MediaItem item in items)
 			{
 				AddMediaItem(item, false);
-				duration += item.Duration;
+
+				duration += (item.Duration == null ? 0 : (int)item.Duration);
 			}
 
 			UpdateProperties(items.Count, duration);
@@ -627,12 +632,12 @@ namespace WaveBox.DataModel.Model
             UpdateDatabase();
 		}
 
-		public void createPlaylist()
+		public void CreatePlaylist()
 		{
 			UpdateDatabase();
 		}
 
-		public void deletePlaylist()
+		public void DeletePlaylist()
 		{
 		}
 

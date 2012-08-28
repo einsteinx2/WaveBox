@@ -24,7 +24,7 @@ namespace WaveBox.ApiHandler.Handlers
 
         public void Process()
         {
-            var listToReturn = new List<Podcast>();
+            List<Podcast> listToReturn = new List<Podcast>();
 
             if (Uri.UriPart(2) == null)
             {
@@ -66,7 +66,7 @@ namespace WaveBox.ApiHandler.Handlers
                                         Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Parameter 'podcastKeepCap' contained an invalid value", null)));
                                     }
                                     podcastUrl = System.Web.HttpUtility.UrlDecode(podcastUrl);
-                                    var pod = new Podcast(podcastUrl, keepCap);
+                                    Podcast pod = new Podcast(podcastUrl, keepCap);
                                     pod.DownloadNewEpisodes();
                                     Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse(null, null)));
                                     return;
@@ -135,8 +135,8 @@ namespace WaveBox.ApiHandler.Handlers
 
                 if(podcastId != 0)
                 {
-                    var thisPodcast = new Podcast(podcastId);
-                    var epList = thisPodcast.ListOfStoredEpisodes();
+                    Podcast thisPodcast = new Podcast(podcastId);
+                    List<PodcastEpisode> epList = thisPodcast.ListOfStoredEpisodes();
 
                     Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse(null, thisPodcast, epList)));
                     return;

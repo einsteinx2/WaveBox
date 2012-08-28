@@ -89,7 +89,7 @@ namespace WaveBox.DataModel.Singletons
 
             Song song = null;
 
-            var parameters = new SortedDictionary<string, string>();
+            SortedDictionary<string, string> parameters = new SortedDictionary<string, string>();
 
             // add the scrobble data to the parameter list
             int limit = scrobbleType == LfmScrobbleType.NOWPLAYING ? 1 : scrobbles.Count > 100 ? 100 : scrobbles.Count;
@@ -134,7 +134,7 @@ namespace WaveBox.DataModel.Singletons
             string cmd = "";
 
             // create the API signature from the given parameters
-            var enumerator = parameters.GetEnumerator();
+            SortedDictionary<string, string>.Enumerator enumerator = parameters.GetEnumerator();
             while(enumerator.MoveNext())
             {
                 sig += enumerator.Current.Key + HttpUtility.UrlDecode(enumerator.Current.Value);
@@ -186,7 +186,7 @@ namespace WaveBox.DataModel.Singletons
 				string.Format("&token={0}", token) + 
 				string.Format("&api_sig={0}", apiSig);
 
-			var req = (HttpWebRequest)WebRequest.Create(requestUrl);
+			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(requestUrl);
 
 			using (HttpWebResponse response = req.GetResponse() as HttpWebResponse)
 			{  
@@ -212,7 +212,7 @@ namespace WaveBox.DataModel.Singletons
         /// </param>
 		private string md5(string input)
 		{
-			var m = new MD5CryptoServiceProvider();
+			MD5CryptoServiceProvider m = new MD5CryptoServiceProvider();
 			return BitConverter.ToString(m.ComputeHash(Encoding.ASCII.GetBytes(input))).Replace("-", string.Empty);
 		}
 
@@ -228,7 +228,7 @@ namespace WaveBox.DataModel.Singletons
 			string requestUrl = "http://ws.audioscrobbler.com/2.0/?method=auth.gettoken&format=json" + 
 				string.Format("&api_key={0}", apiKey);
 
-			var req = (HttpWebRequest)WebRequest.Create(requestUrl);
+			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(requestUrl);
 
 			using (HttpWebResponse response = req.GetResponse() as HttpWebResponse)
 			{  
@@ -271,8 +271,8 @@ namespace WaveBox.DataModel.Singletons
 
             try
             {
-                var s = new System.Net.Sockets.TcpClient("ws.audioscrobbler.com", 80);
-                var req = new StringBuilder();
+                TcpClient s = new TcpClient("ws.audioscrobbler.com", 80);
+                StringBuilder req = new StringBuilder();
                 req.Append(string.Format("POST /2.0/?{0} HTTP/1.1\r\n", parameters));
                 req.Append("Accept: application/json; charset=utf-8\r\n");
                 req.Append("Host: ws.audioscrobbler.com\r\n");
@@ -281,15 +281,15 @@ namespace WaveBox.DataModel.Singletons
                 req.Append("User-Agent: WaveBox/1.0\r\n");
                 req.Append("Connection: close\r\n\r\n");
 
-                var headerBytes = Encoding.ASCII.GetBytes(req.ToString());
+                byte[] headerBytes = Encoding.ASCII.GetBytes(req.ToString());
 
-                var stream = s.GetStream();
+                NetworkStream stream = s.GetStream();
                 stream.Write(headerBytes, 0, headerBytes.Length);
 
                 //Console.WriteLine(req.ToString());
 
                 byte[] receive = new byte[256];
-                var m = new MemoryStream();
+                MemoryStream m = new MemoryStream();
                 int numRead = 0;
 
                 while ((numRead = stream.Read(receive, 0, receive.Length)) > 0)
@@ -297,7 +297,7 @@ namespace WaveBox.DataModel.Singletons
                     m.Write(receive, 0, numRead);
                 }
 
-                var finalByteArray = m.ToArray();
+                byte[] finalByteArray = m.ToArray();
                 resp = Encoding.UTF8.GetString(finalByteArray, 0, finalByteArray.Length);
 
                 //Console.WriteLine(resp);

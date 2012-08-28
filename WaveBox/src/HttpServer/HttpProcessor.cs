@@ -89,9 +89,9 @@ namespace WaveBox.Http
 			}
 			catch (IOException e)
 			{
-				if (e.InnerException.GetType() == typeof(System.Net.Sockets.SocketException))
+				if (e.InnerException.GetType() == typeof(SocketException))
 				{
-					var se = (System.Net.Sockets.SocketException)e.InnerException;
+					SocketException se = (SocketException)e.InnerException;
 					if (se.SocketErrorCode == System.Net.Sockets.SocketError.ConnectionReset)
 					{
 						Console.WriteLine("[HTTPSERVER(2)] " + "Connection was forcibly closed by the remote host");
@@ -155,8 +155,8 @@ namespace WaveBox.Http
 
 		public void HandleGETRequest() 
 		{
-			var sw = new Stopwatch();
-			var apiHandler = ApiHandlerFactory.CreateApiHandler(HttpUrl, this);
+			Stopwatch sw = new Stopwatch();
+			IApiHandler apiHandler = ApiHandlerFactory.CreateApiHandler(HttpUrl, this);
 
 			sw.Start();
 			apiHandler.Process();
@@ -211,8 +211,8 @@ namespace WaveBox.Http
 			string data = HttpUrl + "?" + new StreamReader(ms).ReadToEnd();
 			Console.WriteLine("[HTTPSERVER] POST request: {0}", data);
 			
-			var sw = new Stopwatch();
-			var apiHandler = ApiHandlerFactory.CreateApiHandler(data, this);
+			Stopwatch sw = new Stopwatch();
+			IApiHandler apiHandler = ApiHandlerFactory.CreateApiHandler(data, this);
 
 			sw.Start();
 			apiHandler.Process();
@@ -285,9 +285,9 @@ namespace WaveBox.Http
 			byte[] buf = new byte[chunkSize];
 			int bytesRead;
 			long bytesWritten = 0;
-			var stream = OutputStream.BaseStream;
+			Stream stream = OutputStream.BaseStream;
 			int sinceLastReport = 0;
-			var sw = new Stopwatch ();
+			Stopwatch sw = new Stopwatch ();
 
 			if (fs.CanSeek) 
 			{
@@ -344,7 +344,7 @@ namespace WaveBox.Http
 				{
 					if (e.InnerException.GetType() == typeof(System.Net.Sockets.SocketException))
 					{
-						var se = (System.Net.Sockets.SocketException)e.InnerException;
+						SocketException se = (SocketException)e.InnerException;
 						if (se.SocketErrorCode == System.Net.Sockets.SocketError.ConnectionReset)
 						{
 							Console.WriteLine("[SENDFILE(2)] " + "Connection was forcibly closed by the remote host");

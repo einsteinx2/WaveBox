@@ -129,7 +129,7 @@ namespace WaveBox.Http
                 HttpHeader.HttpContentType.VIDEOWEBM,
             };
 
-            foreach (var type in binaryTypes)
+            foreach (HttpHeader.HttpContentType type in binaryTypes)
             {
                 if(theType == type) return true;
             }

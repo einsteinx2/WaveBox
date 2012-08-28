@@ -170,8 +170,7 @@ namespace WaveBox.DataModel.Model
 
 		public List<Album> ListOfAlbums()
 		{
-			var albums = new List<Album>();
-
+			List<Album> albums = new List<Album>();
 			IDbConnection conn = null;
 			IDataReader reader = null;
 
@@ -203,9 +202,7 @@ namespace WaveBox.DataModel.Model
 
 		public List<Song> ListOfSongs()
 		{
-			var songs = new List<Song>();
-
-
+			List<Song> songs = new List<Song>();
 			IDbConnection conn = null;
 			IDataReader reader = null;
 
@@ -247,7 +244,7 @@ namespace WaveBox.DataModel.Model
 			}
 
 			// check to see if the artist exists
-			var anArtist = new Artist(artistName);
+			Artist anArtist = new Artist(artistName);
 
 			// if not, create it.
 			if (anArtist.ArtistId == null)
@@ -263,7 +260,7 @@ namespace WaveBox.DataModel.Model
 
 		public List<Artist> AllArtists()
 		{
-			var artists = new List<Artist>();
+			List<Artist> artists = new List<Artist>();
 
 			IDbConnection conn = null;
 			IDataReader reader = null;

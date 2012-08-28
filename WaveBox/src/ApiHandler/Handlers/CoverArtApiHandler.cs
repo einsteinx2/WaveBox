@@ -84,7 +84,7 @@ namespace WaveBox.ApiHandler.Handlers
 
         private Stream GetSongArt(Song song)
 		{
-			var file = TagLib.File.Create(song.FilePath());
+			TagLib.File file = TagLib.File.Create(song.FilePath());
 			string folderImagePath = null;
 
 			if (Folder.ContainsImages(Path.GetDirectoryName(song.FilePath()), out folderImagePath))
@@ -115,7 +115,7 @@ namespace WaveBox.ApiHandler.Handlers
 			{
 				foreach (string file in Directory.GetFiles(folder.FolderPath))
 				{
-					var tag = TagLib.File.Create(file);
+					TagLib.File tag = TagLib.File.Create(file);
 					if (tag.Tag.Pictures.Length > 0)
 					{
 						return new MemoryStream(tag.Tag.Pictures[0].Data.Data);

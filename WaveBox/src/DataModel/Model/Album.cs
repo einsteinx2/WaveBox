@@ -189,7 +189,7 @@ namespace WaveBox.DataModel.Model
 
 		public List<Song> ListOfSongs()
 		{
-			var songs = new List<Song>();
+			List<Song> songs = new List<Song>();
 
 			IDbConnection conn = null;
 			IDataReader reader = null;
@@ -245,8 +245,7 @@ namespace WaveBox.DataModel.Model
 
 		public static List<Album> AllAlbums()
 		{
-			var albums = new List<Album>();
-
+			List<Album> albums = new List<Album>();
 			IDbConnection conn = null;
 			IDataReader reader = null;
 
@@ -277,7 +276,7 @@ namespace WaveBox.DataModel.Model
 
 		public static List<Album> RandomAlbums()
 		{
-			var random = new List<Album>();
+			List<Album> random = new List<Album>();
 			IDbConnection conn = null;
 			IDataReader reader = null;
 

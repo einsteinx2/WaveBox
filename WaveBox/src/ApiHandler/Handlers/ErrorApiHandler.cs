@@ -32,10 +32,10 @@ namespace WaveBox.ApiHandler.Handlers
 		{
 			Console.WriteLine("[ERROR HANDLER]: " + Err);
 
-			var response = new Dictionary<string, string>();
+			Dictionary<string, string> response = new Dictionary<string, string>();
 			response["error"] = Err;
 
-			var json = JsonConvert.SerializeObject(response, Settings.JsonFormatting);
+			string json = JsonConvert.SerializeObject(response, Settings.JsonFormatting);
 			Processor.WriteJson(json);
 		}
 	}

@@ -36,7 +36,7 @@ namespace WaveBox.ApiHandler.Handlers
 			if (success)
 			{
 				// Return the folder for this id
-				var folder = new Folder(id);
+				Folder folder = new Folder(id);
 				listOfFolders = folder.ListOfSubFolders();
 				listOfMediaItems = folder.ListOfMediaItems();
 			}

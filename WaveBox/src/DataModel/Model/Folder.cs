@@ -248,7 +248,7 @@ namespace WaveBox.DataModel.Model
 
 		public List<Folder> ListOfSubFolders()
 		{
-			var folders = new List<Folder>();
+			List<Folder> folders = new List<Folder>();
 
 			IDbConnection conn = null;
 			IDataReader reader = null;
@@ -293,7 +293,7 @@ namespace WaveBox.DataModel.Model
 
 		public bool FolderContainsImages(string dir, out string firstImageFoundPath)
         {
-			var validImageExtensions = new string[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
+			string[] validImageExtensions = new string[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
 			string ext = "";
 
 			foreach (string file in Directory.GetFiles(dir))
@@ -314,7 +314,7 @@ namespace WaveBox.DataModel.Model
 
         public static bool ContainsImages(string dir, out string firstImageFoundPath)
         {
-            var validImageExtensions = new string[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
+            string[] validImageExtensions = new string[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
             string ext = "";
 
             foreach (string file in Directory.GetFiles(dir))
@@ -414,7 +414,7 @@ namespace WaveBox.DataModel.Model
 				else
 				{
 					Console.WriteLine("No db result for parent folder.  Constructing parent folder object.");
-					var f = new Folder(parentFolderPath);
+					Folder f = new Folder(parentFolderPath);
 					f.InsertFolder(false);
 					pFolderId = f.FolderId;
 				}
@@ -433,7 +433,7 @@ namespace WaveBox.DataModel.Model
 
 		public static List<Folder> MediaFolders ()
 		{
-			var folders = new List<Folder> ();
+			List<Folder> folders = new List<Folder> ();
 			IDbConnection conn = null;
 			IDataReader reader = null;
 
@@ -471,7 +471,7 @@ namespace WaveBox.DataModel.Model
 
 		public static List<Folder> TopLevelFolders()
 		{
-			var folders = new List<Folder>();
+			List<Folder> folders = new List<Folder>();
 
 			foreach (Folder mediaFolder in MediaFolders())
 			{
