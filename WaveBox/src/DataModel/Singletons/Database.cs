@@ -51,153 +51,46 @@ namespace WaveBox.DataModel.Singletons
 			command.Parameters.Add(param);
 		}
 
-		public static int? GenerateItemId(ItemType itemType)
+		public static object GetValueOrNull(this IDataReader reader, int ordinal)
 		{
-			int? itemId = null;
-			IDbConnection conn = null;
-			IDataReader reader = null;
-			try
-			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("INSERT INTO item (item_type_id) VALUES (@itemType)", conn);
-				q.AddNamedParam("@itemType", itemType);
-				q.Prepare();
-				int affected = (int)q.ExecuteNonQuery();
-
-				if (affected >= 1)
-				{
-					IDataReader reader2 = null;
-					try
-					{
-						q.CommandText = "SELECT last_insert_rowid()";
-						reader2 = q.ExecuteReader();
-
-						if (reader2.Read())
-						{
-							itemId = reader2.GetInt32(0);
-						}
-					}
-					catch(Exception e)
-					{
-						Console.WriteLine("[ITEMID] GenerateItemId ERROR: " + e.ToString());
-					}
-					finally
-					{
-						Database.Close(null, reader2);
-					}
-				}
-			}
-			catch(Exception e)
-			{
-				Console.WriteLine("[ITEMID] GenerateItemId ERROR: " + e.ToString());
-			}
-			finally
-			{
-				Database.Close(conn, reader);
-			}
-
-			return itemId;
+			object value = reader.GetValue(ordinal);
+			return value == DBNull.Value ? null : value;
 		}
 
-		public static ItemType ItemTypeForItemId(int itemId)
+		public static int? GetInt32OrNull(this IDataReader reader, int ordinal)
 		{
-			int itemTypeId = 0;
-			IDbConnection conn = null;
-			IDataReader reader = null;
+			int? value = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT item_type_id FROM item WHERE item_id = @itemid", conn);
-				q.AddNamedParam("@itemid", itemId);
-				q.Prepare();
-				reader = q.ExecuteReader();
+				value = reader.GetInt32(ordinal);
+			}
+			catch { }
 
-				if (reader.Read())
-				{
-					itemTypeId = reader.GetInt32(0);
-				}
-			}
-			catch(Exception e)
-			{
-				Console.WriteLine("[ALBUM(3)] ERROR: " + e.ToString());
-			}
-			finally
-			{
-				Database.Close(conn, reader);
-			}
-
-			return ItemTypeExtensions.ItemTypeForId(itemTypeId);
+			return value;
 		}
 
-		public static int? ItemIdForArtId(int artId)
+		public static long? GetInt64OrNull(this IDataReader reader, int ordinal)
 		{
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
-			int? itemId = null;
-
+			long? value = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT item_id FROM art_item WHERE art_id = @artid", conn);
-				q.AddNamedParam("@artid", artId);
-
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
-				{
-					// Grab the first available item id that is associated with this art id
-					// doesn't matter which one because they all have the same art
-					itemId = reader.GetInt32(0);
-				}
+				value = reader.GetInt64(ordinal);
 			}
-			catch (Exception e)
-			{
-				Console.WriteLine("[COVERART(1)] ERROR: " + e.ToString());
-			}
-			finally
-			{
-				Database.Close(conn, reader);
-			}
+			catch { }
 
-			return itemId;
+			return value;
 		}
 
-		public static int? ArtIdForMd5(string hash)
+		public static string GetStringOrNull(this IDataReader reader, int ordinal)
 		{
-			if ((object)hash == null)
-				return null;
-
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
-			int? artId = null;
-
+			string value = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT art_id FROM art WHERE md5_hash = @md5hash", conn);
-				q.AddNamedParam("@md5hash", hash);
-
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
-				{
-					artId = reader.GetInt32(0);
-				}
+				value = reader.GetString(ordinal);
 			}
-			catch (Exception e)
-			{
-				Console.WriteLine("[COVERART(1)] ERROR: " + e.ToString());
-			}
-			finally
-			{
-				Database.Close(conn, reader);
-			}
+			catch { }
 
-			return artId;
+			return value;
 		}
 
 		/* public bool DeleteItemId (int itemId)

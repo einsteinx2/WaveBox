@@ -40,7 +40,7 @@ namespace WaveBox.DataModel.Model
 		public string FileName { get; set; }
 
 		[JsonProperty("artId")]
-		public int? ArtId { get; set; }
+		public int? ArtId { get { return Art.ArtIdForItemId(FolderId); } }
 
 		[JsonIgnore]
 		public string FilePath { get { return new Folder(FolderId).FolderPath + Path.DirectorySeparatorChar + FileName; } }
@@ -57,51 +57,21 @@ namespace WaveBox.DataModel.Model
 		{
 		}
 
-		public static bool FileNeedsUpdating(string filePath, int? folderId)
+		public static bool FileNeedsUpdating(string filePath, int? folderId, out bool isNew, out int? itemId)
 		{
-            // We don't need to instantiate another folder to know what the folder id is.  This should be known when the method is called.
+			ItemType type = Item.ItemTypeForFilePath(filePath);
 
-			//Stopwatch sw = new Stopwatch();
-            string fileName = Path.GetFileName(filePath);
-			long lastModified = Convert.ToInt64(System.IO.File.GetLastWriteTime(filePath).Ticks);
-			bool needsUpdating = true;
+			bool needsUpdating = false;
+			isNew = false;
+			itemId = null;
 
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
-			try
+			if (type == ItemType.Song)
 			{
-                // Turns out that COUNT(*) on large tables is REALLY slow in SQLite because it does a full table search.  I created an index on folder_id(because weirdly enough,
-                // even though it's a primary key, SQLite doesn't automatically make one!  :O).  We'll pull that, and if we get a row back, then we'll know that this thing exists.
-
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT song_id FROM song WHERE song_folder_id = @folderid AND song_last_modified = @lastmod AND song_file_name = @filename", conn);
-                //IDbCommand q = Database.GetDbCommand("SELECT COUNT(*) AS count FROM song WHERE song_folder_id = @folderid AND song_file_name = @filename AND song_last_modified = @lastmod", conn);
-
-                q.AddNamedParam("@folderid", folderId);
-				q.AddNamedParam("@filename", fileName);
-				q.AddNamedParam("@lastmod", lastModified);
-
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
-				{
-					needsUpdating = false;
-				}
-			}
-			catch (Exception e)
-			{
-				Console.WriteLine("[MEDIAITEM(1)] " + e.ToString());
-			}
-			finally
-			{
-				Database.Close(conn, reader);
+				needsUpdating = Song.SongNeedsUpdating(filePath, folderId, out isNew, out itemId);
 			}
 
 			return needsUpdating;
 		}
-
-
+	
 	}
 }

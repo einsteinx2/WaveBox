@@ -23,6 +23,9 @@ namespace WaveBox.DataModel.Model
 		[JsonProperty("artistName")]
 		public string ArtistName { get; set; }
 
+		[JsonProperty("artId")]
+		public int? ArtId { get { return Art.ArtIdForItemId(ArtistId); } }
+
 
 		/// <summary>
 		/// Constructors
@@ -115,21 +118,13 @@ namespace WaveBox.DataModel.Model
 
 		private void SetPropertiesFromQueryReader(IDataReader reader)
 		{
-			try
-			{
-				ArtistId = reader.GetInt32(reader.GetOrdinal("artist_id"));
-				ArtistName = reader.GetString(reader.GetOrdinal("artist_name"));
-			}
-			catch (Exception e)
-			{
-				if (e.InnerException.ToString() == "SqlNullValueException") { }
-				Console.WriteLine("[ARTIST(3)] ERROR: " + e.ToString());
-			}
+			ArtistId = reader.GetInt32OrNull(reader.GetOrdinal("artist_id"));
+			ArtistName = reader.GetStringOrNull(reader.GetOrdinal("artist_name"));
 		}
 
 		private static bool InsertArtist(string artistName)
 		{
-			int? itemId = Database.GenerateItemId(ItemType.Artist);
+			int? itemId = Item.GenerateItemId(ItemType.Artist);
 			if (itemId == null)
 				return false;
 			
@@ -250,8 +245,16 @@ namespace WaveBox.DataModel.Model
 			if (anArtist.ArtistId == null)
 			{
 				anArtist = null;
-				InsertArtist(artistName);
-				anArtist = ArtistForName(artistName);
+				if (InsertArtist(artistName))
+				{
+					anArtist = ArtistForName(artistName);
+				}
+				else 
+				{
+					// The insert failed because this album was inserted by another
+					// thread, so grab the album id, it will exist this time
+					anArtist = new Artist(artistName);
+				}
 			}
 
 			// then return the artist object retrieved or created.

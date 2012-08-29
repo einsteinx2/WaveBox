@@ -25,6 +25,9 @@ namespace WaveBox.DataModel.Model
 		[JsonProperty("releaseYear")]
 		public int? ReleaseYear { get; set; }
 
+		[JsonProperty("artId")]
+		public int? ArtId { get { return Art.ArtIdForItemId(AlbumId); } }
+
 		public Album()
 		{
 		}
@@ -63,7 +66,7 @@ namespace WaveBox.DataModel.Model
 			}
 		}
 
-		public Album(string albumName)
+		public Album(string albumName, int? artistId)
 		{
 			if (albumName == null || albumName == "")
 			{
@@ -71,6 +74,7 @@ namespace WaveBox.DataModel.Model
 			}
 
 			AlbumName = albumName;
+			ArtistId = artistId;
 
 			IDbConnection conn = null;
 			IDataReader reader = null;
@@ -78,21 +82,21 @@ namespace WaveBox.DataModel.Model
 			try
 			{
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT * FROM album WHERE album_name  = @albumname", conn);
-				//q.Parameters.AddWithValue("@itemtypeid", ItemTypeId);
+				IDbCommand q = Database.GetDbCommand("SELECT * FROM album WHERE album_name = @albumname AND artist_id = @artistid", conn);
 				q.AddNamedParam("@albumname", AlbumName);
+				q.AddNamedParam("@artistid", ArtistId);
 				q.Prepare();
 				reader = q.ExecuteReader();
 
 				if (reader.Read())
 				{
 					SetPropertiesFromQueryReader(reader);
+					//Console.WriteLine("Album constructor, reader.Read = true, AlbumId = " + AlbumId);
 				}
 				else
 				{
-					AlbumName = albumName;
+					//Console.WriteLine("Album constructor, reader.Read = false, AlbumId = " + AlbumId);
 				}
-
 			}
 			catch (Exception e)
 			{
@@ -106,7 +110,7 @@ namespace WaveBox.DataModel.Model
 
 		private static bool InsertAlbum(string albumName, int? artistId)
 		{
-			int? itemId = Database.GenerateItemId(ItemType.Album);
+			int? itemId = Item.GenerateItemId(ItemType.Album);
 			if (itemId == null)
 				return false;
 
@@ -117,15 +121,13 @@ namespace WaveBox.DataModel.Model
 			try
 			{
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("INSERT INTO album (album_id, album_name, artist_id) VALUES (@albumid, @albumname, @artistid)", conn);
+				IDbCommand q = Database.GetDbCommand("INSERT OR IGNORE INTO album (album_id, album_name, artist_id) VALUES (@albumid, @albumname, @artistid)", conn);
 				q.AddNamedParam("@albumid", itemId);
 				q.AddNamedParam("@albumname", albumName);
 				q.AddNamedParam("@artistid", artistId);
 				q.Prepare();
-				int affected = (int)q.ExecuteNonQuery();
 
-				if (affected >= 1)
-					success = true;
+				success = (q.ExecuteNonQuery() > 0);
 			}
 			catch (Exception e)
 			{
@@ -141,40 +143,9 @@ namespace WaveBox.DataModel.Model
 
 		private void SetPropertiesFromQueryReader(IDataReader reader)
         {
-            try
-            {
-                if (reader.IsDBNull(reader.GetOrdinal("artist_id")))
-                {
-                    this.ArtistId = null;
-                }
-                else
-                {
-                    ArtistId = reader.GetInt32(reader.GetOrdinal("artist_id"));
-                }
-
-                if (reader.IsDBNull(reader.GetOrdinal("album_id")))
-                {
-                    this.AlbumId = null;
-                }
-                else
-                {
-                    this.AlbumId = reader.GetInt32(reader.GetOrdinal("album_id"));
-                }
-
-                if (reader.IsDBNull(reader.GetOrdinal("album_name")))
-                {
-                    this.AlbumName = "";
-                }
-                else
-                {
-                    int ord = reader.GetOrdinal("album_name");
-                    this.AlbumName = reader.GetString(ord);
-                }
-            }
-            catch
-            {
-                Console.WriteLine("weirdness setting properties");
-            }
+            ArtistId = reader.GetInt32OrNull(reader.GetOrdinal("artist_id"));
+			AlbumId = reader.GetInt32OrNull(reader.GetOrdinal("album_id"));
+			AlbumName = reader.GetStringOrNull(reader.GetOrdinal("album_name"));
 		}
 
 		public Artist Artist()
@@ -230,14 +201,21 @@ namespace WaveBox.DataModel.Model
 				return new Album();
 			}
 
-			Album a = new Album(albumName);
+			Album a = new Album(albumName, artistId);
 
 			if (a.AlbumId == null)
 			{
 				a = null;
-
-				InsertAlbum(albumName, artistId);
-				a = AlbumForName(albumName, artistId);
+				if (InsertAlbum(albumName, artistId))
+				{
+					a = AlbumForName(albumName, artistId);
+				}
+				else
+				{
+					// The insert failed because this album was inserted by another
+					// thread, so grab the album id, it will exist this time
+					a = new Album(albumName, artistId);
+				}
 			}
 
 			return a;

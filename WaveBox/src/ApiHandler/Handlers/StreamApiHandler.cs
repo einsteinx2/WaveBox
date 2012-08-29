@@ -39,7 +39,7 @@ namespace WaveBox.ApiHandler.Handlers
 				try
 				{
 					// Get the media item associated with this id
-					ItemType itemType = Database.ItemTypeForItemId(id);
+					ItemType itemType = Item.ItemTypeForItemId(id);
 					MediaItem item = null;
 					if (itemType == ItemType.Song)
 					{

@@ -218,7 +218,7 @@ namespace WaveBox.DataModel.Model
 
 		public static User CreateUser(string userName, string password)
 		{
-			int? itemId = Database.GenerateItemId(ItemType.User);
+			int? itemId = Item.GenerateItemId(ItemType.User);
 			if (itemId == null)
 				return null;
 

@@ -20,9 +20,6 @@ namespace WaveBox.DataModel.FolderScanning
         private string folderPath;
         public string FolderPath { get { return folderPath; } }
 
-        private string[] validExtensions = { ".mp3", ".m4a", ".mp4", ".flac", ".wv", ".mpc", ".ogg", ".wma" };
-        private List<string> validExtensionsList;
-
 		int testNumberOfFoldersInserted = 0;
 		Stopwatch testFolderObjCreateTime = new Stopwatch();
 		Stopwatch testGetDirectoriesTime = new Stopwatch();
@@ -31,7 +28,6 @@ namespace WaveBox.DataModel.FolderScanning
 
         public FolderScanOperation(string path, int secondsDelay) : base(secondsDelay)
         {
-            validExtensionsList = new List<string>(validExtensions);
             folderPath = path;
         }
 
@@ -65,20 +61,11 @@ namespace WaveBox.DataModel.FolderScanning
 
             try
             {
-                FileInfo topFile = new FileInfo(folderPath);
-
-                if (topFile.Directory.Exists == false)
-                {
-                    return;
-                }
-
-                Folder topFolder;
-
                 // if the file is a directory
-                if ((topFile.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+                if (Directory.Exists(folderPath))
                 {
 					testFolderObjCreateTime.Start();
-                    topFolder = new Folder(topFile.FullName);
+                    Folder topFolder = new Folder(folderPath);
 					testFolderObjCreateTime.Stop();
                     //Console.WriteLine("scanning " + topFolder.FolderName + "  id: " + topFolder.FolderId);
 
@@ -88,9 +75,22 @@ namespace WaveBox.DataModel.FolderScanning
                         topFolder.InsertFolder(false);
                     }
 
+					// Check the folder art
+					string artPath = topFolder.ArtPath;
+					if (Art.FileNeedsUpdating(artPath, topFolder.FolderId))
+					{
+						// Find the old art id, if it exists
+						int? oldArtId = topFolder.ArtId;
+						int? newArtId = new Art(artPath).ArtId;
+
+						// Update any existing references, that would include both this folder
+						// and any children that were using this art in lieu of embedded art
+						Art.UpdateItemsToNewArtId(oldArtId, newArtId);
+					}
+
                     //Stopwatch sw = new Stopwatch();
 					testGetDirectoriesTime.Start();
-					string[] directories = Directory.GetDirectories(topFile.FullName);
+					string[] directories = Directory.GetDirectories(folderPath);
 					testGetDirectoriesTime.Stop();
                     foreach (string subfolder in directories)
                     {
@@ -115,10 +115,10 @@ namespace WaveBox.DataModel.FolderScanning
                     //sw.Stop();
 
                     //sw.Start();
-//                    foreach (string currentFile in Directory.GetFiles(topFile.FullName))
-//                    {
-//                      ProcessFile(currentFile, topFolder.FolderId);
-//                    }
+                    /*foreach (string currentFile in Directory.GetFiles(folderPath))
+                    {
+                    	ProcessFile(currentFile, topFolder.FolderId);
+                    }*/
 
                     //sw.Stop();
 
@@ -137,7 +137,7 @@ namespace WaveBox.DataModel.FolderScanning
                     //        }
                     //    });
 
-                    Parallel.ForEach(Directory.GetFiles(topFile.FullName), currentFile =>
+                    Parallel.ForEach(Directory.GetFiles(folderPath), currentFile =>
                         {
                             ProcessFile(currentFile, topFolder.FolderId);
                         });
@@ -145,19 +145,20 @@ namespace WaveBox.DataModel.FolderScanning
             }
             catch (FileNotFoundException e)
             {
-                Console.WriteLine("\t" + "[FOLDERSCAN(1)] " + folderPath + ": Directory does not exist. " + e.InnerException);
+                Console.WriteLine("\t" + "[FOLDERSCAN(1)] \"" + folderPath + "\" : Directory does not exist. " + e.InnerException);
             }
             catch (DirectoryNotFoundException e)
             {
-                Console.WriteLine("\t" + "[FOLDERSCAN(2)] " + folderPath + ": Directory does not exist. " + e.InnerException);
+				Console.WriteLine("    ");
+                Console.WriteLine("\t" + "[FOLDERSCAN(2)] \"" + folderPath + "\" : Directory does not exist. " + e.ToString());
             }
             catch (IOException e)
             {
-                Console.WriteLine("\t" + "[FOLDERSCAN(3)] " + folderPath + ": " + e.Message);
+                Console.WriteLine("\t" + "[FOLDERSCAN(3)] \"" + folderPath + "\" : " + e.Message);
             }
             catch (Exception e)
             {
-                Console.WriteLine("\t" + "[FOLDERSCAN(4)] " + "Error checking to see if the file was a directory: " + e.ToString());
+                Console.WriteLine("\t" + "[FOLDERSCAN(4)] \"" + folderPath + "\" : Error checking to see if the file was a directory: " + e.ToString());
             }
         }
 
@@ -168,59 +169,81 @@ namespace WaveBox.DataModel.FolderScanning
 				return;
 			}
 
-			// make sure the extension is valid
-			testIsExtensionValidTime.Start();
-			bool isExtensionValid = validExtensionsList.Contains(Path.GetExtension(file).ToLower());
-			testIsExtensionValidTime.Stop();
-			if (!isExtensionValid)
+			try
 			{
-				return;
+				ItemType type = Item.ItemTypeForFilePath(file);
+
+				if (type == ItemType.Song)
+				{
+					//Stopwatch sw = new Stopwatch();
+					//sw.Start();
+					testMediaItemNeedsUpdatingTime.Start();
+					bool isNew = true;
+					int? itemId = null;
+					bool needsUpdating = MediaItem.FileNeedsUpdating(file, folderId, out isNew, out itemId);
+					testMediaItemNeedsUpdatingTime.Stop();
+					//Console.WriteLine("FileNeedsUpdating: {0} ms", sw.ElapsedMilliseconds);
+					//sw.Reset();
+
+					if (needsUpdating)
+					{
+						Console.WriteLine("[FOLDERSCAN] " + "File needs updating: " + file);
+		                
+						//sw.Start();
+						TagLib.File f = null;
+						try
+						{
+							f = TagLib.File.Create(file);
+						}
+						catch(TagLib.CorruptFileException e)
+						{
+							e.ToString();
+							//Console.WriteLine("[FOLDERSCAN(5)] " + fileName + " has a corrupt tag and will not be inserted.");
+							return;
+						}
+						catch(Exception e)
+						{
+							Console.WriteLine("[FOLDERSCAN(6)] " + "Error processing file: " + e.ToString());
+						}
+						//Console.WriteLine("Get tag: {0} ms", sw.ElapsedMilliseconds);
+
+						//sw.Reset();
+
+						if (f == null)
+						{
+							// Must be something not supported by TagLib-Sharp
+						}
+						else
+						{
+							// It's a song!  Do yo thang.
+							if (isNew)
+							{
+								new Song(file, folderId, f).InsertSong();
+							}
+							else if (itemId != null)
+							{
+								new Song((int)itemId).InsertSong();
+							}
+						}
+					}
+				}
 			}
-
-			//Stopwatch sw = new Stopwatch();
-			//sw.Start();
-			testMediaItemNeedsUpdatingTime.Start();
-			bool needsUpdating = MediaItem.FileNeedsUpdating(file, folderId);
-			testMediaItemNeedsUpdatingTime.Stop();
-			//Console.WriteLine("FileNeedsUpdating: {0} ms", sw.ElapsedMilliseconds);
-			//sw.Reset();
-
-			if (needsUpdating)
-			{
-				string fileName = Path.GetFileName(file);
-				Console.WriteLine("[FOLDERSCAN] " + "File needs updating: " + fileName);
-                
-				//sw.Start();
-				TagLib.File f = null;
-				try
-				{
-					f = TagLib.File.Create(file);
-				}
-				catch(TagLib.CorruptFileException e)
-				{
-					e.ToString();
-					Console.WriteLine("[FOLDERSCAN(5)] " + fileName + " has a corrupt tag and will not be inserted.");
-					return;
-				}
-				catch(Exception e)
-				{
-					Console.WriteLine("[FOLDERSCAN(6)] " + "Error processing file: " + e.ToString());
-				}
-				//Console.WriteLine("Get tag: {0} ms", sw.ElapsedMilliseconds);
-
-				//sw.Reset();
-
-				if (f == null)
-				{
-					// Must be something not supported by TagLib-Sharp
-				}
-				else
-				{
-					// It's a song!  Do yo thang.
-					Song song = new Song(file, folderId, f);
-					song.InsertSong();
-				}
-			}
+            catch (FileNotFoundException e)
+            {
+                Console.WriteLine("\t" + "[FOLDERSCAN(5)] \"" + file + "\" : Directory does not exist. " + e.InnerException);
+            }
+            catch (DirectoryNotFoundException e)
+            {
+                Console.WriteLine("\t" + "[FOLDERSCAN(6)] \"" + file + "\" : Directory does not exist. " + e.InnerException);
+            }
+            catch (IOException e)
+            {
+                Console.WriteLine("\t" + "[FOLDERSCAN(7)] \"" + file + "\" : " + e.Message);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("\t" + "[FOLDERSCAN(8)] \"" + file + "\" : " + e.ToString());
+            }
 		}
 	}
 }

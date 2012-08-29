@@ -29,6 +29,9 @@ namespace WaveBox.DataModel.Model
 		[JsonProperty("folderPath")]
 		public string FolderPath { get; set; }
 
+		[JsonProperty("artId")]
+		public int? ArtId { get { return Art.ArtIdForItemId(FolderId); } }
+
 		[JsonIgnore]
 		public string ArtPath { get { return FindArtPath(); } }
 
@@ -293,20 +296,20 @@ namespace WaveBox.DataModel.Model
         public static bool ContainsImages(string dir, out string firstImageFoundPath)
         {
             string[] validImageExtensions = new string[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
-            string ext = "";
+            string ext = null;
+			firstImageFoundPath = null;
 
             foreach (string file in Directory.GetFiles(dir))
             {
                 ext = Path.GetExtension(file).ToLower();
-                if (validImageExtensions.Contains(ext) && !Path.GetFileName(file).StartsWith("._"))
+                if (validImageExtensions.Contains(ext) && !Path.GetFileName(file).StartsWith("."))
                 {
                     firstImageFoundPath = file;
-                    return true;
                 }
             }
 
-            firstImageFoundPath = "";
-            return false;
+			// Return true if firstImageFoundPath exists
+			return ((object)firstImageFoundPath != null);
         }
 
 		private string FindArtPath()
@@ -319,7 +322,7 @@ namespace WaveBox.DataModel.Model
 				if (files.Contains(FolderPath + Path.DirectorySeparatorChar + path))
 				{
 					// Use this one
-					artPath = path;
+					artPath = FolderPath + Path.DirectorySeparatorChar + path;
 				}
 			}
 
@@ -347,7 +350,7 @@ namespace WaveBox.DataModel.Model
 
 		public void InsertFolder(bool isMediaFolder)
 		{
-			int? itemId = Database.GenerateItemId(ItemType.Folder);
+			int? itemId = Item.GenerateItemId(ItemType.Folder);
 			if (itemId == null)
 				return;
 

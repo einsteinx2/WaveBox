@@ -75,13 +75,15 @@ namespace WaveBox.DataModel.Model
 		}
 
 		// used for getting art from a file.
-		public Art(FileStream fs)
+		public Art(string filePath)
 		{
+			FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+
 			// compute the hash of the file stream
 			Md5Hash = CalcMd5Hash(fs);
 			FileSize = fs.Length;
 			LastModified = Convert.ToInt64(System.IO.File.GetLastWriteTime(fs.Name).Ticks);
-			ArtId = Database.ArtIdForMd5(Md5Hash);
+			ArtId = Art.ArtIdForMd5(Md5Hash);
 		}
 
 		// used for getting art from a tag.
@@ -94,7 +96,7 @@ namespace WaveBox.DataModel.Model
 				FileSize = data.Length;
 				LastModified = Convert.ToInt64(System.IO.File.GetLastWriteTime(file.Name).Ticks);
 
-				ArtId = Database.ArtIdForMd5(Md5Hash);
+				ArtId = Art.ArtIdForMd5(Md5Hash);
 				if (ArtId == null)
 				{
 					// This art isn't in the database yet, so add it
@@ -105,7 +107,7 @@ namespace WaveBox.DataModel.Model
 
 		public void InsertArt()
 		{			
-			int? itemId = Database.GenerateItemId(ItemType.Art);
+			int? itemId = Item.GenerateItemId(ItemType.Art);
 			if (itemId == null)
 				return;
 
@@ -149,14 +151,14 @@ namespace WaveBox.DataModel.Model
 				return null;
 			}
 
-			int? itemId = Database.ItemIdForArtId((int)ArtId);
+			int? itemId = Art.ItemIdForArtId((int)ArtId);
 
 			if ((object)itemId == null)
 			{
 				return null;
 			}
 
-			ItemType type = Database.ItemTypeForItemId((int)itemId);
+			ItemType type = Item.ItemTypeForItemId((int)itemId);
 
 			Stream stream = null;
 
@@ -260,7 +262,278 @@ namespace WaveBox.DataModel.Model
 			}
 		}
 
-		
+		public static bool FileNeedsUpdating(string filePath, int? folderId)
+		{
+			if (filePath == null || folderId == null)
+			{
+				return false;
+			}
+
+            // We don't need to instantiate another folder to know what the folder id is.  This should be known when the method is called.
+
+			//Stopwatch sw = new Stopwatch();
+			long lastModified = Convert.ToInt64(System.IO.File.GetLastWriteTime(filePath).Ticks);
+			bool needsUpdating = true;
+
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			try
+			{
+                // Turns out that COUNT(*) on large tables is REALLY slow in SQLite because it does a full table search.  I created an index on folder_id(because weirdly enough,
+                // even though it's a primary key, SQLite doesn't automatically make one!  :O).  We'll pull that, and if we get a row back, then we'll know that this thing exists.
+
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT art_id FROM art WHERE art_last_modified = @lastmod AND art_file_path = @filepath", conn);
+                //IDbCommand q = Database.GetDbCommand("SELECT COUNT(*) AS count FROM song WHERE song_folder_id = @folderid AND song_file_name = @filename AND song_last_modified = @lastmod", conn);
+
+				q.AddNamedParam("@filepath", filePath);
+				q.AddNamedParam("@lastmod", lastModified);
+
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				if (reader.Read())
+				{
+					needsUpdating = false;
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("[MEDIAITEM(1)] " + e.ToString());
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			return needsUpdating;
+		}
+
+		public static int? ItemIdForArtId(int artId)
+		{
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			int? itemId = null;
+
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT item_id FROM art_item WHERE art_id = @artid", conn);
+				q.AddNamedParam("@artid", artId);
+
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				if (reader.Read())
+				{
+					// Grab the first available item id that is associated with this art id
+					// doesn't matter which one because they all have the same art
+					itemId = reader.GetInt32(0);
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("[DATABASE(2)] ERROR: " + e.ToString());
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			return itemId;
+		}
+
+		public static int? ArtIdForItemId(int? itemId)
+		{
+			if ((object)itemId == null)
+			{
+				return null;
+			}
+
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			int? artId = null;
+
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT art_id FROM art_item WHERE item_id = @itemid", conn);
+				q.AddNamedParam("@itemid", itemId);
+
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				if (reader.Read())
+				{
+					// Grab the first available item id that is associated with this art id
+					// doesn't matter which one because they all have the same art
+					itemId = reader.GetInt32(0);
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("[DATABASE(2)] ERROR: " + e.ToString());
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			return artId;
+		}
+
+		public static int? ArtIdForMd5(string hash)
+		{
+			if ((object)hash == null)
+				return null;
+
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			int? artId = null;
+
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT art_id FROM art WHERE md5_hash = @md5hash", conn);
+				q.AddNamedParam("@md5hash", hash);
+
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				if (reader.Read())
+				{
+					artId = reader.GetInt32(0);
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("[DATABASE(3)] ERROR: " + e.ToString());
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			return artId;
+		}
+
+		public static bool UpdateArtItemRelationship(int? artId, int? itemId)
+		{
+			if (artId == null || itemId == null)
+			{
+				return false;
+			}
+
+			bool success = false;
+			IDbConnection conn = null;
+
+			try
+			{
+				// insert the song into the database
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("REPLACE INTO art_item (art_id, item_id) " + 
+													 "VALUES (@artid, @itemid)"
+													 , conn);
+
+				q.AddNamedParam("@artid", artId);
+				q.AddNamedParam("@itemid", itemId);
+				q.Prepare();
+
+				if (q.ExecuteNonQuery() > 0)
+				{
+					success = true;
+				}
+			}
+			catch(Exception e)
+			{
+				Console.WriteLine("[DATABASE(4)] " + e.ToString());
+			}
+			finally
+			{
+				Database.Close(conn, null);
+			}
+
+			return success;
+		}
+
+		public static bool RemoveArtRelationshipForItemId(int? itemId)
+		{
+			if ((object)itemId == null)
+			{
+				return false;
+			}
+
+			bool success = false;
+			IDbConnection conn = null;
+
+			try
+			{
+				// insert the song into the database
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("DELETE FROM art_item WHERE item_id = @itemid"
+													 , conn);
+
+				q.AddNamedParam("@itemid", itemId);
+				q.Prepare();
+
+				if (q.ExecuteNonQuery() > 0)
+				{
+					success = true;
+				}
+			}
+			catch(Exception e)
+			{
+				Console.WriteLine("[DATABASE(4)] " + e.ToString());
+			}
+			finally
+			{
+				Database.Close(conn, null);
+			}
+
+			return success;
+		}
+
+		public static bool UpdateItemsToNewArtId(int? oldArtId, int? newArtId)
+		{
+			if ((object)oldArtId == null || (object)newArtId == null)
+			{
+				return false;
+			}
+
+			bool success = false;
+			IDbConnection conn = null;
+
+			try
+			{
+				// insert the song into the database
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("UPDATE art_item SET art_id = @newartid WHERE art_id = @oldartid"
+													 , conn);
+
+				q.AddNamedParam("@newartid", newArtId);
+				q.AddNamedParam("@oldartid", oldArtId);
+				q.Prepare();
+
+				if (q.ExecuteNonQuery() > 0)
+				{
+					success = true;
+				}
+			}
+			catch(Exception e)
+			{
+				Console.WriteLine("[DATABASE(4)] " + e.ToString());
+			}
+			finally
+			{
+				Database.Close(conn, null);
+			}
+
+			return success;
+		}
 
 		/*public bool NeedsUpdatingQuick()
 		{

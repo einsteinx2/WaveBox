@@ -180,7 +180,7 @@ namespace WaveBox.DataModel.Model
 				//q.Parameters.AddWithValue("@playlistid", PlaylistId);
 				if (PlaylistId == null)
 				{
-					int? itemId = Database.GenerateItemId(ItemType.Playlist);
+					int? itemId = Item.GenerateItemId(ItemType.Playlist);
 					if (itemId == null)
 						return;
 
@@ -556,7 +556,7 @@ namespace WaveBox.DataModel.Model
 
 			try
 			{
-                int? id = Database.GenerateItemId(ItemType.PlaylistItem);
+                int? id = Item.GenerateItemId(ItemType.PlaylistItem);
 				// to do - better way of knowing whether or not a query has been successfully completed.
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("INSERT INTO playlist_item (playlist_item_id, playlist_id, item_type_id, item_id, item_position) VALUES " +

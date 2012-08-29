@@ -25,18 +25,31 @@ namespace WaveBox.DataModel.FolderScanning
 		public override void Start()
 		{
 			Stopwatch sw = new Stopwatch();
+
 			sw.Start();
 			CheckFolders();
 			sw.Stop();
 			Console.WriteLine("[ORPHANSCAN] check folders: {0}ms", sw.ElapsedMilliseconds);
+
 			sw.Restart();
 			CheckSongs();
 			sw.Stop();
 			Console.WriteLine("[ORPHANSCAN] check songs: {0}ms", sw.ElapsedMilliseconds);
+
+			sw.Restart();
+			CheckArtists();
+			sw.Stop();
+			Console.WriteLine("[ORPHANSCAN] check artists: {0}ms", sw.ElapsedMilliseconds);
+
+			sw.Restart();
+			CheckAlbums();
+			sw.Stop();
+			Console.WriteLine("[ORPHANSCAN] check albums: {0}ms", sw.ElapsedMilliseconds);
+
 			Console.WriteLine("[ORPHANSCAN] check songs exists calls total time: {0}ms", (totalExistsTime / 10000)); // Convert ticks to milliseconds, divide by 10,000
 		}
 
-		public void CheckFolders()
+		private void CheckFolders()
 		{
 			if (isRestart) 
 			{
@@ -150,7 +163,7 @@ namespace WaveBox.DataModel.FolderScanning
 			}
 		}
 
-		public void CheckSongs()
+		private void CheckSongs()
 		{
 			if (isRestart)
 			{
@@ -212,6 +225,122 @@ namespace WaveBox.DataModel.FolderScanning
 				catch (Exception e)
 				{
 					Console.WriteLine("[ORPHANSCAN(5)] " + e.ToString());
+				}
+				finally
+				{
+					Database.Close(conn, reader);
+				}
+			}
+		}
+
+		private void CheckArtists()
+		{
+			if (isRestart)
+			{
+				return;
+			}
+
+			IDbConnection conn = null;
+			IDataReader reader = null;
+			ArrayList orphanArtistIds = new ArrayList();
+
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT artist.artist_id " +
+													 "FROM artist " + 
+													 "LEFT JOIN song ON artist.artist_id = song.song_artist_id " +
+													 "WHERE song.song_artist_id IS NULL", conn);
+
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				while (reader.Read())
+				{
+					orphanArtistIds.Add(reader.GetInt32(0));
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("[ORPHANSCAN(4)] " + e.ToString());
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			foreach (int id in orphanArtistIds)
+			{
+				try
+				{
+					conn = Database.GetDbConnection();
+					IDbCommand q1 = Database.GetDbCommand("DELETE FROM artist WHERE artist_id = @artistid", conn);
+					q1.AddNamedParam("@artistid", id);
+					q1.Prepare();
+					q1.ExecuteNonQuery();
+					Console.WriteLine("[ORPHANSCAN] " + "Artist " + id + " deleted");
+				}
+				catch (Exception e)
+				{
+					Console.WriteLine("[ORPHANSCAN(6)] " + e.ToString());
+				}
+				finally
+				{
+					Database.Close(conn, reader);
+				}
+			}
+		}
+
+		private void CheckAlbums()
+		{
+			if (isRestart)
+			{
+				return;
+			}
+
+			IDbConnection conn = null;
+			IDataReader reader = null;
+			ArrayList orphanArtistIds = new ArrayList();
+
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT album.album_id " +
+													 "FROM album " + 
+													 "LEFT JOIN song ON album.album_id = song.song_album_id " +
+													 "WHERE song.song_album_id IS NULL", conn);
+
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				while (reader.Read())
+				{
+					orphanArtistIds.Add(reader.GetInt32(0));
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("[ORPHANSCAN(4)] " + e.ToString());
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			foreach (int id in orphanArtistIds)
+			{
+				try
+				{
+					conn = Database.GetDbConnection();
+					IDbCommand q1 = Database.GetDbCommand("DELETE FROM album WHERE album_id = @albumid", conn);
+					q1.AddNamedParam("@albumid", id);
+					q1.Prepare();
+					q1.ExecuteNonQuery();
+					Console.WriteLine("[ORPHANSCAN] " + "Album " + id + " deleted");
+				}
+				catch (Exception e)
+				{
+					Console.WriteLine("[ORPHANSCAN(7)] " + e.ToString());
 				}
 				finally
 				{

@@ -139,6 +139,7 @@
     <Compile Include="src\ApiHandler\Handlers\WebInterfaceHandler.cs" />
     <Compile Include="src\DataModel\Model\Art.cs" />
     <Compile Include="src\ApiHandler\Handlers\ArtApiHandler.cs" />
+    <Compile Include="src\DataModel\Model\Item.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="bass.dll">

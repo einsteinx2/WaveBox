@@ -41,6 +41,8 @@ namespace WaveBox.DataModel.Model
 		[JsonProperty("releaseYear")]
 		public int? ReleaseYear { get; set; }
 
+		public static readonly string[] ValidExtensions = { ".mp3", ".m4a", ".mp4", ".flac", ".wv", ".mpc", ".ogg", ".wma" };
+
 		public Song()
 		{
 		}
@@ -79,70 +81,78 @@ namespace WaveBox.DataModel.Model
 
 		public Song(string filePath, int? folderId, TagLib.File file)
 		{
-            // We need to check to make sure the tag isn't corrupt before handing off to this method, anyway, so just feed in the tag
-            // file that we checked for corruption.
-            //TagLib.File file = TagLib.File.Create(fsFile.FullName);
+			// We need to check to make sure the tag isn't corrupt before handing off to this method, anyway, so just feed in the tag
+			// file that we checked for corruption.
+			//TagLib.File file = TagLib.File.Create(fsFile.FullName);
 
-            FileInfo fsFile = new FileInfo(filePath);
+			ItemId = Item.GenerateItemId(ItemType.Song);
+			if (ItemId == null)
+			{
+				return;
+			}
+
+			FileInfo fsFile = new FileInfo(filePath);
 			TagLib.Tag tag = file.Tag;
-            //var lol = file.Properties.Codecs;
+			//var lol = file.Properties.Codecs;
 			FolderId = folderId;
 
 			try
 			{
 				Artist artist = Artist.ArtistForName(tag.FirstPerformer);
-                ArtistId = artist.ArtistId;
-                ArtistName = artist.ArtistName;
+				ArtistId = artist.ArtistId;
+				ArtistName = artist.ArtistName;
 			}
 			catch
 			{
-                ArtistId = null;
-                ArtistName = null;
+				ArtistId = null;
+				ArtistName = null;
 			}
 
-            try
-            {
-                Album album = Album.AlbumForName(tag.Album, ArtistId);
-                AlbumId = album.AlbumId;
-                AlbumName = album.AlbumName;
-            }
-            catch
-            {
-                AlbumId = null;
-                AlbumName = null;
-            }
+			try
+			{
+				Album album = Album.AlbumForName(tag.Album, ArtistId);
+				AlbumId = album.AlbumId;
+				AlbumName = album.AlbumName;
+			}
+			catch
+			{
+				AlbumId = null;
+				AlbumName = null;
+			}
 
 			FileType = FileType.FileTypeForTagSharpString(file.Properties.Description);
 
 			if (FileType == FileType.Unknown)
-				Console.WriteLine("[SONG] " + "Unknown file type: " + file.Properties.Description);
+			{
+				Console.WriteLine("[SONG] \"" + filePath + "\" Unknown file type: " + file.Properties.Description);
+			}
 
-            try
-            {
-                SongName = tag.Title;
-            }
-            catch
-            {
-                SongName = null;
-            }
+			try
+			{
+				SongName = tag.Title;
+			}
+			catch
+			{
+				SongName = null;
+			}
 
-            try
-            {
-                TrackNumber = Convert.ToInt32(tag.Track);
-            }
-            catch
-            {
-                TrackNumber = null;
-            }
+			try
+			{
+				TrackNumber = Convert.ToInt32(tag.Track);
+			}
+			catch
+			{
+				TrackNumber = null;
+			}
 
-            try
-            {
-                DiscNumber = Convert.ToInt32(tag.Disc);
-            }
-            catch
-            {
-                DiscNumber = null;
-            }
+			try
+			{
+				DiscNumber = Convert.ToInt32(tag.Disc);
+			}
+			catch
+			{
+				DiscNumber = null;
+			}
 
 			try
 			{
@@ -153,12 +163,20 @@ namespace WaveBox.DataModel.Model
 				ReleaseYear = null;
 			}
 
-            Duration = Convert.ToInt32(file.Properties.Duration.TotalSeconds);
-            Bitrate = file.Properties.AudioBitrate;
-            FileSize = fsFile.Length;
-            LastModified = Convert.ToInt64(fsFile.LastWriteTime.Ticks);
-            FileName = fsFile.Name;
-			ArtId = new Art(file).ArtId;
+			Duration = Convert.ToInt32(file.Properties.Duration.TotalSeconds);
+			Bitrate = file.Properties.AudioBitrate;
+			FileSize = fsFile.Length;
+			LastModified = Convert.ToInt64(fsFile.LastWriteTime.Ticks);
+			FileName = fsFile.Name;
+
+			// Generate an art id from the embedded art, if it exists
+			int? artId = new Art(file).ArtId;
+
+			// If there was no embedded art, use the folder's art
+			artId = (object)artId == null ? Art.ArtIdForItemId(FolderId) : artId;
+
+			// Create the art/item relationship
+			Art.UpdateArtItemRelationship(artId, ItemId);
 		}
 
 		public Song(IDataReader reader)
@@ -171,45 +189,26 @@ namespace WaveBox.DataModel.Model
 			try
 			{
 				ItemId = reader.GetInt32(reader.GetOrdinal("song_id"));
-				FolderId = reader.GetInt32(reader.GetOrdinal("song_folder_id"));
 
-                if (reader.GetValue(reader.GetOrdinal("song_artist_id")) == DBNull.Value) ArtistId = null;
-                    else ArtistId = reader.GetInt32(reader.GetOrdinal("song_artist_id"));
-
-				if (reader.GetValue(reader.GetOrdinal("artist_name")) == DBNull.Value) ArtistName = "";
-				    else ArtistName = reader.GetString(reader.GetOrdinal("artist_name"));
-
-                if (reader.GetValue(reader.GetOrdinal("song_album_id")) == DBNull.Value) AlbumId = null;
-                    else AlbumId = reader.GetInt32(reader.GetOrdinal("song_album_id"));
-
-				if (reader.GetValue(reader.GetOrdinal("album_name")) == DBNull.Value) AlbumName = "";
-				    else AlbumName = reader.GetString(reader.GetOrdinal("album_name"));
-
-				FileType = FileType.FileTypeForId(reader.GetInt32(reader.GetOrdinal("song_file_type_id")));
-
-				if (reader.GetValue(reader.GetOrdinal("song_name")) == DBNull.Value) SongName = "";
-    				else SongName = reader.GetString(reader.GetOrdinal("song_name"));
-
-                if (reader.GetValue(reader.GetOrdinal("song_track_num")) == DBNull.Value) TrackNumber = null;
-                    else TrackNumber = reader.GetInt32(reader.GetOrdinal("song_track_num"));
-
-                if (reader.GetValue(reader.GetOrdinal("song_disc_num")) == DBNull.Value) DiscNumber = null;
-                    else DiscNumber = reader.GetInt32(reader.GetOrdinal("song_disc_num"));
-
-                Duration = reader.GetInt32(reader.GetOrdinal("song_duration"));
-                Bitrate = reader.GetInt32(reader.GetOrdinal("song_bitrate"));
-                FileSize = reader.GetInt64(reader.GetOrdinal("song_file_size"));
-                LastModified = reader.GetInt64(reader.GetOrdinal("song_last_modified"));
-
-                if (reader.GetValue(reader.GetOrdinal("song_file_name")) == DBNull.Value) 
-					FileName = null;
-                else 
-					FileName = reader.GetString(reader.GetOrdinal("song_file_name"));
-
-                if (reader.GetValue(reader.GetOrdinal("song_release_year")) == DBNull.Value) 
-					ReleaseYear = null;
-                 else 
-					ReleaseYear = reader.GetInt32(reader.GetOrdinal("song_release_year"));
+				FolderId = reader.GetInt32OrNull(reader.GetOrdinal("song_folder_id"));
+				ArtistId = reader.GetInt32OrNull(reader.GetOrdinal("song_artist_id"));
+				ArtistName = reader.GetStringOrNull(reader.GetOrdinal("artist_name"));
+				AlbumId = reader.GetInt32OrNull(reader.GetOrdinal("song_album_id"));
+ 				AlbumName = reader.GetStringOrNull(reader.GetOrdinal("album_name"));
+				int? fileTypeId = reader.GetInt32OrNull(reader.GetOrdinal("song_file_type_id"));
+				if (fileTypeId != null)
+				{
+					FileType = FileType.FileTypeForId((int)fileTypeId);
+				}
+				SongName = reader.GetStringOrNull(reader.GetOrdinal("song_name"));
+				TrackNumber = reader.GetInt32OrNull(reader.GetOrdinal("song_track_num"));
+				DiscNumber = reader.GetInt32OrNull(reader.GetOrdinal("song_disc_num"));
+                Duration = reader.GetInt32OrNull(reader.GetOrdinal("song_duration"));
+                Bitrate = reader.GetInt32OrNull(reader.GetOrdinal("song_bitrate"));
+                FileSize = reader.GetInt64OrNull(reader.GetOrdinal("song_file_size"));
+                LastModified = reader.GetInt64OrNull(reader.GetOrdinal("song_last_modified"));
+				FileName = reader.GetStringOrNull(reader.GetOrdinal("song_file_name"));
+				ReleaseYear = reader.GetInt32OrNull(reader.GetOrdinal("song_release_year"));
 			}
 			catch (Exception e)
 			{
@@ -219,23 +218,17 @@ namespace WaveBox.DataModel.Model
 
 		public void InsertSong()
 		{			
-			int? itemId = Database.GenerateItemId(ItemType.Song);
-			if (itemId == null)
-			{
-				return;
-			}
-
 			IDbConnection conn = null;
 			IDataReader reader = null;
 			try
 			{
 				// insert the song into the database
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("INSERT INTO song (song_id, song_folder_id, song_artist_id, song_album_id, song_file_type_id, song_name, song_track_num, song_disc_num, song_duration, song_bitrate, song_file_size, song_last_modified, song_file_name, song_release_year) " + 
+				IDbCommand q = Database.GetDbCommand("REPLACE INTO song (song_id, song_folder_id, song_artist_id, song_album_id, song_file_type_id, song_name, song_track_num, song_disc_num, song_duration, song_bitrate, song_file_size, song_last_modified, song_file_name, song_release_year) " + 
 													 "VALUES (@songid, @folderid, @artistid, @albumid, @filetype, @songname, @tracknum, @discnum, @duration, @bitrate, @filesize, @lastmod, @filename, @releaseyear)"
 													 , conn);
 
-				q.AddNamedParam("@songid", itemId);
+				q.AddNamedParam("@songid", ItemId);
 				q.AddNamedParam("@folderid", FolderId);
 				q.AddNamedParam("@artistid", ArtistId);
 				q.AddNamedParam("@albumid", AlbumId);
@@ -275,10 +268,7 @@ namespace WaveBox.DataModel.Model
 
 				q.Prepare();
 
-				if (q.ExecuteNonQuery() > 0)
-				{
-					ItemId = itemId;
-				}
+				q.ExecuteNonQuery();
 			}
 			catch(Exception e)
 			{
@@ -289,31 +279,8 @@ namespace WaveBox.DataModel.Model
 				Database.Close(conn, reader);
 			}
 
-			if (ArtId != null)
-			{
-				try
-				{
-					// insert the song into the database
-					conn = Database.GetDbConnection();
-					IDbCommand q = Database.GetDbCommand("INSERT INTO art_item (art_id, item_id) " + 
-														 "VALUES (@artid, @itemid)"
-														 , conn);
-
-					q.AddNamedParam("@artid", ArtId);
-					q.AddNamedParam("@itemid", ItemId);
-					q.Prepare();
-
-					q.ExecuteNonQuery();
-				}
-				catch(Exception e)
-				{
-					Console.WriteLine("[SONG(3)] " + e.ToString());
-				}
-				finally
-				{
-					Database.Close(conn, reader);
-				}
-			}
+			Art.UpdateArtItemRelationship(ArtId, ItemId);
+			Art.UpdateArtItemRelationship(ArtId, AlbumId);
 		}
 
 		public static List<Song> allSongs()
@@ -368,6 +335,59 @@ namespace WaveBox.DataModel.Model
 
 			// if the disc numbers are not equal, the one with the higher disc number is greater.
 			else return x.DiscNumber > y.DiscNumber ? 1 : -1;
+		}
+
+		public static bool SongNeedsUpdating(string filePath, int? folderId, out bool isNew, out int? songId)
+		{
+			// We don't need to instantiate another folder to know what the folder id is.  This should be known when the method is called.
+			//Stopwatch sw = new Stopwatch();
+            string fileName = Path.GetFileName(filePath);
+			long lastModified = Convert.ToInt64(System.IO.File.GetLastWriteTime(filePath).Ticks);
+			bool needsUpdating = true;
+			isNew = true;
+			songId = null;
+
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			try
+			{
+                // Turns out that COUNT(*) on large tables is REALLY slow in SQLite because it does a full table search.  I created an index on folder_id(because weirdly enough,
+                // even though it's a primary key, SQLite doesn't automatically make one!  :O).  We'll pull that, and if we get a row back, then we'll know that this thing exists.
+
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT song_id, song_last_modified, song_file_size " +
+													 "FROM song WHERE song_folder_id = @folderid AND song_file_name = @filename", conn); //AND song_file_size = @filesize", conn);
+                //IDbCommand q = Database.GetDbCommand("SELECT COUNT(*) AS count FROM song WHERE song_folder_id = @folderid AND song_file_name = @filename AND song_last_modified = @lastmod", conn);
+
+                q.AddNamedParam("@folderid", folderId);
+				q.AddNamedParam("@filename", fileName);
+
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				if (reader.Read())
+				{
+					isNew = false;
+
+					songId = reader.GetInt32(0);
+					long lastModDb = reader.GetInt64(1);
+					if (lastModDb == lastModified)
+					{
+						needsUpdating = false;
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("[MEDIAITEM(1)] " + e.ToString());
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			return needsUpdating;
 		}
 	}
 }
