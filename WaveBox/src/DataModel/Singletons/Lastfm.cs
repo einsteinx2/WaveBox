@@ -115,6 +115,7 @@ namespace WaveBox.DataModel.Singletons
             else if (scrobbleType == LfmScrobbleType.NOWPLAYING)
             {
                 parameters.Add("method", "track.updateNowPlaying");
+                parameters.Add("duration", song.Duration.ToString());
             }
 
             // or if it's invalid, return without doing anything.
