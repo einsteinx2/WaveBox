@@ -316,8 +316,10 @@ namespace WaveBox.DataModel.Singletons
 
         public static LfmScrobbleType ScrobbleTypeForString(string input)
         {
-            if(input.ToLower() == "nowplaying") return LfmScrobbleType.NOWPLAYING;
-            else if (input.ToLower() == "submit") return LfmScrobbleType.SUBMIT;
+            var theInput = input.ToLower();
+            if(theInput == "nowplaying") return LfmScrobbleType.NOWPLAYING;
+            else if (theInput == "submit") return LfmScrobbleType.SUBMIT;
+            else if (theInput == "auth") return LfmScrobbleType.AUTH;
             else return LfmScrobbleType.INVALID;
         }
 	}
@@ -325,9 +327,9 @@ namespace WaveBox.DataModel.Singletons
     public class LfmScrobbleData
     {
         public int SongId { get; set; }
-        public long Timestamp { get; set; }
+        public long? Timestamp { get; set; }
 
-        public LfmScrobbleData(int songId, long timestamp)
+        public LfmScrobbleData(int songId, long? timestamp)
         {
             SongId = songId;
             Timestamp = timestamp;
@@ -336,9 +338,10 @@ namespace WaveBox.DataModel.Singletons
 
     public enum LfmScrobbleType
     {
-        NOWPLAYING = 0,
-        SUBMIT = 1,
-        INVALID = 2
+        AUTH = 0,
+        NOWPLAYING = 1,
+        SUBMIT = 2,
+        INVALID = 3
     }
 }
 

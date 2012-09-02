@@ -49,11 +49,6 @@ namespace WaveBox.ApiHandler.Handlers
                 return;
             }
 
-            if (eve != null && eveType == null)
-            {
-                Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMEventTypeNotSpecifiedForEvent")));
-                return;
-            }
 
             if (!lfm.SessionAuthenticated)
             {
@@ -63,10 +58,51 @@ namespace WaveBox.ApiHandler.Handlers
                 return;
             }
 
-            if (eve != null && eveType != null)
+            List<LfmScrobbleData> scrobbles = new List<LfmScrobbleData>();
+
+
+            LfmScrobbleType scrobbleType = Lastfm.ScrobbleTypeForString(action);
+            if (scrobbleType == LfmScrobbleType.INVALID)
             {
+                Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMInvalidScrobbleType")));
+                return;
+            }
+            else if (scrobbleType == LfmScrobbleType.NOWPLAYING)
+            {
+                int id = Int32.MaxValue;
+                if (!Uri.Parameters.ContainsKey("id"))
+                {
+                    Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMNoIdSpecifiedForNowPlaying")));
+                    return;
+                }
+
+                bool getIdSuccess = false;
+                string idTemp;
+
+                if(!Uri.Parameters.TryGetValue("id", out idTemp))
+                   getIdSuccess = false;
+                else if (!Int32.TryParse(idTemp, out id))
+                    getIdSuccess = false;
+                else getIdSuccess = true;
+
+                if(getIdSuccess == false)
+                {
+                    Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMInvalidIdSpecifiedForNowPlaying")));
+                    return;
+                }
+
+                scrobbles.Add(new LfmScrobbleData(id, null));
+                lfm.Scrobble(scrobbles, scrobbleType);
+            }
+            else
+            {                
+                if(eve == null)
+                {
+                    Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMNoEventSpecifiedForScrobble")));
+                    return;
+                }
+
                 string[] input = eve.Split(',');
-                List<LfmScrobbleData> scrobbles = new List<LfmScrobbleData>();
 
                 if(input.Length % 2 != 0)
                 {
@@ -80,57 +116,49 @@ namespace WaveBox.ApiHandler.Handlers
                     scrobbles.Add(new LfmScrobbleData(int.Parse(input[i]), long.Parse(input[i + 1])));
                     i = i + 2;
                 }
+            }
 
-                LfmScrobbleType scrobbleType = Lastfm.ScrobbleTypeForString(eveType);
-                if(scrobbleType == LfmScrobbleType.INVALID)
+            string result = lfm.Scrobble(scrobbles, scrobbleType);
+            dynamic resp;
+
+            if(result != null)
+            {
+                try
                 {
-                    Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMInvalidScrobbleType")));
-                    return;
+                    resp = JsonConvert.DeserializeObject(result);
                 }
-
-                string result = lfm.Scrobble(scrobbles, scrobbleType);
-                dynamic resp;
-
-                if(result != null)
+                catch(Exception e)
                 {
-                    try
-                    {
-                        resp = JsonConvert.DeserializeObject(result);
-                    }
-                    catch(Exception e)
-                    {
-                        Console.WriteLine("[SCROBBLE(3)] ERROR: " + e.ToString());
-                    }
+                    Console.WriteLine("[SCROBBLE(3)] ERROR: " + e.ToString());
                 }
+            }
 
-                else return;
+            else return;
 
-                if(resp.nowplaying != null || (resp.scrobbles != null))
+            if(resp.nowplaying != null || (resp.scrobbles != null))
+            {
+                try
                 {
-                    try
-                    {
-                        Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse()));
-                    }
-                    catch(Exception e)
-                    {
-                        Console.WriteLine("[SCROBBLE(4)] ERROR: " + e.ToString());
-                    }
-                    return;
+                    Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse()));
                 }
-
-                else if (resp.error != null)
+                catch(Exception e)
                 {
-                    try
-                    {
-                        Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse(string.Format("LFM{0}: {1}", resp.error, resp.message))));
-                    }
-                    catch(Exception e)
-                    {
-                        Console.WriteLine("[SCROBBLE(5)] ERROR: " + e.ToString());
-                    }
-                    return;
+                    Console.WriteLine("[SCROBBLE(4)] ERROR: " + e.ToString());
                 }
+                return;
+            }
 
+            else if (resp.error != null)
+            {
+                try
+                {
+                    Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse(string.Format("LFM{0}: {1}", resp.error, resp.message))));
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine("[SCROBBLE(5)] ERROR: " + e.ToString());
+                }
+                return;
             }
 		}
 
