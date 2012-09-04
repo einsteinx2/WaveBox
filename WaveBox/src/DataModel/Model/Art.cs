@@ -370,7 +370,7 @@ namespace WaveBox.DataModel.Model
 				{
 					// Grab the first available item id that is associated with this art id
 					// doesn't matter which one because they all have the same art
-					itemId = reader.GetInt32(0);
+					artId = reader.GetInt32(0);
 				}
 			}
 			catch (Exception e)

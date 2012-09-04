@@ -40,7 +40,7 @@ namespace WaveBox.DataModel.Model
 		public string FileName { get; set; }
 
 		[JsonProperty("artId")]
-		public int? ArtId { get { return Art.ArtIdForItemId(FolderId); } }
+		public int? ArtId { get { return Art.ArtIdForItemId(ItemId); } }
 
 		[JsonIgnore]
 		public string FilePath { get { return new Folder(FolderId).FolderPath + Path.DirectorySeparatorChar + FileName; } }
