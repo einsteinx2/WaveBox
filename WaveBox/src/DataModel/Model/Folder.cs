@@ -314,15 +314,16 @@ namespace WaveBox.DataModel.Model
 
 		private string FindArtPath()
 		{
-			string[] files = Directory.GetFiles(FolderPath);
 			string artPath = null;
 
-			foreach (string path in Settings.FolderArtNames)
+			foreach (string fileName in Settings.FolderArtNames)
 			{
-				if (files.Contains(FolderPath + Path.DirectorySeparatorChar + path))
+				string path = FolderPath + Path.DirectorySeparatorChar + fileName;
+				if (File.Exists(path))
 				{
 					// Use this one
-					artPath = FolderPath + Path.DirectorySeparatorChar + path;
+					artPath = path;
+					//Console.WriteLine("Found standard art for folder " + FolderName + " - file name: " + fileName);
 				}
 			}
 
@@ -330,6 +331,15 @@ namespace WaveBox.DataModel.Model
 			{
 				// Check for any images
 				Folder.ContainsImages(FolderPath, out artPath);
+
+				/*if ((object)artPath == null)
+				{
+					Console.WriteLine("folder " + FolderName + " contains no images");
+				}
+				else
+				{
+					Console.WriteLine("Found non-standard art for folder " + FolderName + " - path: " + artPath);
+				}*/
 			}
 
 			return artPath;

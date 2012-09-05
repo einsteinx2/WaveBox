@@ -27,10 +27,15 @@ namespace WaveBox.ApiHandler
 				string username = null;
 				string password = null;
 				string clientName = null;
-				uriW.Parameters.TryGetValue("s", out sessionId);
-				uriW.Parameters.TryGetValue("u", out username);
-				uriW.Parameters.TryGetValue("p", out password);
-				uriW.Parameters.TryGetValue("c", out clientName);
+
+				try
+				{
+					uriW.Parameters.TryGetValue("s", out sessionId);
+					uriW.Parameters.TryGetValue("u", out username);
+					uriW.Parameters.TryGetValue("p", out password);
+					uriW.Parameters.TryGetValue("c", out clientName);
+				}
+				catch {}
 
 				User user = Authenticate(action, sessionId, username, password, clientName);
 				if (user == null)

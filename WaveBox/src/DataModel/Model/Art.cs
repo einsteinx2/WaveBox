@@ -32,6 +32,9 @@ namespace WaveBox.DataModel.Model
 		public long? FileSize { get; set; }
 
 		[JsonIgnore]
+		public string FilePath { get; set; }
+
+		[JsonIgnore]
 		public Stream Stream { get { return CreateStream(); } }
 
 		/// <summary>
@@ -58,10 +61,11 @@ namespace WaveBox.DataModel.Model
 
 				if (reader.Read())
 				{
-					ArtId = reader.GetInt32(reader.GetOrdinal("art_id"));
-					Md5Hash = reader.GetString(reader.GetOrdinal("md5_hash"));
-					LastModified = reader.GetInt64(reader.GetOrdinal("art_last_modified"));
-					FileSize = reader.GetInt64(reader.GetOrdinal("art_file_size"));
+					ArtId = reader.GetInt32OrNull(reader.GetOrdinal("art_id"));
+					Md5Hash = reader.GetStringOrNull(reader.GetOrdinal("md5_hash"));
+					LastModified = reader.GetInt64OrNull(reader.GetOrdinal("art_last_modified"));
+					FileSize = reader.GetInt64OrNull(reader.GetOrdinal("art_file_size"));
+					FilePath = reader.GetStringOrNull(reader.GetOrdinal("art_file_path"));
 				}
 			}
 			catch (Exception e)
@@ -84,9 +88,16 @@ namespace WaveBox.DataModel.Model
 			FileSize = fs.Length;
 			LastModified = Convert.ToInt64(System.IO.File.GetLastWriteTime(fs.Name).Ticks);
 			ArtId = Art.ArtIdForMd5(Md5Hash);
+			FilePath = filePath;
+
+			if ((object)ArtId == null)
+			{
+				InsertArt();
+			}
 		}
 
 		// used for getting art from a tag.
+		// We don't set the FilePath here, because that is only used for actual art files on disk
 		public Art(TagLib.File file)
 		{
 			if (file.Tag.Pictures.Length > 0)
@@ -117,14 +128,15 @@ namespace WaveBox.DataModel.Model
 			{
 				// insert the song into the database
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("INSERT INTO art (art_id, md5_hash, art_last_modified, art_file_size)" + 
-													 "VALUES (@artid, @md5hash, @lastmodified, @filesize)"
+				IDbCommand q = Database.GetDbCommand("INSERT INTO art (art_id, md5_hash, art_last_modified, art_file_size, art_file_path)" + 
+													 "VALUES (@artid, @md5hash, @lastmodified, @filesize, @artfilepath)"
 													, conn);
 
 				q.AddNamedParam("@artid", itemId);
 				q.AddNamedParam("@md5hash", Md5Hash);
 				q.AddNamedParam("@lastmodified", LastModified);
 				q.AddNamedParam("@filesize", FileSize);
+				q.AddNamedParam("@artfilepath", FilePath);
 				q.Prepare();
 
 				if (q.ExecuteNonQuery() > 0)
@@ -421,7 +433,7 @@ namespace WaveBox.DataModel.Model
 			return artId;
 		}
 
-		public static bool UpdateArtItemRelationship(int? artId, int? itemId)
+		public static bool UpdateArtItemRelationship(int? artId, int? itemId, bool replace)
 		{
 			if (artId == null || itemId == null)
 			{
@@ -435,7 +447,8 @@ namespace WaveBox.DataModel.Model
 			{
 				// insert the song into the database
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("REPLACE INTO art_item (art_id, item_id) " + 
+				string command = replace ? "REPLACE" : "INSERT OR IGNORE";
+				IDbCommand q = Database.GetDbCommand(command + " INTO art_item (art_id, item_id) " + 
 													 "VALUES (@artid, @itemid)"
 													 , conn);
 

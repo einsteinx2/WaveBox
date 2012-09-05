@@ -83,9 +83,28 @@ namespace WaveBox.DataModel.FolderScanning
 						int? oldArtId = topFolder.ArtId;
 						int? newArtId = new Art(artPath).ArtId;
 
-						// Update any existing references, that would include both this folder
-						// and any children that were using this art in lieu of embedded art
-						Art.UpdateItemsToNewArtId(oldArtId, newArtId);
+						if ((object)oldArtId == null)
+						{
+							// Insert the relationship
+							Art.UpdateArtItemRelationship(newArtId, topFolder.FolderId, true);
+						}
+						else
+						{
+							Art oldArt = new Art((int)oldArtId);
+
+							// Check if the previous folder art was actually from embedded tag art
+							if ((object)oldArt.FilePath == null)
+							{
+								// This was embedded tag art, so only update the folder's relationship
+								Art.UpdateArtItemRelationship(newArtId, topFolder.FolderId, true);
+							}
+							else
+							{
+								// Update any existing references, that would include both this folder
+								// and any children that were using this art in lieu of embedded art
+								Art.UpdateItemsToNewArtId(oldArtId, newArtId);
+							}
+						}
 					}
 
                     //Stopwatch sw = new Stopwatch();

@@ -55,7 +55,7 @@ namespace WaveBox
 		private static void StartHTTPServer()
 		{
 			// define run port
-			int httpPort = 8080;
+			int httpPort = 6500;
 
 			// thread for the HTTP server.  its listen operation is blocking, so we can't start it before
 			// we do any file scanning otherwise.

@@ -176,7 +176,7 @@ namespace WaveBox.DataModel.Model
 			artId = (object)artId == null ? Art.ArtIdForItemId(FolderId) : artId;
 
 			// Create the art/item relationship
-			Art.UpdateArtItemRelationship(artId, ItemId);
+			Art.UpdateArtItemRelationship(artId, ItemId, true);
 		}
 
 		public Song(IDataReader reader)
@@ -279,8 +279,9 @@ namespace WaveBox.DataModel.Model
 				Database.Close(conn, reader);
 			}
 
-			Art.UpdateArtItemRelationship(ArtId, ItemId);
-			Art.UpdateArtItemRelationship(ArtId, AlbumId);
+			Art.UpdateArtItemRelationship(ArtId, ItemId, true);
+			Art.UpdateArtItemRelationship(ArtId, AlbumId, true);
+			Art.UpdateArtItemRelationship(ArtId, FolderId, false); // Only update a folder art relationship if it has no folder art
 		}
 
 		public static List<Song> allSongs()
