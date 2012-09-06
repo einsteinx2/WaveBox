@@ -13,7 +13,7 @@ namespace WaveBox.DataModel.Singletons
 	{
 		public static IDbConnection GetDbConnection()
 		{
-			string connString = "Data Source=wavebox.db;Version=3;Pooling=True;Max Pool Size=100;";
+            string connString = "Data Source=wavebox.db;Version=3;Pooling=True;Max Pool Size=100;synchronous=OFF;";
 			IDbConnection conn = new SQLiteConnection(connString);
 
 			while (conn.State == System.Data.ConnectionState.Closed)
