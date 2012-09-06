@@ -14,8 +14,8 @@ namespace WaveBox.DataModel.Singletons
 {
 	public class Lastfm
 	{
-		private readonly string apiKey = "6aec36725ab20cff28e8525cdf5fbd4a";
-		private readonly string secret = "cd596009d199d51405a2477d4e65c5d7";
+		private static string apiKey = "6aec36725ab20cff28e8525cdf5fbd4a";
+		private static string secret = "cd596009d199d51405a2477d4e65c5d7";
 		private string sessionKey = null;
 		private User user;
 
@@ -129,7 +129,26 @@ namespace WaveBox.DataModel.Singletons
 			return RemoveHttpHeaders(resp);
 		}
 
-        private string CompileApiCall(SortedDictionary<string, string> parameters)
+        public static string GetArtistInfo(Artist artist)
+        {
+            var p = new SortedDictionary<string, string>();
+
+            p.Add("artist", artist.ArtistName);
+            p.Add("api_key", apiKey);
+            p.Add("method", "artist.getInfo");
+
+            var url = CompileApiCall(p);
+            string result = DoPostRestRequest(url);
+
+            return RemoveHttpHeaders(result);
+        }
+
+        public static string GetArtistInfo(int artistId)
+        {
+            return GetArtistInfo(new Artist(artistId));
+        }
+
+        private static string CompileApiCall(SortedDictionary<string, string> parameters)
         {
             string sig = "";
             string cmd = "";
@@ -166,7 +185,7 @@ namespace WaveBox.DataModel.Singletons
             return cmd;
         }
 
-        public string RemoveHttpHeaders(string resp)
+        public static string RemoveHttpHeaders(string resp)
         {
             return resp.Substring(resp.IndexOf("\r\n\r\n") + 4);
         }
@@ -211,7 +230,7 @@ namespace WaveBox.DataModel.Singletons
         /// <param name='input'>
         /// Input.
         /// </param>
-		private string md5(string input)
+		private static string md5(string input)
 		{
 			MD5CryptoServiceProvider m = new MD5CryptoServiceProvider();
 			return BitConverter.ToString(m.ComputeHash(Encoding.ASCII.GetBytes(input))).Replace("-", string.Empty);
@@ -252,7 +271,7 @@ namespace WaveBox.DataModel.Singletons
 			authUrl = url;
 		}
 
-		private string DoGetRestRequest(string url)
+		private static string DoGetRestRequest(string url)
 		{
 			return string.Empty;
 		}
@@ -266,7 +285,7 @@ namespace WaveBox.DataModel.Singletons
         /// <param name='parameters'>
         /// Parameters.
         /// </param>
-        private string DoPostRestRequest(string parameters)
+        private static string DoPostRestRequest(string parameters)
         {
             string resp = "";
 
