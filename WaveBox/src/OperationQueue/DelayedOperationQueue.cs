@@ -42,11 +42,8 @@ namespace WaveBox.OperationQueue
 
 							if (currentOperation != null)
 							{
-								sw.Start();
 								currentOperation.Run();
-								sw.Stop();
-								Console.WriteLine("[SCANQUEUE] Scan took {0} seconds", sw.ElapsedMilliseconds / 1000);
-								sw.Reset();
+                                Console.WriteLine("[DELAYEDOPQUEUE] {0} fired", currentOperation.ToString());
 							}
 						}
 					}

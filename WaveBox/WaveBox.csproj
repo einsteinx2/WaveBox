@@ -146,6 +146,7 @@
     <Compile Include="src\DataModel\Model\Art.cs" />
     <Compile Include="src\ApiHandler\Handlers\ArtApiHandler.cs" />
     <Compile Include="src\DataModel\Model\Item.cs" />
+    <Compile Include="src\PodcastManagement\FeedCheckOperation.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="bass.dll">
