@@ -1,5 +1,7 @@
 using System;
 using WaveBox.OperationQueue;
+using WaveBox.PodcastManagement;
+using WaveBox.DataModel.Singletons;
 
 namespace WaveBox
 {
@@ -7,8 +9,8 @@ namespace WaveBox
     {
         // property backing ivars
         DelayedOperationState state = DelayedOperationState.None;
-        bool isReady = false;
-        string operationType = null;
+        string operationType = "PodcastFeedCheck";
+        int originalDelayInMinutes = 0;
 
         public DelayedOperationState State 
         { 
@@ -18,28 +20,44 @@ namespace WaveBox
         public DateTime RunDateTime { get; set; }
         public bool IsReady 
         { 
-            get { return isReady; }
+            get 
+            {
+                if(DateTime.Now >= RunDateTime) return true;
+                else return false;
+            }
         }
         public string OperationType { get { return operationType; } }
         
         public void Run()
         {
+            var podcasts = Podcast.ListOfStoredPodcasts();
+            foreach (var podcast in podcasts)
+            {
+                podcast.DownloadNewEpisodes();
+            }
+            PodcastManagement.DownloadQueue.FeedChecks.queueOperation(new FeedCheckOperation(Settings.PodcastCheckInterval));
         }
 
         public void Cancel()
         {
+            DownloadQueue.CancelAll();
         }
 
         public void ResetWait()
         {
+            RunDateTime = DateTime.Now.AddSeconds(originalDelayInMinutes);
         }
 
         public void Restart()
         {
+            DownloadQueue.CancelAll();
+            Run();
         }
 
-        public FeedCheckOperation()
+        public FeedCheckOperation(int minutesDelay)
         {
+            RunDateTime = DateTime.Now.AddMinutes(minutesDelay);
+            originalDelayInMinutes = minutesDelay;
         }
     }
 }

@@ -21,6 +21,9 @@ namespace WaveBox.DataModel.Singletons
         private static string podcastFolder = null;
         public static string PodcastFolder { get { return podcastFolder; } }
 
+        private static int podcastCheckInterval;
+        public static int PodcastCheckInterval { get { return podcastCheckInterval; } }
+
 		private static List<Folder> mediaFolders;
 		public static List<Folder> MediaFolders { get { return mediaFolders; } }
 
@@ -40,6 +43,7 @@ namespace WaveBox.DataModel.Singletons
 			dynamic json = JsonConvert.DeserializeObject(configFile);
 
 			podcastFolder = json.podcastFolder;
+            podcastCheckInterval = json.podcastCheckInterval;
 			mediaFolders = PopulateMediaFolders();
 			folderArtNames = new List<string>();
 			foreach (string name in json.folderArtNames)

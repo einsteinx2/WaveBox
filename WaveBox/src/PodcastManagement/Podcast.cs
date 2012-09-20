@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using WaveBox.DataModel.Singletons;
+using WaveBox.DataModel.Model;
 using System.Data;
 using System.Collections.Concurrent;
 
@@ -10,7 +11,7 @@ namespace WaveBox.PodcastManagement
 {
     public class Podcast
     {
-        public static readonly string PodcastMediaDirectory = "/Volumes/UNTITLED/podcast";
+        public static readonly string PodcastMediaDirectory = Settings.PodcastFolder;
 
         /* IVars */
         private string rssUrl;
@@ -56,7 +57,7 @@ namespace WaveBox.PodcastManagement
             }
             else AddToDatabase();
 
-            Console.WriteLine(Title + "\r\n " + Author + "\r\n " + Description + "\r\n\r\n");
+            //Console.WriteLine(Title + "\r\n " + Author + "\r\n " + Description + "\r\n\r\n");
         }
 
         public Podcast(long? podcastId)
@@ -82,6 +83,7 @@ namespace WaveBox.PodcastManagement
                     Title = reader.GetString(reader.GetOrdinal("podcast_title"));
                     Author = reader.GetString(reader.GetOrdinal("podcast_author"));
                     Description = reader.GetString(reader.GetOrdinal("podcast_description"));
+                    rssUrl = reader.GetString(reader.GetOrdinal("podcast_rss_url"));
                 }
             }
             catch (Exception e)
@@ -102,27 +104,23 @@ namespace WaveBox.PodcastManagement
         /* Instance methods */
         public void AddToDatabase()
         {
+            PodcastId = Item.GenerateItemId(ItemType.Podcast);
             IDbConnection conn = null;
             IDataReader reader = null;
             try
             {
                 conn = Database.GetDbConnection();
 
-                IDbCommand q = Database.GetDbCommand("INSERT OR IGNORE INTO podcast (podcast_keep_cap, podcast_title, podcast_author, podcast_description, podcast_rss_url) VALUES (@keepcap, @title, @author, @desc, @rss)", conn);
-                q.AddNamedParam("@keepcap", EpisodeKeepCap);
+                IDbCommand q = Database.GetDbCommand("INSERT OR IGNORE INTO podcast (podcast_id, podcast_keep_cap, podcast_title, podcast_author, podcast_description, podcast_rss_url) VALUES (@id, @keepcap, @title, @author, @desc, @rss)", conn);
+                q.AddNamedParam("@id", PodcastId);
+                q.AddNamedParam("@keepcap", EpisodeKeepCap.Value);
                 q.AddNamedParam("@title", Title);
                 q.AddNamedParam("@author", Author);
                 q.AddNamedParam("@desc", Description);
                 q.AddNamedParam("@rss", rssUrl);
                 q.Prepare();
 
-                int affected = q.ExecuteNonQuery();
-
-                if (affected > 0)
-                {
-                    q.CommandText = "SELECT last_insert_rowid()";
-                    PodcastId = Convert.ToInt32(q.ExecuteScalar().ToString());
-                }
+                q.ExecuteNonQuery();
             }
             catch (Exception e)
             {
@@ -238,8 +236,11 @@ namespace WaveBox.PodcastManagement
 
         public List<PodcastEpisode> ListOfCurrentEpisodes()
         {            
-            XmlNodeList xmlList;
-            xmlList = doc.SelectNodes("//item");
+            var doc = new XmlDocument();
+            doc.Load(rssUrl);
+            mgr = new XmlNamespaceManager(doc.NameTable);
+            mgr.AddNamespace("itunes", "http://www.itunes.com/dtds/podcast-1.0.dtd");
+            var xmlList = doc.SelectNodes("//item");
             List<PodcastEpisode> list = new List<PodcastEpisode>();
 
             // Make sure we don't try to add more episodes than there actually are.

@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.IO;
+using System.Diagnostics;
+using WaveBox.OperationQueue;
 
 namespace WaveBox.PodcastManagement
 {
@@ -17,6 +19,9 @@ namespace WaveBox.PodcastManagement
                 return q.Count;
             }
         }
+
+        // this really doesn't belong here, but the current operation queue model says that it should be.
+        public static DelayedOperationQueue FeedChecks = new DelayedOperationQueue();
 
         private static List<PodcastEpisode> q = new List<PodcastEpisode>();
         private static Object listLock = new Object();
@@ -42,7 +47,14 @@ namespace WaveBox.PodcastManagement
             {
                 foreach (PodcastEpisode ep in p)
                 {
-                    q.Add(ep);
+                    var shouldAdd = true;
+                    foreach(PodcastEpisode q_ep in q)
+                    {
+                        if (q_ep.Title == ep.Title && q_ep.Author == ep.Author)
+                            shouldAdd = false;
+                    }
+                    if(shouldAdd)
+                        q.Add(ep);
                 }
             }
 
@@ -124,20 +136,48 @@ namespace WaveBox.PodcastManagement
             }
         }
 
+        public static void CancelAll()
+        {
+            int countBeforeRemoval = q.Count;
+
+            for (int i = 0; i < countBeforeRemoval; i++)
+            {
+                // if this is at the head of the queue and is being downloaded
+                if(i == 0 && webClient.IsBusy)
+                {
+                    // cancel the download
+                    webClient.CancelAsync();
+                    
+                    // clean up any partially downloaded file
+                    if(File.Exists(q[i].FilePath)) File.Delete(q[i].FilePath);
+                    Console.WriteLine("Download canceled");
+                    
+                    // remove the item from the queue
+                    Dequeue();
+                }
+                // remove the item from the queue
+                else q.Remove(q[i]);
+            }
+        }
+
         public static void StartDownload(PodcastEpisode ep)
         {
+            var sw = new Stopwatch();
             webClient = new WebClient();
             webClient.DownloadProgressChanged += new DownloadProgressChangedEventHandler((sender, e) => 
             {
                 if (contentLength == 0)
                     contentLength = e.TotalBytesToReceive;
-                Console.WriteLine(ep.Title + ": " + ((double)e.BytesReceived / (double)e.TotalBytesToReceive) * 100 + "%");
+                //Console.WriteLine(ep.Title + ": " + ((double)e.BytesReceived / (double)e.TotalBytesToReceive) * 100 + "%");
                 totalBytesRead = e.BytesReceived;
             });
 
             webClient.DownloadFileCompleted += new System.ComponentModel.AsyncCompletedEventHandler((sender, e) => 
             {
                 ep.AddToDatabase();
+                sw.Stop();
+                Console.WriteLine("[PODCASTMANAGEMENT] Finished downloading {0} [ {1}, {2}Mbps avg ]", ep.Title, sw.ElapsedMilliseconds / 1000, ((double)totalBytesRead / (double)131072) / (sw.ElapsedMilliseconds / 1000));
+
                 if(DownloadQueue.Count > 0)
                 {
                     webClient.CancelAsync();
@@ -154,6 +194,8 @@ namespace WaveBox.PodcastManagement
             ep.FilePath = Podcast.PodcastMediaDirectory + Path.DirectorySeparatorChar + pc.Title + Path.DirectorySeparatorChar + fn;
 
             webClient.DownloadFileAsync(uri, ep.FilePath);
+            Console.WriteLine("[PODCASTMANAGEMENT] Started downloading {0}", ep.Title);
+            sw.Start();
         }
 
         public static double DownloadProgress()

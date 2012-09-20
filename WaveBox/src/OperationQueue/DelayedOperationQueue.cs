@@ -18,7 +18,6 @@ namespace WaveBox.OperationQueue
 		private Thread queueThread;
 		private bool queueShouldLoop = true;
 		private Queue<IDelayedOperation> operationQueue = new Queue<IDelayedOperation>();
-		Stopwatch sw = new Stopwatch();
 
 		public void startScanQueue()
 		{

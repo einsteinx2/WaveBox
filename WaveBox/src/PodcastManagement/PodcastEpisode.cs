@@ -5,6 +5,7 @@ using WaveBox.DataModel.Singletons;
 using System.Net;
 using System.Web;
 using System.Xml;
+using WaveBox.DataModel.Model;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -31,11 +32,11 @@ namespace WaveBox.PodcastManagement
             Author = episode.SelectSingleNode("itunes:author", mgr).InnerText;
             Subtitle = episode.SelectSingleNode("itunes:subtitle", mgr).InnerText;
             MediaUrl = episode.SelectSingleNode("enclosure").Attributes["url"].InnerText;
-            Console.WriteLine(episode.SelectSingleNode("title").InnerText);
-            Console.WriteLine(episode.SelectSingleNode("itunes:author", mgr).InnerText);
-            Console.WriteLine(episode.SelectSingleNode("itunes:subtitle", mgr).InnerText);
-            Console.WriteLine(episode.SelectSingleNode("enclosure").Attributes["url"].InnerText);
-            Console.WriteLine();
+//            Console.WriteLine(episode.SelectSingleNode("title").InnerText);
+//            Console.WriteLine(episode.SelectSingleNode("itunes:author", mgr).InnerText);
+//            Console.WriteLine(episode.SelectSingleNode("itunes:subtitle", mgr).InnerText);
+//            Console.WriteLine(episode.SelectSingleNode("enclosure").Attributes["url"].InnerText);
+//            Console.WriteLine();
         }
 
         public PodcastEpisode(long podcastId)
@@ -113,14 +114,16 @@ namespace WaveBox.PodcastManagement
 
         public void AddToDatabase()
         {
+            EpisodeId = Item.GenerateItemId(ItemType.PodcastEpisode);
             IDbConnection conn = null;
             IDataReader reader = null;
             try
             {
                 conn = Database.GetDbConnection();
 
-                IDbCommand q = Database.GetDbCommand("INSERT OR IGNORE INTO podcast_episode (podcast_episode_podcast_id, podcast_episode_title, podcast_episode_author, podcast_episode_subtitle, podcast_episode_media_url, podcast_episode_file_path) " + 
-                                                     "VALUES (@pe_pid, @pe_title, @pe_author, @pe_subtitle, @pe_mediaurl, @pe_filepath)", conn);
+                IDbCommand q = Database.GetDbCommand("INSERT OR IGNORE INTO podcast_episode (podcast_episode_id, podcast_episode_podcast_id, podcast_episode_title, podcast_episode_author, podcast_episode_subtitle, podcast_episode_media_url, podcast_episode_file_path) " + 
+                                                     "VALUES (@pe_id, @pe_pid, @pe_title, @pe_author, @pe_subtitle, @pe_mediaurl, @pe_filepath)", conn);
+                q.AddNamedParam("@pe_id", EpisodeId);
                 q.AddNamedParam("@pe_pid", PodcastId);
                 q.AddNamedParam("@pe_title", Title);
                 q.AddNamedParam("@pe_author", Author);
@@ -129,13 +132,7 @@ namespace WaveBox.PodcastManagement
                 q.AddNamedParam("@pe_filepath", FilePath);
                 q.Prepare();
 
-                int affected = q.ExecuteNonQuery();
-
-                if (affected > 0)
-                {
-                    q.CommandText = "SELECT last_insert_rowid()";
-                    PodcastId = Convert.ToInt32(q.ExecuteScalar().ToString());
-                }
+                q.ExecuteNonQuery();
             }
             catch (Exception e)
             {

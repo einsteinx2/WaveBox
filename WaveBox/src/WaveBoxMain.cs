@@ -37,11 +37,12 @@ namespace WaveBox
 			User.CreateUser("test", "test");
 
 			// Start file manager, calculate time it takes to run.
-			Stopwatch sw = new Stopwatch();
 			Console.WriteLine("[WAVEBOX] Scanning media directories...");
-			sw.Start();
 			FileManager.Instance.Setup();
-			sw.Stop();
+
+            // Start podcast download queue
+            PodcastManagement.DownloadQueue.FeedChecks.queueOperation(new FeedCheckOperation(0));
+            PodcastManagement.DownloadQueue.FeedChecks.startScanQueue();
 
 			// sleep the main thread so we can go about handling api calls and stuff on other threads.
 			Thread.Sleep(Timeout.Infinite);
