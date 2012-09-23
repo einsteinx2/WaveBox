@@ -229,7 +229,7 @@ namespace WaveBox.DataModel.Model
 			}
 		}
 
-		public int IndexOfMediaItem(MediaItem item)
+		public int IndexOfMediaItem(IMediaItem item)
 		{
 			IDbConnection conn = null;
 			IDataReader reader = null;
@@ -264,11 +264,11 @@ namespace WaveBox.DataModel.Model
 			return index;
 		}
 
-		public MediaItem MediaItemAtIndex(int index)
+		public IMediaItem MediaItemAtIndex(int index)
 		{
 			IDbConnection conn = null;
 			IDataReader reader = null;
-			MediaItem item = null;
+			IMediaItem item = null;
 
 			try
 			{
@@ -314,11 +314,11 @@ namespace WaveBox.DataModel.Model
 			return item;
 		}
 
-		public List<MediaItem> ListOfMediaItems()
+		public List<IMediaItem> ListOfMediaItems()
 		{
 			IDbConnection conn = null;
 			IDataReader reader = null;
-			List<MediaItem> items = new List<MediaItem>();
+			List<IMediaItem> items = new List<IMediaItem>();
 
 			try
 			{
@@ -359,12 +359,12 @@ namespace WaveBox.DataModel.Model
 			return items;
 		}
 
-		public void RemoveMediaItem(MediaItem item)
+		public void RemoveMediaItem(IMediaItem item)
 		{
 			RemoveMediaItemAtIndex(IndexOfMediaItem(item));
 		}
 
-		public void RemoveMediaItems(List<MediaItem> items)
+		public void RemoveMediaItems(List<IMediaItem> items)
 		{
 			List<int> indexes = new List<int>();
 			if (PlaylistId == 0 || items == null)
@@ -372,7 +372,7 @@ namespace WaveBox.DataModel.Model
 				return;
 			}
 
-			foreach (MediaItem item in items)
+			foreach (IMediaItem item in items)
 			{
 				if (item.ItemId != null)
 				{
@@ -549,7 +549,7 @@ namespace WaveBox.DataModel.Model
 			}
 		}
 
-		public void AddMediaItem(MediaItem item, bool updateDatabase)
+		public void AddMediaItem(IMediaItem item, bool updateDatabase)
 		{
 			IDbConnection conn = null;
 			IDataReader reader = null;
@@ -580,7 +580,7 @@ namespace WaveBox.DataModel.Model
 			}
 		}
 
-		public void AddMediaItems(List<MediaItem> items)
+		public void AddMediaItems(List<IMediaItem> items)
 		{
 			if(PlaylistId == 0 || items == null)
 			{
@@ -588,7 +588,7 @@ namespace WaveBox.DataModel.Model
 			}
 
 			int duration = 0;
-			foreach(MediaItem item in items)
+			foreach(IMediaItem item in items)
 			{
 				AddMediaItem(item, false);
 
@@ -599,7 +599,7 @@ namespace WaveBox.DataModel.Model
 			UpdateDatabase();
 		}
 
-		public void InsertMediaItem(MediaItem item, int index)
+		public void InsertMediaItem(IMediaItem item, int index)
 		{
 		}
 

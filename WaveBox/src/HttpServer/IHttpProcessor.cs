@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Collections;
+using WaveBox.Transcoding;
 
 namespace WaveBox
 {
@@ -9,6 +10,8 @@ namespace WaveBox
 		// A dictionary of string keys and values representing the 
 		// headers received from the client
 		Hashtable HttpHeaders { get; set; }
+
+		ITranscoder Transcoder { get; set; }
 
 		// Header writing methods
 		void WriteJsonHeader();

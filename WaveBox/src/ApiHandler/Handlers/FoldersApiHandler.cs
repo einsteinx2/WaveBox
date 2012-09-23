@@ -23,7 +23,9 @@ namespace WaveBox.ApiHandler.Handlers
 		public void Process()
 		{
 			List<Folder> listOfFolders = new List<Folder>();
-			List<MediaItem> listOfMediaItems = new List<MediaItem>();
+			//List<IMediaItem> listOfMediaItems = new List<IMediaItem>();
+			List<Song> listOfSongs = new List<Song>();
+			List<Video> listOfVideos = new List<Video>();
 
 			// Try to get the folder id
 			bool success = false;
@@ -38,7 +40,9 @@ namespace WaveBox.ApiHandler.Handlers
 				// Return the folder for this id
 				Folder folder = new Folder(id);
 				listOfFolders = folder.ListOfSubFolders();
-				listOfMediaItems = folder.ListOfMediaItems();
+				//listOfMediaItems = folder.ListOfMediaItems();
+				listOfSongs = folder.ListOfSongs();
+				listOfVideos = folder.ListOfVideos();
 			}
 			else
 			{
@@ -57,7 +61,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 			try
 			{
-				string json = JsonConvert.SerializeObject(new FoldersResponse(null, listOfFolders, listOfMediaItems), Settings.JsonFormatting);
+				string json = JsonConvert.SerializeObject(new FoldersResponse(null, listOfFolders, listOfSongs, listOfVideos), Settings.JsonFormatting);
 				Processor.WriteJson(json);
 			}
 			catch(Exception e)
@@ -74,14 +78,21 @@ namespace WaveBox.ApiHandler.Handlers
 	        [JsonProperty("folders")]
 			public List<Folder> Folders { get; set; }
 
-	        [JsonProperty("mediaItems")]
-			public List<MediaItem> MediaItems { get; set; }
+	        //[JsonProperty("mediaItems")]
+			//public List<IMediaItem> MediaItems { get; set; }
 
-			public FoldersResponse(string error, List<Folder> folders, List<MediaItem> mediaItems)
+			[JsonProperty("songs")]
+			public List<Song> Songs { get; set; }
+
+			[JsonProperty("videos")]
+			public List<Video> Videos { get; set; }
+
+			public FoldersResponse(string error, List<Folder> folders, List<Song> songs, List<Video>videos)
 			{
 				Error = error;
 				Folders = folders;
-				MediaItems = mediaItems;
+				Songs = songs;
+				Videos = videos;
 			}
 		}
 	}

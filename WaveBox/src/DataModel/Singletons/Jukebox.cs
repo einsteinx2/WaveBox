@@ -94,7 +94,7 @@ namespace WaveBox.DataModel.Singletons
 
 		public void PlaySongAtIndex(int index)
 		{
-			MediaItem item = playlist.MediaItemAtIndex(index);
+			IMediaItem item = playlist.MediaItemAtIndex(index);
 			Console.WriteLine("[JUKEBOX] Playing song: " + item.FileName);
 
 			if (item != null)
@@ -136,7 +136,7 @@ namespace WaveBox.DataModel.Singletons
 			}
 		}
 
-		public List<MediaItem> ListOfSongs()
+		public List<IMediaItem> ListOfSongs()
 		{
 			return playlist.ListOfMediaItems();
 		}
@@ -163,7 +163,7 @@ namespace WaveBox.DataModel.Singletons
 
 		public void AddSongs(List<Song> songs)
 		{
-			List<MediaItem> mediaItems = new List<MediaItem>();
+			List<IMediaItem> mediaItems = new List<IMediaItem>();
 			mediaItems.AddRange(songs);
 			playlist.AddMediaItems(mediaItems);
 		}

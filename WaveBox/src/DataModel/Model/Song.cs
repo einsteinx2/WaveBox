@@ -14,6 +14,8 @@ namespace WaveBox.DataModel.Model
 {
 	public class Song : MediaItem
 	{
+		public static readonly string[] ValidExtensions = { ".mp3", ".m4a", ".flac", ".wv", ".mpc", ".ogg", ".wma" };
+
 		[JsonProperty("itemTypeId")]
 		public override int ItemTypeId { get { return (int)ItemType.Song; } }
 
@@ -40,8 +42,6 @@ namespace WaveBox.DataModel.Model
 
 		[JsonProperty("releaseYear")]
 		public int? ReleaseYear { get; set; }
-
-		public static readonly string[] ValidExtensions = { ".mp3", ".m4a", ".mp4", ".flac", ".wv", ".mpc", ".ogg", ".wma" };
 
 		public Song()
 		{
@@ -120,7 +120,7 @@ namespace WaveBox.DataModel.Model
 				AlbumName = null;
 			}
 
-			FileType = FileType.FileTypeForTagSharpString(file.Properties.Description);
+			FileType = FileType.FileTypeForMimeType(file.MimeType);
 
 			if (FileType == FileType.Unknown)
 			{
@@ -216,7 +216,7 @@ namespace WaveBox.DataModel.Model
 			}
 		}
 
-		public void InsertSong()
+		public override void InsertMediaItem()
 		{			
 			IDbConnection conn = null;
 			IDataReader reader = null;
@@ -233,24 +233,8 @@ namespace WaveBox.DataModel.Model
 				q.AddNamedParam("@artistid", ArtistId);
 				q.AddNamedParam("@albumid", AlbumId);
 				q.AddNamedParam("@filetype", (int)FileType);
-
-				if (SongName == null)
-				{
-					q.AddNamedParam("@songname", DBNull.Value);
-				}
-				else
-				{
-					q.AddNamedParam("@songname", SongName);
-				}
-
-				if (TrackNumber == null)
-				{
-					q.AddNamedParam("@tracknum", DBNull.Value);
-				}
-				else
-				{
-					q.AddNamedParam("@tracknum", TrackNumber);
-				}
+				q.AddNamedParam("@songname", SongName);
+				q.AddNamedParam("@tracknum", TrackNumber);
 				q.AddNamedParam("@discnum", DiscNumber);
 				q.AddNamedParam("@duration", Duration);
 				q.AddNamedParam("@bitrate", Bitrate);
@@ -381,7 +365,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[MEDIAITEM(1)] " + e.ToString());
+				Console.WriteLine("[SONG(5)] " + e.ToString());
 			}
 			finally
 			{

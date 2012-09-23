@@ -131,7 +131,6 @@
     <Compile Include="src\Transcoding\ITranscoderDelegate.cs" />
     <Compile Include="src\Transcoding\AbstractTranscoder.cs" />
     <Compile Include="src\Transcoding\TranscodeManager.cs" />
-    <Compile Include="src\Transcoding\FFMpegTranscoder.cs" />
     <Compile Include="src\Transcoding\FFMpegMP3Transcoder.cs" />
     <Compile Include="src\HttpServer\HttpHeader.cs" />
     <Compile Include="src\HttpServer\HttpProcessor.cs" />
@@ -147,11 +146,12 @@
     <Compile Include="src\ApiHandler\Handlers\ArtApiHandler.cs" />
     <Compile Include="src\DataModel\Model\Item.cs" />
     <Compile Include="src\PodcastManagement\FeedCheckOperation.cs" />
+    <Compile Include="src\DataModel\Model\IMediaItem.cs" />
+    <Compile Include="src\ApiHandler\Handlers\VideosApiHandler.cs" />
+    <Compile Include="src\Transcoding\FFMpegMP4Transcoder.cs" />
+    <Compile Include="src\Transcoding\FFMpegX264Transcoder.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="bass.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="lib\Newtonsoft.Json.dll" />
     <Content Include="lib\taglib-sharp.dll" />
     <Content Include="libsqlite3.0.dylib">
@@ -197,7 +197,6 @@
     <None Include="res\WaveBox.conf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="lib\Bass.Net.dll" />
     <None Include="res\wavebox.db">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -207,6 +206,8 @@
     <None Include="lib\nunit.framework.dll" />
     <None Include="lib\nunit.mocks.dll" />
     <None Include="lib\pnunit.framework.dll" />
+    <None Include="lib\Bass.Net.dll" />
+    <None Include="bass.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

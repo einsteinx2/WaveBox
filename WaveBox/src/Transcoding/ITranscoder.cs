@@ -17,27 +17,29 @@ namespace WaveBox.Transcoding
 		MP3, 
 		AAC, 
 		OGG, 
+		MP4,
+		X264,
 		HLS
 	}
 
 	public enum TranscodeQuality
 	{
-		Low, 
-		Medium, 
-		High, 
-		Extreme
+		Low = 0, 
+		Medium = 1, 
+		High = 2, 
+		Extreme = 3
 	}
 
 	public interface ITranscoder
 	{
 		TranscodeState State { get; set; }
-		MediaItem Item { get; set; }
-		TranscodeType Type { get; set; }
-		TranscodeQuality Quality { get; }
+		IMediaItem Item { get; set; }
+		TranscodeType Type { get; }
+		uint Quality { get; set; }
 		string OutputExtension { get; }
 		string OutputFilename { get; }
 		string OutputPath { get; }
-		int? EstimatedBitrate { get; }
+		uint? EstimatedBitrate { get; }
 		long? EstimatedOutputSize { get; }
 		int ReferenceCount { get; set; }
 

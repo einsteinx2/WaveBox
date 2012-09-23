@@ -206,28 +206,36 @@ namespace WaveBox.DataModel.Model
 			// TO DO: scanning!  yay!
 		}
 
-		public List<MediaItem> ListOfMediaItems()
+		public List<IMediaItem> ListOfMediaItems()
 		{
-			List<MediaItem> mediaItems = new List<MediaItem>();
+			List<IMediaItem> mediaItems = new List<IMediaItem>();
 
+			mediaItems.AddRange(ListOfSongs());
+			mediaItems.AddRange(ListOfVideos());
+
+			return mediaItems;
+		}
+
+		public List<Song> ListOfSongs()
+		{
 			List<Song> songs = new List<Song>();
-
+			
 			IDbConnection conn = null;
 			IDataReader reader = null;
-
+			
 			// For now just get songs
 			try
 			{
-                conn = Database.GetDbConnection();
+				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " +
-					"LEFT JOIN artist ON song_artist_id = artist.artist_id " +
-					"LEFT JOIN album ON song_album_id = album.album_id " +
-				    "WHERE song_folder_id = @folderid", conn);
-
+				                                     "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
+				                                     "LEFT JOIN album ON song_album_id = album.album_id " +
+				                                     "WHERE song_folder_id = @folderid", conn);
+				
 				q.AddNamedParam("@folderid", FolderId);
 				q.Prepare();
 				reader = q.ExecuteReader();
-
+				
 				while (reader.Read())
 				{
 					songs.Add(new Song(reader));
@@ -241,11 +249,47 @@ namespace WaveBox.DataModel.Model
 			{
 				Database.Close(conn, reader);
 			}
-
+			
 			songs.Sort(Song.CompareSongsByDiscAndTrack);
+			
+			return songs;
+		}
 
-			mediaItems.AddRange(songs);
-			return mediaItems;
+		public List<Video> ListOfVideos()
+		{
+			List<Video> videos = new List<Video>();
+
+			IDbConnection conn = null;
+			IDataReader reader = null;
+			
+			// For now just get songs
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT * FROM video " +
+				                                     "WHERE video_folder_id = @folderid", conn);
+				
+				q.AddNamedParam("@folderid", FolderId);
+				q.Prepare();
+				reader = q.ExecuteReader();
+				
+				while (reader.Read())
+				{
+					videos.Add(new Video(reader));
+				}
+			}
+			catch (Exception e)
+			{
+				Console.WriteLine("[FOLDER(4)] " + e.ToString());
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+			
+			videos.Sort(Video.CompareVideosByFileName);
+			
+			return videos;
 		}
 
 		public List<Folder> ListOfSubFolders()

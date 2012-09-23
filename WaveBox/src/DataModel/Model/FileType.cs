@@ -16,35 +16,75 @@ namespace WaveBox.DataModel.Model
         APE = 7,
         FLAC = 8,
         WV = 9,
+		MP4 = 10,
+		MKV = 11,
+		AVI = 12,
 		Unknown = 2147483647 // Int32.MaxValue used for database compatibility
 	}
 
 	public static class FileTypeExtensions
 	{
-		public static FileType FileTypeForTagSharpString(this FileType ft, string audioFormatString)
+		/*public static FileType FileTypeForTagSharpString(this FileType ft, string formatString)
 		{
+			Console.WriteLine("format string: " + formatString);
+
             // Lossy codecs
-            if (audioFormatString == "MPEG-4 Audio (mp4a)")
+			if (formatString == "MPEG-4 Audio (mp4a)")
 				return FileType.AAC;
-            else if (audioFormatString == "MPEG Version 1 Audio, Layer 3 VBR" || audioFormatString == "MPEG Version 1 Audio, Layer 3")
+			else if (formatString == "MPEG Version 1 Audio, Layer 3 VBR" || formatString == "MPEG Version 1 Audio, Layer 3")
 				return FileType.MP3;
-            else if (audioFormatString == "MusePack Version 7 Audio")
+			else if (formatString == "MusePack Version 7 Audio")
 				return FileType.MPC;
-            else if (audioFormatString == "Vorbis Version 0 Audio")
+			else if (formatString == "Vorbis Version 0 Audio")
 				return FileType.OGG;
-            else if (audioFormatString == "Microsoft WMA2 Audio" || audioFormatString == "Microsoft Lossless WMA Audio")
+			else if (formatString == "Microsoft WMA2 Audio" || formatString == "Microsoft Lossless WMA Audio")
 				return FileType.WMA;
             // Lossless codecs; reordered slightly to prevent ArgumentOutOfRange exception on substring()
-            else if (audioFormatString == "MPEG-4 Audio (alac)")
+			else if (formatString == "MPEG-4 Audio (alac)")
 				return FileType.ALAC;
-            else if (audioFormatString == "Flac Audio")
+			else if (formatString == "Flac Audio")
 				return FileType.FLAC;
             // These two use substrings because their version numbers constantly increment with each release
-            else if (audioFormatString.Substring(0, 7) == "WavPack")
+			else if (formatString.Contains("WavPack"))
 				return FileType.WV;
-            else if (audioFormatString.Substring(0, 14) == "Monkey's Audio")
+			else if (formatString.Contains("Monkey's Audio"))
 				return FileType.APE;
+			else if (formatString.Contains("MPEG-4 Video (avc1)"))
+				return FileType.MP4;
             else
+				return FileType.Unknown;
+		}*/
+
+		public static FileType FileTypeForMimeType(this FileType ft, string mimeType)
+		{
+			Console.WriteLine("mime type: " + mimeType);
+
+			// Lossy codecs
+			if (mimeType == "taglib/m4a" || mimeType == "taglib/aac") 
+				return FileType.AAC;
+			else if (mimeType == "taglib/mp3")
+				return FileType.MP3;
+			else if (mimeType == "taglib/mpc")
+				return FileType.MPC;
+			else if (mimeType == "taglib/oggo")
+				return FileType.OGG;
+			else if (mimeType == "taglib/wma")
+				return FileType.WMA;
+			//else if (formatString == "MPEG-4 Audio (alac)")
+			//	return FileType.ALAC;
+			else if (mimeType == "taglib/flac")
+				return FileType.FLAC;
+			else if (mimeType == "taglib/wv")
+				return FileType.WV;
+			else if (mimeType == "taglib/ape")
+				return FileType.APE;
+			else if (mimeType.Contains("taglib/mp4"))
+				return FileType.MP4;
+			else if (mimeType.Contains("taglib/mkv"))
+				return FileType.MKV;
+			else if (mimeType.Contains("taglib/avi"))
+				return FileType.AVI;
+			else
 				return FileType.Unknown;
 		}
 

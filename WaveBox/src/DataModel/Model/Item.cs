@@ -107,6 +107,10 @@ namespace WaveBox
 			{
 				return ItemType.Song;
 			}
+			else if (Video.ValidExtensions.Contains(extension))
+			{
+				return ItemType.Video;
+			}
 
 			// Return unknown, if we didn't return yet
 			return ItemType.Unknown;

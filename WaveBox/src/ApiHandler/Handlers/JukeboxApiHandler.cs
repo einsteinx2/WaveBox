@@ -257,7 +257,7 @@ namespace WaveBox.ApiHandler.Handlers
             }
 
 			[JsonProperty("jukeboxPlaylist")]
-			public List<MediaItem> JukeboxPlaylist 
+			public List<IMediaItem> JukeboxPlaylist 
             { 
                 get 
                 { 

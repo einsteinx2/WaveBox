@@ -58,7 +58,7 @@ namespace WaveBox.DataModel.Singletons
 		{
 			IDataParameter param = command.CreateParameter();
 			param.ParameterName = name;
-			param.Value = value;
+			param.Value = value == null ? DBNull.Value : value;
 			command.Parameters.Add(param);
 		}
 

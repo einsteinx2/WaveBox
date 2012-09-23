@@ -26,6 +26,8 @@ namespace WaveBox.ApiHandler.Handlers
 
 		public void Process()
 		{
+			Console.WriteLine("Stream handler called");
+
 			// Try to get the media item id
 			bool success = false;
 			int id = 0;
@@ -40,10 +42,15 @@ namespace WaveBox.ApiHandler.Handlers
 				{
 					// Get the media item associated with this id
 					ItemType itemType = Item.ItemTypeForItemId(id);
-					MediaItem item = null;
+					IMediaItem item = null;
 					if (itemType == ItemType.Song)
 					{
 						item = new Song(id);
+					}
+					else if (itemType == ItemType.Video)
+					{
+						item = new Video(id);
+						Console.WriteLine("streaming a video, filename " + item.FileName);
 					}
 
 					// Return an error if none exists
@@ -68,37 +75,97 @@ namespace WaveBox.ApiHandler.Handlers
 					}
 
 					// Check if we need to enable transcoding
+
 					if (Uri.Parameters.ContainsKey("transType"))
 					{
 						// Get the type
 						TranscodeType type = (TranscodeType)Enum.Parse(typeof(TranscodeType), Uri.Parameters["transType"], true);
 
 						// Get the quality
-						TranscodeQuality quality = TranscodeQuality.Medium; // Default to medium
+						uint quality = (uint)TranscodeQuality.Medium; // Default to medium
 						if (Uri.Parameters.ContainsKey("transQuality"))
 						{
-							quality = (TranscodeQuality)Enum.Parse(typeof(TranscodeQuality), Uri.Parameters["transQuality"], true);
+							string qualityString = Uri.Parameters["transQuality"];
+							TranscodeQuality qualityEnum;
+							uint qualityValue;
+							// First try and parse a word enum value
+							if (Enum.TryParse<TranscodeQuality>(qualityString, true, out qualityEnum))
+							{
+								quality = (uint)qualityEnum;
+							}
+							// Otherwise look for a number to use as bitrate
+							else if (UInt32.TryParse(qualityString, out qualityValue))
+							{
+								quality = qualityValue;
+							}
 						}
 
 						// Create the transcoder
-						Transcoder = TranscodeManager.Instance.TranscodeItem(item, type, quality);
-						length = (long)Transcoder.EstimatedOutputSize;
-
-						// Wait up 5 seconds for file to appear
-						for (int i = 0; i < 20; i++)
+						if (itemType == ItemType.Song)
 						{
-							Console.WriteLine("[STREAM API] Checking if file exists");
-							if (File.Exists(Transcoder.OutputPath))
+							Transcoder = TranscodeManager.Instance.TranscodeSong(item, type, (uint)quality);
+						}
+						else
+						{
+							// Check to see if the width, height, and maintainAspect options were used
+							uint? width = null;
+							if (Uri.Parameters.ContainsKey("width"))
 							{
-								break;
+								uint widthTemp;
+								width = UInt32.TryParse(Uri.Parameters["width"], out widthTemp) ? (uint?)widthTemp : null;
 							}
 
-							Thread.Sleep(250);
+							uint? height;
+							if (Uri.Parameters.ContainsKey("height"))
+							{
+								uint heightTemp;
+								height = UInt32.TryParse(Uri.Parameters["height"], out heightTemp) ? (uint?)heightTemp : null;
+							}
+
+							bool maintainAspect = true;
+							if (Uri.Parameters.ContainsKey("maintainAspect"))
+							{
+								if (!Boolean.TryParse(Uri.Parameters["maintainAspect"], out maintainAspect))
+								{
+									maintainAspect = true;
+								}
+							}
+
+							Transcoder = TranscodeManager.Instance.TranscodeVideo(item, type, (uint)quality, width, height, maintainAspect);
 						}
 
-						if (File.Exists(Transcoder.OutputPath))
-						{ 
-							file = new FileStream(Transcoder.OutputPath, FileMode.Open, FileAccess.Read);
+						if ((object)Transcoder == null) 
+						{
+							// Stream the original file
+							file = item.File;
+							length = file.Length;
+						}
+						else
+						{
+							length = (long)Transcoder.EstimatedOutputSize;
+							
+							// Wait up 5 seconds for file to appear
+							for (int i = 0; i < 20; i++)
+							{
+								Console.WriteLine("[STREAM API] Checking if file exists");
+								if (File.Exists(Transcoder.OutputPath))
+								{
+									/*long size = new FileInfo(Transcoder.OutputPath).Length;
+									if (size > 50000)
+									{
+										Console.WriteLine("file size " + size + " starting transfer");
+										break;
+									}*/
+									break;
+								}
+								
+								Thread.Sleep(250);
+							}
+							
+							if (File.Exists(Transcoder.OutputPath))
+							{ 
+								file = new FileStream(Transcoder.OutputPath, FileMode.Open, FileAccess.Read);
+							}
 						}
 					}
 					else
@@ -111,6 +178,7 @@ namespace WaveBox.ApiHandler.Handlers
 					// Send the file
 					if (this.Transcoder == null || File.Exists(Transcoder.OutputPath))
 					{
+						Processor.Transcoder = Transcoder;
 						Processor.WriteFile(file, startOffset, length);
 					}
 					else

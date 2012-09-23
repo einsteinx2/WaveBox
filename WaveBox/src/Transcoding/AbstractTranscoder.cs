@@ -10,15 +10,16 @@ namespace WaveBox.Transcoding
 	{
 		private ITranscoderDelegate Delegate { get; set; }
 
-		public MediaItem Item { get; set; }
+		public IMediaItem Item { get; set; }
 
 		public TranscodeState State { get; set; }
 
-		public TranscodeQuality Quality { get; set; }
+		// This is either a TranscodeQuality enum value or if higher, a constant bitrate
+		public uint Quality { get; set; }
 
 		public int ReferenceCount { get; set; }
 
-		public abstract TranscodeType Type { get; set; }
+		public abstract TranscodeType Type { get; }
 
 		public abstract string OutputExtension { get; }
 
@@ -46,7 +47,7 @@ namespace WaveBox.Transcoding
 			} 
 		}
 
-		public abstract int? EstimatedBitrate { get; }
+		public abstract uint? EstimatedBitrate { get; }
 
 		public long? EstimatedOutputSize 
 		{ 
@@ -54,6 +55,7 @@ namespace WaveBox.Transcoding
 			{
 				if (Item != null)
 				{
+					Console.WriteLine("Item.Duration: " + Item.Duration + "  EstimatedBitrate: " + EstimatedBitrate);
 				    return (long)Item.Duration * (long)(EstimatedBitrate * 128);
 				}
 	        	return null;
@@ -67,7 +69,7 @@ namespace WaveBox.Transcoding
 		protected Thread TranscodeThread { get; set; }
 		protected Process TranscodeProcess { get; set; }
 
-	    public AbstractTranscoder(MediaItem item, TranscodeQuality quality)
+		public AbstractTranscoder(IMediaItem item, uint quality)
 	    {
 			State = TranscodeState.None;
 	        Item = item;
@@ -78,6 +80,8 @@ namespace WaveBox.Transcoding
 	    {
 	        if (TranscodeProcess != null)
 	        {
+				Console.WriteLine("[TRANSCODE] cancelling transcode for " + Item.FileName);
+
 				// Kill the process
 	            TranscodeProcess.Kill();
 				TranscodeProcess = null;
@@ -101,6 +105,12 @@ namespace WaveBox.Transcoding
 
 			Console.WriteLine("[TRANSCODE] starting transcode for " + Item.FileName);
 
+			// Set the state
+			State = TranscodeState.Active;
+
+			// Delete any existing file of this name
+			File.Delete(OutputPath);
+
 			// Start a new thread for the transcode
 			TranscodeThread = new Thread(new ThreadStart(Run));
 			TranscodeThread.Start();
@@ -118,9 +128,6 @@ namespace WaveBox.Transcoding
 				TranscodeProcess.StartInfo.FileName = Command;
 				TranscodeProcess.StartInfo.Arguments = Arguments;
 				TranscodeProcess.Start();
-
-				// Set the state
-				State = TranscodeState.Active;
 
 				Console.WriteLine("[TRANSCODE] Waiting for process to finish");
 

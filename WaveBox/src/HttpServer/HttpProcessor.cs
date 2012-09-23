@@ -7,6 +7,7 @@ using System.Threading;
 using WaveBox;
 using System.Diagnostics;
 using WaveBox.ApiHandler;
+using WaveBox.Transcoding;
 
 // offered to the public domain for any use with no restriction
 // and also with no warranty of any kind, please enjoy. - David Jeske. 
@@ -28,6 +29,8 @@ namespace WaveBox.Http
 		public String HttpUrl { get; set; }
 		public String HttpProtocolVersionString { get; set; }
 		public Hashtable HttpHeaders { get; set; }
+
+		public ITranscoder Transcoder { get; set; }
 
 		private static int MAX_POST_SIZE = 10 * 1024 * 1024; // 10MB
 
@@ -254,29 +257,30 @@ namespace WaveBox.Http
 			OutputStream.Write(json);
 		}
 
-		public void WriteFile (Stream fs, int startOffset, long length)
+		public void WriteFile(Stream fs, int startOffset, long length)
 		{
-			if ((object)fs == null || !fs.CanRead || length == 0 || startOffset >= length) 
+			if ((object)fs == null || !fs.CanRead || length == 0 || startOffset >= length)
+			{ 
 				return;
+			}
 
 			HttpHeader header = null;
 			long contentLength = length - startOffset;
-			if (fs is FileStream) 
+			if (fs is FileStream)
 			{
-				FileInfo fsinfo = new FileInfo (((FileStream)fs).Name);
+				FileInfo fsinfo = new FileInfo(((FileStream)fs).Name);
 
 				// Write the headers to output stream
-
-				header = new HttpHeader (HttpHeader.HttpStatusCode.OK, HttpHeader.ContentTypeForExtension(fsinfo.Extension), contentLength);
-			} 
+				header = new HttpHeader(HttpHeader.HttpStatusCode.OK, HttpHeader.ContentTypeForExtension(fsinfo.Extension), contentLength);
+			}
 			else
 			{
-				header = new HttpHeader (HttpHeader.HttpStatusCode.OK, HttpHeader.HttpContentType.UNKNOWN, length);
+				header = new HttpHeader(HttpHeader.HttpStatusCode.OK, HttpHeader.HttpContentType.UNKNOWN, length);
 			}
 
-			header.WriteHeader (OutputStream);
-            OutputStream.Flush();
-			Console.WriteLine ("[HTTPSERVER] File header, contentLength: {0}, contentType: {1}, status: {2}", contentLength, header.ContentType, header.StatusCode);
+			header.WriteHeader(OutputStream);
+			OutputStream.Flush();
+			Console.WriteLine("[HTTPSERVER] File header, contentLength: {0}, contentType: {1}, status: {2}", contentLength, header.ContentType, header.StatusCode);
 
 			// Read/Write in 8 KB chunks
 			const int chunkSize = 8192;
@@ -287,14 +291,19 @@ namespace WaveBox.Http
 			long bytesWritten = 0;
 			Stream stream = OutputStream.BaseStream;
 			int sinceLastReport = 0;
-			Stopwatch sw = new Stopwatch ();
+			Stopwatch sw = new Stopwatch();
 
-			if (fs.CanSeek) 
+			if (fs.CanSeek)// && startOffset < fs.Length)
 			{
 				// Seek to the start offset
-				fs.Seek (startOffset, SeekOrigin.Begin);
+				fs.Seek(startOffset, SeekOrigin.Begin);
 				bytesWritten = fs.Position;
 			}
+			/*else
+			{
+				// This part doesn't exist, so bail
+				return;
+			}*/
 
 			sw.Start();
 			while(true)
@@ -324,20 +333,17 @@ namespace WaveBox.Http
 					// See if we're done
 					if (bytesRead < chunkSize)
 					{
-						// We read less than we asked for from the file
-						// Sleep 2 seconds and then see if the file grew
-						if (fs is FileStream)
-                        {
-                            Thread.Sleep(2);
-                        }
-
 						// Check if the stream is done
 						if (bytesWritten >= fs.Length || !(fs is FileStream))
 						{
-							// We've written the whole file, so flush the buffer and break
-							Console.WriteLine("[SENDFILE]: Done.");
-							break;
+							if ((object)Transcoder == null || Transcoder.State != TranscodeState.Active)
+							{
+								break;
+							}
 						}
+
+						// Sleep for a bit to prevent a tight loop
+						Thread.Sleep(250);
 					}
 				}
 				catch (IOException e)

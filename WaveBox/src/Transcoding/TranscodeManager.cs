@@ -23,38 +23,76 @@ namespace WaveBox.Transcoding
 			}
 		}
 
-		public ITranscoder CreateTranscoder(MediaItem item, TranscodeType type, TranscodeQuality quality)
+		public ITranscoder CreateSongTranscoder(IMediaItem song, TranscodeType type, uint quality)
 	    {
-			Console.WriteLine("[TRANSCODE] Creating transcoder for " + item.FileName);
+			Console.WriteLine("[TRANSCODE] Creating transcoder for song: " + song.FileName);
 	        switch (type)
 	        {
 	            case TranscodeType.MP3: 
-					return new FFMpegMP3Transcoder(item, quality);
+					return new FFMpegMP3Transcoder(song, quality);
 	            //case TranscodeType.AAC: 
 				//	return new FFMpegAACTranscoder(item, quality);
 	            //case TranscodeType.OGG: 
 				//	return new FFMpegOGGTranscoder(item, quality);
+				//case TranscodeType.MP4:
+				//	return new 
 	            //case TranscodeType.HLS: 
 				//	return new FFMpegHLSTranscoder(item, quality);
 	        }
 	        return null;
 	    }
 
-	    public ITranscoder TranscodeItem(MediaItem item, TranscodeType type, TranscodeQuality quality)
+		public ITranscoder CreateVideoTranscoder(IMediaItem video, TranscodeType type, uint quality, uint? width, uint? height, bool maintainAspect)
 		{
-			Console.WriteLine("[TRANSCODE] Asked to transcode " + item.FileName);
+			Console.WriteLine("[TRANSCODE] Creating transcoder for video: " + video.FileName);
+			switch (type)
+			{
+				case TranscodeType.X264: 
+					return new FFMpegX264Transcoder(video, quality, width, height, maintainAspect);
+				//case TranscodeType.HLS: 
+				//	return new FFMpegHLSTranscoder(item, quality);
+			}
+			return null;
+		}
+
+		public ITranscoder TranscodeSong(IMediaItem song, TranscodeType type, uint quality)
+		{
+			Console.WriteLine("[TRANSCODE] Asked to transcode song: " + song.FileName);
 			lock (transcoders) 
 			{
-				ITranscoder transcoder = CreateTranscoder(item, type, quality);
+				ITranscoder transcoder = CreateSongTranscoder(song, type, quality);
 
+				StartTranscoder(transcoder);
+
+		        return transcoder;
+			}
+	    }
+
+		public ITranscoder TranscodeVideo(IMediaItem video, TranscodeType type, uint quality, uint? width, uint? height, bool maintainAspect)
+		{
+			Console.WriteLine("[TRANSCODE] Asked to transcode video: " + video.FileName);
+			lock (transcoders) 
+			{
+				ITranscoder transcoder = CreateVideoTranscoder(video, type, quality, width, height, maintainAspect);
+				
+				StartTranscoder(transcoder);
+				
+				return transcoder;
+			}
+		}
+
+		private void StartTranscoder(ITranscoder transcoder)
+		{
+			if ((object)transcoder != null)
+			{
 				if (transcoders.Contains(transcoder))
 				{
 					Console.WriteLine("[TRANSCODE] Using existing transcoder");
-
+					
 					// Get the existing transcoder
 					int index = transcoders.IndexOf(transcoder);
 					transcoder = transcoders[index];
-
+					
 					// Increment the reference count
 					transcoder.ReferenceCount++;
 				}
@@ -62,16 +100,17 @@ namespace WaveBox.Transcoding
 				{
 					Console.WriteLine("[TRANSCODE] Creating a new transcoder");
 
+					// Add the transcoder to the array
+					transcoders.Add(transcoder);
+					
 					// Increment the reference count
 					transcoder.ReferenceCount++;
-
+					
 					// Start the transcode process
-		            transcoder.StartTranscode();
+					transcoder.StartTranscode();
 				}
-
-		        return transcoder;
 			}
-	    }
+		}
 
 	    public void ConsumedTranscode(ITranscoder transcoder)
 		{

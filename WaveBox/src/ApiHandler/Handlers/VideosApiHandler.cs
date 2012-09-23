@@ -9,21 +9,21 @@ using WaveBox.Http;
 
 namespace WaveBox.ApiHandler.Handlers
 {
-	class SongsApiHandler : IApiHandler
+	class VideosApiHandler : IApiHandler
 	{
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
-
-		public SongsApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
+		
+		public VideosApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;
 		}
-
+		
 		public void Process()
 		{
-			List<Song> listOfSongs = new List<Song>();
-
+			List<Video> listOfVideos = new List<Video>();
+			
 			// Try to get the song id
 			bool success = false;
 			int id = 0;
@@ -31,19 +31,19 @@ namespace WaveBox.ApiHandler.Handlers
 			{
 				success = Int32.TryParse(Uri.Parameters["id"], out id);
 			}
-
+			
 			if (success)
 			{
-				listOfSongs.Add(new Song(id));
+				listOfVideos.Add(new Video(id));
 			}
 			else
 			{
-				listOfSongs = Song.allSongs();
+				listOfVideos = Video.allVideos();
 			}
-
+			
 			try
 			{
-				string json = JsonConvert.SerializeObject(new SongsResponse(null, listOfSongs), Settings.JsonFormatting);
+				string json = JsonConvert.SerializeObject(new VideosResponse(null, listOfVideos), Settings.JsonFormatting);
 				Processor.WriteJson(json);
 			}
 			catch(Exception e)
@@ -51,19 +51,19 @@ namespace WaveBox.ApiHandler.Handlers
 				Console.WriteLine("[SONGAPI] ERROR: " + e.ToString());
 			}
 		}
-
-		private class SongsResponse
+		
+		private class VideosResponse
 		{
 			[JsonProperty("error")]
 			public string Error { get; set; }
 			
-			[JsonProperty("songs")]
-			public List<Song> Songs { get; set; }
+			[JsonProperty("videos")]
+			public List<Video> Videos { get; set; }
 			
-			public SongsResponse(string error, List<Song> songs)
+			public VideosResponse(string error, List<Video> videos)
 			{
 				Error = error;
-				Songs = songs;
+				Videos = videos;
 			}
 		}
 	}

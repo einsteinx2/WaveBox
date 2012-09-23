@@ -192,7 +192,7 @@ namespace WaveBox.DataModel.FolderScanning
 			{
 				ItemType type = Item.ItemTypeForFilePath(file);
 
-				if (type == ItemType.Song)
+				if (type == ItemType.Song || type == ItemType.Video)
 				{
 					//Stopwatch sw = new Stopwatch();
 					//sw.Start();
@@ -217,12 +217,12 @@ namespace WaveBox.DataModel.FolderScanning
 						catch(TagLib.CorruptFileException e)
 						{
 							e.ToString();
-							//Console.WriteLine("[FOLDERSCAN(5)] " + fileName + " has a corrupt tag and will not be inserted.");
+							Console.WriteLine("[FOLDERSCAN(5)] " + file + " has a corrupt tag and will not be inserted.");
 							return;
 						}
 						catch(Exception e)
 						{
-							Console.WriteLine("[FOLDERSCAN(6)] " + "Error processing file: " + e.ToString());
+							Console.WriteLine("[FOLDERSCAN(6)] " + "Error processing file " + file + ":  " + e.ToString());
 						}
 						//Console.WriteLine("Get tag: {0} ms", sw.ElapsedMilliseconds);
 
@@ -231,17 +231,32 @@ namespace WaveBox.DataModel.FolderScanning
 						if (f == null)
 						{
 							// Must be something not supported by TagLib-Sharp
+							Console.WriteLine("[FOLDERSCAN(5)] " + file + " is not supported by taglib and will not be inserted.");
 						}
 						else
 						{
-							// It's a song!  Do yo thang.
-							if (isNew)
+							if (type == ItemType.Song)
 							{
-								new Song(file, folderId, f).InsertSong();
+								// It's a song!  Do yo thang.
+								if (isNew)
+								{
+									new Song(file, folderId, f).InsertMediaItem();
+								}
+								else if (itemId != null)
+								{
+									new Song((int)itemId).InsertMediaItem();
+								}
 							}
-							else if (itemId != null)
+							else if (type == ItemType.Video)
 							{
-								new Song((int)itemId).InsertSong();
+								if (isNew)
+								{
+									new Video(file, folderId, f).InsertMediaItem();
+								}
+								else if (itemId != null)
+								{
+									new Video((int)itemId).InsertMediaItem();
+								}
 							}
 						}
 					}
