@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using System.Text;
 using System.Data;
+using System.IO;
 using System.Threading;
 using System.Data.SQLite;
 using WaveBox.DataModel.Model;
 using System.Runtime.InteropServices;
 using System.Reflection;
+using Newtonsoft.Json;
 
 namespace WaveBox.DataModel.Singletons
 {
@@ -16,6 +19,11 @@ namespace WaveBox.DataModel.Singletons
 		public static IDbConnection GetDbConnection()
 		{
 			return GetDbConnection("wavebox.db");
+		}
+
+		public static IDbConnection GetBackupDbConnection()
+		{
+			return GetDbConnection("wavebox_backup.db");
 		}
 
 		public static IDbConnection GetDbConnection(string dbName)
@@ -50,6 +58,61 @@ namespace WaveBox.DataModel.Singletons
 			{
 				connection.Close();
 			}
+		}
+
+		private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+		private static readonly object queryLogLock = new object();
+		public static int ExecuteNonQueryLogged(this IDbCommand command)
+		{
+			int result = command.ExecuteNonQuery();
+
+			if (result > 0)
+			{
+				// Only log successful queries
+				IDictionary<string, object> jsonDict = new Dictionary<string, object>();
+				
+				IDataParameterCollection parameters = command.Parameters;
+				List<object> values = new List<object>();
+				
+				// Format the query for saving
+				string query = command.CommandText;
+				foreach (IDbDataParameter dbParam in parameters)
+				{
+					// Replace parameter names with ?'s
+					query = query.Replace(dbParam.ParameterName, "?");
+					
+					// Add the values to the array
+					values.Add(dbParam.Value);
+				}
+				
+				// Create the JSON
+				jsonDict["updateTime"] = (long)(DateTime.UtcNow - UnixEpoch).TotalSeconds;
+				jsonDict["query"] = query;
+				jsonDict["values"] = values;
+				string jsonString = JsonConvert.SerializeObject(jsonDict, Formatting.None);
+				
+				// Append the log
+				lock(queryLogLock)
+				{
+					StreamWriter writer = File.AppendText("query_log.txt");
+					writer.WriteLine(jsonString);
+					writer.Close();
+				}
+			}
+
+			return result;
+		}
+
+		public static long LastDbUpdateTime()
+		{
+			string lastLine = File.ReadLines("query_log.txt").Last();
+			dynamic statement = JsonConvert.DeserializeObject(lastLine);
+			string updateTimeString = statement.updateTime;
+
+			long updateTime = 0;
+			Int64.TryParse(updateTimeString, out updateTime);
+
+			return updateTime;
 		}
 
 		// IDbCommand extension to add named parameters without writing a bunch of code each time
@@ -117,7 +180,7 @@ namespace WaveBox.DataModel.Singletons
 				IDbCommand q = Database.GetDbCommand ("DELETE FROM item WHERE item_id = @itemid", conn);
 				q.AddNamedParam("@itemid", itemId);
 				q.Prepare ();
-				int affected = (int)q.ExecuteNonQuery();
+				int affected = (int)q.ExecuteNonQueryLogged();
 
 				if (affected >= 1)
 					success = true;
@@ -137,68 +200,161 @@ namespace WaveBox.DataModel.Singletons
 		// Backup SQLite database (modified code from: http://sqlite.phxsoftware.com/forums/t/2403.aspx)
 		//
 
-		[DllImport("System.Data.SQLite.DLL", CallingConvention = CallingConvention.Cdecl)]
+		[DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
 		internal static extern IntPtr sqlite3_backup_init(IntPtr destDb, byte[] destname, IntPtr srcDB, byte[] srcname);
 		                                                                                                    
-		[DllImport("System.Data.SQLite.DLL", CallingConvention = CallingConvention.Cdecl)]
+		[DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
 		internal static extern int sqlite3_backup_step(IntPtr backup, int pages);
 
-		[DllImport("System.Data.SQLite.DLL", CallingConvention = CallingConvention.Cdecl)]
+		[DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
 		internal static extern int sqlite3_backup_remaining(IntPtr backup);
 
-		[DllImport("System.Data.SQLite.DLL", CallingConvention = CallingConvention.Cdecl)]
+		[DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
 		internal static extern int sqlite3_backup_pagecount(IntPtr backup);
 
-		[DllImport("System.Data.SQLite.DLL", CallingConvention = CallingConvention.Cdecl)]
+		[DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
 		internal static extern int sqlite3_sleep(int milliseconds);
 		                                                                                                    
-		[DllImport("System.Data.SQLite.DLL", CallingConvention = CallingConvention.Cdecl)]
+		[DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
 		internal static extern int sqlite3_backup_finish(IntPtr backup);
-		                                                                                                    
+
+		public static bool Backup()
+		{
+			return Backup((SQLiteConnection)GetDbConnection(), (SQLiteConnection)GetBackupDbConnection());
+		}
+
+		public static bool BackupLive()
+		{
+			return BackupLive((SQLiteConnection)GetDbConnection(), (SQLiteConnection)GetBackupDbConnection());
+		}
+		       
+		private static readonly object dbBackupLock = new object();
 		public static bool Backup(SQLiteConnection source, SQLiteConnection destination)
 		{
-			IntPtr sourceHandle = GetConnectionHandle(source);
-			IntPtr destinationHandle = GetConnectionHandle(destination);
-			
-			IntPtr backupHandle = sqlite3_backup_init(destinationHandle, SQLiteConvert.ToUTF8("main"), sourceHandle, SQLiteConvert.ToUTF8("main"));
-			if (backupHandle != IntPtr.Zero)
+			lock(dbBackupLock)
 			{
-				sqlite3_backup_step(backupHandle, -1);
-				sqlite3_backup_finish(backupHandle);
-				return true;
+				try
+				{
+					IntPtr sourceHandle = GetConnectionHandle(source);
+					IntPtr destinationHandle = GetConnectionHandle(destination);
+					
+					IntPtr backupHandle = sqlite3_backup_init(destinationHandle, SQLiteConvert.ToUTF8("main"), sourceHandle, SQLiteConvert.ToUTF8("main"));
+					if (backupHandle != IntPtr.Zero)
+					{
+						sqlite3_backup_step(backupHandle, -1);
+						sqlite3_backup_finish(backupHandle);
+						
+						// Delete the user and session tables
+						try
+						{
+							IDbCommand q = Database.GetDbCommand("DROP TABLE IF EXISTS user", destination);
+							q.Prepare();
+							q.ExecuteNonQuery();
+						}
+						catch(Exception e)
+						{
+							Console.WriteLine("Error deleting user table in backup: " + e);
+						}
+						
+						try
+						{
+							IDbCommand q = Database.GetDbCommand("DROP TABLE IF EXISTS session", destination);
+							q.Prepare();
+							q.ExecuteNonQuery();
+						}
+						catch(Exception e)
+						{
+							Console.WriteLine("Error deleting session table in backup: " + e);
+						}
+						
+						return true;
+					}
+					return false;
+				}
+				catch(Exception e)
+				{
+					Console.WriteLine("Error backup up database: " + e);
+				}
+				finally
+				{
+					Database.Close(source, null);
+					Database.Close(destination, null);
+				}
+				return false;
 			}
-			return false;
 		}
 
 		// SQLITE_OK = 0
 		// SQLITE_BUSY = 5
 		// SQLITE_LOCKED = 6
-		public static void BackupLive(SQLiteConnection source, SQLiteConnection destination)
+		public static bool BackupLive(SQLiteConnection source, SQLiteConnection destination)
 		{
-			IntPtr sourceHandle = GetConnectionHandle(source);
-			IntPtr destinationHandle = GetConnectionHandle(destination);
-			
-			IntPtr backupHandle = sqlite3_backup_init(destinationHandle, SQLiteConvert.ToUTF8("main"), sourceHandle, SQLiteConvert.ToUTF8("main"));
-			if (backupHandle != IntPtr.Zero)
+			lock(dbBackupLock)
 			{
-				/* Each iteration of this loop copies 5 database pages from database
-      			** pDb to the backup database. If the return value of backup_step()
-      			** indicates that there are still further pages to copy, sleep for
-      			** 250 ms before repeating. */
-				int rc = 0;
-				do 
+				try
 				{
-					rc = sqlite3_backup_step(backupHandle, 5);
-					//xProgress(sqlite3_backup_remaining(backupHandle), sqlite3_backup_pagecount(backupHandle));
-					if(rc == 0 || rc == 5 || rc == 6)
+					IntPtr sourceHandle = GetConnectionHandle(source);
+					IntPtr destinationHandle = GetConnectionHandle(destination);
+					
+					IntPtr backupHandle = sqlite3_backup_init(destinationHandle, SQLiteConvert.ToUTF8("main"), sourceHandle, SQLiteConvert.ToUTF8("main"));
+					if (backupHandle != IntPtr.Zero)
 					{
-						sqlite3_sleep(250);
+						/* Each iteration of this loop copies 5 database pages from database
+	      				** pDb to the backup database. If the return value of backup_step()
+	      				** indicates that there are still further pages to copy, sleep for
+	      				** 250 ms before repeating. */
+						int rc = 0;
+						do
+						{
+							rc = sqlite3_backup_step(backupHandle, 10);
+							//xProgress(sqlite3_backup_remaining(backupHandle), sqlite3_backup_pagecount(backupHandle));
+							if (rc == 0 || rc == 5 || rc == 6)
+							{
+								sqlite3_sleep(50);
+							}
+						}
+						while(rc == 0 || rc == 5 || rc == 6);
+						
+						/* Release resources allocated by backup_init(). */
+						rc = sqlite3_backup_finish(backupHandle);
+
+						// Delete the user and session tables
+						try
+						{
+							IDbCommand q = Database.GetDbCommand("DROP TABLE IF EXISTS user", destination);
+							q.Prepare();
+							q.ExecuteNonQuery();
+						}
+						catch(Exception e)
+						{
+							Console.WriteLine("Error deleting user table in backup: " + e);
+						}
+						
+						try
+						{
+							IDbCommand q = Database.GetDbCommand("DROP TABLE IF EXISTS session", destination);
+							q.Prepare();
+							q.ExecuteNonQuery();
+						}
+						catch(Exception e)
+						{
+							Console.WriteLine("Error deleting session table in backup: " + e);
+						}
+
+						return true;
 					}
-				} 
-				while(rc == 0 || rc == 5 || rc == 6);
-				
-				/* Release resources allocated by backup_init(). */
-				rc = sqlite3_backup_finish(backupHandle);
+					return false;
+				}
+				catch(Exception e)
+				{
+					Console.WriteLine("Error backup up database: " + e);
+				}
+				finally
+				{
+					Database.Close(source, null);
+					Database.Close(destination, null);
+				}
+				return false;
 			}
 		}
 		                                                                                                    

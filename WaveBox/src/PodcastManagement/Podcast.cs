@@ -120,7 +120,7 @@ namespace WaveBox.PodcastManagement
                 q.AddNamedParam("@rss", rssUrl);
                 q.Prepare();
 
-                q.ExecuteNonQuery();
+                q.ExecuteNonQueryLogged();
             }
             catch (Exception e)
             {
@@ -218,7 +218,7 @@ namespace WaveBox.PodcastManagement
                 IDbCommand q = Database.GetDbCommand("DELETE FROM podcast WHERE podcast_id = @podcastid", conn);
                 q.AddNamedParam("@podcastid", PodcastId);
                 q.Prepare();
-                success = q.ExecuteNonQuery() >= 1;
+                success = q.ExecuteNonQueryLogged() >= 1;
             }
             catch (Exception e)
             {

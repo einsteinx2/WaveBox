@@ -428,7 +428,7 @@ namespace WaveBox.DataModel.Model
 				q.AddNamedParam("@mediafolderid", MediaFolderId);
 				
 				q.Prepare();
-				affected = q.ExecuteNonQuery();
+				affected = q.ExecuteNonQueryLogged();
 
 				if (affected > 0)
 				{

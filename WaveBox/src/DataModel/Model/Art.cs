@@ -139,7 +139,7 @@ namespace WaveBox.DataModel.Model
 				q.AddNamedParam("@artfilepath", FilePath);
 				q.Prepare();
 
-				if (q.ExecuteNonQuery() > 0)
+				if (q.ExecuteNonQueryLogged() > 0)
 				{
 					ArtId = itemId;
 				}
@@ -456,7 +456,7 @@ namespace WaveBox.DataModel.Model
 				q.AddNamedParam("@itemid", itemId);
 				q.Prepare();
 
-				if (q.ExecuteNonQuery() > 0)
+				if (q.ExecuteNonQueryLogged() > 0)
 				{
 					success = true;
 				}
@@ -493,7 +493,7 @@ namespace WaveBox.DataModel.Model
 				q.AddNamedParam("@itemid", itemId);
 				q.Prepare();
 
-				if (q.ExecuteNonQuery() > 0)
+				if (q.ExecuteNonQueryLogged() > 0)
 				{
 					success = true;
 				}
@@ -531,7 +531,7 @@ namespace WaveBox.DataModel.Model
 				q.AddNamedParam("@oldartid", oldArtId);
 				q.Prepare();
 
-				if (q.ExecuteNonQuery() > 0)
+				if (q.ExecuteNonQueryLogged() > 0)
 				{
 					success = true;
 				}
@@ -667,7 +667,7 @@ namespace WaveBox.DataModel.Model
 						q1.AddNamedParam("@adlerhash", AdlerHash);
 
 						q1.Prepare();
-						int result = q1.ExecuteNonQuery();
+						int result = q1.ExecuteNonQueryLogged();
 
 						if (result < 1)
 						{

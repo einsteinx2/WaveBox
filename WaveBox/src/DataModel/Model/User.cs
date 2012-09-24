@@ -230,12 +230,13 @@ namespace WaveBox.DataModel.Model
 			try
 			{
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("INSERT INTO user (user_id, user_name, user_password, user_salt) VALUES (@userid, @username, @userhash, @usersalt)", conn);
+				IDbCommand q = Database.GetDbCommand("INSERT OR IGNORE INTO user (user_id, user_name, user_password, user_salt) VALUES (@userid, @username, @userhash, @usersalt)", conn);
 				q.AddNamedParam("@userid", itemId);
 				q.AddNamedParam("@username", userName);
 				q.AddNamedParam("@userhash", hash);
 				q.AddNamedParam("@usersalt", salt);
 				q.Prepare();
+
 				q.ExecuteNonQuery();
 			}
 			catch (Exception e)

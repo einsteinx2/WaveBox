@@ -86,7 +86,7 @@ namespace WaveBox.PodcastManagement
                 IDbCommand q = Database.GetDbCommand("DELETE FROM podcast_episode WHERE podcast_episode_id = @podcastid", conn);
                 q.AddNamedParam("@podcastid", EpisodeId);
                 q.Prepare();
-                success = q.ExecuteNonQuery() >= 1;
+                success = q.ExecuteNonQueryLogged() >= 1;
             }
             catch (Exception e)
             {
@@ -132,7 +132,7 @@ namespace WaveBox.PodcastManagement
                 q.AddNamedParam("@pe_filepath", FilePath);
                 q.Prepare();
 
-                q.ExecuteNonQuery();
+                q.ExecuteNonQueryLogged();
             }
             catch (Exception e)
             {

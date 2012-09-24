@@ -253,7 +253,7 @@ namespace WaveBox.DataModel.Model
 
 				q.Prepare();
 				
-				q.ExecuteNonQuery();
+				q.ExecuteNonQueryLogged();
 			}
 			catch(Exception e)
 			{

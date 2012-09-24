@@ -130,7 +130,7 @@ namespace WaveBox.DataModel.Model
 				q.AddNamedParam("@artistid", artistId);
 				q.Prepare();
 
-				success = (q.ExecuteNonQuery() > 0);
+				success = (q.ExecuteNonQueryLogged() > 0);
 			}
 			catch (Exception e)
 			{

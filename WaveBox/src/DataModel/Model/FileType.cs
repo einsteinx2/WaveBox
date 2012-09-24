@@ -57,7 +57,7 @@ namespace WaveBox.DataModel.Model
 
 		public static FileType FileTypeForTagLibMimeType(this FileType ft, string mimeType)
 		{
-			Console.WriteLine("mime type: " + mimeType);
+			//Console.WriteLine("mime type: " + mimeType);
 
 			// Lossy codecs
 			if (mimeType == "taglib/m4a" || mimeType == "taglib/aac") 

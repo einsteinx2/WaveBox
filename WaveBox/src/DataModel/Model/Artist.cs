@@ -141,7 +141,7 @@ namespace WaveBox.DataModel.Model
 				q.AddNamedParam("@artistid", itemId);
 				q.AddNamedParam("@artistname", artistName);
 				q.Prepare();
-				int affected = q.ExecuteNonQuery();
+				int affected = q.ExecuteNonQueryLogged();
 
 				if (affected == 1)
 				{

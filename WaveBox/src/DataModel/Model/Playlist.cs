@@ -224,7 +224,7 @@ namespace WaveBox.DataModel.Model
 				q.AddNamedParam("@playlistid", PlaylistId);
 
 				q.Prepare();
-				q.ExecuteNonQuery();
+				q.ExecuteNonQueryLogged();
 			}
 			catch (Exception e)
 			{
@@ -409,13 +409,13 @@ namespace WaveBox.DataModel.Model
 				q.AddNamedParam("@itemposition", index);
 
 				q.Prepare();
-				q.ExecuteNonQuery();
+				q.ExecuteNonQueryLogged();
 
 				IDbCommand q1 = Database.GetDbCommand("UPDATE playlist_item SET item_position = item_position - 1 WHERE playlist_id = @playlistid AND item_position > @item_position", conn);
 				q1.AddNamedParam("@playlistid", PlaylistId);
 				q1.AddNamedParam("@item_position", index);
 				q1.Prepare();
-				q1.ExecuteNonQuery();
+				q1.ExecuteNonQueryLogged();
 			}
 			catch (Exception e)
 			{
@@ -452,7 +452,7 @@ namespace WaveBox.DataModel.Model
 					q.AddNamedParam("@itemposition", index);
 
 					q.Prepare();
-					q.ExecuteNonQuery();
+					q.ExecuteNonQueryLogged();
 				}
 
 				// select the id of all members of the playlist
@@ -478,7 +478,7 @@ namespace WaveBox.DataModel.Model
 					q.AddNamedParam("@playlistid", PlaylistId);
 
 					q.Prepare();
-					q.ExecuteNonQuery();
+					q.ExecuteNonQueryLogged();
 				}
 
 				trans.Commit();
@@ -522,7 +522,7 @@ namespace WaveBox.DataModel.Model
 				q.AddNamedParam("@itemposition", toIndex);
 
 				q.Prepare();
-				q.ExecuteNonQuery();
+				q.ExecuteNonQueryLogged();
 
 				// conditional rollback here
 
@@ -536,7 +536,7 @@ namespace WaveBox.DataModel.Model
 				q1.AddNamedParam("@playlistid", PlaylistId);
 				q1.AddNamedParam("@fromitemposition", fromIndex);
 				q1.Prepare();
-				int affectedRows = q1.ExecuteNonQuery();
+				int affectedRows = q1.ExecuteNonQueryLogged();
 
 				if (affectedRows != 1)
 				{
@@ -575,7 +575,7 @@ namespace WaveBox.DataModel.Model
 				q.AddNamedParam("@itempos", PlaylistCount == null ? 0 : PlaylistCount);
 
 				q.Prepare();
-				q.ExecuteNonQuery();
+				q.ExecuteNonQueryLogged();
 			}
 			catch (Exception e)
 			{
@@ -623,7 +623,7 @@ namespace WaveBox.DataModel.Model
 				q.AddNamedParam("@playlistid", PlaylistId);
 
 				q.Prepare();
-				q.ExecuteNonQuery();
+				q.ExecuteNonQueryLogged();
 			}
 			catch (Exception e)
 			{

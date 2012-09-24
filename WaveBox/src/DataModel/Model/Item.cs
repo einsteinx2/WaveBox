@@ -24,7 +24,7 @@ namespace WaveBox
 				IDbCommand q = Database.GetDbCommand("INSERT INTO item (item_type_id) VALUES (@itemType)", conn);
 				q.AddNamedParam("@itemType", itemType);
 				q.Prepare();
-				int affected = (int)q.ExecuteNonQuery();
+				int affected = (int)q.ExecuteNonQueryLogged();
 
 				if (affected >= 1)
 				{

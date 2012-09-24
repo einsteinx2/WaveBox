@@ -129,7 +129,7 @@ namespace WaveBox.DataModel.FolderScanning
 						q1.AddNamedParam("@folderid", fid);
 
 						q1.Prepare ();
-						q1.ExecuteNonQuery ();
+						q1.ExecuteNonQueryLogged();
 					} 
 					catch (Exception e) 
 					{
@@ -144,7 +144,7 @@ namespace WaveBox.DataModel.FolderScanning
 						q2.AddNamedParam("@folderid", fid);
 
 						q2.Prepare ();
-						q2.ExecuteNonQuery ();
+						q2.ExecuteNonQueryLogged();
 					} 
 					catch (Exception e) 
 					{
@@ -219,7 +219,7 @@ namespace WaveBox.DataModel.FolderScanning
 					IDbCommand q1 = Database.GetDbCommand("DELETE FROM song WHERE song_id = @songid", conn);
 					q1.AddNamedParam("@songid", id);
 					q1.Prepare();
-					q1.ExecuteNonQuery();
+					q1.ExecuteNonQueryLogged();
 					Console.WriteLine("[ORPHANSCAN] " + "Song " + id + " deleted");
 				}
 				catch (Exception e)
@@ -277,7 +277,7 @@ namespace WaveBox.DataModel.FolderScanning
 					IDbCommand q1 = Database.GetDbCommand("DELETE FROM artist WHERE artist_id = @artistid", conn);
 					q1.AddNamedParam("@artistid", id);
 					q1.Prepare();
-					q1.ExecuteNonQuery();
+					q1.ExecuteNonQueryLogged();
 					Console.WriteLine("[ORPHANSCAN] " + "Artist " + id + " deleted");
 				}
 				catch (Exception e)
@@ -335,7 +335,7 @@ namespace WaveBox.DataModel.FolderScanning
 					IDbCommand q1 = Database.GetDbCommand("DELETE FROM album WHERE album_id = @albumid", conn);
 					q1.AddNamedParam("@albumid", id);
 					q1.Prepare();
-					q1.ExecuteNonQuery();
+					q1.ExecuteNonQueryLogged();
 					Console.WriteLine("[ORPHANSCAN] " + "Album " + id + " deleted");
 				}
 				catch (Exception e)
