@@ -14,13 +14,13 @@ namespace WaveBox
 		ITranscoder Transcoder { get; set; }
 
 		// Header writing methods
-		void WriteJsonHeader();
 		void WriteErrorHeader();
-		void WriteFileHeader(long contentLength);
+		void WriteSuccessHeader(long contentLength, string mimeType);
 
 		// Body writing methods
 		void WriteJson(string json);
-		void WriteFile(Stream fs, int startOffset, long length);
+		void WriteText(string text, string mimeType);
+		void WriteFile(Stream fs, int startOffset, long length, string mimeType);
 	}
 }
 

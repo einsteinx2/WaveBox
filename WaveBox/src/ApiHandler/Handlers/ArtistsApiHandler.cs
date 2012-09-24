@@ -73,7 +73,7 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 			catch(Exception e)
 			{
-				Console.WriteLine("[ARTISTSAPI(1)] ERROR: " + e.ToString());
+				Console.WriteLine("[ARTISTSAPI(1)] ERROR: " + e);
 			}
 		}
 

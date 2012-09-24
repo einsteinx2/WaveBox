@@ -11,7 +11,9 @@ namespace WaveBox.Transcoding
 
 		public override string OutputExtension { get { return "mp3"; } }
 
-		public FFMpegMP3Transcoder(IMediaItem item, uint quality) : base(item, quality)
+		public override string MimeType { get { return "audio/mp3"; } }
+
+		public FFMpegMP3Transcoder(IMediaItem item, uint quality, bool isDirect, uint offsetSeconds, uint lengthSeconds) : base(item, quality, isDirect, offsetSeconds, lengthSeconds)
     	{
         	
     	}
@@ -78,9 +80,9 @@ namespace WaveBox.Transcoding
 		private string FFMpegOptionsWith(String codec, uint quality)
 		{
 			if (quality > 12)
-				return "-loglevel quiet -i \"" + Item.FilePath + "\" -acodec " + codec + " -ab " + quality + " \"" + OutputPath + "\"";
+				return "-loglevel quiet -i \"" + Item.FilePath + "\" -acodec " + codec + " -ab " + quality + " " + OutputPath;
 			else
-				return "-loglevel quiet -i \"" + Item.FilePath + "\" -acodec " + codec + " -aq " + quality + " \"" + OutputPath + "\"";
+				return "-loglevel quiet -i \"" + Item.FilePath + "\" -acodec " + codec + " -aq " + quality + " " + OutputPath;
 		}
 	}
 }

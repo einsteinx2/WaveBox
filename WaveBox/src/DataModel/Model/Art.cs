@@ -70,7 +70,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[COVERART(1)] ERROR: " + e.ToString());
+				Console.WriteLine("[COVERART(1)] ERROR: " + e);
 			}
 			finally
 			{
@@ -148,7 +148,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[SONG(3)] " + e.ToString());
+				Console.WriteLine("[SONG(3)] " + e);
 			}
 			finally
 			{
@@ -202,11 +202,11 @@ namespace WaveBox.DataModel.Model
 			}
 			catch(TagLib.CorruptFileException e)
 			{
-				Console.WriteLine("[ART(1)] " + song.FileName + " has a corrupt tag so can't return the art. " + e.ToString());
+				Console.WriteLine("[ART(1)] " + song.FileName + " has a corrupt tag so can't return the art. " + e);
 			}
 			catch(Exception e)
 			{
-				Console.WriteLine("[ART(2)] " + "Error processing file: " + e.ToString());
+				Console.WriteLine("[ART(2)] " + "Error processing file: " + e);
 			}
 
 			return stream;
@@ -312,7 +312,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[MEDIAITEM(1)] " + e.ToString());
+				Console.WriteLine("[MEDIAITEM(1)] " + e);
 			}
 			finally
 			{
@@ -347,7 +347,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[DATABASE(2)] ERROR: " + e.ToString());
+				Console.WriteLine("[DATABASE(2)] ERROR: " + e);
 			}
 			finally
 			{
@@ -387,7 +387,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[DATABASE(2)] ERROR: " + e.ToString());
+				Console.WriteLine("[DATABASE(2)] ERROR: " + e);
 			}
 			finally
 			{
@@ -423,7 +423,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[DATABASE(3)] ERROR: " + e.ToString());
+				Console.WriteLine("[DATABASE(3)] ERROR: " + e);
 			}
 			finally
 			{
@@ -463,7 +463,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch(Exception e)
 			{
-				Console.WriteLine("[DATABASE(4)] " + e.ToString());
+				Console.WriteLine("[DATABASE(4)] " + e);
 			}
 			finally
 			{
@@ -500,7 +500,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch(Exception e)
 			{
-				Console.WriteLine("[DATABASE(4)] " + e.ToString());
+				Console.WriteLine("[DATABASE(4)] " + e);
 			}
 			finally
 			{
@@ -538,7 +538,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch(Exception e)
 			{
-				Console.WriteLine("[DATABASE(4)] " + e.ToString());
+				Console.WriteLine("[DATABASE(4)] " + e);
 			}
 			finally
 			{
@@ -577,7 +577,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[MEDIAITEM(1)] " + e.ToString());
+				Console.WriteLine("[MEDIAITEM(1)] " + e);
 			}
 			finally
 			{
@@ -616,7 +616,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[MEDIAITEM(1)] " + e.ToString());
+				Console.WriteLine("[MEDIAITEM(1)] " + e);
 			}
 			finally
 			{
@@ -656,7 +656,7 @@ namespace WaveBox.DataModel.Model
 					}
 					catch (Exception e)
 					{
-						Console.WriteLine("[COVERART(2)] ERROR: " + e.ToString());
+						Console.WriteLine("[COVERART(2)] ERROR: " + e);
 					}
 
 					try
@@ -682,7 +682,7 @@ namespace WaveBox.DataModel.Model
 						catch (Exception e)
 						{
 							Console.WriteLine("[COVERART(3)]");
-							Console.WriteLine("\r\n\r\nGetting identity: " + e.ToString() + "\r\n\r\n");
+							Console.WriteLine("\r\n\r\nGetting identity: " + e. + "\r\n\r\n");
 						}
 						finally
 						{
@@ -698,7 +698,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[COVERART(5)] ERROR: " + e.ToString());
+				Console.WriteLine("[COVERART(5)] ERROR: " + e);
 			}
 			finally
 			{

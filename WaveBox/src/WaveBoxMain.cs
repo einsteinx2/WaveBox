@@ -78,7 +78,7 @@ namespace WaveBox
 				if (e.SocketErrorCode.ToString() == "AddressAlreadyInUse")
 					Console.WriteLine("[WAVEBOX(1)] ERROR: Socket already in use.  Ensure that WaveBox is not already running.");
 				else
-					Console.WriteLine("[WAVEBOX(2)] ERROR: " + e.Message);
+					Console.WriteLine("[WAVEBOX(2)] ERROR: " + e);
 
 				// Quit with error return code
 				Environment.Exit(-1);
@@ -87,7 +87,7 @@ namespace WaveBox
 			catch (Exception e)
 			{
 				// Print the message, quit.
-				Console.WriteLine("[WAVEBOX(3)] ERROR: " + e.ToString());
+				Console.WriteLine("[WAVEBOX(3)] ERROR: " + e);
 				Environment.Exit(-1);
 			}
 		}

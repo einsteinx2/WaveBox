@@ -69,7 +69,7 @@ namespace WaveBox.DataModel.Singletons
                 } 
 				catch (Exception e)
                 {
-                    Console.WriteLine("[SETTINGS(1)] " + e.ToString());
+                    Console.WriteLine("[SETTINGS(1)] " + e);
                 }
             }
 
@@ -96,7 +96,7 @@ namespace WaveBox.DataModel.Singletons
                 } 
 				catch (Exception e)
                 {
-                    Console.WriteLine("[SETTINGS(2)] " + e.ToString());
+                    Console.WriteLine("[SETTINGS(2)] " + e);
                 }
             }
 
@@ -214,7 +214,7 @@ namespace WaveBox.DataModel.Singletons
                     }
                 }
             }
-            return js.ToString();
+			return js.ToString();
         }
 	}
 }

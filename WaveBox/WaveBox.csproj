@@ -148,8 +148,11 @@
     <Compile Include="src\PodcastManagement\FeedCheckOperation.cs" />
     <Compile Include="src\DataModel\Model\IMediaItem.cs" />
     <Compile Include="src\ApiHandler\Handlers\VideosApiHandler.cs" />
-    <Compile Include="src\Transcoding\FFMpegMP4Transcoder.cs" />
     <Compile Include="src\Transcoding\FFMpegX264Transcoder.cs" />
+    <Compile Include="src\Transcoding\VideoTranscoder.cs" />
+    <Compile Include="src\Transcoding\FFMpegMpegtsTranscoder.cs" />
+    <Compile Include="src\ApiHandler\Handlers\TranscodeApiHandler.cs" />
+    <Compile Include="src\ApiHandler\Handlers\TranscodeHlsApiHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="lib\Newtonsoft.Json.dll" />

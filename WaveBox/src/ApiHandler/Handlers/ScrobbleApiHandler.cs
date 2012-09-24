@@ -129,7 +129,7 @@ namespace WaveBox.ApiHandler.Handlers
                 }
                 catch(Exception e)
                 {
-                    Console.WriteLine("[SCROBBLE(3)] ERROR: " + e.ToString());
+                    Console.WriteLine("[SCROBBLE(3)] ERROR: " + e);
                 }
             }
 
@@ -143,7 +143,7 @@ namespace WaveBox.ApiHandler.Handlers
                 }
                 catch(Exception e)
                 {
-                    Console.WriteLine("[SCROBBLE(4)] ERROR: " + e.ToString());
+                    Console.WriteLine("[SCROBBLE(4)] ERROR: " + e);
                 }
                 return;
             }
@@ -156,7 +156,7 @@ namespace WaveBox.ApiHandler.Handlers
                 }
                 catch(Exception e)
                 {
-                    Console.WriteLine("[SCROBBLE(5)] ERROR: " + e.ToString());
+                    Console.WriteLine("[SCROBBLE(5)] ERROR: " + e);
                 }
                 return;
             }

@@ -161,7 +161,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 				catch(Exception e)
 				{
-					Console.WriteLine("[JUKEBOXAPI(2)] Error getting songs to add: " + e.Message);
+					Console.WriteLine("[JUKEBOXAPI(2)] Error getting songs to add: " + e);
                     Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("Error getting songs to add", false, false)));
                     return false;
 				}
@@ -184,7 +184,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 				catch (Exception e)
 				{
-					Console.WriteLine("[JUKEBOXAPI(3)] Error getting songs to remove: " + e.Message);
+					Console.WriteLine("[JUKEBOXAPI(3)] Error getting songs to remove: " + e);
 				}
 			}
 
@@ -202,7 +202,7 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 			catch(Exception e)
 			{
-				Console.WriteLine("[JUKEBOXAPI(4)] Error moving songs: " + e.Message);
+				Console.WriteLine("[JUKEBOXAPI(4)] Error moving songs: " + e);
                 return false;
 			}
 		}

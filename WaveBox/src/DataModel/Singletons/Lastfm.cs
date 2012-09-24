@@ -99,7 +99,7 @@ namespace WaveBox.DataModel.Singletons
             {
                 song = new Song(scrobbles[i].SongId);
                 parameters.Add("artist" + (scrobbleType == LfmScrobbleType.NOWPLAYING ? "" : string.Format("[{0}]", i)), HttpUtility.UrlEncode(song.ArtistName, Encoding.UTF8));
-                parameters.Add("timestamp" + (scrobbleType == LfmScrobbleType.NOWPLAYING ? "" : string.Format("[{0}]", i)), HttpUtility.UrlEncode(timestamp.ToString(), Encoding.UTF8));
+				parameters.Add("timestamp" + (scrobbleType == LfmScrobbleType.NOWPLAYING ? "" : string.Format("[{0}]", i)), HttpUtility.UrlEncode(timestamp.ToString(), Encoding.UTF8));
                 parameters.Add("track" + (scrobbleType == LfmScrobbleType.NOWPLAYING ? "" : string.Format("[{0}]", i)), HttpUtility.UrlEncode(song.SongName, Encoding.UTF8));
             }
 
@@ -115,7 +115,7 @@ namespace WaveBox.DataModel.Singletons
             else if (scrobbleType == LfmScrobbleType.NOWPLAYING)
             {
                 parameters.Add("method", "track.updateNowPlaying");
-                parameters.Add("duration", song.Duration.ToString());
+				parameters.Add("duration", song.Duration.ToString());
             }
 
             // or if it's invalid, return without doing anything.
@@ -301,7 +301,7 @@ namespace WaveBox.DataModel.Singletons
                 req.Append("User-Agent: WaveBox/1.0\r\n");
                 req.Append("Connection: close\r\n\r\n");
 
-                byte[] headerBytes = Encoding.ASCII.GetBytes(req.ToString());
+				byte[] headerBytes = Encoding.ASCII.GetBytes(req.ToString());
 
                 NetworkStream stream = s.GetStream();
                 stream.Write(headerBytes, 0, headerBytes.Length);
@@ -327,7 +327,7 @@ namespace WaveBox.DataModel.Singletons
 
             catch (Exception e)
             {
-                Console.WriteLine("[LASTFM(1)] " + e.ToString());
+                Console.WriteLine("[LASTFM(1)] " + e);
             }
 
             return resp;

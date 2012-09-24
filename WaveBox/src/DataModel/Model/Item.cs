@@ -41,7 +41,7 @@ namespace WaveBox
 					}
 					catch(Exception e)
 					{
-						Console.WriteLine("[ITEMID] GenerateItemId ERROR: " + e.ToString());
+						Console.WriteLine("[ITEMID] GenerateItemId ERROR: " + e);
 					}
 					finally
 					{
@@ -51,7 +51,7 @@ namespace WaveBox
 			}
 			catch(Exception e)
 			{
-				Console.WriteLine("[ITEMID] GenerateItemId ERROR: " + e.ToString());
+				Console.WriteLine("[ITEMID] GenerateItemId ERROR: " + e);
 			}
 			finally
 			{
@@ -81,7 +81,7 @@ namespace WaveBox
 			}
 			catch(Exception e)
 			{
-				Console.WriteLine("[DATABASE(1)] ERROR: " + e.ToString());
+				Console.WriteLine("[DATABASE(1)] ERROR: " + e);
 			}
 			finally
 			{

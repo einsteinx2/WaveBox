@@ -13,7 +13,11 @@ namespace WaveBox.DataModel.Model
 {
 	public class MediaItem : IMediaItem
 	{
-		public virtual int ItemTypeId { get { return (int)ItemType.Unknown; } }
+		[JsonIgnore]
+		public virtual ItemType ItemType { get { return ItemType.Unknown; } }
+
+		[JsonProperty("itemTypeId")]
+		public virtual int ItemTypeId { get { return (int)ItemType; } }
 
 		[JsonProperty("itemId")]
 		public int? ItemId { get; set; }

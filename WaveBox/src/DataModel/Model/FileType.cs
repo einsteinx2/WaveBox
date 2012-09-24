@@ -55,7 +55,7 @@ namespace WaveBox.DataModel.Model
 				return FileType.Unknown;
 		}*/
 
-		public static FileType FileTypeForMimeType(this FileType ft, string mimeType)
+		public static FileType FileTypeForTagLibMimeType(this FileType ft, string mimeType)
 		{
 			Console.WriteLine("mime type: " + mimeType);
 
@@ -87,6 +87,28 @@ namespace WaveBox.DataModel.Model
 			else
 				return FileType.Unknown;
 		}
+
+		public static string MimeType(this FileType ft)
+		{
+			// Need to verify these
+			switch (ft)
+			{
+				case FileType.AAC: return "audio/aac";
+				case FileType.MP3: return "audio/mp3";
+				case FileType.MPC: return "audio/mpc";
+				case FileType.OGG: return "audio/ogg";
+				case FileType.WMA: return "audio/wma";
+				case FileType.ALAC: return "audio/alac";
+				case FileType.FLAC: return "audio/flac";
+				case FileType.WV: return "audio/wv";
+				case FileType.APE: return "audio/ape";
+				case FileType.MP4: return "video/mp4";
+				case FileType.MKV: return "video/mkv";
+				case FileType.AVI: return "video/avi";
+				default: return "text/plain";
+			}
+		}
+
 
 		public static FileType FileTypeForId(this FileType ft, int id)
 		{

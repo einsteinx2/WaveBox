@@ -164,20 +164,20 @@ namespace WaveBox.DataModel.FolderScanning
             }
             catch (FileNotFoundException e)
             {
-                Console.WriteLine("\t" + "[FOLDERSCAN(1)] \"" + folderPath + "\" : Directory does not exist. " + e.InnerException);
+                Console.WriteLine("\t" + "[FOLDERSCAN(1)] \"" + folderPath + "\" : Directory does not exist. " + e);
             }
             catch (DirectoryNotFoundException e)
             {
 				Console.WriteLine("    ");
-                Console.WriteLine("\t" + "[FOLDERSCAN(2)] \"" + folderPath + "\" : Directory does not exist. " + e.ToString());
+                Console.WriteLine("\t" + "[FOLDERSCAN(2)] \"" + folderPath + "\" : Directory does not exist. " + e);
             }
             catch (IOException e)
             {
-                Console.WriteLine("\t" + "[FOLDERSCAN(3)] \"" + folderPath + "\" : " + e.Message);
+                Console.WriteLine("\t" + "[FOLDERSCAN(3)] \"" + folderPath + "\" : " + e);
             }
             catch (Exception e)
             {
-                Console.WriteLine("\t" + "[FOLDERSCAN(4)] \"" + folderPath + "\" : Error checking to see if the file was a directory: " + e.ToString());
+                Console.WriteLine("\t" + "[FOLDERSCAN(4)] \"" + folderPath + "\" : Error checking to see if the file was a directory: " + e);
             }
         }
 
@@ -222,7 +222,7 @@ namespace WaveBox.DataModel.FolderScanning
 						}
 						catch(Exception e)
 						{
-							Console.WriteLine("[FOLDERSCAN(6)] " + "Error processing file " + file + ":  " + e.ToString());
+							Console.WriteLine("[FOLDERSCAN(6)] " + "Error processing file " + file + ":  " + e);
 						}
 						//Console.WriteLine("Get tag: {0} ms", sw.ElapsedMilliseconds);
 
@@ -264,19 +264,19 @@ namespace WaveBox.DataModel.FolderScanning
 			}
             catch (FileNotFoundException e)
             {
-                Console.WriteLine("\t" + "[FOLDERSCAN(5)] \"" + file + "\" : Directory does not exist. " + e.InnerException);
+                Console.WriteLine("\t" + "[FOLDERSCAN(5)] \"" + file + "\" : Directory does not exist. " + e);
             }
             catch (DirectoryNotFoundException e)
             {
-                Console.WriteLine("\t" + "[FOLDERSCAN(6)] \"" + file + "\" : Directory does not exist. " + e.InnerException);
+                Console.WriteLine("\t" + "[FOLDERSCAN(6)] \"" + file + "\" : Directory does not exist. " + e);
             }
             catch (IOException e)
             {
-                Console.WriteLine("\t" + "[FOLDERSCAN(7)] \"" + file + "\" : " + e.Message);
+                Console.WriteLine("\t" + "[FOLDERSCAN(7)] \"" + file + "\" : " + e);
             }
             catch (Exception e)
             {
-                Console.WriteLine("\t" + "[FOLDERSCAN(8)] \"" + file + "\" : " + e.ToString());
+                Console.WriteLine("\t" + "[FOLDERSCAN(8)] \"" + file + "\" : " + e);
             }
 		}
 	}

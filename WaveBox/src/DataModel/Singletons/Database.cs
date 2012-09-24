@@ -124,7 +124,7 @@ namespace WaveBox.DataModel.Singletons
 			} 
 			catch (Exception e) 
 			{
-				Console.WriteLine ("[DATABASE] ERROR deleting item id: " + e.ToString());
+				Console.WriteLine ("[DATABASE] ERROR deleting item id: " + e);
 			} 
 			finally 
 			{

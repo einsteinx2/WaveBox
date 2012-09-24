@@ -14,8 +14,11 @@ namespace WaveBox.DataModel.Model
 		/// Properties
 		/// </summary>
 		/// 
+		[JsonIgnore]
+		public ItemType ItemType { get { return ItemType.Artist; } }
+
 		[JsonProperty("itemTypeId")]
-		public int ItemTypeId { get { return ItemType.Artist.ItemTypeId(); } }
+		public int ItemTypeId { get { return (int)ItemType; } }
 
 		[JsonProperty("artistId")]
 		public int? ArtistId { get; set; }
@@ -67,7 +70,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[ARTIST(1)] ERROR: " +  e.ToString());
+				Console.WriteLine("[ARTIST(1)] ERROR: " +  e);
 			}
 			finally
 			{
@@ -104,7 +107,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[ARTIST(2)] ERROR: " + e.ToString());
+				Console.WriteLine("[ARTIST(2)] ERROR: " + e);
 			}
 			finally
 			{
@@ -149,7 +152,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[ARTIST(4)] ERROR: " + e.ToString());
+				Console.WriteLine("[ARTIST(4)] ERROR: " + e);
 			}
 			finally
 			{
@@ -184,7 +187,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[ARTIST(5)] ERROR: " + e.ToString());
+				Console.WriteLine("[ARTIST(5)] ERROR: " + e);
 			}
 			finally
 			{
@@ -220,7 +223,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[ARTIST(6)] ERROR: " + e.ToString());
+				Console.WriteLine("[ARTIST(6)] ERROR: " + e);
 			}
 			finally
 			{
@@ -282,7 +285,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[ARTIST(7)] ERROR: " + e.ToString());
+				Console.WriteLine("[ARTIST(7)] ERROR: " + e);
 			}
 			finally
 			{

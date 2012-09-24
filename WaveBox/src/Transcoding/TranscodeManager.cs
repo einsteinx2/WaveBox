@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Diagnostics;
 using System.Collections.Generic;
 using WaveBox.DataModel.Model;
 
@@ -22,45 +23,23 @@ namespace WaveBox.Transcoding
 				Directory.CreateDirectory(TRANSCODE_PATH);
 			}
 		}
-
-		public ITranscoder CreateSongTranscoder(IMediaItem song, TranscodeType type, uint quality)
-	    {
-			Console.WriteLine("[TRANSCODE] Creating transcoder for song: " + song.FileName);
-	        switch (type)
-	        {
-	            case TranscodeType.MP3: 
-					return new FFMpegMP3Transcoder(song, quality);
-	            //case TranscodeType.AAC: 
-				//	return new FFMpegAACTranscoder(item, quality);
-	            //case TranscodeType.OGG: 
-				//	return new FFMpegOGGTranscoder(item, quality);
-				//case TranscodeType.MP4:
-				//	return new 
-	            //case TranscodeType.HLS: 
-				//	return new FFMpegHLSTranscoder(item, quality);
-	        }
-	        return null;
-	    }
-
-		public ITranscoder CreateVideoTranscoder(IMediaItem video, TranscodeType type, uint quality, uint? width, uint? height, bool maintainAspect)
-		{
-			Console.WriteLine("[TRANSCODE] Creating transcoder for video: " + video.FileName);
-			switch (type)
-			{
-				case TranscodeType.X264: 
-					return new FFMpegX264Transcoder(video, quality, width, height, maintainAspect);
-				//case TranscodeType.HLS: 
-				//	return new FFMpegHLSTranscoder(item, quality);
-			}
-			return null;
-		}
-
-		public ITranscoder TranscodeSong(IMediaItem song, TranscodeType type, uint quality)
+		
+		public ITranscoder TranscodeSong(IMediaItem song, TranscodeType type, uint quality, bool isDirect, uint offsetSeconds, uint lengthSeconds)
 		{
 			Console.WriteLine("[TRANSCODE] Asked to transcode song: " + song.FileName);
 			lock (transcoders) 
 			{
-				ITranscoder transcoder = CreateSongTranscoder(song, type, quality);
+				ITranscoder transcoder = null;
+				switch (type)
+				{
+					case TranscodeType.MP3:
+						transcoder = new FFMpegMP3Transcoder(song, quality, isDirect, offsetSeconds, lengthSeconds);
+						break;
+					//case TranscodeType.AAC: 
+					//	transcoder = new FFMpegAACTranscoder(item, quality, isDirect);
+					//case TranscodeType.OGG: 
+					//	transcoder = new FFMpegOGGTranscoder(item, quality, isDirect);
+				}
 
 				StartTranscoder(transcoder);
 
@@ -68,12 +47,21 @@ namespace WaveBox.Transcoding
 			}
 	    }
 
-		public ITranscoder TranscodeVideo(IMediaItem video, TranscodeType type, uint quality, uint? width, uint? height, bool maintainAspect)
+		public ITranscoder TranscodeVideo(IMediaItem video, TranscodeType type, uint quality, bool isDirect, uint? width, uint? height, bool maintainAspect, uint offsetSeconds, uint lengthSeconds)
 		{
 			Console.WriteLine("[TRANSCODE] Asked to transcode video: " + video.FileName);
 			lock (transcoders) 
 			{
-				ITranscoder transcoder = CreateVideoTranscoder(video, type, quality, width, height, maintainAspect);
+				ITranscoder transcoder = null;;
+				switch (type)
+				{
+					case TranscodeType.X264: 
+						transcoder = new FFMpegX264Transcoder(video, quality, isDirect, width, height, maintainAspect, offsetSeconds, lengthSeconds);
+						break;
+					case TranscodeType.MPEGTS: 
+						transcoder = new FFMpegMpegtsTranscoder(video, quality, isDirect, width, height, maintainAspect, offsetSeconds, lengthSeconds);
+						break;
+				}
 				
 				StartTranscoder(transcoder);
 				
@@ -85,7 +73,8 @@ namespace WaveBox.Transcoding
 		{
 			if ((object)transcoder != null)
 			{
-				if (transcoders.Contains(transcoder))
+				// Don't reuse direct transcoders
+				if (!transcoder.IsDirect && transcoders.Contains(transcoder))
 				{
 					Console.WriteLine("[TRANSCODE] Using existing transcoder");
 					
@@ -105,7 +94,7 @@ namespace WaveBox.Transcoding
 					
 					// Increment the reference count
 					transcoder.ReferenceCount++;
-					
+
 					// Start the transcode process
 					transcoder.StartTranscode();
 				}
@@ -114,29 +103,46 @@ namespace WaveBox.Transcoding
 
 	    public void ConsumedTranscode(ITranscoder transcoder)
 		{
+			// Do nothing if the transcoder is null or is a stdout transcoder
 			if ((object)transcoder == null)
+			{
 				return;
+			}
+
+			if (transcoder.IsDirect && transcoder.State == TranscodeState.Active)
+			{
+				try
+				{
+					// Kill the running transcode
+					transcoder.TranscodeProcess.Kill();
+				}
+				catch{}
+			}
 
 			lock (transcoders)
 			{
 				Console.WriteLine("[TRANSCODE] Consumed transcoder for " + transcoder.Item.FileName);
-
+				
 				// Decrement the reference count
 				transcoder.ReferenceCount--;
-
+				
 				if (transcoder.ReferenceCount == 0) 
 				{
 					// No other clients need this file, remove it
 					transcoders.Remove(transcoder);
 
-					// Remove the file
-					File.Delete(transcoder.OutputPath);
+					if (!transcoder.IsDirect)
+					{
+						// Remove the file
+						File.Delete(transcoder.OutputPath);
+					}
 				}
 			}
 	    }
 
 	    public void CancelTranscode(ITranscoder transcoder)
 		{
+			// Do nothing if the transcoder is null or is a stdout transcoder
 			if ((object)transcoder == null)
 				return;
 
@@ -154,6 +160,16 @@ namespace WaveBox.Transcoding
 				ConsumedTranscode(transcoder);
 			}
 	    }
+
+		public void CancelAllTranscodes()
+		{
+			List<ITranscoder> tempTranscoders = new List<ITranscoder>();
+			tempTranscoders.AddRange(transcoders);
+			foreach (ITranscoder transcoder in tempTranscoders)
+			{
+				CancelTranscode(transcoder);
+			}
+		}
 
 	    /*
 	     * Transcoder delegate

@@ -90,6 +90,14 @@ namespace WaveBox.ApiHandler
 					{
 						return new StreamApiHandler(uriW, processor, user);
 					}
+					else if (action == "transcode")
+					{
+						return new TranscodeApiHandler(uriW, processor, user);
+					}
+					else if (action == "transcodehls")
+					{
+						return new TranscodeHlsApiHandler(uriW, processor, user);
+					}
 				}
 			}
 			else

@@ -3,6 +3,7 @@ using System.Collections;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 using WaveBox;
 using System.Diagnostics;
@@ -82,7 +83,7 @@ namespace WaveBox.Http
 			} 
 			catch (Exception e) 
 			{
-				Console.WriteLine("[HTTPSERVER(1)] " + e.ToString());
+				Console.WriteLine("[HTTPSERVER(1)] " + e);
 				WriteErrorHeader();
 			}
 
@@ -103,7 +104,7 @@ namespace WaveBox.Http
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[HTTPSERVER(3)] " + e.ToString());
+				Console.WriteLine("[HTTPSERVER(3)] " + e);
 			}
 
 			// bs.Flush(); // flush any remaining output
@@ -223,15 +224,6 @@ namespace WaveBox.Http
 			sw.Stop();
 		}
 
-		public void WriteJsonHeader()
-		{
-			OutputStream.WriteLine("HTTP/1.0 200 OK");            
-			OutputStream.WriteLine("Content-Type: application/json;charset=utf-8");
-			OutputStream.WriteLine("Access-Control-Allow-Origin: *");
-			OutputStream.WriteLine("Connection: close");
-			OutputStream.WriteLine("");
-		}
-
 		public void WriteErrorHeader() 
 		{
 			OutputStream.WriteLine("HTTP/1.0 404 File not found");
@@ -239,10 +231,10 @@ namespace WaveBox.Http
 			OutputStream.WriteLine("");
 		}
 
-		public void WriteFileHeader(long contentLength)
+		public void WriteSuccessHeader(long contentLength, string mimeType)
 		{
 			OutputStream.WriteLine("HTTP/1.0 200 OK");            
-			//OutputStream.WriteLine("Content-Type: application/json;charset=utf-8");
+			OutputStream.WriteLine("Content-Type: " + mimeType);
 			OutputStream.WriteLine("Content-Length: " + contentLength);
 			OutputStream.WriteLine("Access-Control-Allow-Origin: *");
 			OutputStream.WriteLine("Connection: close");
@@ -251,36 +243,42 @@ namespace WaveBox.Http
 			Console.WriteLine("[HTTPSERVER] File header, contentLength: " + contentLength);
 		}
 
-		public void WriteJson(string json)
+		public void WriteText(string text, string mimeType)
 		{
-			WriteJsonHeader();
-			OutputStream.Write(json);
+			WriteSuccessHeader(UTF8Encoding.Unicode.GetByteCount(text), mimeType + ";charset=utf-8");
+			OutputStream.Write(text);
 		}
 
-		public void WriteFile(Stream fs, int startOffset, long length)
+		public void WriteJson(string json)
+		{
+			WriteText(json, "application/json");
+		}
+
+		public void WriteFile(Stream fs, int startOffset, long length, string mimeType)
 		{
 			if ((object)fs == null || !fs.CanRead || length == 0 || startOffset >= length)
 			{ 
 				return;
 			}
 
-			HttpHeader header = null;
 			long contentLength = length - startOffset;
+			/*HttpHeader header = null;
 			if (fs is FileStream)
 			{
 				FileInfo fsinfo = new FileInfo(((FileStream)fs).Name);
-
-				// Write the headers to output stream
-				header = new HttpHeader(HttpHeader.HttpStatusCode.OK, HttpHeader.ContentTypeForExtension(fsinfo.Extension), contentLength);
+				header = new HttpHeader(HttpHeader.HttpStatusCode.OK, HttpHeader.ContentTypeForExtension(fsinfo.Extension), contentLength, mimeType);
 			}
 			else
 			{
-				header = new HttpHeader(HttpHeader.HttpStatusCode.OK, HttpHeader.HttpContentType.UNKNOWN, length);
+				header = new HttpHeader(HttpHeader.HttpStatusCode.OK, HttpHeader.HttpContentType.UNKNOWN, length, mimeType);
 			}
+			header.WriteHeader(OutputStream);*/
 
-			header.WriteHeader(OutputStream);
+			// Write the headers to output stream
+			WriteSuccessHeader(contentLength, mimeType);
 			OutputStream.Flush();
-			Console.WriteLine("[HTTPSERVER] File header, contentLength: {0}, contentType: {1}, status: {2}", contentLength, header.ContentType, header.StatusCode);
+			Console.WriteLine("[HTTPSERVER] File header, contentLength: {0}, contentType: {1}", contentLength, mimeType);
+			//Console.WriteLine("[HTTPSERVER] File header, contentLength: {0}, contentType: {1}, status: {2}", contentLength, header.ContentType, header.StatusCode);
 
 			// Read/Write in 8 KB chunks
 			const int chunkSize = 8192;
@@ -334,7 +332,7 @@ namespace WaveBox.Http
 					if (bytesRead < chunkSize)
 					{
 						// Check if the stream is done
-						if (bytesWritten >= fs.Length || !(fs is FileStream))
+						if (!fs.CanSeek || !(fs is FileStream) || bytesWritten >= fs.Length)
 						{
 							if ((object)Transcoder == null || Transcoder.State != TranscodeState.Active)
 							{

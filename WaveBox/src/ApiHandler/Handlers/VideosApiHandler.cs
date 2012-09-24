@@ -48,7 +48,7 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 			catch(Exception e)
 			{
-				Console.WriteLine("[SONGAPI] ERROR: " + e.ToString());
+				Console.WriteLine("[SONGAPI] ERROR: " + e);
 			}
 		}
 		

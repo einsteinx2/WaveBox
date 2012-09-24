@@ -60,7 +60,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 			}
 
-			Processor.WriteFile(stream, 0, stream.Length);
+			Processor.WriteFile(stream, 0, stream.Length, HttpHeader.MimeTypeForExtension(".jpg"));
 
             // close the file so we don't get sharing violations on future accesses
             stream.Close();

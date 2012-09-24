@@ -27,7 +27,7 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 			catch(Exception e)
 			{
-				Console.WriteLine("[ALBUMSAPI(1)] ERROR: " + e.ToString());
+				Console.WriteLine("[ALBUMSAPI(1)] ERROR: " + e);
 			}
 		}
 

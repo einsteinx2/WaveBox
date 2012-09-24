@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using WaveBox.Http;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -64,7 +65,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 				long length = file.Length - startOffset;
 
-				Processor.WriteFile(file, startOffset, length);
+				Processor.WriteFile(file, startOffset, length, HttpHeader.MimeTypeForExtension(Path.GetExtension(path)));
 			}
 			else
 			{

@@ -6,21 +6,28 @@ using System.Text;
 using System.Data;
 using WaveBox.DataModel.Singletons;
 using System.Security.Cryptography;
+using Newtonsoft.Json;
 
 namespace WaveBox.DataModel.Model
 {
 	public class Playlist
 	{
+		[JsonProperty("id")]
 		public int? PlaylistId { get; set; }
-
+	
+		[JsonProperty("name")]
 		public string PlaylistName { get; set; }
 
+		[JsonProperty("count")]
 		public int? PlaylistCount { get; set; }
 
+		[JsonProperty("duration")]
 		public int? PlaylistDuration { get; set; }
 
+		[JsonProperty("md5Hash")]
 		public string Md5Hash { get; set; }
 
+		[JsonProperty("lastUpdateTime")]
 		public long? LastUpdateTime { get; set; }
 
 
@@ -54,7 +61,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[PLAYLIST(1)] " + e.ToString());
+				Console.WriteLine("[PLAYLIST(1)] " + e);
 			}
 			finally
 			{
@@ -85,7 +92,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[PLAYLIST(2)] " + e.ToString());
+				Console.WriteLine("[PLAYLIST(2)] " + e);
 			}
 			finally
 			{
@@ -109,7 +116,7 @@ namespace WaveBox.DataModel.Model
 
 			catch (Exception e)
 			{
-				Console.WriteLine("[PLAYLIST(3)] " + e.ToString());
+				Console.WriteLine("[PLAYLIST(3)] " + e);
 			}
 		}
 
@@ -142,7 +149,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[PLAYLIST(4)] " + e.ToString());
+				Console.WriteLine("[PLAYLIST(4)] " + e);
 			}
 			finally
 			{
@@ -221,7 +228,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[PLAYLIST(5)] " + e.ToString());
+				Console.WriteLine("[PLAYLIST(5)] " + e);
 			}
 			finally
 			{
@@ -254,7 +261,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[PLAYLIST(6)] " + e.ToString());
+				Console.WriteLine("[PLAYLIST(6)] " + e);
 			}
 			finally
 			{
@@ -304,7 +311,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[PLAYLIST(7)] " + e.ToString());
+				Console.WriteLine("[PLAYLIST(7)] " + e);
 			}
 			finally
 			{
@@ -349,7 +356,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[PLAYLIST(8)] " + e.ToString());
+				Console.WriteLine("[PLAYLIST(8)] " + e);
 			}
 			finally
 			{
@@ -412,7 +419,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[PLAYLIST(9)] " + e.ToString());
+				Console.WriteLine("[PLAYLIST(9)] " + e);
 			}
 			finally
 			{
@@ -482,7 +489,7 @@ namespace WaveBox.DataModel.Model
 				{
 					trans.Rollback();
 				}
-				Console.WriteLine("[PLAYLIST(10)] " + e.ToString());
+				Console.WriteLine("[PLAYLIST(10)] " + e);
 			}
 			finally
 			{
@@ -541,7 +548,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[PLAYLIST(11)] " + e.ToString());
+				Console.WriteLine("[PLAYLIST(11)] " + e);
 			}
 			finally
 			{
@@ -572,7 +579,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[PLAYLIST(12)] " + e.ToString());
+				Console.WriteLine("[PLAYLIST(12)] " + e);
 			}
 			finally
 			{
@@ -620,7 +627,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[PLAYLIST(13)] " + e.ToString());
+				Console.WriteLine("[PLAYLIST(13)] " + e);
 			}
 			finally
 			{

@@ -35,14 +35,14 @@ namespace WaveBox.OperationQueue
 							}
 							catch
 							{
-								//Console.WriteLine("[SCANQUEUE] Queue is empty: ", e.Message);
+								//Console.WriteLine("[SCANQUEUE] Queue is empty: ", e);
 								currentOperation = null;
 							}
 
 							if (currentOperation != null)
 							{
 								currentOperation.Run();
-                                Console.WriteLine("[DELAYEDOPQUEUE] {0} fired", currentOperation.ToString());
+								Console.WriteLine("[DELAYEDOPQUEUE] {0} fired", currentOperation.ToString());
 							}
 						}
 					}

@@ -25,11 +25,6 @@ namespace WaveBox.DataModel.Model
 
 	public static class ItemTypeExtensions
 	{
-		public static int ItemTypeId(this ItemType val)
-		{
-			return (int)val;
-		}
-
 		public static ItemType ItemTypeForId(int id)
 		{
 			// check the id number against all the enum types

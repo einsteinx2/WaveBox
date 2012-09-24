@@ -7,6 +7,10 @@ namespace WaveBox
 {
 	public interface IMediaItem
 	{
+		[JsonIgnore]
+		ItemType ItemType { get; }
+
+		[JsonProperty("itemTypeId")]
 		int ItemTypeId { get; }
 		
 		[JsonProperty("itemId")]

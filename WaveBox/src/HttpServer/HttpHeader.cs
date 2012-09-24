@@ -42,7 +42,7 @@ namespace WaveBox.Http
             UNKNOWN = 12
         }
 
-        private string[] HttpContentTypeStrings = { "audio/mpeg", "audio/mp4", "audio/ogg", "audio/webm", "audio/wav", "video/webm", "video/mp4", "video/ogg", "text/html", "text/css", "text/javascript", "text/plain", "octet-stream" };
+        private static string[] HttpContentTypeStrings = { "audio/mpeg", "audio/mp4", "audio/ogg", "audio/webm", "audio/wav", "video/webm", "video/mp4", "video/ogg", "text/html", "text/css", "text/javascript", "text/plain", "octet-stream" };
 
         public static HttpContentType ContentTypeForExtension(string extension)
         {
@@ -74,6 +74,11 @@ namespace WaveBox.Http
                 return HttpContentType.PLAINTEXT;
 			else return HttpContentType.UNKNOWN;
         }
+
+		public static string MimeTypeForExtension(string extension)
+		{
+			return HttpContentTypeStrings[(int)ContentTypeForExtension(extension)];
+		}
 
 		public HttpHeader()
 		{

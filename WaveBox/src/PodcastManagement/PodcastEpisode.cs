@@ -63,7 +63,7 @@ namespace WaveBox.PodcastManagement
             }
             catch (Exception e)
             {
-                Console.WriteLine("[ARTIST(1)] ERROR: " +  e.ToString());
+                Console.WriteLine("[ARTIST(1)] ERROR: " +  e);
             }
             finally
             {
@@ -90,7 +90,7 @@ namespace WaveBox.PodcastManagement
             }
             catch (Exception e)
             {
-                Console.WriteLine("[ARTIST(1)] ERROR: " +  e.ToString());
+                Console.WriteLine("[ARTIST(1)] ERROR: " +  e);
             }
             finally
             {
@@ -136,7 +136,7 @@ namespace WaveBox.PodcastManagement
             }
             catch (Exception e)
             {
-                Console.WriteLine("[PODCAST (1)] ERROR: " +  e.ToString());
+                Console.WriteLine("[PODCAST (1)] ERROR: " +  e);
             }
             finally
             {

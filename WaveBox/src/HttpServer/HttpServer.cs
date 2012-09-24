@@ -37,13 +37,13 @@ namespace WaveBox.Http
 					Console.WriteLine("[HTTPSERVER] Socket already in use, is WaveBox already running?");
 				}
 				else
-					Console.WriteLine("[HTTPSERVER(4)] " + e.Message);
+					Console.WriteLine("[HTTPSERVER(4)] " + e);
 
 				Environment.Exit(-1);
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[HTTPSERVER(5)] " + e.ToString());
+				Console.WriteLine("[HTTPSERVER(5)] " + e);
 				Environment.Exit(-1);
 			}
 

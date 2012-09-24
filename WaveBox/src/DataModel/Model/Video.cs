@@ -16,8 +16,11 @@ namespace WaveBox.DataModel.Model
 	{
 		public static readonly string[] ValidExtensions = { ".m4v", ".mp4", ".mpg", ".mkv", ".avi" };
 
+		[JsonIgnore]
+		public override ItemType ItemType { get { return ItemType.Video; } }
+
 		[JsonProperty("itemTypeId")]
-		public override int ItemTypeId { get { return (int)ItemType.Video; } }
+		public override int ItemTypeId { get { return (int)ItemType; } }
 
 		[JsonProperty("width")]
 		public int? Width { get; set; }
@@ -68,7 +71,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[VIDEO(1)] " + e.ToString());
+				Console.WriteLine("[VIDEO(1)] " + e);
 			}
 			finally
 			{
@@ -93,7 +96,7 @@ namespace WaveBox.DataModel.Model
 			//var lol = file.Properties.Codecs;
 			FolderId = folderId;
 			
-			FileType = FileType.FileTypeForMimeType(file.MimeType);
+			FileType = FileType.FileTypeForTagLibMimeType(file.MimeType);
 
 			if (FileType == FileType.Unknown)
 			{
@@ -139,7 +142,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[SONG(2)] " + e.ToString());
+				Console.WriteLine("[SONG(2)] " + e);
 			}
 		}
 
@@ -169,7 +172,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[SONG(4)] " + e.ToString());
+				Console.WriteLine("[SONG(4)] " + e);
 			}
 			finally
 			{
@@ -215,7 +218,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[VIDEO(1)] " + e.ToString());
+				Console.WriteLine("[VIDEO(1)] " + e);
 			}
 			finally
 			{
@@ -254,7 +257,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch(Exception e)
 			{
-				Console.WriteLine("[VIDEO(3)] " + e.ToString());
+				Console.WriteLine("[VIDEO(3)] " + e);
 			}
 			finally
 			{

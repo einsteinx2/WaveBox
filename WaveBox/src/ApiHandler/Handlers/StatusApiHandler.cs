@@ -34,7 +34,7 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 			catch(Exception e)
 			{
-				Console.WriteLine("[STATUS(1)] ERROR: " + e.ToString());
+				Console.WriteLine("[STATUS(1)] ERROR: " + e);
 			}
 		}
 

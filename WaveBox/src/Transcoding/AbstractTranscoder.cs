@@ -19,16 +19,32 @@ namespace WaveBox.Transcoding
 
 		public int ReferenceCount { get; set; }
 
+		public bool IsDirect { get; set; }
+
 		public abstract TranscodeType Type { get; }
 
+		public abstract string MimeType { get; }
+
 		public abstract string OutputExtension { get; }
+
+		public abstract uint? EstimatedBitrate { get; }
+
+		public abstract string Command { get; }
+		
+		public abstract string Arguments { get; }
+
+		public uint OffsetSeconds { get; set; }
+		
+		public uint LengthSeconds { get; set; }
+		
+		public Thread TranscodeThread { get; set; }
+		public Process TranscodeProcess { get; set; }
 
 		public string OutputFilename
 		{
 			get
 			{
 				return Item.ItemTypeId + "_" + Item.ItemId + "_" + Type + "_" + Quality + "." + OutputExtension;
-
 			}
 		}
 
@@ -38,7 +54,7 @@ namespace WaveBox.Transcoding
 			{ 
 				if (Item != null)
 	        	{
-	            	string path = TranscodeManager.TRANSCODE_PATH + Path.DirectorySeparatorChar + OutputFilename;
+	            	string path = IsDirect ? "-" : "\"" + TranscodeManager.TRANSCODE_PATH + Path.DirectorySeparatorChar + OutputFilename + "\"";
 	            	//log2File(INFO, "transcoding to " + path);
 					return path;
 	        	}
@@ -47,8 +63,6 @@ namespace WaveBox.Transcoding
 			} 
 		}
 
-		public abstract uint? EstimatedBitrate { get; }
-
 		public long? EstimatedOutputSize 
 		{ 
 			get 
@@ -56,24 +70,20 @@ namespace WaveBox.Transcoding
 				if (Item != null)
 				{
 					Console.WriteLine("Item.Duration: " + Item.Duration + "  EstimatedBitrate: " + EstimatedBitrate);
-				    return (long)Item.Duration * (long)(EstimatedBitrate * 128);
+				    return (long)LengthSeconds * (long)(EstimatedBitrate * 128);
 				}
 	        	return null;
 			}
 		}
 
-		public abstract string Command { get; }
-
-		public abstract string Arguments { get; }
-
-		protected Thread TranscodeThread { get; set; }
-		protected Process TranscodeProcess { get; set; }
-
-		public AbstractTranscoder(IMediaItem item, uint quality)
+		public AbstractTranscoder(IMediaItem item, uint quality, bool isDirect, uint offsetSeconds, uint lengthSeconds)
 	    {
 			State = TranscodeState.None;
 	        Item = item;
 	        Quality = quality;
+			IsDirect = isDirect;
+			OffsetSeconds = offsetSeconds;
+			LengthSeconds = lengthSeconds;
 	    }
 
 	    public void CancelTranscode()
@@ -94,7 +104,8 @@ namespace WaveBox.Transcoding
 				State = TranscodeState.Canceled;
 
 				// Inform the delegate
-			    Delegate.TranscodeFailed(this);
+				if ((object)Delegate != null)
+			    	Delegate.TranscodeFailed(this);
 	        }
 	    }
 
@@ -113,6 +124,7 @@ namespace WaveBox.Transcoding
 
 			// Start a new thread for the transcode
 			TranscodeThread = new Thread(new ThreadStart(Run));
+			TranscodeThread.IsBackground = true;
 			TranscodeThread.Start();
 	    }
 
@@ -127,6 +139,9 @@ namespace WaveBox.Transcoding
 			    TranscodeProcess = new Process();
 				TranscodeProcess.StartInfo.FileName = Command;
 				TranscodeProcess.StartInfo.Arguments = Arguments;
+				TranscodeProcess.StartInfo.UseShellExecute = false;
+				TranscodeProcess.StartInfo.RedirectStandardOutput = true;
+				TranscodeProcess.StartInfo.RedirectStandardError = true;
 				TranscodeProcess.Start();
 
 				Console.WriteLine("[TRANSCODE] Waiting for process to finish");
@@ -138,13 +153,14 @@ namespace WaveBox.Transcoding
 			}
 			catch (Exception e) 
 			{
-				Console.WriteLine("\t" + "[TRANSCODE] Failed to start thranscode process " + e.InnerException);
+				Console.WriteLine("\t" + "[TRANSCODE] Failed to start thranscode process " + e);
 
 				// Set the state
 				State = TranscodeState.Failed;
 
 			    // Inform the delegate
-			    Delegate.TranscodeFailed(this);
+				if ((object)Delegate != null)
+			    	Delegate.TranscodeFailed(this);
 			}
 
 			if (TranscodeProcess != null)
@@ -171,13 +187,30 @@ namespace WaveBox.Transcoding
 
 		public override bool Equals(Object obj)
 	    {
+			// If they are the exact same object, return true
+			if (Object.ReferenceEquals(this, obj))
+			{
+				return true;
+			}
+			else if (IsDirect)
+			{
+				// If this is a direct transcoder, only use reference equality
+				return false;
+			}
+
 	        // If parameter is null return false.
 	        if ((object)obj == null)
 	        {
 	            return false;
 	        }
 
-	        // If parameter cannot be cast to DelayedOperation return false.
+			// If the types don't match exactly, return false
+			if (this.GetType() != obj.GetType())
+			{
+				return false;
+			}
+
+			// If parameter cannot be cast to AbstractTranscoder return false.
 	        AbstractTranscoder op = obj as AbstractTranscoder;
 	        if ((object)op == null)
 	        {
@@ -202,7 +235,11 @@ namespace WaveBox.Transcoding
 
 	    public override int GetHashCode()
 	    {
-			return OutputPath.GetHashCode();
+			int hash = 13;
+			hash = (hash * 7) + (Item == null ? Item.GetHashCode() : 0);
+			hash = (hash * 7) + Type.GetHashCode();
+			hash = (hash * 7) + Quality.GetHashCode();
+			return hash;
 	    }
 	}
 }

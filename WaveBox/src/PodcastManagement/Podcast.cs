@@ -88,7 +88,7 @@ namespace WaveBox.PodcastManagement
             }
             catch (Exception e)
             {
-                Console.WriteLine("[PODCAST (2)] ERROR: " +  e.ToString());
+                Console.WriteLine("[PODCAST (2)] ERROR: " +  e);
             }
             finally
             {
@@ -124,7 +124,7 @@ namespace WaveBox.PodcastManagement
             }
             catch (Exception e)
             {
-                Console.WriteLine("[PODCAST (1)] ERROR: " +  e.ToString());
+                Console.WriteLine("[PODCAST (1)] ERROR: " +  e);
             }
             finally
             {
@@ -187,7 +187,7 @@ namespace WaveBox.PodcastManagement
             }
             catch (Exception e)
             {
-                Console.WriteLine("[PODCAST (2)] ERROR: " + e.ToString());
+                Console.WriteLine("[PODCAST (2)] ERROR: " + e);
             }
             finally
             {
@@ -222,7 +222,7 @@ namespace WaveBox.PodcastManagement
             }
             catch (Exception e)
             {
-                Console.WriteLine("[PODCAST (2)] ERROR: " +  e.ToString());
+                Console.WriteLine("[PODCAST (2)] ERROR: " +  e);
             }
             finally
             {
@@ -273,7 +273,7 @@ namespace WaveBox.PodcastManagement
             }
             catch (Exception e)
             {
-                Console.WriteLine("[PODCAST (3)] ERROR: " +  e.ToString());
+                Console.WriteLine("[PODCAST (3)] ERROR: " +  e);
             }
             finally
             {
@@ -313,7 +313,7 @@ namespace WaveBox.PodcastManagement
             }
             catch (Exception e)
             {
-                Console.WriteLine("[PODCAST (3)] ERROR: " +  e.ToString());
+                Console.WriteLine("[PODCAST (3)] ERROR: " +  e);
             }
             finally
             {
@@ -342,7 +342,7 @@ namespace WaveBox.PodcastManagement
             }
             catch (Exception e)
             {
-                Console.WriteLine("[PODCAST (3)] ERROR: " +  e.ToString());
+                Console.WriteLine("[PODCAST (3)] ERROR: " +  e);
             }
             finally
             {

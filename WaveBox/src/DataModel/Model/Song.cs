@@ -71,7 +71,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[SONG(1)] " + e.ToString());
+				Console.WriteLine("[SONG(1)] " + e);
 			}
 			finally
 			{
@@ -120,7 +120,7 @@ namespace WaveBox.DataModel.Model
 				AlbumName = null;
 			}
 
-			FileType = FileType.FileTypeForMimeType(file.MimeType);
+			FileType = FileType.FileTypeForTagLibMimeType(file.MimeType);
 
 			if (FileType == FileType.Unknown)
 			{
@@ -212,7 +212,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[SONG(2)] " + e.ToString());
+				Console.WriteLine("[SONG(2)] " + e);
 			}
 		}
 
@@ -256,7 +256,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch(Exception e)
 			{
-				Console.WriteLine("[SONG(3)] " + e.ToString());
+				Console.WriteLine("[SONG(3)] " + e);
 			}
 			finally
 			{
@@ -296,7 +296,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[SONG(4)] " + e.ToString());
+				Console.WriteLine("[SONG(4)] " + e);
 			}
 			finally
 			{
@@ -365,7 +365,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[SONG(5)] " + e.ToString());
+				Console.WriteLine("[SONG(5)] " + e);
 			}
 			finally
 			{

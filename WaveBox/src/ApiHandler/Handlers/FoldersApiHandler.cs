@@ -66,7 +66,7 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 			catch(Exception e)
 			{
-				Console.WriteLine("[FOLDERAPI(1)] ERROR: " + e.ToString());
+				Console.WriteLine("[FOLDERAPI(1)] ERROR: " + e);
 			}
 		}
 

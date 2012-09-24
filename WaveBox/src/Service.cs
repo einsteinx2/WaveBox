@@ -4,6 +4,7 @@ using System.Threading;
 using Mono.Unix;
 using Mono.Unix.Native;
 using System.Runtime.InteropServices;
+using WaveBox.Transcoding;
 
 namespace WaveBox
 {
@@ -36,7 +37,7 @@ namespace WaveBox
 			// Catch any exceptions
 			catch(Exception e)
 			{
-				Console.WriteLine("[SERVICE(1)] {0}", e.Message);
+				Console.WriteLine("[SERVICE(1)] {0}", e);
 			}
 		}
 
@@ -82,6 +83,10 @@ namespace WaveBox
 			// Abort main thread, nullify the WaveBox object
 			init.Abort();
 			wavebox = null;
+
+			Console.WriteLine("[SERVICE] Cancelling any active transcodes...");
+			TranscodeManager.Instance.CancelAllTranscodes();
+			Console.WriteLine("[SERVICE] All transcodes canceled");
 
 			Console.WriteLine("[SERVICE] Stopped!");
 
