@@ -180,7 +180,7 @@ namespace WaveBox.ApiHandler.Handlers
 							UInt32.TryParse(Uri.Parameters["lengthSeconds"], out lengthSeconds);
 						}
 						// Either stream the rest of the file, or the duration specified
-						lengthSeconds = lengthSeconds == 0 ? (uint)((Video)item).Duration - offsetSeconds : lengthSeconds;
+						lengthSeconds = lengthSeconds == 0 ? (uint)item.Duration - offsetSeconds : lengthSeconds;
 						
 						Transcoder = TranscodeManager.Instance.TranscodeVideo(item, transType, quality, isDirect, width, height, maintainAspect, offsetSeconds, lengthSeconds);
 					}
@@ -228,9 +228,9 @@ namespace WaveBox.ApiHandler.Handlers
 						string mimeType = (object)Transcoder == null ? item.FileType.MimeType() : Transcoder.MimeType;
 						Processor.Transcoder = Transcoder;
 
-						Console.WriteLine("ApiHandlerFactory writing file at offsetSeconds " + Uri.Parameters["offsetSeconds"]);
+						if(Uri.Parameters.ContainsKey("offsetSeconds")) Console.WriteLine("ApiHandlerFactory writing file at offsetSeconds " + Uri.Parameters["offsetSeconds"]);
 						Processor.WriteFile(stream, startOffset, length, mimeType);
-						Console.WriteLine("ApiHandlerFactory DONE writing file at offsetSeconds " + Uri.Parameters["offsetSeconds"]);
+                        if(Uri.Parameters.ContainsKey("offsetSeconds")) Console.WriteLine("ApiHandlerFactory DONE writing file at offsetSeconds " + Uri.Parameters["offsetSeconds"]);
 					}
 					else
 					{

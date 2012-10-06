@@ -16,6 +16,9 @@ namespace WaveBox.DataModel.Model
 	{
 		public static readonly string[] ValidExtensions = { ".mp3", ".m4a", ".flac", ".wv", ".mpc", ".ogg", ".wma" };
 
+        [JsonIgnore]
+        public override ItemType ItemType { get { return ItemType.Song; } }
+
 		[JsonProperty("itemTypeId")]
 		public override int ItemTypeId { get { return (int)ItemType.Song; } }
 

@@ -54,7 +54,7 @@ namespace WaveBox.Transcoding
 			{ 
 				if (Item != null)
 	        	{
-	            	string path = IsDirect ? "-" : "\"" + TranscodeManager.TRANSCODE_PATH + Path.DirectorySeparatorChar + OutputFilename + "\"";
+	            	string path = IsDirect ? "-" : TranscodeManager.TRANSCODE_PATH + Path.DirectorySeparatorChar + OutputFilename;
 	            	//log2File(INFO, "transcoding to " + path);
 					return path;
 	        	}
@@ -120,7 +120,8 @@ namespace WaveBox.Transcoding
 			State = TranscodeState.Active;
 
 			// Delete any existing file of this name
-			File.Delete(OutputPath);
+			if(File.Exists(OutputPath))
+               File.Delete(OutputPath);
 
 			// Start a new thread for the transcode
 			TranscodeThread = new Thread(new ThreadStart(Run));
@@ -153,7 +154,7 @@ namespace WaveBox.Transcoding
 			}
 			catch (Exception e) 
 			{
-				Console.WriteLine("\t" + "[TRANSCODE] Failed to start thranscode process " + e);
+				Console.WriteLine("\t" + "[TRANSCODE] Failed to start transcode process " + e);
 
 				// Set the state
 				State = TranscodeState.Failed;
@@ -161,6 +162,8 @@ namespace WaveBox.Transcoding
 			    // Inform the delegate
 				if ((object)Delegate != null)
 			    	Delegate.TranscodeFailed(this);
+
+                return;
 			}
 
 			if (TranscodeProcess != null)
