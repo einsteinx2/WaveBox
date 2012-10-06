@@ -48,7 +48,22 @@ namespace WaveBox.ApiHandler
 								success = Int64.TryParse(timeStamp, out timeStampLong);
 
 							if (success)
+							{
+								ItemType itemType = Item.ItemTypeForItemId(itemIdInt);
+								if (itemType == ItemType.Song && statTypeEnum == StatType.PLAYED)
+								{
+									// Also record a play for the artist, album, and folder
+									Song song = new Song(itemIdInt);
+									if ((object)song.AlbumId != null)
+										Stat.RecordStat(song.AlbumId, statTypeEnum, timeStampLong);
+									if ((object)song.ArtistId != null)
+										Stat.RecordStat(song.ArtistId, statTypeEnum, timeStampLong);
+									if ((object)song.FolderId != null)
+										Stat.RecordStat(song.FolderId, statTypeEnum, timeStampLong);
+								}
+
 								Stat.RecordStat(itemIdInt, statTypeEnum, timeStampLong);
+							}
 						}
 
 						Processor.WriteJson(JsonConvert.SerializeObject(new StatsResponse(null)));
