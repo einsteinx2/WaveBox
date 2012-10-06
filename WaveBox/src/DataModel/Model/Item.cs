@@ -21,8 +21,9 @@ namespace WaveBox
 			try
 			{
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("INSERT INTO item (item_type_id) VALUES (@itemType)", conn);
+				IDbCommand q = Database.GetDbCommand("INSERT INTO item (item_type_id, time_stamp) VALUES (@itemType, @timestamp)", conn);
 				q.AddNamedParam("@itemType", itemType);
+				q.AddNamedParam("@timestamp", DateTime.UtcNow.ToUniversalUnixTimestamp());
 				q.Prepare();
 				int affected = (int)q.ExecuteNonQueryLogged();
 
@@ -114,6 +115,17 @@ namespace WaveBox
 
 			// Return unknown, if we didn't return yet
 			return ItemType.Unknown;
+		}
+
+		// Should find a better place to put these
+		public static long ToUniversalUnixTimestamp(this DateTime dateTime)
+		{
+			return (long)(dateTime.ToUniversalTime() - new DateTime (1970, 1, 1).ToUniversalTime()).TotalSeconds;
+		}
+		
+		public static long ToLocalUnixTimestamp(this DateTime dateTime)
+		{
+			return (long)(dateTime.ToLocalTime() - new DateTime (1970, 1, 1).ToLocalTime()).TotalSeconds;
 		}
 	}
 }

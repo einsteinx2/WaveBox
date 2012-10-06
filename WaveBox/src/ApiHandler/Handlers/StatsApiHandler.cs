@@ -55,11 +55,11 @@ namespace WaveBox.ApiHandler
 									// Also record a play for the artist, album, and folder
 									Song song = new Song(itemIdInt);
 									if ((object)song.AlbumId != null)
-										Stat.RecordStat(song.AlbumId, statTypeEnum, timeStampLong);
+										Stat.RecordStat((int)song.AlbumId, statTypeEnum, timeStampLong);
 									if ((object)song.ArtistId != null)
-										Stat.RecordStat(song.ArtistId, statTypeEnum, timeStampLong);
+										Stat.RecordStat((int)song.ArtistId, statTypeEnum, timeStampLong);
 									if ((object)song.FolderId != null)
-										Stat.RecordStat(song.FolderId, statTypeEnum, timeStampLong);
+										Stat.RecordStat((int)song.FolderId, statTypeEnum, timeStampLong);
 								}
 
 								Stat.RecordStat(itemIdInt, statTypeEnum, timeStampLong);
@@ -94,17 +94,6 @@ namespace WaveBox.ApiHandler
 				Error = error;
 			}
 		}
-
-		/*// Should find a better place to put these
-		public static long ToUniversalUnixTimestamp(this DateTime dateTime)
-		{
-			return (long)(dateTime.ToUniversalTime() - new DateTime (1970, 1, 1).ToUniversalTime()).TotalSeconds;
-		}
-		
-		public static long ToLocalUnixTimestamp(this DateTime dateTime)
-		{
-			return (long)(dateTime.ToLocalTime() - new DateTime (1970, 1, 1).ToLocalTime()).TotalSeconds;
-		}*/
 	}
 }
 
