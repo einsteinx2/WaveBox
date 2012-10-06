@@ -16,19 +16,87 @@ namespace WaveBox.DataModel.Singletons
 {
 	static class Database
 	{
-		public static IDbConnection GetDbConnection()
+		public static string databaseFileName = "wavebox.db";
+		public static string DatabaseTemplatePath() { return "res" + Path.DirectorySeparatorChar + databaseFileName; }
+		public static string DatabasePath() { return WaveBoxMain.RootPath() + databaseFileName; }
+
+		public static string querylogFileName = "wavebox_querylog.db";
+		public static string QuerylogTemplatePath() { return "res" + Path.DirectorySeparatorChar + querylogFileName; }
+		public static string QuerylogPath() { return WaveBoxMain.RootPath() + querylogFileName; }
+		
+		public static string BackupFileName(long queryId) { return "wavebox_backup_" + queryId + ".db"; }
+		public static string BackupPath(long queryId) { return WaveBoxMain.RootPath() + BackupFileName(queryId); }
+
+		public static void DatabaseSetup()
 		{
-			return GetDbConnection("wavebox.db");
+			if (!File.Exists(DatabasePath()))
+			{
+				try
+				{
+					Console.WriteLine("[SETTINGS] " + "Database file doesn't exist; Creating it. (wavebox.db)");
+					
+					// new filestream on the template
+					FileStream dbTemplate = new FileStream(DatabaseTemplatePath(), FileMode.Open);
+					
+					// a new byte array
+					byte[] dbData = new byte[dbTemplate.Length];
+					
+					// read the template file into memory
+					dbTemplate.Read(dbData, 0, Convert.ToInt32(dbTemplate.Length));
+					
+					// write it all out
+					System.IO.File.WriteAllBytes(DatabasePath(), dbData);
+					
+					// close the template file
+					dbTemplate.Close();
+				} 
+				catch (Exception e)
+				{
+					Console.WriteLine("[SETTINGS(2)] " + e);
+				}
+			}
+			
+			if (!File.Exists(QuerylogPath()))
+			{
+				try
+				{
+					Console.WriteLine("[SETTINGS] " + "Query log database file doesn't exist; Creating it. (wavebox_querylog.db)");
+					
+					// new filestream on the template
+					FileStream dbTemplate = new FileStream(QuerylogTemplatePath(), FileMode.Open);
+					
+					// a new byte array
+					byte[] dbData = new byte[dbTemplate.Length];
+					
+					// read the template file into memory
+					dbTemplate.Read(dbData, 0, Convert.ToInt32(dbTemplate.Length));
+					
+					// write it all out
+					System.IO.File.WriteAllBytes(QuerylogPath(), dbData);
+					
+					// close the template file
+					dbTemplate.Close();
+				} 
+				catch (Exception e)
+				{
+					Console.WriteLine("[SETTINGS(3)] " + e);
+				}
+			}
 		}
 
-		public static IDbConnection GetBackupDbConnection(long queryId)
+		public static IDbConnection GetDbConnection()
 		{
-			return GetDbConnection("wavebox_backup_" + queryId + ".db");
+			return GetDbConnection(DatabasePath());
 		}
 
 		public static IDbConnection GetQueryLogDbConnection()
 		{
-			return GetDbConnection("wavebox_querylog.db");
+			return GetDbConnection(QuerylogPath());
+		}
+
+		public static IDbConnection GetBackupDbConnection(long queryId)
+		{
+			return GetDbConnection(BackupPath(queryId));
 		}
 
 		public static IDbConnection GetDbConnection(string dbName)
@@ -250,7 +318,7 @@ namespace WaveBox.DataModel.Singletons
 			lock(dbBackupLock)
 			{
 				lastQueryId = LastQueryLogId();
-				string fileName = "wavebox_backup_" + lastQueryId + ".db";
+				string fileName = BackupFileName(lastQueryId);
 
 				// If the database is already backed up at this point, return it
 				if (File.Exists(fileName))
@@ -259,7 +327,7 @@ namespace WaveBox.DataModel.Singletons
 				// If not, do the backup then return it
 				bool success = Backup((SQLiteConnection)GetDbConnection(), (SQLiteConnection)GetBackupDbConnection(lastQueryId));
 				if (success)
-					return "wavebox_backup_" + lastQueryId + ".db";
+					return fileName;
 
 				// Something failed so return null
 				lastQueryId = -1;

@@ -125,7 +125,6 @@
     <Compile Include="src\DataModel\FolderScanning\AbstractOperation.cs" />
     <Compile Include="src\DataModel\Singletons\Lastfm.cs" />
     <Compile Include="src\ApiHandler\Handlers\ScrobbleApiHandler.cs" />
-    <Compile Include="src\Service.cs" />
     <Compile Include="src\WaveBoxMain.cs" />
     <Compile Include="src\Transcoding\ITranscoder.cs" />
     <Compile Include="src\Transcoding\ITranscoderDelegate.cs" />
@@ -154,6 +153,7 @@
     <Compile Include="src\ApiHandler\Handlers\TranscodeApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\TranscodeHlsApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\DatabaseApiHandler.cs" />
+    <Compile Include="src\WaveBoxService.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="lib\Newtonsoft.Json.dll" />
@@ -198,9 +198,6 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <None Include="res\WaveBox.conf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="res\wavebox.db">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -213,6 +210,9 @@
     <None Include="lib\Bass.Net.dll" />
     <None Include="bass.dll" />
     <None Include="res\wavebox_querylog.db">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="res\wavebox.conf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

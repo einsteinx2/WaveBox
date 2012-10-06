@@ -183,5 +183,56 @@ namespace WaveBox
 			// Trigger common shutdown function once unblocked
 			this.OnStop();
 		}
+
+		// Adapted from here: http://mono.1490590.n4.nabble.com/Howto-detect-os-td1549244.html
+		[DllImport("libc")] 
+		static extern int uname(IntPtr buf); 
+		public enum OS {Windows, MacOSX, Unix, unknown};
+
+		static public OS DetectOS()
+		{ 
+			if (System.IO.Path.DirectorySeparatorChar == '\\')
+			{
+				return OS.Windows;
+			} 
+			else if (IsMacOSX())
+			{
+				return OS.MacOSX;
+			} 
+			else if (System.Environment.OSVersion.Platform == PlatformID.Unix)
+			{
+				return OS.Unix;
+			}
+			return OS.unknown; 
+		}
+
+		static bool IsMacOSX()
+		{ 
+			IntPtr buf = IntPtr.Zero; 
+			try
+			{ 
+				buf = Marshal.AllocHGlobal(8192); 
+				// This is a hacktastic way of getting sysname from uname() 
+				if (uname(buf) == 0)
+				{ 
+					string os = Marshal.PtrToStringAnsi(buf); 
+					if (os == "Darwin")
+					{
+						return true;
+					} 
+				} 
+			}
+			catch
+			{ 
+			}
+			finally
+			{ 
+				if (buf != IntPtr.Zero)
+				{ 
+					Marshal.FreeHGlobal(buf);
+				} 
+			} 
+			return false; 
+		}
 	}
 }

@@ -19,6 +19,21 @@ namespace WaveBox
 {
 	class WaveBoxMain
 	{
+		public static string RootPath()
+		{
+			switch (WaveBoxService.DetectOS())
+			{
+				case WaveBoxService.OS.Windows:
+					return "%appdata%\\WaveBox\\";
+				case WaveBoxService.OS.MacOSX:
+					return Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "/Library/Application Support/WaveBox/";
+				case WaveBoxService.OS.Unix:
+					return "/usr/local/wavebox/";
+				default:
+					return "";
+			}
+		}
+
 		/// <summary>
 		/// The main program for WaveBox.  Launches the HTTP server, initializes settings, creates default user,
 		/// begins file scan, and then sleeps forever while other threads handle the work.
@@ -27,12 +42,18 @@ namespace WaveBox
 		{
 			Console.WriteLine("[WAVEBOX] Initializing WaveBox on {0} platform...", Environment.OSVersion.Platform.ToString());
 
+			if (!Directory.Exists(RootPath()))
+			{
+				Directory.CreateDirectory(RootPath());
+			}
+
 			// Start the HTTP server
 			StartHTTPServer();
 
 			TranscodeManager.Instance.Setup();
 			
 			// Perform initial setup of Settings, create a user
+			Database.DatabaseSetup();
 			Settings.SettingsSetup();
 			User.CreateUser("test", "test");
 

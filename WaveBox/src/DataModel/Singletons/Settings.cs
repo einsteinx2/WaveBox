@@ -10,7 +10,9 @@ namespace WaveBox.DataModel.Singletons
 {
 	public class Settings
 	{
-		public static string SETTINGS_PATH = "res" + Path.DirectorySeparatorChar + "WaveBox.conf";
+		public static string settingsFileName = "wavebox.conf";
+		public static string SettingsTemplatePath() { return "res" + Path.DirectorySeparatorChar + settingsFileName; }
+		public static string SettingsPath() { return WaveBoxMain.RootPath() + settingsFileName; }
 
 		private static double version = 1.0;
 		public static double Version { get { return version; } }
@@ -37,7 +39,7 @@ namespace WaveBox.DataModel.Singletons
 
 		private static void ParseSettings()
 		{
-			StreamReader reader = new StreamReader("WaveBox.conf");
+			StreamReader reader = new StreamReader(SettingsPath());
 			string configFile = RemoveJsonComments(reader);
 
 			dynamic json = JsonConvert.DeserializeObject(configFile);
@@ -54,13 +56,13 @@ namespace WaveBox.DataModel.Singletons
 
 		public static void SettingsSetup()
         {
-            if (!File.Exists("WaveBox.conf"))
+            if (!File.Exists(SettingsPath()))
             {
                 try
                 {
                     Console.WriteLine("[SETTINGS] " + "Setting file doesn't exist; Creating it. (WaveBox.conf)");
-                    StreamReader settingsTemplate = new StreamReader("res" + Path.DirectorySeparatorChar + "WaveBox.conf");
-                    StreamWriter settingsOut = new StreamWriter("WaveBox.conf");
+                    StreamReader settingsTemplate = new StreamReader(SettingsTemplatePath());
+                    StreamWriter settingsOut = new StreamWriter(SettingsPath());
 
                     settingsOut.Write(settingsTemplate.ReadToEnd());
 
@@ -73,65 +75,6 @@ namespace WaveBox.DataModel.Singletons
                 }
             }
 
-            if (!File.Exists("wavebox.db"))
-            {
-                try
-                {
-                    Console.WriteLine("[SETTINGS] " + "Database file doesn't exist; Creating it. (wavebox.db)");
-
-                    // new filestream on the template
-                    FileStream dbTemplate = new FileStream("res" + Path.DirectorySeparatorChar + "wavebox.db", FileMode.Open);
-
-                    // a new byte array
-                    byte[] dbData = new byte[dbTemplate.Length];
-
-                    // read the template file into memory
-                    dbTemplate.Read(dbData, 0, Convert.ToInt32(dbTemplate.Length));
-
-                    // write it all out
-                    System.IO.File.WriteAllBytes("wavebox.db", dbData);
-
-                    // close the template file
-                    dbTemplate.Close();
-                } 
-				catch (Exception e)
-                {
-                    Console.WriteLine("[SETTINGS(2)] " + e);
-                }
-            }
-
-			if (!File.Exists("wavebox_querylog.db"))
-			{
-				try
-				{
-					Console.WriteLine("[SETTINGS] " + "Query log database file doesn't exist; Creating it. (wavebox_querylog.db)");
-					
-					// new filestream on the template
-					FileStream dbTemplate = new FileStream("res" + Path.DirectorySeparatorChar + "wavebox_querylog.db", FileMode.Open);
-					
-					// a new byte array
-					byte[] dbData = new byte[dbTemplate.Length];
-					
-					// read the template file into memory
-					dbTemplate.Read(dbData, 0, Convert.ToInt32(dbTemplate.Length));
-					
-					// write it all out
-					System.IO.File.WriteAllBytes("wavebox_querylog.db", dbData);
-					
-					// close the template file
-					dbTemplate.Close();
-				} 
-				catch (Exception e)
-				{
-					Console.WriteLine("[SETTINGS(2)] " + e);
-				}
-			}
-
-            if (!Directory.Exists("art"))
-            {
-                Directory.CreateDirectory("art");
-            }
-
 			Reload();
 		}
 
@@ -139,7 +82,7 @@ namespace WaveBox.DataModel.Singletons
 		{
 			List<Folder> folders = new List<Folder>();
 			Folder mf = null;
-			StreamReader reader = new StreamReader("WaveBox.conf");
+			StreamReader reader = new StreamReader(SettingsPath());
             string configFile = RemoveJsonComments(reader);
 
 			dynamic json = JsonConvert.DeserializeObject(configFile);
