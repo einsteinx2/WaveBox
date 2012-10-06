@@ -102,6 +102,10 @@ namespace WaveBox.ApiHandler
 					{
 						return new DatabaseApiHandler(uriW, processor, user);
 					}
+					else if (action == "database")
+					{
+						return new StatsApiHandler(uriW, processor, user);
+					}
 				}
 			}
 			else

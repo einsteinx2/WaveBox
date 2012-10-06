@@ -1,21 +1,11 @@
 using System;
 using System.IO;
 using Newtonsoft.Json;
-using WaveBox.DataModel.Model;
 
-namespace WaveBox
+namespace WaveBox.DataModel.Model
 {
-	public interface IMediaItem
-	{
-		[JsonIgnore]
-		ItemType ItemType { get; }
-
-		[JsonProperty("itemTypeId")]
-		int ItemTypeId { get; }
-		
-		[JsonProperty("itemId")]
-		int? ItemId { get; set; }
-		
+	public interface IMediaItem : IItem
+	{	
 		[JsonProperty("folderId")]
 		int? FolderId { get; set; }
 		

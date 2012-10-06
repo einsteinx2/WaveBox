@@ -8,8 +8,11 @@ using Newtonsoft.Json;
 
 namespace WaveBox.DataModel.Model
 {
-	public class Album
+	public class Album : IItem
 	{
+		[JsonIgnore]
+		public int? ItemId { get { return AlbumId; } set { AlbumId = ItemId; } }
+
 		[JsonIgnore]
 		public ItemType ItemType { get { return ItemType.Album; } }
 

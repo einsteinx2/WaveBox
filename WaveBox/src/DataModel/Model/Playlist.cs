@@ -10,8 +10,17 @@ using Newtonsoft.Json;
 
 namespace WaveBox.DataModel.Model
 {
-	public class Playlist
+	public class Playlist : IItem
 	{
+		[JsonIgnore]
+		public int? ItemId { get { return PlaylistId; } set { PlaylistId = ItemId; } }
+		
+		[JsonIgnore]
+		public ItemType ItemType { get { return ItemType.Playlist; } }
+		
+		[JsonIgnore]
+		public int ItemTypeId { get { return (int)ItemType; } }
+
 		[JsonProperty("id")]
 		public int? PlaylistId { get; set; }
 	

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using WaveBox.Http;
@@ -26,8 +27,9 @@ namespace WaveBox.ApiHandler.Handlers
 			
 			try
 			{
-				Hashtable status = new Hashtable();
+				IDictionary<string, string> status = new Dictionary<string, string>();
 				status["version"] = "1";
+				status["lastQueryLogId"] = Database.LastQueryLogId().ToString();
 
 				string json = JsonConvert.SerializeObject(new StatusResponse(null, status), Settings.JsonFormatting);
 				Processor.WriteJson(json);
@@ -44,9 +46,9 @@ namespace WaveBox.ApiHandler.Handlers
 			public string Error { get; set; }
 
 			[JsonProperty("status")]
-			public Hashtable Status { get; set; }
+			public IDictionary<string, string> Status { get; set; }
 
-			public StatusResponse(string error, Hashtable status)
+			public StatusResponse(string error, IDictionary<string, string> status)
 			{
 				Error = error;
 				Status = status;

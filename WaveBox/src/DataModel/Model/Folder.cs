@@ -12,8 +12,17 @@ using NUnit.Framework;
 
 namespace WaveBox.DataModel.Model
 {
-	public class Folder
+	public class Folder : IItem
 	{
+		[JsonIgnore]
+		public int? ItemId { get { return FolderId; } set { FolderId = ItemId; } }
+
+		[JsonIgnore]
+		public ItemType ItemType { get { return ItemType.Folder; } }
+
+		[JsonIgnore]
+		public int ItemTypeId { get { return (int)ItemType; } }
+
 		[JsonProperty("folderId")]
 		public int? FolderId { get; set; }
 
