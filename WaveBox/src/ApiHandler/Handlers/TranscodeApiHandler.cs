@@ -229,7 +229,7 @@ namespace WaveBox.ApiHandler.Handlers
 						Processor.Transcoder = Transcoder;
 
 						if(Uri.Parameters.ContainsKey("offsetSeconds")) Console.WriteLine("ApiHandlerFactory writing file at offsetSeconds " + Uri.Parameters["offsetSeconds"]);
-						Processor.WriteFile(stream, startOffset, length, mimeType);
+						Processor.WriteFile(stream, startOffset, length, mimeType, null);
                         if(Uri.Parameters.ContainsKey("offsetSeconds")) Console.WriteLine("ApiHandlerFactory DONE writing file at offsetSeconds " + Uri.Parameters["offsetSeconds"]);
 					}
 					else

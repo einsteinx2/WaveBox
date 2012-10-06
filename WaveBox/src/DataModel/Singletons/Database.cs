@@ -21,15 +21,20 @@ namespace WaveBox.DataModel.Singletons
 			return GetDbConnection("wavebox.db");
 		}
 
-		public static IDbConnection GetBackupDbConnection()
+		public static IDbConnection GetBackupDbConnection(long queryId)
 		{
-			return GetDbConnection("wavebox_backup.db");
+			return GetDbConnection("wavebox_backup_" + queryId + ".db");
+		}
+
+		public static IDbConnection GetQueryLogDbConnection()
+		{
+			return GetDbConnection("wavebox_querylog.db");
 		}
 
 		public static IDbConnection GetDbConnection(string dbName)
 		{
 			if ((object)dbName == null)
-				dbName = "wavebox.db";
+				return null;
 
 			string connString = "Data Source=" + dbName + ";Version=3;Pooling=True;Max Pool Size=100;synchronous=OFF;";
 			IDbConnection conn = new SQLiteConnection(connString);
@@ -60,59 +65,80 @@ namespace WaveBox.DataModel.Singletons
 			}
 		}
 
-		private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-		private static readonly object queryLogLock = new object();
+		//private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 		public static int ExecuteNonQueryLogged(this IDbCommand command)
 		{
-			int result = command.ExecuteNonQuery();
-
-			if (result > 0)
+			lock(dbBackupLock)
 			{
-				// Only log successful queries
-				IDictionary<string, object> jsonDict = new Dictionary<string, object>();
-				
-				IDataParameterCollection parameters = command.Parameters;
-				List<object> values = new List<object>();
-				
-				// Format the query for saving
-				string query = command.CommandText;
-				foreach (IDbDataParameter dbParam in parameters)
-				{
-					// Replace parameter names with ?'s
-					query = query.Replace(dbParam.ParameterName, "?");
-					
-					// Add the values to the array
-					values.Add(dbParam.Value);
-				}
-				
-				// Create the JSON
-				jsonDict["updateTime"] = (long)(DateTime.UtcNow - UnixEpoch).TotalSeconds;
-				jsonDict["query"] = query;
-				jsonDict["values"] = values;
-				string jsonString = JsonConvert.SerializeObject(jsonDict, Formatting.None);
-				
-				// Append the log
-				lock(queryLogLock)
-				{
-					StreamWriter writer = File.AppendText("query_log.txt");
-					writer.WriteLine(jsonString);
-					writer.Close();
-				}
-			}
+				int result = command.ExecuteNonQuery();
 
-			return result;
+				if (result > 0)
+				{
+					// Only log successful queries
+					IDataParameterCollection parameters = command.Parameters;
+					List<object> values = new List<object>();
+					
+					// Format the query for saving
+					string query = command.CommandText;
+					foreach (IDbDataParameter dbParam in parameters)
+					{
+						// Replace parameter names with ?'s
+						query = query.Replace(dbParam.ParameterName, "?");
+						
+						// Add the values to the array
+						values.Add(dbParam.Value);
+					}
+					
+					// Log the query
+					IDbConnection conn = null;
+					try
+					{
+						conn = Database.GetQueryLogDbConnection();
+						IDbCommand q = Database.GetDbCommand("INSERT INTO query_log (query_string, values_string) " +
+							"VALUES (@querystring, @valuesstring)", conn);
+						q.AddNamedParam("@querystring", query);
+						q.AddNamedParam("@valuesstring", JsonConvert.SerializeObject(values, Formatting.None));
+						
+						q.Prepare();
+						q.ExecuteNonQuery();
+					}
+					catch(Exception e)
+					{
+						Console.WriteLine("[DATABASE(1)] " + e);
+					}
+					finally
+					{
+						Database.Close(conn, null);
+					}
+				}
+
+				return result;
+			}
 		}
 
-		public static long LastDbUpdateTime()
+		public static long LastQueryLogId()
 		{
-			string lastLine = File.ReadLines("query_log.txt").Last();
-			dynamic statement = JsonConvert.DeserializeObject(lastLine);
-			string updateTimeString = statement.updateTime;
+			// Log the query
+			IDbConnection conn = null;
+			long queryId = -1;
+			try
+			{
+				conn = Database.GetQueryLogDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT max(query_id) FROM query_log", conn);
+				
+				q.Prepare();
+				queryId = (long)q.ExecuteScalar();
+			}
+			catch(Exception e)
+			{
+				Console.WriteLine("[SONG(1)] " + e);
+			}
+			finally
+			{
+				Database.Close(conn, null);
+			}
 
-			long updateTime = 0;
-			Int64.TryParse(updateTimeString, out updateTime);
-
-			return updateTime;
+			return queryId;
 		}
 
 		// IDbCommand extension to add named parameters without writing a bunch of code each time
@@ -218,17 +244,34 @@ namespace WaveBox.DataModel.Singletons
 		[DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
 		internal static extern int sqlite3_backup_finish(IntPtr backup);
 
-		public static bool Backup()
+		private static readonly object dbBackupLock = new object();
+		public static string Backup(out long lastQueryId)
 		{
-			return Backup((SQLiteConnection)GetDbConnection(), (SQLiteConnection)GetBackupDbConnection());
+			lock(dbBackupLock)
+			{
+				lastQueryId = LastQueryLogId();
+				string fileName = "wavebox_backup_" + lastQueryId + ".db";
+
+				// If the database is already backed up at this point, return it
+				if (File.Exists(fileName))
+					return fileName;
+
+				// If not, do the backup then return it
+				bool success = Backup((SQLiteConnection)GetDbConnection(), (SQLiteConnection)GetBackupDbConnection(lastQueryId));
+				if (success)
+					return "wavebox_backup_" + lastQueryId + ".db";
+
+				// Something failed so return null
+				lastQueryId = -1;
+				return null;
+			}
 		}
 
-		public static bool BackupLive()
+		/*public static bool BackupLive()
 		{
 			return BackupLive((SQLiteConnection)GetDbConnection(), (SQLiteConnection)GetBackupDbConnection());
-		}
+		}*/
 		       
-		private static readonly object dbBackupLock = new object();
 		public static bool Backup(SQLiteConnection source, SQLiteConnection destination)
 		{
 			lock(dbBackupLock)
@@ -287,7 +330,7 @@ namespace WaveBox.DataModel.Singletons
 		// SQLITE_OK = 0
 		// SQLITE_BUSY = 5
 		// SQLITE_LOCKED = 6
-		public static bool BackupLive(SQLiteConnection source, SQLiteConnection destination)
+		/*public static bool BackupLive(SQLiteConnection source, SQLiteConnection destination)
 		{
 			lock(dbBackupLock)
 			{
@@ -299,11 +342,11 @@ namespace WaveBox.DataModel.Singletons
 					IntPtr backupHandle = sqlite3_backup_init(destinationHandle, SQLiteConvert.ToUTF8("main"), sourceHandle, SQLiteConvert.ToUTF8("main"));
 					if (backupHandle != IntPtr.Zero)
 					{
-						/* Each iteration of this loop copies 5 database pages from database
-	      				** pDb to the backup database. If the return value of backup_step()
-	      				** indicates that there are still further pages to copy, sleep for
-	      				** 250 ms before repeating. */
-						int rc = 0;
+						// Each iteration of this loop copies 5 database pages from database
+	      				// pDb to the backup database. If the return value of backup_step()
+	      				// indicates that there are still further pages to copy, sleep for
+	      				// 250 ms before repeating. 
+	      				int rc = 0;
 						do
 						{
 							rc = sqlite3_backup_step(backupHandle, 10);
@@ -315,7 +358,7 @@ namespace WaveBox.DataModel.Singletons
 						}
 						while(rc == 0 || rc == 5 || rc == 6);
 						
-						/* Release resources allocated by backup_init(). */
+						// Release resources allocated by backup_init().
 						rc = sqlite3_backup_finish(backupHandle);
 
 						// Delete the user and session tables
@@ -356,7 +399,7 @@ namespace WaveBox.DataModel.Singletons
 				}
 				return false;
 			}
-		}
+		}*/
 		                                                                                                    
         private static IntPtr GetConnectionHandle(SQLiteConnection source)
         {

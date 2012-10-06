@@ -98,6 +98,10 @@ namespace WaveBox.ApiHandler
 					{
 						return new TranscodeHlsApiHandler(uriW, processor, user);
 					}
+					else if (action == "database")
+					{
+						return new DatabaseApiHandler(uriW, processor, user);
+					}
 				}
 			}
 			else

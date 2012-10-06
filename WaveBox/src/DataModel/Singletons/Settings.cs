@@ -100,6 +100,33 @@ namespace WaveBox.DataModel.Singletons
                 }
             }
 
+			if (!File.Exists("wavebox_querylog.db"))
+			{
+				try
+				{
+					Console.WriteLine("[SETTINGS] " + "Query log database file doesn't exist; Creating it. (wavebox_querylog.db)");
+					
+					// new filestream on the template
+					FileStream dbTemplate = new FileStream("res" + Path.DirectorySeparatorChar + "wavebox_querylog.db", FileMode.Open);
+					
+					// a new byte array
+					byte[] dbData = new byte[dbTemplate.Length];
+					
+					// read the template file into memory
+					dbTemplate.Read(dbData, 0, Convert.ToInt32(dbTemplate.Length));
+					
+					// write it all out
+					System.IO.File.WriteAllBytes("wavebox_querylog.db", dbData);
+					
+					// close the template file
+					dbTemplate.Close();
+				} 
+				catch (Exception e)
+				{
+					Console.WriteLine("[SETTINGS(2)] " + e);
+				}
+			}
+
             if (!Directory.Exists("art"))
             {
                 Directory.CreateDirectory("art");

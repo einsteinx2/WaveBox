@@ -73,7 +73,7 @@ namespace WaveBox.ApiHandler.Handlers
 					}
 
 					// Send the file
-					Processor.WriteFile(stream, startOffset, length, item.FileType.MimeType());
+					Processor.WriteFile(stream, startOffset, length, item.FileType.MimeType(), null);
 
 				}
 				catch(Exception e)

@@ -1,0 +1,74 @@
+#!/bin/sh
+
+#
+# Download terminal-notifier from here: https://github.com/alloy/terminal-notifier/downloads
+#
+
+#
+# First, edit /Library/Frameworks/Mono.framework/Versions/2.10.9/lib/pkgconfig/mono-2.pc to match the following
+#
+#Libs: -L${libdir}  -lmono-2.0 -pthread   -lpthread -liconv
+#Cflags: -I${includedir} -D_THREAD_SAFE -framework CoreFoundation -arch i386 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk -mmacosx-version-min=10.5
+#
+
+echo "If the build fails, check the script comments and make sure you edited the mono-2.pc file as directed\n"
+
+# Cleanup
+echo "Cleaning up old files\n"
+rm -r WaveBox WaveBox.app
+
+# Enable 32bit building, or it will default to 64bit and fail to link
+export AS="as -arch i386"
+export CC="cc -arch i386"
+
+# Make sure we're using the correct pkgconfig binary
+export PATH=/Library/Frameworks/Mono.framework/Commands/:$PATH
+
+# Create the binary
+echo "Building the binary\n"
+mkbundle --static -o WaveBoxBinary WaveBox.exe
+
+# Create the launcher
+echo '#!/bin/bash
+cd "${0%/*}"
+BINARY=WaveBoxBinary
+if ps aux | grep -v grep | grep $BINARY > /dev/null 
+then
+    killall $BINARY
+    ./terminal-notifier.app/Contents/MacOS/terminal-notifier -message "WaveBox Stopped"
+else
+    nohup ./$BINARY &
+    ./terminal-notifier.app/Contents/MacOS/terminal-notifier -message "WaveBox Started"
+fi' > WaveBoxLauncher
+chmod a+x WaveBoxLauncher
+
+# Create the app bundle directories
+echo "Creating the app bundle\n"
+mkdir -p WaveBox.app/Contents/MacOS WaveBox.app/Contents/Resources
+
+# Create the app bundle plist
+echo '<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<plist version="1.0">
+<dict>
+  <key>CFBundleGetInfoString</key>
+  <string>WaveBox</string>
+  <key>CFBundleExecutable</key>
+  <string>WaveBoxLauncher</string>
+  <key>CFBundleIdentifier</key>
+  <string>com.wavebox.wavebox</string>
+  <key>CFBundleName</key>
+  <string>WaveBox</string>
+  <key>CFBundleIconFile</key>
+  <string>foo.icns</string>
+  <key>CFBundleShortVersionString</key>
+  <string>1.0</string>
+  <key>CFBundleInfoDictionaryVersion</key>
+  <string>6.0</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+</dict>
+</plist>' > WaveBox.app/Contents/Info.plist
+
+# Copy the files into the bundle
+cp -r WaveBoxBinary WaveBoxLauncher terminal-notifier.app res WaveBox.conf Bass.Net.dll Newtonsoft.Json.dll System.Data.SQLite.Linq.dll System.Data.SQLite.dll ffmpeg libbass.dylib libsqlite3.0.dylib nunit.framework.dll nunit.mocks.dll pnunit.framework.dll taglib-sharp.dll WaveBox.app/Contents/MacOS/
+echo "DONE :)"

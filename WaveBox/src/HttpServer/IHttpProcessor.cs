@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Collections;
+using System.Collections.Generic;
 using WaveBox.Transcoding;
 
 namespace WaveBox
@@ -15,12 +16,12 @@ namespace WaveBox
 
 		// Header writing methods
 		void WriteErrorHeader();
-		void WriteSuccessHeader(long contentLength, string mimeType);
+		void WriteSuccessHeader(long contentLength, string mimeType, IDictionary<string, string> customHeaders);
 
 		// Body writing methods
 		void WriteJson(string json);
 		void WriteText(string text, string mimeType);
-		void WriteFile(Stream fs, int startOffset, long length, string mimeType);
+		void WriteFile(Stream fs, int startOffset, long length, string mimeType, IDictionary<string, string> customHeaders);
 	}
 }
 

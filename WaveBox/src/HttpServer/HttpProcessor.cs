@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -231,13 +232,20 @@ namespace WaveBox.Http
 			OutputStream.WriteLine("");
 		}
 
-		public void WriteSuccessHeader(long contentLength, string mimeType)
+		public void WriteSuccessHeader(long contentLength, string mimeType, IDictionary<string, string> customHeaders)
 		{
 			OutputStream.WriteLine("HTTP/1.0 200 OK");            
 			OutputStream.WriteLine("Content-Type: " + mimeType);
 			OutputStream.WriteLine("Content-Length: " + contentLength);
 			OutputStream.WriteLine("Access-Control-Allow-Origin: *");
 			OutputStream.WriteLine("Connection: close");
+			if ((object)customHeaders != null)
+			{
+				foreach (string key in customHeaders.Keys)
+				{
+					OutputStream.WriteLine(key + ": " + customHeaders[key]);
+				}
+			}
 			OutputStream.WriteLine("");
 
 			Console.WriteLine("[HTTPSERVER] File header, contentLength: " + contentLength);
@@ -245,7 +253,7 @@ namespace WaveBox.Http
 
 		public void WriteText(string text, string mimeType)
 		{
-			WriteSuccessHeader(UTF8Encoding.Unicode.GetByteCount(text), mimeType + ";charset=utf-8");
+			WriteSuccessHeader(UTF8Encoding.Unicode.GetByteCount(text), mimeType + ";charset=utf-8", null);
 			OutputStream.Write(text);
 		}
 
@@ -254,7 +262,7 @@ namespace WaveBox.Http
 			WriteText(json, "application/json");
 		}
 
-		public void WriteFile(Stream fs, int startOffset, long length, string mimeType)
+		public void WriteFile(Stream fs, int startOffset, long length, string mimeType, IDictionary<string, string> customHeaders)
 		{
 			if ((object)fs == null || !fs.CanRead || length == 0 || startOffset >= length)
 			{ 
@@ -275,7 +283,7 @@ namespace WaveBox.Http
 			header.WriteHeader(OutputStream);*/
 
 			// Write the headers to output stream
-			WriteSuccessHeader(contentLength, mimeType);
+			WriteSuccessHeader(contentLength, mimeType, customHeaders);
 			OutputStream.Flush();
 			Console.WriteLine("[HTTPSERVER] File header, contentLength: {0}, contentType: {1}", contentLength, mimeType);
 			//Console.WriteLine("[HTTPSERVER] File header, contentLength: {0}, contentType: {1}, status: {2}", contentLength, header.ContentType, header.StatusCode);

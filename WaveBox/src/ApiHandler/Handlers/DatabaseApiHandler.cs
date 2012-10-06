@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
+using System.Data;
+using System.IO;
 using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
 using WaveBox.Http;
@@ -22,47 +24,89 @@ namespace WaveBox.ApiHandler.Handlers
 		
 		public void Process()
 		{	
-			/*// Try to get the folder id
-			bool success = false;
-			int id = 0;
-			if (Uri.Parameters.ContainsKey("id"))
+			// Try to get the update time
+			string id = Uri.Parameters.ContainsKey("id") ? Uri.Parameters["id"] : null;
+
+			if ((object)id == null)
 			{
-				success = Int32.TryParse(Uri.Parameters["id"], out id);
-			}
-			
-			if (success)
-			{
-				// Return the folder for this id
-				Folder folder = new Folder(id);
-				listOfFolders = folder.ListOfSubFolders();
-				//listOfMediaItems = folder.ListOfMediaItems();
-				listOfSongs = folder.ListOfSongs();
-				listOfVideos = folder.ListOfVideos();
-			}
-			else
-			{
-				// No id parameter
-				if (Uri.Parameters.ContainsKey("mediaFolders") && this.IsTrue(Uri.Parameters["mediaFolders"]))
+				// No id parameter, so send down the whole backup database
+				long databaseLastQueryId = -1;
+				string databaseFileName = Database.Backup(out databaseLastQueryId);
+				if ((object)databaseFileName == null)
 				{
-					// They asked for the media folders
-					listOfFolders = Folder.MediaFolders();
+					Processor.WriteErrorHeader();
 				}
 				else
 				{
-					// They didn't ask for media folders, so send top level folders
-					listOfFolders = Folder.TopLevelFolders();
+					Stream stream = new FileStream(databaseFileName, FileMode.Open, FileAccess.Read);
+					long length = stream.Length;
+					int startOffset = 0;
+					
+					// Handle the Range header to start from later in the file
+					if (Processor.HttpHeaders.ContainsKey("Range"))
+					{
+						string range = (string)Processor.HttpHeaders["Range"];
+						string start = range.Split(new char[]{'-', '='})[1];
+						Console.WriteLine("[DATABASEAPI] Connection retried.  Resuming from {0}", start);
+						startOffset = Convert.ToInt32(start);
+					}
+
+					// We send the last query id as a custom header
+					IDictionary<string, string> customHeader = new Dictionary<string, string>();
+					customHeader["WaveBox-LastQueryId"] = databaseLastQueryId.ToString();
+					
+					// Send the database file
+					Processor.WriteFile(stream, startOffset, length, "application/octet-stream", customHeader);
 				}
 			}
-			
-			try
+			else
 			{
-				string json = JsonConvert.SerializeObject(new FoldersResponse(null, listOfFolders, listOfSongs, listOfVideos), Settings.JsonFormatting);
-				Processor.WriteJson(json);
+				// Return all queries >= this id
+				IDbConnection conn = null;
+				IDataReader reader = null;
+				IList<IDictionary<string, object>> queries = new List<IDictionary<string, object>>();
+				try
+				{
+					conn = Database.GetQueryLogDbConnection();
+					IDbCommand q = Database.GetDbCommand("SELECT * FROM query_log " +
+														 "WHERE query_id >= @queryid", conn);
+					q.AddNamedParam("@queryid", id);
+					q.Prepare();
+					reader = q.ExecuteReader();
+					
+					while (reader.Read())
+					{
+						long queryId = reader.GetInt64(0);
+						string queryString = reader.GetString(1);
+						string values = reader.GetString(2);
+
+						IDictionary<string, object> query = new Dictionary<string, object>();
+						query["id"] = queryId;
+						query["query"] = queryString;
+						query["values"] = values;
+
+						queries.Add(query);
+					}
+				}
+				catch (Exception e)
+				{
+					Console.WriteLine("[SONG(1)] " + e);
+				}
+				finally
+				{
+					Database.Close(conn, null);
+				}
+
+				try
+				{
+					string json = JsonConvert.SerializeObject(new DatabaseResponse(null, queries), Settings.JsonFormatting);
+					Processor.WriteJson(json);
+				}
+				catch(Exception e)
+				{
+					Console.WriteLine("[DATABASEAPI(1)] ERROR: " + e);
+				}
 			}
-			catch(Exception e)
-			{
-				Console.WriteLine("[FOLDERAPI(1)] ERROR: " + e);
-			}*/
 		}
 		
 		private class DatabaseResponse
@@ -70,13 +114,13 @@ namespace WaveBox.ApiHandler.Handlers
 			[JsonProperty("error")]
 			public string Error { get; set; }
 			
-			[JsonProperty("lastUpdate")]
-			public long LastUpdate { get; set; }
+			[JsonProperty("queries")]
+			public IList<IDictionary<string, object>> Queries { get; set; }
 
-			public DatabaseResponse(string error, long lastUpdate)
+			public DatabaseResponse(string error, IList<IDictionary<string, object>> queries)
 			{
 				Error = error;
-				LastUpdate = lastUpdate;
+				Queries = queries;
 			}
 		}
 	}
