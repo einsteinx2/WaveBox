@@ -206,7 +206,7 @@ namespace WaveBox
 			return OS.unknown; 
 		}
 
-		static bool IsMacOSX()
+		static private bool IsMacOSX()
 		{ 
 			IntPtr buf = IntPtr.Zero; 
 			try

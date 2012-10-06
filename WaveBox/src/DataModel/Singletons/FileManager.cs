@@ -54,6 +54,50 @@ namespace WaveBox.DataModel.Singletons
 					watch.IncludeSubdirectories = true;
 					watch.EnableRaisingEvents = true;
 
+					if (WaveBoxService.DetectOS() == WaveBoxService.OS.MacOSX)
+					{
+						// On OS X, there is a bug that requires us to explicitly set
+						// watchers for all subdirectories. The IncludeSubdirectories
+						// property is ignored
+						Stack<string> dirs = new Stack<string>(20);
+						dirs.Push(folder.FolderPath);
+
+						while (dirs.Count > 0)
+						{
+							string currentDir = dirs.Pop();
+							string[] subDirs;
+							try
+							{
+								subDirs = System.IO.Directory.GetDirectories(currentDir);
+							}
+							catch (UnauthorizedAccessException e)
+							{                    
+								Console.WriteLine("[FILEMANAGER] " + e.Message);
+								continue;
+							}
+							catch (System.IO.DirectoryNotFoundException e)
+							{
+								Console.WriteLine("[FILEMANAGER] " + e.Message);
+								continue;
+							}
+
+							foreach (string subDirectory in subDirs)
+							{
+								watch = new FileSystemWatcher(subDirectory);
+								watch.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName;
+								watch.Changed += new FileSystemEventHandler(OnChanged);
+								watch.Created += new FileSystemEventHandler(OnCreated);
+								watch.Deleted += new FileSystemEventHandler(OnDeleted);
+								watch.Renamed += new RenamedEventHandler(OnRenamed);								
+								watch.EnableRaisingEvents = true;
+
+								Console.WriteLine("[FILEMANAGER] File system watcher added for: {0}", subDirectory);
+
+								dirs.Push(subDirectory);
+							}
+						}
+					}
+
 					// Confirm watcher addition
 					Console.WriteLine("[FILEMANAGER] File system watcher added for: {0}", folder.FolderPath);
 					//watcherList.Add(watch);
