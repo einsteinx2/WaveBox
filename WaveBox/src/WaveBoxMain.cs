@@ -45,7 +45,7 @@ namespace WaveBox
             PodcastManagement.DownloadQueue.FeedChecks.startScanQueue();
 
 			// sleep the main thread so we can go about handling api calls and stuff on other threads.
-			Thread.Sleep(Timeout.Infinite);
+			//Thread.Sleep(Timeout.Infinite);
 
 			return;
 		}
