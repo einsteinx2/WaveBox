@@ -14,6 +14,7 @@ using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using WaveBox.DataModel.Model;
 using WaveBox.Transcoding;
+using Mono.Zeroconf;
 
 namespace WaveBox
 {
@@ -47,14 +48,16 @@ namespace WaveBox
 				Directory.CreateDirectory(RootPath());
 			}
 
-			// Start the HTTP server
-			StartHTTPServer();
-
-			TranscodeManager.Instance.Setup();
-			
 			// Perform initial setup of Settings, create a user
 			Database.DatabaseSetup();
 			Settings.SettingsSetup();
+
+			// Start the HTTP server
+			StartHTTPServer();
+			PublishZeroConf();
+
+			TranscodeManager.Instance.Setup();
+
 			User.CreateUser("test", "test");
 
 			// Start file manager, calculate time it takes to run.
@@ -71,14 +74,27 @@ namespace WaveBox
 			return;
 		}
 
+		private static void PublishZeroConf()
+		{
+			RegisterService service = new RegisterService();
+			service.Name = "WaveBox";
+			service.RegType = "_wavebox._tcp";
+			service.ReplyDomain = "local.";
+			service.Port = (short)Settings.Port;
+			
+			/*// TxtRecords are optional
+			TxtRecord txt_record = new TxtRecord ();
+			txt_record.Add ("Password", "false");
+			service.TxtRecord = txt_record;*/
+			
+			service.Register();
+		}
+
 		/// <summary>
 		/// Initialize the HTTP server thread.
 		/// </summary>
 		private static void StartHTTPServer()
 		{
-			// define run port
-			int httpPort = 6500;
-
 			// thread for the HTTP server.  its listen operation is blocking, so we can't start it before
 			// we do any file scanning otherwise.
 			Thread httpSrv = null;
@@ -86,7 +102,7 @@ namespace WaveBox
 			// Attempt to start the HTTP server thread
 			try
 			{
-				HttpServer http = new HttpServer(httpPort);
+				HttpServer http = new HttpServer(Settings.Port);
 				httpSrv = new Thread(new ThreadStart(http.Listen));
 				httpSrv.IsBackground = true;
 				httpSrv.Start();

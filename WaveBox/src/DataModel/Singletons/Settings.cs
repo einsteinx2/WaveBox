@@ -20,6 +20,9 @@ namespace WaveBox.DataModel.Singletons
 		private static bool prettyJson = true;
 		public static Formatting JsonFormatting { get { return prettyJson ? Formatting.Indented : Formatting.None; } }
 
+		private static short port;
+		public static short Port { get { return port; } }
+
         private static string podcastFolder = null;
         public static string PodcastFolder { get { return podcastFolder; } }
 
@@ -43,6 +46,15 @@ namespace WaveBox.DataModel.Singletons
 			string configFile = RemoveJsonComments(reader);
 
 			dynamic json = JsonConvert.DeserializeObject(configFile);
+
+			try
+			{
+				port = json.port;
+			}
+			catch
+			{
+				port = 6500;
+			}
 
 			podcastFolder = json.podcastFolder;
             podcastCheckInterval = json.podcastCheckInterval;

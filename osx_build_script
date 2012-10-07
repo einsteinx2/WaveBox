@@ -70,5 +70,5 @@ echo '<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 </plist>' > WaveBox.app/Contents/Info.plist
 
 # Copy the files into the bundle
-cp -r WaveBoxBinary WaveBoxLauncher terminal-notifier.app res WaveBox.conf Bass.Net.dll Newtonsoft.Json.dll System.Data.SQLite.Linq.dll System.Data.SQLite.dll ffmpeg libbass.dylib libsqlite3.0.dylib nunit.framework.dll nunit.mocks.dll pnunit.framework.dll taglib-sharp.dll WaveBox.app/Contents/MacOS/
+cp -r WaveBoxBinary WaveBoxLauncher terminal-notifier.app res WaveBox.conf Mono.Zeroconf.dll Mono.Zeroconf.Providers.Bonjour.dll Bass.Net.dll Newtonsoft.Json.dll System.Data.SQLite.Linq.dll System.Data.SQLite.dll ffmpeg libbass.dylib libsqlite3.0.dylib nunit.framework.dll nunit.mocks.dll pnunit.framework.dll taglib-sharp.dll WaveBox.app/Contents/MacOS/
 echo "DONE :)"

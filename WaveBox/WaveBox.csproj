@@ -85,6 +85,12 @@
     <Reference Include="pnunit.framework">
       <HintPath>lib\pnunit.framework.dll</HintPath>
     </Reference>
+    <Reference Include="Mono.Zeroconf.Providers.Bonjour">
+      <HintPath>lib\Mono.Zeroconf.Providers.Bonjour.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Zeroconf">
+      <HintPath>lib\Mono.Zeroconf.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -216,6 +222,11 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="res\wavebox.conf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="lib\Mono.Zeroconf.dll" />
+    <None Include="lib\Mono.Zeroconf.Providers.Bonjour.dll" />
+    <None Include="Mono.Zeroconf.Providers.Bonjour.dll.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
