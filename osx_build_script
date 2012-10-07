@@ -26,7 +26,7 @@ export PATH=/Library/Frameworks/Mono.framework/Commands/:$PATH
 
 # Create the binary
 echo "Building the binary\n"
-mkbundle --static --deps -o WaveBoxBinary WaveBox.exe Newtonsoft.Json.dll taglib-sharp.dll Bass.Net.dll Mono.Zeroconf.dll nunit.framework.dll nunit.mocks.dll pnunit.framework.dll System.Data.SQLite.dll
+mkbundle --static --deps -o WaveBoxBinary WaveBox.exe Newtonsoft.Json.dll taglib-sharp.dll Bass.Net.dll Mono.Zeroconf.dll System.Data.SQLite.dll
 
 # Create the launcher
 echo '#!/bin/bash

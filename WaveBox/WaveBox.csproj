@@ -76,15 +76,6 @@
     <Reference Include="taglib-sharp">
       <HintPath>lib\taglib-sharp.dll</HintPath>
     </Reference>
-    <Reference Include="nunit.framework">
-      <HintPath>lib\nunit.framework.dll</HintPath>
-    </Reference>
-    <Reference Include="nunit.mocks">
-      <HintPath>lib\nunit.mocks.dll</HintPath>
-    </Reference>
-    <Reference Include="pnunit.framework">
-      <HintPath>lib\pnunit.framework.dll</HintPath>
-    </Reference>
     <Reference Include="Mono.Zeroconf.Providers.Bonjour">
       <HintPath>lib\Mono.Zeroconf.Providers.Bonjour.dll</HintPath>
     </Reference>
@@ -216,9 +207,6 @@
     <None Include="libbass.dylib">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="lib\nunit.framework.dll" />
-    <None Include="lib\nunit.mocks.dll" />
-    <None Include="lib\pnunit.framework.dll" />
     <None Include="lib\Bass.Net.dll" />
     <None Include="bass.dll" />
     <None Include="res\wavebox_querylog.db">

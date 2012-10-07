@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaveBox", "WaveBox\WaveBox.csproj", "{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaveBoxText", "WaveBoxText\WaveBoxText.csproj", "{B1947779-CC0E-4B53-BB33-6DA4DB2943DE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -13,6 +15,10 @@ Global
 		{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}.Debug|x86.Build.0 = Debug|x86
 		{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}.Release|x86.ActiveCfg = Release|x86
 		{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}.Release|x86.Build.0 = Release|x86
+		{B1947779-CC0E-4B53-BB33-6DA4DB2943DE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B1947779-CC0E-4B53-BB33-6DA4DB2943DE}.Debug|x86.Build.0 = Debug|Any CPU
+		{B1947779-CC0E-4B53-BB33-6DA4DB2943DE}.Release|x86.ActiveCfg = Release|Any CPU
+		{B1947779-CC0E-4B53-BB33-6DA4DB2943DE}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = WaveBox\WaveBox.csproj
