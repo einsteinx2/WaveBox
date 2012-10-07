@@ -91,6 +91,9 @@
     <Reference Include="Mono.Zeroconf">
       <HintPath>lib\Mono.Zeroconf.dll</HintPath>
     </Reference>
+    <Reference Include="Mono.Zeroconf.Providers.AvahiDBus">
+      <HintPath>lib\Mono.Zeroconf.Providers.AvahiDBus.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -229,6 +232,7 @@
     <None Include="Mono.Zeroconf.Providers.Bonjour.dll.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="lib\Mono.Zeroconf.Providers.AvahiDBus.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
