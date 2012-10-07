@@ -20,6 +20,8 @@ namespace WaveBox
 {
 	class WaveBoxMain
 	{
+		public static RegisterService ZeroConfService { get; set; }
+
 		public static string RootPath()
 		{
 			switch (WaveBoxService.DetectOS())
@@ -74,21 +76,33 @@ namespace WaveBox
 			return;
 		}
 
-		private static void PublishZeroConf()
+		public static void PublishZeroConf()
 		{
-			RegisterService service = new RegisterService();
-			service.Name = System.Environment.MachineName;
-			//service.Name = "WaveBox on " + System.Environment.MachineName;
-			//service.Name = "WaveBox";
-			service.RegType = "_wavebox._tcp";
-			service.ReplyDomain = "local.";
-			service.Port = (short)Settings.Port;
-			
-			TxtRecord record = new TxtRecord();
-			record.Add ("URL", "http://something.wavebox.es");
-			service.TxtRecord = record;
-			
-			service.Register();
+			if ((object)ZeroConfService == null)
+			{
+				ZeroConfService = new RegisterService();
+				ZeroConfService.Name = System.Environment.MachineName;
+				//ZeroConfService.Name = "WaveBox on " + System.Environment.MachineName;
+				//ZeroConfService.Name = "WaveBox";
+				ZeroConfService.RegType = "_wavebox._tcp";
+				ZeroConfService.ReplyDomain = "local.";
+				ZeroConfService.Port = (short)Settings.Port;
+				
+				TxtRecord record = new TxtRecord();
+				record.Add ("URL", "http://something.wavebox.es");
+				ZeroConfService.TxtRecord = record;
+				
+				ZeroConfService.Register();
+			}
+		}
+
+		public static void DisposeZeroConf()
+		{
+			if ((object)ZeroConfService != null)
+			{
+				ZeroConfService.Dispose();
+				ZeroConfService = null;
+			}
 		}
 
 		/// <summary>

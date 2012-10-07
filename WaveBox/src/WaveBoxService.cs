@@ -88,6 +88,10 @@ namespace WaveBox
 			TranscodeManager.Instance.CancelAllTranscodes();
 			Console.WriteLine("[SERVICE] All transcodes canceled");
 
+			Console.WriteLine("[SERVICE] Turning off ZeroConf...");
+			WaveBoxMain.DisposeZeroConf();
+			Console.WriteLine("[SERVICE] ZeroConf off");
+
 			Console.WriteLine("[SERVICE] Stopped!");
 
 			// Gracefully terminate

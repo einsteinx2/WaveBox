@@ -15,7 +15,7 @@ echo "If the build fails, check the script comments and make sure you edited the
 
 # Cleanup
 echo "Cleaning up old files\n"
-rm -r WaveBox WaveBox.app
+rm -rf WaveBox WaveBox.app
 
 # Enable 32bit building, or it will default to 64bit and fail to link
 export AS="as -arch i386"
@@ -26,7 +26,7 @@ export PATH=/Library/Frameworks/Mono.framework/Commands/:$PATH
 
 # Create the binary
 echo "Building the binary\n"
-mkbundle --static -o WaveBoxBinary WaveBox.exe
+mkbundle --static --deps -o WaveBoxBinary WaveBox.exe Newtonsoft.Json.dll taglib-sharp.dll Bass.Net.dll Mono.Zeroconf.dll nunit.framework.dll nunit.mocks.dll pnunit.framework.dll System.Data.SQLite.dll
 
 # Create the launcher
 echo '#!/bin/bash
@@ -37,7 +37,7 @@ then
     killall $BINARY
     ./terminal-notifier.app/Contents/MacOS/terminal-notifier -message "WaveBox Stopped"
 else
-    nohup ./$BINARY &
+    MONO_ZEROCONF_PROVIDERS=. nohup ./$BINARY &
     ./terminal-notifier.app/Contents/MacOS/terminal-notifier -message "WaveBox Started"
 fi' > WaveBoxLauncher
 chmod a+x WaveBoxLauncher
@@ -70,5 +70,5 @@ echo '<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 </plist>' > WaveBox.app/Contents/Info.plist
 
 # Copy the files into the bundle
-cp -r WaveBoxBinary WaveBoxLauncher terminal-notifier.app res WaveBox.conf Mono.Zeroconf.dll Mono.Zeroconf.Providers.Bonjour.dll Bass.Net.dll Newtonsoft.Json.dll System.Data.SQLite.Linq.dll System.Data.SQLite.dll ffmpeg libbass.dylib libsqlite3.0.dylib nunit.framework.dll nunit.mocks.dll pnunit.framework.dll taglib-sharp.dll WaveBox.app/Contents/MacOS/
+cp -r WaveBoxBinary WaveBoxLauncher terminal-notifier.app res WaveBox.conf ../../html ffmpeg Mono.Zeroconf.Providers.Bonjour.dll Mono.Zeroconf.Providers.Bonjour.dll.config libbass.dylib libsqlite3.0.dylib /Library/Frameworks/Mono.framework/Versions/Current/lib/libMonoPosixHelper.dylib WaveBox.app/Contents/MacOS/
 echo "DONE :)"
