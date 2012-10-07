@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -10,6 +10,7 @@ using WaveBox;
 using System.Diagnostics;
 using WaveBox.ApiHandler;
 using WaveBox.Transcoding;
+using WaveBox.Http;
 
 // offered to the public domain for any use with no restriction
 // and also with no warranty of any kind, please enjoy. - David Jeske. 
@@ -236,7 +237,9 @@ namespace WaveBox.Http
 		{
 			OutputStream.WriteLine("HTTP/1.0 200 OK");            
 			OutputStream.WriteLine("Content-Type: " + mimeType);
-			OutputStream.WriteLine("Content-Length: " + contentLength);
+            if(customHeaders.ContainsKey("Last-Modified")) 
+                OutputStream.WriteLine("Last-Modified: " + customHeaders["Last-Modified"]);
+			//OutputStream.WriteLine("Content-Length: " + contentLength);
 			OutputStream.WriteLine("Access-Control-Allow-Origin: *");
 			OutputStream.WriteLine("Connection: close");
 			if ((object)customHeaders != null)
@@ -283,9 +286,10 @@ namespace WaveBox.Http
 			header.WriteHeader(OutputStream);*/
 
 			// Write the headers to output stream
+
 			WriteSuccessHeader(contentLength, mimeType, customHeaders);
 			OutputStream.Flush();
-			Console.WriteLine("[HTTPSERVER] File header, contentLength: {0}, contentType: {1}", contentLength, mimeType);
+            Console.WriteLine("[HTTPSERVER] File header, contentLength: {0}, contentType: {1}, lastMod: {2}", contentLength, mimeType, customHeaders.ContainsKey("Last-Modified") ? customHeaders["Last-Modified"] : null);
 			//Console.WriteLine("[HTTPSERVER] File header, contentLength: {0}, contentType: {1}, status: {2}", contentLength, header.ContentType, header.StatusCode);
 
 			// Read/Write in 8 KB chunks
@@ -370,6 +374,63 @@ namespace WaveBox.Http
 			sw.Stop();
 			//_sh.writeFailure
 		}
+
+        public void WriteNotModified()
+        {
+            var header = new WaveBox.Http.HttpHeader(HttpHeader.HttpStatusCode.NOTMODIFIED, HttpHeader.HttpContentType.UNKNOWN, 0);
+            header.WriteHeader(OutputStream);
+            return;
+        }
+
+        public static string DateTimeToLastMod(DateTime theDate)
+        {
+            string dayOfWeek;
+
+            //var offset = TimeZone.CurrentTimeZone.GetUtcOffset(theDate).Ticks;
+            //var theDateUtc = theDate.AddTicks(-offset);
+            var d = theDate.DayOfWeek;
+            if(d == DayOfWeek.Sunday)
+                dayOfWeek = "Sun";
+            else if(d == DayOfWeek.Monday)
+                dayOfWeek = "Mon";
+            else if(d == DayOfWeek.Tuesday)
+                dayOfWeek = "Tue";
+            else if(d == DayOfWeek.Wednesday)
+                dayOfWeek = "Wed";
+            else if(d == DayOfWeek.Thursday)
+                dayOfWeek = "Thu";
+            else if(d == DayOfWeek.Friday)
+                dayOfWeek = "Fri";
+            else dayOfWeek = "Sat";
+
+            string month;
+            var m = theDate.Month;
+            if(m == 1)
+                month = "Jan";
+            else if(m == 2)
+                month = "Feb";
+            else if(m == 3)
+                month = "Mar";
+            else if(m == 4)
+                month = "Apr";
+            else if(m == 5)
+                month = "May";
+            else if(m == 6)
+                month = "Jun";
+            else if(m == 7)
+                month = "Jul";
+            else if(m == 8)
+                month = "Aug";
+            else if(m == 9)
+                month = "Sep";
+            else if(m == 10)
+                month = "Oct";
+            else if(m == 11)
+                month = "Nov";
+            else month = "Dec";
+
+            return dayOfWeek + ", " + theDate.Day + " " + month + " " + theDate.Year + " " + string.Format("{0:HH}:{0:mm}:{0:ss}", theDate) + " GMT";
+        }
 	}
 }
 

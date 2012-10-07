@@ -22,7 +22,8 @@ namespace WaveBox.Http
 		{
 			OK = 0, 
 			NOTFOUND = 1,
-            PARTIALCONTENT = 2
+            PARTIALCONTENT = 2,
+            NOTMODIFIED = 3
 		}
 
         public enum HttpContentType
@@ -114,8 +115,9 @@ namespace WaveBox.Http
 			switch (c)
 			{
 				case HttpStatusCode.OK: return "HTTP/1.0 200 OK";
-				case HttpStatusCode.NOTFOUND: return "HTTP/1.0 404 File not found";
-                case HttpStatusCode.PARTIALCONTENT: return "HTTP/1.1 206 Partial content";
+				case HttpStatusCode.NOTFOUND: return "HTTP/1.0 404 Not Found";
+                case HttpStatusCode.PARTIALCONTENT: return "HTTP/1.1 206 Partial Content";
+                case HttpStatusCode.NOTMODIFIED: return "HTTP/1.1 304 Not Modified";
 				default: return null;
 			}
 		}
