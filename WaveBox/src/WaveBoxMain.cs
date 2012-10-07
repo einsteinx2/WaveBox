@@ -77,15 +77,16 @@ namespace WaveBox
 		private static void PublishZeroConf()
 		{
 			RegisterService service = new RegisterService();
-			service.Name = "WaveBox";
+			service.Name = System.Environment.MachineName;
+			//service.Name = "WaveBox on " + System.Environment.MachineName;
+			//service.Name = "WaveBox";
 			service.RegType = "_wavebox._tcp";
 			service.ReplyDomain = "local.";
 			service.Port = (short)Settings.Port;
 			
-			/*// TxtRecords are optional
-			TxtRecord txt_record = new TxtRecord ();
-			txt_record.Add ("Password", "false");
-			service.TxtRecord = txt_record;*/
+			TxtRecord record = new TxtRecord();
+			record.Add ("URL", "http://something.wavebox.es");
+			service.TxtRecord = record;
 			
 			service.Register();
 		}
