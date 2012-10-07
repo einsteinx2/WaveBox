@@ -233,21 +233,12 @@ namespace WaveBox.Http
 			OutputStream.WriteLine("");
 		}
 
-<<<<<<< HEAD
 		public void WriteSuccessHeader(long contentLength, string mimeType, IDictionary<string, string> customHeaders)
-=======
-        public void WriteSuccessHeader(long contentLength, string mimeType)
-        {
-            WriteSuccessHeader(contentLength, mimeType, null);
-        }
-
-		public void WriteSuccessHeader(long contentLength, string mimeType, string lastModified)
->>>>>>> Implemented Last-Modified and If-Modified-Since headers
 		{
 			OutputStream.WriteLine("HTTP/1.0 200 OK");            
 			OutputStream.WriteLine("Content-Type: " + mimeType);
-            if(lastModified != null) 
-                OutputStream.WriteLine("Last-Modified: " + lastModified);
+            if(customHeaders.ContainsKey("Last-Modified")) 
+                OutputStream.WriteLine("Last-Modified: " + customHeaders["Last-Modified"]);
 			//OutputStream.WriteLine("Content-Length: " + contentLength);
 			OutputStream.WriteLine("Access-Control-Allow-Origin: *");
 			OutputStream.WriteLine("Connection: close");
@@ -274,19 +265,12 @@ namespace WaveBox.Http
 			WriteText(json, "application/json");
 		}
 
-<<<<<<< HEAD
 		public void WriteFile(Stream fs, int startOffset, long length, string mimeType, IDictionary<string, string> customHeaders)
-=======
-		public void WriteFile(Stream fs, int startOffset, long length, string mimeType, DateTime? lastModified)
->>>>>>> Implemented Last-Modified and If-Modified-Since headers
 		{
 			if ((object)fs == null || !fs.CanRead || length == 0 || startOffset >= length)
 			{ 
 				return;
 			}
-
-            string lastMod = lastModified == null ? null : HttpProcessor.DateTimeToLastMod(lastModified.Value);
-
 
 			long contentLength = length - startOffset;
 			/*HttpHeader header = null;
@@ -302,14 +286,10 @@ namespace WaveBox.Http
 			header.WriteHeader(OutputStream);*/
 
 			// Write the headers to output stream
-<<<<<<< HEAD
-			WriteSuccessHeader(contentLength, mimeType, customHeaders);
-=======
 
-			WriteSuccessHeader(contentLength, mimeType, lastMod);
->>>>>>> Implemented Last-Modified and If-Modified-Since headers
+			WriteSuccessHeader(contentLength, mimeType, customHeaders);
 			OutputStream.Flush();
-            Console.WriteLine("[HTTPSERVER] File header, contentLength: {0}, contentType: {1}, lastMod: {2}", contentLength, mimeType, lastMod);
+            Console.WriteLine("[HTTPSERVER] File header, contentLength: {0}, contentType: {1}, lastMod: {2}", contentLength, mimeType, customHeaders.ContainsKey("Last-Modified") ? customHeaders["Last-Modified"] : null);
 			//Console.WriteLine("[HTTPSERVER] File header, contentLength: {0}, contentType: {1}, status: {2}", contentLength, header.ContentType, header.StatusCode);
 
 			// Read/Write in 8 KB chunks
@@ -402,7 +382,7 @@ namespace WaveBox.Http
             return;
         }
 
-        private static string DateTimeToLastMod(DateTime theDate)
+        public static string DateTimeToLastMod(DateTime theDate)
         {
             string dayOfWeek;
 

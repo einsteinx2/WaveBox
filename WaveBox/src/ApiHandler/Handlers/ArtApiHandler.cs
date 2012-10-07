@@ -60,11 +60,11 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 			}
 
-<<<<<<< HEAD
-			Processor.WriteFile(stream, 0, stream.Length, HttpHeader.MimeTypeForExtension(".jpg"), null);
-=======
-            Processor.WriteFile(stream, 0, stream.Length, HttpHeader.MimeTypeForExtension(".jpg"), new FileInfo(art.FilePath).LastWriteTimeUtc);
->>>>>>> Implemented Last-Modified and If-Modified-Since headers
+            var dict = new Dictionary<string, string>();
+            var lmt = HttpProcessor.DateTimeToLastMod(new FileInfo(art.FilePath).LastWriteTimeUtc);
+            dict.Add("Last-Modified", lmt);
+
+            Processor.WriteFile(stream, 0, stream.Length, HttpHeader.MimeTypeForExtension(".jpg"), dict);
 
             // close the file so we don't get sharing violations on future accesses
             stream.Close();

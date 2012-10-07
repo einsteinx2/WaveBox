@@ -22,11 +22,11 @@ namespace WaveBox
         void WriteNotModified();
 		void WriteJson(string json);
 		void WriteText(string text, string mimeType);
-<<<<<<< HEAD
+
 		void WriteFile(Stream fs, int startOffset, long length, string mimeType, IDictionary<string, string> customHeaders);
-=======
-		void WriteFile(Stream fs, int startOffset, long length, string mimeType, DateTime? lastModified);
->>>>>>> Implemented Last-Modified and If-Modified-Since headers
+
+        // Utility methods
+        //static string DateTimeToLastMod(DateTime theDate);
 	}
 }
 

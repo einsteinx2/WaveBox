@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
 using WaveBox.Http;
 
 namespace WaveBox.ApiHandler.Handlers
@@ -82,11 +83,12 @@ namespace WaveBox.ApiHandler.Handlers
 
 				long length = file.Length - startOffset;
 
-<<<<<<< HEAD
-				Processor.WriteFile(file, startOffset, length, HttpHeader.MimeTypeForExtension(Path.GetExtension(path)), null);
-=======
-				Processor.WriteFile(file, startOffset, length, HttpHeader.MimeTypeForExtension(Path.GetExtension(path)), new FileInfo(path).LastWriteTimeUtc);
->>>>>>> Implemented Last-Modified and If-Modified-Since headers
+                var dict = new Dictionary<string, string>();
+                var lwt = HttpProcessor.DateTimeToLastMod(new FileInfo(path).LastWriteTimeUtc);
+                dict.Add("Last-Modified", lwt);
+
+				Processor.WriteFile(file, startOffset, length, HttpHeader.MimeTypeForExtension(Path.GetExtension(path)), dict);
+
 			}
 			else
 			{
@@ -96,45 +98,6 @@ namespace WaveBox.ApiHandler.Handlers
 				Processor.WriteErrorHeader();
 			}
 		}
-        private static DateTime parseIfModifiedSinceHeader(string headerString)
-        {
-            // create the default return
-            var thisTime = new DateTime();
-            
-            try
-            {
-                // lop off the day marker
-                string mod = headerString.Substring(headerString.IndexOf(',') + 2);
-                Console.WriteLine(mod);
-                
-                // split it by spaces
-                string[] split = mod.Split(' ');
-                
-                // grab the date information
-                int dayNum = int.Parse(split [0]);
-                int monthNum = MonthForAbbreviation(split [1]);
-                int yearNum = int.Parse(split [2]);
-                
-                // split up the time and parse it
-                string[] timeSplit = split [3].Split(':');
-                int timeHrs = int.Parse(timeSplit [0]);
-                int timeMins = int.Parse(timeSplit [1]);
-                int timeSecs = int.Parse(timeSplit [2]);
-                
-                // create a new datetime object with the information we've gathered
-                var dt = new DateTime(yearNum, monthNum, dayNum, timeHrs, timeMins, timeSecs, split [4] == "GMT" ? DateTimeKind.Utc : DateTimeKind.Local);
-                Console.WriteLine(dt.ToLongDateString());
-                
-                // set the return value
-                thisTime = dt;
-            } catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
-            
-            // return the datetime
-            return thisTime;
-        }
         
         private static int MonthForAbbreviation(string abb)
         {

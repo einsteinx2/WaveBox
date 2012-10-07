@@ -72,13 +72,12 @@ namespace WaveBox.ApiHandler.Handlers
 						startOffset = Convert.ToInt32(start);
 					}
 
-					// Send the file
-<<<<<<< HEAD
-					Processor.WriteFile(stream, startOffset, length, item.FileType.MimeType(), null);
-=======
-                    Processor.WriteFile(stream, startOffset, length, item.FileType.MimeType(), new FileInfo(item.FilePath).LastWriteTimeUtc);
->>>>>>> Implemented Last-Modified and If-Modified-Since headers
+                    var dict = new Dictionary<string, string>();
+                    var lmt = HttpProcessor.DateTimeToLastMod(new FileInfo(item.FilePath).LastWriteTimeUtc);
+                    dict.Add("Last-Modified", lmt);
 
+					// Send the file
+                    Processor.WriteFile(stream, startOffset, length, item.FileType.MimeType(), dict);
 				}
 				catch(Exception e)
 				{
