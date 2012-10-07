@@ -24,14 +24,19 @@ namespace WaveBox
 
 		public static string RootPath()
 		{
+			/*foreach (Environment.SpecialFolder val in Enum.GetValues(typeof(Environment.SpecialFolder)))
+			{
+				Console.WriteLine(val + ": " + Environment.GetFolderPath(val));
+			}*/
+			
 			switch (WaveBoxService.DetectOS())
 			{
 				case WaveBoxService.OS.Windows:
-					return "%appdata%\\WaveBox\\";
+					return Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + "\\WaveBox\\";
 				case WaveBoxService.OS.MacOSX:
 					return Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "/Library/Application Support/WaveBox/";
 				case WaveBoxService.OS.Unix:
-					return "/usr/local/wavebox/";
+					return Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "/.wavebox/";
 				default:
 					return "";
 			}
@@ -80,19 +85,27 @@ namespace WaveBox
 		{
 			if ((object)ZeroConfService == null)
 			{
-				ZeroConfService = new RegisterService();
-				ZeroConfService.Name = System.Environment.MachineName;
-				//ZeroConfService.Name = "WaveBox on " + System.Environment.MachineName;
-				//ZeroConfService.Name = "WaveBox";
-				ZeroConfService.RegType = "_wavebox._tcp";
-				ZeroConfService.ReplyDomain = "local.";
-				ZeroConfService.Port = (short)Settings.Port;
-				
-				TxtRecord record = new TxtRecord();
-				record.Add ("URL", "http://something.wavebox.es");
-				ZeroConfService.TxtRecord = record;
-				
-				ZeroConfService.Register();
+				try
+				{
+					ZeroConfService = new RegisterService();
+					ZeroConfService.Name = System.Environment.MachineName;
+					//ZeroConfService.Name = "WaveBox on " + System.Environment.MachineName;
+					//ZeroConfService.Name = "WaveBox";
+					ZeroConfService.RegType = "_wavebox._tcp";
+					ZeroConfService.ReplyDomain = "local.";
+					ZeroConfService.Port = (short)Settings.Port;
+					
+					TxtRecord record = new TxtRecord();
+					record.Add ("URL", "http://something.wavebox.es");
+					ZeroConfService.TxtRecord = record;
+					
+					ZeroConfService.Register();
+				}
+				catch (Exception e)
+				{
+					Console.WriteLine(e);
+					DisposeZeroConf();
+				}
 			}
 		}
 
