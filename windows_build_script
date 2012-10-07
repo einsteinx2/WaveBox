@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# Cleanup
+echo "Cleaning up old files\n"
+rm -f WaveBox_Windows_32bit.zip
+
+# Create an archive
+ln -s ../../html html
+zip -r WaveBox_Windows_32bit.zip WaveBox.exe wavebox.conf ffmpeg.exe sqlite3.dll bass.dll Mono.Zeroconf.dll Mono.Zeroconf.Providers.Bonjour.dll Mono.Zeroconf.Providers.Bonjour.dll.config System.Data.SQLite.dll taglib-sharp.dll Newtonsoft.Json.dll Bass.Net.dll html
+echo "DONE :)"

@@ -1,0 +1,31 @@
+#!/bin/sh
+
+# Cleanup
+echo "Cleaning up old files\n"
+rm -f WaveBoxBinary WaveBoxLauncher WaveBox_Linux_32bit.tgz
+
+# Use 32bit building
+#export AS="as -arch i386"
+#export CC="cc -arch i386"
+
+# Create the binary
+echo "Building the binary\n"
+mkbundle --static --deps -o WaveBoxBinary WaveBox.exe Newtonsoft.Json.dll taglib-sharp.dll Bass.Net.dll Mono.Zeroconf.dll System.Data.SQLite.dll
+
+# Create the launcher
+echo '#!/bin/bash
+cd "${0%/*}"
+BINARY=WaveBoxBinary
+if ps aux | grep -v grep | grep $BINARY > /dev/null 
+then
+    killall $BINARY
+    echo "WaveBox Stopped"
+else
+    MONO_ZEROCONF_PROVIDERS=. nohup ./$BINARY &
+    echo "WaveBox Started"
+fi' > WaveBoxLauncher
+chmod a+x WaveBoxLauncher
+
+# Create an archive
+tar czvf WaveBox_Linux_32bit.tgz WaveBoxBinary WaveBoxLauncher wavebox.conf ffmpeg libsqlite3.so.0 libbass.so Mono.Zeroconf.Providers.AvahiDBus.dll -C /usr/lib/ libMonoPosixHelper.so -C ../../ html
+echo "DONE :)"
