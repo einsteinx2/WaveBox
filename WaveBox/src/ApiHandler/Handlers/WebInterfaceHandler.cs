@@ -45,9 +45,26 @@ namespace WaveBox.ApiHandler.Handlers
 
 			Console.WriteLine("[WEBINTERFACE] path: " + path);
 
-			// Send the file
+			// Make sure the file exists
 			if (File.Exists(path))
 			{
+                // If it exists, check to see if the headers contains an If-Modified-Since entry
+                if(Processor.HttpHeaders.ContainsKey("If-Modified-Since"))
+                {
+                    Console.WriteLine(Processor.HttpHeaders["If-Modified-Since"]);
+
+                    // Took me a while to figure this out, but even if the time zone in the request is GMT, DateTime.Parse converts it to local time.
+                    var ims = DateTime.Parse(Processor.HttpHeaders["If-Modified-Since"].ToString());
+                    var lastMod = File.GetLastWriteTime(path);
+
+                    if(ims >= lastMod)
+                    {
+                        Console.WriteLine("[WEBINTERFACE] File not modified: " + path);
+                        Processor.WriteNotModified();
+                        return;
+                    }
+                }
+
 				Console.WriteLine("[WEBINTERFACE] serving file at path: " + path);
 
 				// Serve up files inside html directory
@@ -65,7 +82,11 @@ namespace WaveBox.ApiHandler.Handlers
 
 				long length = file.Length - startOffset;
 
+<<<<<<< HEAD
 				Processor.WriteFile(file, startOffset, length, HttpHeader.MimeTypeForExtension(Path.GetExtension(path)), null);
+=======
+				Processor.WriteFile(file, startOffset, length, HttpHeader.MimeTypeForExtension(Path.GetExtension(path)), new FileInfo(path).LastWriteTimeUtc);
+>>>>>>> Implemented Last-Modified and If-Modified-Since headers
 			}
 			else
 			{
@@ -75,6 +96,65 @@ namespace WaveBox.ApiHandler.Handlers
 				Processor.WriteErrorHeader();
 			}
 		}
-	}
+        private static DateTime parseIfModifiedSinceHeader(string headerString)
+        {
+            // create the default return
+            var thisTime = new DateTime();
+            
+            try
+            {
+                // lop off the day marker
+                string mod = headerString.Substring(headerString.IndexOf(',') + 2);
+                Console.WriteLine(mod);
+                
+                // split it by spaces
+                string[] split = mod.Split(' ');
+                
+                // grab the date information
+                int dayNum = int.Parse(split [0]);
+                int monthNum = MonthForAbbreviation(split [1]);
+                int yearNum = int.Parse(split [2]);
+                
+                // split up the time and parse it
+                string[] timeSplit = split [3].Split(':');
+                int timeHrs = int.Parse(timeSplit [0]);
+                int timeMins = int.Parse(timeSplit [1]);
+                int timeSecs = int.Parse(timeSplit [2]);
+                
+                // create a new datetime object with the information we've gathered
+                var dt = new DateTime(yearNum, monthNum, dayNum, timeHrs, timeMins, timeSecs, split [4] == "GMT" ? DateTimeKind.Utc : DateTimeKind.Local);
+                Console.WriteLine(dt.ToLongDateString());
+                
+                // set the return value
+                thisTime = dt;
+            } catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+            
+            // return the datetime
+            return thisTime;
+        }
+        
+        private static int MonthForAbbreviation(string abb)
+        {
+            switch (abb.ToLower())
+            {
+            case "jan": return 1;
+            case "feb": return 2;
+            case "mar": return 3;
+            case "apr": return 4;
+            case "may": return 5;
+            case "jun": return 6;
+            case "jul": return 7;
+            case "aug": return 8;
+            case "sep": return 9;
+            case "oct": return 10;
+            case "nov": return 11;
+            case "dec": return 12;
+            default: return 0;
+            }
+        }
+    }
 }
 

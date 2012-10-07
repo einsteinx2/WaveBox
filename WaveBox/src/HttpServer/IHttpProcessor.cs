@@ -19,9 +19,14 @@ namespace WaveBox
 		void WriteSuccessHeader(long contentLength, string mimeType, IDictionary<string, string> customHeaders);
 
 		// Body writing methods
+        void WriteNotModified();
 		void WriteJson(string json);
 		void WriteText(string text, string mimeType);
+<<<<<<< HEAD
 		void WriteFile(Stream fs, int startOffset, long length, string mimeType, IDictionary<string, string> customHeaders);
+=======
+		void WriteFile(Stream fs, int startOffset, long length, string mimeType, DateTime? lastModified);
+>>>>>>> Implemented Last-Modified and If-Modified-Since headers
 	}
 }
 

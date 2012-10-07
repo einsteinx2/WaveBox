@@ -73,7 +73,11 @@ namespace WaveBox.ApiHandler.Handlers
 					}
 
 					// Send the file
+<<<<<<< HEAD
 					Processor.WriteFile(stream, startOffset, length, item.FileType.MimeType(), null);
+=======
+                    Processor.WriteFile(stream, startOffset, length, item.FileType.MimeType(), new FileInfo(item.FilePath).LastWriteTimeUtc);
+>>>>>>> Implemented Last-Modified and If-Modified-Since headers
 
 				}
 				catch(Exception e)
