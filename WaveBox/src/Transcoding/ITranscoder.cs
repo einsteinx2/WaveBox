@@ -28,7 +28,8 @@ namespace WaveBox.Transcoding
 		// Audio
 		MP3, 
 		AAC, 
-		OGG, 
+		OGG,
+        OPUS,
 
 		// Video
 		MP4,
@@ -44,7 +45,8 @@ namespace WaveBox.Transcoding
 			{
 				if (transType == TranscodeType.MP3 ||
 					transType == TranscodeType.AAC ||
-					transType == TranscodeType.OGG)
+					transType == TranscodeType.OGG ||
+                    transType == TranscodeType.OPUS)
 				{
 					return true;
 				}

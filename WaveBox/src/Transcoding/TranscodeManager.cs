@@ -34,6 +34,9 @@ namespace WaveBox.Transcoding
 				{
 					case TranscodeType.MP3:
 						transcoder = new FFMpegMP3Transcoder(song, quality, isDirect, offsetSeconds, lengthSeconds);
+                        break;
+                    case TranscodeType.OPUS:
+                        transcoder = new FFMpegOpusTranscoder(song, quality, isDirect, offsetSeconds, lengthSeconds);
 						break;
 					//case TranscodeType.AAC: 
 					//	transcoder = new FFMpegAACTranscoder(item, quality, isDirect);

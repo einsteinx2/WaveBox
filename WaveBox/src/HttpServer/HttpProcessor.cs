@@ -237,9 +237,6 @@ namespace WaveBox.Http
 		{
 			OutputStream.WriteLine("HTTP/1.0 200 OK");            
 			OutputStream.WriteLine("Content-Type: " + mimeType);
-            if(customHeaders.ContainsKey("Last-Modified")) 
-                OutputStream.WriteLine("Last-Modified: " + customHeaders["Last-Modified"]);
-			//OutputStream.WriteLine("Content-Length: " + contentLength);
 			OutputStream.WriteLine("Access-Control-Allow-Origin: *");
 			OutputStream.WriteLine("Connection: close");
 			if ((object)customHeaders != null)
@@ -289,7 +286,7 @@ namespace WaveBox.Http
 
 			WriteSuccessHeader(contentLength, mimeType, customHeaders);
 			OutputStream.Flush();
-            Console.WriteLine("[HTTPSERVER] File header, contentLength: {0}, contentType: {1}, lastMod: {2}", contentLength, mimeType, customHeaders.ContainsKey("Last-Modified") ? customHeaders["Last-Modified"] : null);
+            Console.WriteLine("[HTTPSERVER] File header, contentLength: {0}, contentType: {1}, lastMod: {2}", contentLength, mimeType, customHeaders != null && customHeaders.ContainsKey("Last-Modified") ? customHeaders["Last-Modified"] : String.Empty);
 			//Console.WriteLine("[HTTPSERVER] File header, contentLength: {0}, contentType: {1}, status: {2}", contentLength, header.ContentType, header.StatusCode);
 
 			// Read/Write in 8 KB chunks

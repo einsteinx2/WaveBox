@@ -61,7 +61,7 @@ namespace WaveBox
 
 			// Start the HTTP server
 			StartHTTPServer();
-			PublishZeroConf();
+			//PublishZeroConf();
 
 			TranscodeManager.Instance.Setup();
 
