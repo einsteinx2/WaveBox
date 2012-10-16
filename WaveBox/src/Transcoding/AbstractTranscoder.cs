@@ -8,7 +8,7 @@ namespace WaveBox.Transcoding
 {
 	public abstract class AbstractTranscoder : ITranscoder
 	{
-		private ITranscoderDelegate Delegate { get; set; }
+		protected ITranscoderDelegate TranscoderDelegate { get; set; }
 
 		public IMediaItem Item { get; set; }
 
@@ -104,8 +104,8 @@ namespace WaveBox.Transcoding
 				State = TranscodeState.Canceled;
 
 				// Inform the delegate
-				if ((object)Delegate != null)
-			    	Delegate.TranscodeFailed(this);
+                if ((object)TranscoderDelegate != null)
+                    TranscoderDelegate.TranscodeFailed(this);
 	        }
 	    }
 
@@ -129,7 +129,7 @@ namespace WaveBox.Transcoding
 			TranscodeThread.Start();
 	    }
 
-		public void Run()
+		public virtual void Run()
 	    {
 			try 
 			{
@@ -160,8 +160,8 @@ namespace WaveBox.Transcoding
 				State = TranscodeState.Failed;
 
 			    // Inform the delegate
-				if ((object)Delegate != null)
-			    	Delegate.TranscodeFailed(this);
+                if ((object)TranscoderDelegate != null)
+                    TranscoderDelegate.TranscodeFailed(this);
 
                 return;
 			}
@@ -175,15 +175,15 @@ namespace WaveBox.Transcoding
 				{
 					State = TranscodeState.Finished;
 
-					if ((object)Delegate != null)
-			        	Delegate.TranscodeFinished(this);
+                    if ((object)TranscoderDelegate != null)
+                        TranscoderDelegate.TranscodeFinished(this);
 				}
 			    else
 				{
 					State = TranscodeState.Failed;
 			        
-					if ((object)Delegate != null)
-						Delegate.TranscodeFailed(this);
+                    if ((object)TranscoderDelegate != null)
+                        TranscoderDelegate.TranscodeFailed(this);
 				}
 			}
 	    }
