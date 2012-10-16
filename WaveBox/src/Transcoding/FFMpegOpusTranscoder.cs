@@ -38,27 +38,34 @@ namespace WaveBox.Transcoding
 
 
                 // Create the opusenc object
+                Console.WriteLine("opusenc " + Arguments);
                 TranscodeProcess = new Process();
                 TranscodeProcess.StartInfo.FileName = "opusenc";
-                TranscodeProcess.StartInfo.Arguments = ffmpegArguments;
+                TranscodeProcess.StartInfo.Arguments = Arguments;
                 TranscodeProcess.StartInfo.UseShellExecute = false;
                 TranscodeProcess.StartInfo.RedirectStandardInput = true;
                 TranscodeProcess.StartInfo.RedirectStandardOutput = true;
-                TranscodeProcess.StartInfo.RedirectStandardError = true;
+                TranscodeProcess.StartInfo.RedirectStandardError = false;
 
-                var buffer = new byte[512];
+                var buffer = new byte[8192];
                 FfmpegProcess.Start();
                 TranscodeProcess.Start();
 
                 var input = new BinaryWriter(TranscodeProcess.StandardInput.BaseStream);
+                int totalWritten = 0;
 
                 while(true)
                 {
-                    int bytesRead = FfmpegProcess.StandardOutput.BaseStream.Read(buffer, 0, 512);
-                    input.Write(buffer, 0, bytesRead);
+                    int bytesRead = FfmpegProcess.StandardOutput.BaseStream.Read(buffer, 0, 8192);
+                    totalWritten += bytesRead;
+                    if(bytesRead > 0) input.Write(buffer, 0, bytesRead);
+                    //Console.WriteLine("{0} bytes written to buffer ({1} this iteration)", totalWritten, bytesRead);
 
-                    if(bytesRead < 512 && FfmpegProcess.HasExited)
+                    if(bytesRead == 0 && FfmpegProcess.HasExited)
+                    {
+                        input.Close();
                         break;
+                    }
                 }
                 
                 Console.WriteLine("[TRANSCODE] Waiting for processes to finish");
@@ -165,7 +172,7 @@ namespace WaveBox.Transcoding
         
         private string OpusencOptions(String codec, uint quality)
         {
-            return "./opusenc --bitrate " + quality + " --vbr - " + " -ab " + OutputPath;
+            return "--bitrate " + quality + " --vbr - " + OutputPath;
         }
     }
 }
