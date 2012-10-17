@@ -172,7 +172,17 @@ namespace WaveBox.Transcoding
         
         private string OpusencOptions(String codec, uint quality)
         {
-            return "--bitrate " + quality + " --vbr - " + OutputPath;
+            string theString = "--bitrate " + quality;
+            Song song = new Song(Item.ItemId.Value);
+
+            theString += song.ArtistName == null ? String.Empty : " --comment ARTIST=\"" + song.ArtistName + "\"";
+            theString += song.AlbumName == null ? String.Empty : " --comment ALBUM=\"" + song.AlbumName + "\"";
+            theString += song.SongName == null ? String.Empty : " --comment TITLE=\"" + song.SongName + "\"";
+            theString += song.ReleaseYear == null ? String.Empty : " --comment DATE=\"" + song.ReleaseYear + "\"";
+
+            theString += " --vbr - " + OutputPath;
+
+            return theString;
         }
     }
 }
