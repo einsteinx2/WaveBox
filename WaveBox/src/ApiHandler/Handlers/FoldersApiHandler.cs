@@ -40,9 +40,31 @@ namespace WaveBox.ApiHandler.Handlers
 				// Return the folder for this id
 				Folder folder = new Folder(id);
 				listOfFolders = folder.ListOfSubFolders();
-				//listOfMediaItems = folder.ListOfMediaItems();
-				listOfSongs = folder.ListOfSongs();
-				listOfVideos = folder.ListOfVideos();
+
+                if(Uri.Parameters.ContainsKey("recursiveMedia") && this.IsTrue(Uri.Parameters["recursiveMedia"]))
+                {
+                    listOfSongs = new List<Song>();
+                    listOfVideos = new List<Video>();
+
+                    // recursively add media in all subfolders to the list.
+                    Action<Folder> recurse = null;
+                    recurse = f =>
+                    {
+                        listOfSongs.AddRange(f.ListOfSongs());
+                        listOfVideos.AddRange(f.ListOfVideos());
+                        foreach(var subf in f.ListOfSubFolders())
+                        {
+                            recurse(subf);
+                        }
+                    };
+                    recurse(folder);
+                }
+                else 
+                {
+    				//listOfMediaItems = folder.ListOfMediaItems();
+    				listOfSongs = folder.ListOfSongs();
+    				listOfVideos = folder.ListOfVideos();
+                }
 			}
 			else
 			{
