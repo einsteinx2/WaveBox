@@ -8,12 +8,14 @@ using System.Xml;
 using WaveBox.DataModel.Model;
 using System.Collections.Generic;
 using System.Threading;
-
+using NLog;
 
 namespace WaveBox.PodcastManagement
 {
     public class PodcastEpisode
-    {
+	{		
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
         public long? EpisodeId { get; set; }
         public long? PodcastId { get; set; }
         public string Title { get; set; }
@@ -32,11 +34,11 @@ namespace WaveBox.PodcastManagement
             Author = episode.SelectSingleNode("itunes:author", mgr).InnerText;
             Subtitle = episode.SelectSingleNode("itunes:subtitle", mgr).InnerText;
             MediaUrl = episode.SelectSingleNode("enclosure").Attributes["url"].InnerText;
-//            Console.WriteLine(episode.SelectSingleNode("title").InnerText);
-//            Console.WriteLine(episode.SelectSingleNode("itunes:author", mgr).InnerText);
-//            Console.WriteLine(episode.SelectSingleNode("itunes:subtitle", mgr).InnerText);
-//            Console.WriteLine(episode.SelectSingleNode("enclosure").Attributes["url"].InnerText);
-//            Console.WriteLine();
+//            logger.Info(episode.SelectSingleNode("title").InnerText);
+//            logger.Info(episode.SelectSingleNode("itunes:author", mgr).InnerText);
+//            logger.Info(episode.SelectSingleNode("itunes:subtitle", mgr).InnerText);
+//            logger.Info(episode.SelectSingleNode("enclosure").Attributes["url"].InnerText);
+//            logger.Info();
         }
 
         public PodcastEpisode(long podcastId)
@@ -58,12 +60,12 @@ namespace WaveBox.PodcastManagement
                 }
                 else
                 {
-                    Console.WriteLine("Podcast constructor query returned no results");
+                    logger.Info("Podcast constructor query returned no results");
                 }
             }
             catch (Exception e)
             {
-                Console.WriteLine("[ARTIST(1)] ERROR: " +  e);
+                logger.Info("[ARTIST(1)] ERROR: " +  e);
             }
             finally
             {
@@ -90,7 +92,7 @@ namespace WaveBox.PodcastManagement
             }
             catch (Exception e)
             {
-                Console.WriteLine("[ARTIST(1)] ERROR: " +  e);
+                logger.Info("[ARTIST(1)] ERROR: " +  e);
             }
             finally
             {
@@ -136,7 +138,7 @@ namespace WaveBox.PodcastManagement
             }
             catch (Exception e)
             {
-                Console.WriteLine("[PODCAST (1)] ERROR: " +  e);
+                logger.Info("[PODCAST (1)] ERROR: " +  e);
             }
             finally
             {

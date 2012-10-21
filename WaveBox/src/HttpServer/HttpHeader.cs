@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using NLog;
 
 namespace WaveBox.Http
 {
 	public class HttpHeader
-	{
+	{		
+		//private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		public long ContentLength { get; set; }
 		public HttpStatusCode StatusCode { get; set; }
 		public string ContentType { get; set; }

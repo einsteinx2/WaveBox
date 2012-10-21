@@ -5,11 +5,14 @@ using System.Text;
 using WaveBox.DataModel.Singletons;
 using WaveBox.Http;
 using Newtonsoft.Json;
+using NLog;
 
 namespace WaveBox.ApiHandler.Handlers
 {
 	class ErrorApiHandler : IApiHandler
-	{
+	{		
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 		private string Err { get; set; }
@@ -30,7 +33,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 		public void Process()
 		{
-			Console.WriteLine("[ERROR HANDLER]: " + Err);
+			logger.Info("[ERROR HANDLER]: " + Err);
 
 			Dictionary<string, string> response = new Dictionary<string, string>();
 			response["error"] = Err;

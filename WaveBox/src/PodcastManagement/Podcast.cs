@@ -6,11 +6,14 @@ using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
 using System.Data;
 using System.Collections.Concurrent;
+using NLog;
 
 namespace WaveBox.PodcastManagement
 {
     public class Podcast
-    {
+	{		
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
         public static readonly string PodcastMediaDirectory = Settings.PodcastFolder;
 
         /* IVars */
@@ -57,7 +60,7 @@ namespace WaveBox.PodcastManagement
             }
             else AddToDatabase();
 
-            //Console.WriteLine(Title + "\r\n " + Author + "\r\n " + Description + "\r\n\r\n");
+            //logger.Info(Title + "\r\n " + Author + "\r\n " + Description + "\r\n\r\n");
         }
 
         public Podcast(long? podcastId)
@@ -88,7 +91,7 @@ namespace WaveBox.PodcastManagement
             }
             catch (Exception e)
             {
-                Console.WriteLine("[PODCAST (2)] ERROR: " +  e);
+                logger.Info("[PODCAST (2)] ERROR: " +  e);
             }
             finally
             {
@@ -124,7 +127,7 @@ namespace WaveBox.PodcastManagement
             }
             catch (Exception e)
             {
-                Console.WriteLine("[PODCAST (1)] ERROR: " +  e);
+                logger.Info("[PODCAST (1)] ERROR: " +  e);
             }
             finally
             {
@@ -187,7 +190,7 @@ namespace WaveBox.PodcastManagement
             }
             catch (Exception e)
             {
-                Console.WriteLine("[PODCAST (2)] ERROR: " + e);
+                logger.Info("[PODCAST (2)] ERROR: " + e);
             }
             finally
             {
@@ -222,7 +225,7 @@ namespace WaveBox.PodcastManagement
             }
             catch (Exception e)
             {
-                Console.WriteLine("[PODCAST (2)] ERROR: " +  e);
+                logger.Info("[PODCAST (2)] ERROR: " +  e);
             }
             finally
             {
@@ -273,7 +276,7 @@ namespace WaveBox.PodcastManagement
             }
             catch (Exception e)
             {
-                Console.WriteLine("[PODCAST (3)] ERROR: " +  e);
+                logger.Info("[PODCAST (3)] ERROR: " +  e);
             }
             finally
             {
@@ -313,7 +316,7 @@ namespace WaveBox.PodcastManagement
             }
             catch (Exception e)
             {
-                Console.WriteLine("[PODCAST (3)] ERROR: " +  e);
+                logger.Info("[PODCAST (3)] ERROR: " +  e);
             }
             finally
             {
@@ -342,7 +345,7 @@ namespace WaveBox.PodcastManagement
             }
             catch (Exception e)
             {
-                Console.WriteLine("[PODCAST (3)] ERROR: " +  e);
+                logger.Info("[PODCAST (3)] ERROR: " +  e);
             }
             finally
             {

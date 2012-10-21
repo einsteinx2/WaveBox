@@ -15,18 +15,27 @@ using System.ServiceProcess;
 using WaveBox.DataModel.Model;
 using WaveBox.Transcoding;
 using Mono.Zeroconf;
+using NLog;
+using System.Net;
+using System.Net.Sockets;
 
 namespace WaveBox
 {
 	class WaveBoxMain
-	{
+	{	
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		public static RegisterService ZeroConfService { get; set; }
+
+		public static string ServerGuid { get; set; }
+
+		public static string ServerUrl { get; set; }
 
 		public static string RootPath()
 		{
 			/*foreach (Environment.SpecialFolder val in Enum.GetValues(typeof(Environment.SpecialFolder)))
 			{
-				Console.WriteLine(val + ": " + Environment.GetFolderPath(val));
+				logger.Info(val + ": " + Environment.GetFolderPath(val));
 			}*/
 			
 			switch (WaveBoxService.DetectOS())
@@ -42,13 +51,108 @@ namespace WaveBox
 			}
 		}
 
+		private void ServerSetup()
+		{
+			IDbConnection conn = null;
+			IDataReader reader = null;
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT * FROM server", conn);
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				if (reader.Read())
+				{
+					ServerGuid = reader.GetStringOrNull(reader.GetOrdinal("guid"));
+					ServerUrl = reader.GetStringOrNull(reader.GetOrdinal("url"));
+				}
+			}
+			catch(Exception e)
+			{
+				logger.Error("[WAVEBOX] exception loading server info" + e);
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			// If it doesn't exist, generate a new one
+			if ((object)ServerGuid == null)
+			{
+				// Generate the Guid
+				Guid guid = Guid.NewGuid();
+				ServerGuid = guid.ToString();
+
+				// Store the Guid
+				try
+				{
+					conn = Database.GetDbConnection();
+					IDbCommand q = Database.GetDbCommand("INSERT INTO server (guid) VALUES (@guid)", conn);
+					q.AddNamedParam("@guid", ServerGuid);
+					q.Prepare();
+					if (q.ExecuteNonQuery() == 0)
+					{
+						ServerGuid = null;
+					}
+				}
+				catch(Exception e)
+				{
+					logger.Error("[WAVEBOX] exception saving guid" + e);
+					ServerGuid = null;
+				}
+				finally
+				{
+					Database.Close(conn, null);
+				}
+			}
+		}
+
+		private IPAddress LocalIPAddress()
+		{
+			if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
+			{
+				return null;
+			}
+			
+			IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
+			
+			return host
+				.AddressList
+				.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork);
+		}
+
+		public void RegisterUrl()
+		{
+			if ((object)ServerUrl != null)
+			{
+				string urlString = "http://register.wavebox.es" + 
+					"?host=" + Uri.EscapeUriString(ServerUrl) + 
+					"&serverId=" + Uri.EscapeUriString(ServerGuid) + 
+					"&port=" + Settings.Port + 
+					"&isSecure=0" + 
+					"&localIp=" + LocalIPAddress().ToString();
+
+				Console.WriteLine("registering url: " + urlString);
+
+				WebClient client = new WebClient();
+				client.DownloadDataCompleted += new DownloadDataCompletedEventHandler(RegisterUrlCompleted);
+				client.DownloadDataAsync(new Uri(urlString));
+			}
+		}
+
+		void RegisterUrlCompleted(object sender, DownloadDataCompletedEventArgs e)
+		{
+			// Do nothing for now, check for success and handle failures later
+		}
+
 		/// <summary>
 		/// The main program for WaveBox.  Launches the HTTP server, initializes settings, creates default user,
 		/// begins file scan, and then sleeps forever while other threads handle the work.
 		/// </summary>
 		public void Start()
 		{
-			Console.WriteLine("[WAVEBOX] Initializing WaveBox on {0} platform...", Environment.OSVersion.Platform.ToString());
+			logger.Info("[WAVEBOX] Initializing WaveBox on {0} platform...", Environment.OSVersion.Platform.ToString());
 
 			if (!Directory.Exists(RootPath()))
 			{
@@ -58,6 +162,8 @@ namespace WaveBox
 			// Perform initial setup of Settings, create a user
 			Database.DatabaseSetup();
 			Settings.SettingsSetup();
+			ServerSetup();
+			RegisterUrl();
 
 			// Start the HTTP server
 			StartHTTPServer();
@@ -68,7 +174,7 @@ namespace WaveBox
 			User.CreateUser("test", "test");
 
 			// Start file manager, calculate time it takes to run.
-			Console.WriteLine("[WAVEBOX] Scanning media directories...");
+			logger.Info("[WAVEBOX] Scanning media directories...");
 			FileManager.Instance.Setup();
 
             // Start podcast download queue
@@ -103,7 +209,7 @@ namespace WaveBox
 				}
 				catch (Exception e)
 				{
-					Console.WriteLine(e);
+					logger.Info(e);
 					DisposeZeroConf();
 				}
 			}
@@ -141,9 +247,9 @@ namespace WaveBox
 				// If the address is in use, WaveBox (or another service) is probably bound to that port; error out
 				// For another sockets exception, just print the message
 				if (e.SocketErrorCode.ToString() == "AddressAlreadyInUse")
-					Console.WriteLine("[WAVEBOX(1)] ERROR: Socket already in use.  Ensure that WaveBox is not already running.");
+					logger.Info("[WAVEBOX(1)] ERROR: Socket already in use.  Ensure that WaveBox is not already running.");
 				else
-					Console.WriteLine("[WAVEBOX(2)] ERROR: " + e);
+					logger.Info("[WAVEBOX(2)] ERROR: " + e);
 
 				// Quit with error return code
 				Environment.Exit(-1);
@@ -152,7 +258,7 @@ namespace WaveBox
 			catch (Exception e)
 			{
 				// Print the message, quit.
-				Console.WriteLine("[WAVEBOX(3)] ERROR: " + e);
+				logger.Info("[WAVEBOX(3)] ERROR: " + e);
 				Environment.Exit(-1);
 			}
 		}

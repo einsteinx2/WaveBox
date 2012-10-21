@@ -1,10 +1,13 @@
 using System;
 using WaveBox.DataModel.Model;
+using NLog;
 
 namespace WaveBox.Transcoding
 {
 	public class FFMpegX264Transcoder : VideoTranscoder
-	{
+	{		
+		//private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		public override TranscodeType Type { get { return TranscodeType.X264; } }
 
 		public override string Command { get { return "ffmpeg"; } }

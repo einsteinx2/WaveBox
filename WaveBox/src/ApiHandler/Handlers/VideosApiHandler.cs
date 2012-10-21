@@ -6,11 +6,14 @@ using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
 using Newtonsoft.Json;
 using WaveBox.Http;
+using NLog;
 
 namespace WaveBox.ApiHandler.Handlers
 {
 	class VideosApiHandler : IApiHandler
-	{
+	{		
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 		
@@ -46,9 +49,9 @@ namespace WaveBox.ApiHandler.Handlers
 				string json = JsonConvert.SerializeObject(new VideosResponse(null, listOfVideos), Settings.JsonFormatting);
 				Processor.WriteJson(json);
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
-				Console.WriteLine("[SONGAPI] ERROR: " + e);
+				logger.Error("[SONGAPI] ERROR: " + e);
 			}
 		}
 		

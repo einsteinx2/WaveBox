@@ -4,11 +4,14 @@ using System.Linq;
 using System.Text;
 using WaveBox.DataModel.Model;
 using Un4seen.Bass;
+using NLog;
 
 namespace WaveBox.DataModel.Singletons
 {
-	class Jukebox
+	public class Jukebox
 	{
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
 	    private static readonly Jukebox instance = new Jukebox();
 		public static Jukebox Instance { get { return instance; } }
 
@@ -95,7 +98,7 @@ namespace WaveBox.DataModel.Singletons
 		public void PlaySongAtIndex(int index)
 		{
 			IMediaItem item = playlist.MediaItemAtIndex(index);
-			Console.WriteLine("[JUKEBOX] Playing song: " + item.FileName);
+			logger.Info("[JUKEBOX] Playing song: " + item.FileName);
 
 			if (item != null)
 			{
@@ -112,12 +115,12 @@ namespace WaveBox.DataModel.Singletons
 					currentStream = Bass.BASS_StreamCreateFile(path, 0, 0, BASSFlag.BASS_STREAM_PRESCAN);
 					if (currentStream == 0)
 					{
-						Console.WriteLine("[JUKEBOX] BASS failed to create stream for {0}", path);
+						logger.Info("[JUKEBOX] BASS failed to create stream for {0}", path);
 					}
 
 					else 
 					{
-						Console.WriteLine("[JUKEBOX] Current stream handle: {0}", currentStream);
+						logger.Info("[JUKEBOX] Current stream handle: {0}", currentStream);
 
 						SYNCPROC end = new SYNCPROC(delegate (int handle, int channel, int data, IntPtr user)
 							{
@@ -186,7 +189,7 @@ namespace WaveBox.DataModel.Singletons
 
 			// set the buffer to 200ms, which is the minimum.
 			Bass.BASS_SetConfig(BASSConfig.BASS_CONFIG_BUFFER, Bass.BASS_GetConfig(BASSConfig.BASS_CONFIG_UPDATEPERIOD + 200));
-			Console.WriteLine("[JUKEBOX] BASS buffer size: {0}ms", Bass.BASS_GetConfig(BASSConfig.BASS_CONFIG_BUFFER));
+			logger.Info("[JUKEBOX] BASS buffer size: {0}ms", Bass.BASS_GetConfig(BASSConfig.BASS_CONFIG_BUFFER));
 
 			// dsp effects for floating point math to avoid clipping
 			Bass.BASS_SetConfig(BASSConfig.BASS_CONFIG_FLOATDSP, 1);
@@ -194,7 +197,7 @@ namespace WaveBox.DataModel.Singletons
 			// initialize the audio output device
 			if(!Bass.BASS_Init(-1, 44100, BASSInit.BASS_DEVICE_DEFAULT, System.IntPtr.Zero))
 			{
-				Console.WriteLine("[JUKEBOX] Error initializing BASS!");
+				logger.Info("[JUKEBOX] Error initializing BASS!");
 			}
 
 			else IsInitialized = true;

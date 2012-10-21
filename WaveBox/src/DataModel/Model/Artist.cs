@@ -5,11 +5,14 @@ using System.Text;
 using System.Data;
 using WaveBox.DataModel.Singletons;
 using Newtonsoft.Json;
+using NLog;
 
 namespace WaveBox.DataModel.Model
 {
 	public class Artist : IItem
 	{
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		[JsonIgnore]
 		public int? ItemId { get { return ArtistId; } set { ArtistId = ItemId; } }
 
@@ -64,12 +67,12 @@ namespace WaveBox.DataModel.Model
 				}
 				else
 				{
-					Console.WriteLine("Artist constructor query returned no results");
+					logger.Info("Artist constructor query returned no results");
 				}
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[ARTIST(1)] ERROR: " +  e);
+				logger.Error("[ARTIST(1)] ERROR: " +  e);
 			}
 			finally
 			{
@@ -106,7 +109,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[ARTIST(2)] ERROR: " + e);
+				logger.Error("[ARTIST(2)] ERROR: " + e);
 			}
 			finally
 			{
@@ -151,7 +154,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[ARTIST(4)] ERROR: " + e);
+				logger.Error("[ARTIST(4)] ERROR: " + e);
 			}
 			finally
 			{
@@ -186,7 +189,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[ARTIST(5)] ERROR: " + e);
+				logger.Error("[ARTIST(5)] ERROR: " + e);
 			}
 			finally
 			{
@@ -222,7 +225,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[ARTIST(6)] ERROR: " + e);
+				logger.Error("[ARTIST(6)] ERROR: " + e);
 			}
 			finally
 			{
@@ -284,7 +287,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[ARTIST(7)] ERROR: " + e);
+				logger.Error("[ARTIST(7)] ERROR: " + e);
 			}
 			finally
 			{

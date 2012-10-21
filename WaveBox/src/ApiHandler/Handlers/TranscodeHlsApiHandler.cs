@@ -8,12 +8,14 @@ using WaveBox.DataModel.Singletons;
 using System.IO;
 using WaveBox.Http;
 using System.Threading;
-
+using NLog;
 
 namespace WaveBox.ApiHandler.Handlers
 {
 	class TranscodeHlsApiHandler : IApiHandler
-	{
+	{		
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 		
@@ -77,7 +79,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 				catch(Exception e)
 				{
-					Console.WriteLine("[STREAMAPI] ERROR: " + e);
+					logger.Info("[STREAMAPI] ERROR: " + e);
 				}
 			}
 			else
@@ -142,7 +144,7 @@ namespace WaveBox.ApiHandler.Handlers
 				return null;
 			}
 
-			Console.WriteLine("duration: " + item.Duration);
+			logger.Info("duration: " + item.Duration);
 
 			string s = Uri.Parameters["s"];
 			string id = Uri.Parameters["id"];

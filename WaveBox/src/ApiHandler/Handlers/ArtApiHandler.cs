@@ -8,11 +8,14 @@ using WaveBox.DataModel.Model;
 using WaveBox.Http;
 using WaveBox.DataModel.Singletons;
 using TagLib;
+using NLog;
 
 namespace WaveBox.ApiHandler.Handlers
 {
 	class ArtApiHandler : IApiHandler
 	{
+		//private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 

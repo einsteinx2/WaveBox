@@ -11,6 +11,7 @@ using System.Diagnostics;
 using WaveBox.ApiHandler;
 using WaveBox.Transcoding;
 using WaveBox.Http;
+using NLog;
 
 // offered to the public domain for any use with no restriction
 // and also with no warranty of any kind, please enjoy. - David Jeske. 
@@ -22,6 +23,8 @@ namespace WaveBox.Http
 {
 	public class HttpProcessor : IHttpProcessor
 	{
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		public TcpClient Socket { get; set; }
 		public HttpServer Srv { get; set; }
 
@@ -41,9 +44,9 @@ namespace WaveBox.Http
 		{
 			HttpHeaders = new Hashtable();
 			Socket = s;
-			//Console.WriteLine("Send timeout: " + s.SendTimeout);
+			//logger.Info("Send timeout: " + s.SendTimeout);
 			//s.SendTimeout = -1;
-			//Console.WriteLine("Send timeout after: " + s.SendTimeout);
+			//logger.Info("Send timeout after: " + s.SendTimeout);
 			Srv = srv;
 		}
 
@@ -85,7 +88,7 @@ namespace WaveBox.Http
 			} 
 			catch (Exception e) 
 			{
-				Console.WriteLine("[HTTPSERVER(1)] " + e);
+				logger.Info("[HTTPSERVER(1)] " + e);
 				WriteErrorHeader();
 			}
 
@@ -100,13 +103,13 @@ namespace WaveBox.Http
 					SocketException se = (SocketException)e.InnerException;
 					if (se.SocketErrorCode == System.Net.Sockets.SocketError.ConnectionReset)
 					{
-						Console.WriteLine("[HTTPSERVER(2)] " + "Connection was forcibly closed by the remote host");
+						logger.Info("[HTTPSERVER(2)] " + "Connection was forcibly closed by the remote host");
 					}
 				}
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[HTTPSERVER(3)] " + e);
+				logger.Error("[HTTPSERVER(3)] " + e);
 			}
 
 			// bs.Flush(); // flush any remaining output
@@ -126,18 +129,18 @@ namespace WaveBox.Http
 			HttpUrl = tokens[1];
 			HttpProtocolVersionString = tokens[2];
 
-			//Console.WriteLine("starting: " + request);
+			//logger.Info("starting: " + request);
 		}
 
 		public void ReadHeaders() 
 		{
-			//Console.WriteLine("readHeaders()");
+			//logger.Info("readHeaders()");
 			String line;
 			while ((line = streamReadLine(InputStream)) != null)
 			{
 				if (line.Equals("")) 
 				{
-					//Console.WriteLine("got headers");
+					//logger.Info("got headers");
 					return;
 				}
 				
@@ -154,7 +157,7 @@ namespace WaveBox.Http
 				}
 					
 				string value = line.Substring(pos, line.Length - pos);
-				//Console.WriteLine("header: {0}:{1}",name,value);
+				//logger.Info("header: {0}:{1}",name,value);
 				HttpHeaders[name] = value;
 			}
 		}
@@ -166,7 +169,7 @@ namespace WaveBox.Http
 
 			sw.Start();
 			apiHandler.Process();
-			Console.WriteLine(apiHandler.GetType() + ": {0}ms", sw.ElapsedMilliseconds);
+			logger.Info(apiHandler.GetType() + ": {0}ms", sw.ElapsedMilliseconds);
 			sw.Stop();
 		}
 
@@ -179,7 +182,7 @@ namespace WaveBox.Http
 			// we hand him needs to let him see the "end of the stream" at this content 
 			// length, because otherwise he won't know when he's seen it all! 
 
-			//Console.WriteLine("get post data start");
+			//logger.Info("get post data start");
 			int content_len = 0;
 			MemoryStream ms = new MemoryStream();
 			if (HttpHeaders.ContainsKey("Content-Length")) 
@@ -193,10 +196,10 @@ namespace WaveBox.Http
 				int to_read = content_len;
 				while (to_read > 0) 
 				{  
-					//Console.WriteLine("starting Read, to_read={0}",to_read);
+					//logger.Info("starting Read, to_read={0}",to_read);
 
 					int numread = InputStream.Read(buf, 0, Math.Min(BUF_SIZE, to_read));
-					//Console.WriteLine("read finished, numread={0}", numread);
+					//logger.Info("read finished, numread={0}", numread);
 					if (numread == 0) 
 					{
 						if (to_read == 0) 
@@ -215,14 +218,14 @@ namespace WaveBox.Http
 			}
 
 			string data = HttpUrl + "?" + new StreamReader(ms).ReadToEnd();
-			Console.WriteLine("[HTTPSERVER] POST request: {0}", data);
+			logger.Info("[HTTPSERVER] POST request: {0}", data);
 			
 			Stopwatch sw = new Stopwatch();
 			IApiHandler apiHandler = ApiHandlerFactory.CreateApiHandler(data, this);
 
 			sw.Start();
 			apiHandler.Process();
-			Console.WriteLine(apiHandler.GetType() + ": {0}ms", sw.ElapsedMilliseconds);
+			logger.Info(apiHandler.GetType() + ": {0}ms", sw.ElapsedMilliseconds);
 			sw.Stop();
 		}
 
@@ -248,7 +251,7 @@ namespace WaveBox.Http
 			}
 			OutputStream.WriteLine("");
 
-			Console.WriteLine("[HTTPSERVER] File header, contentLength: " + contentLength);
+			logger.Info("[HTTPSERVER] File header, contentLength: " + contentLength);
 		}
 
 		public void WriteText(string text, string mimeType)
@@ -286,8 +289,8 @@ namespace WaveBox.Http
 
 			WriteSuccessHeader(contentLength, mimeType, customHeaders);
 			OutputStream.Flush();
-            Console.WriteLine("[HTTPSERVER] File header, contentLength: {0}, contentType: {1}, lastMod: {2}", contentLength, mimeType, customHeaders != null && customHeaders.ContainsKey("Last-Modified") ? customHeaders["Last-Modified"] : String.Empty);
-			//Console.WriteLine("[HTTPSERVER] File header, contentLength: {0}, contentType: {1}, status: {2}", contentLength, header.ContentType, header.StatusCode);
+            logger.Info("[HTTPSERVER] File header, contentLength: {0}, contentType: {1}, lastMod: {2}", contentLength, mimeType, customHeaders != null && customHeaders.ContainsKey("Last-Modified") ? customHeaders["Last-Modified"] : String.Empty);
+			//logger.Info("[HTTPSERVER] File header, contentLength: {0}, contentType: {1}, status: {2}", contentLength, header.ContentType, header.StatusCode);
 
 			// Read/Write in 8 KB chunks
 			const int chunkSize = 8192;
@@ -328,7 +331,7 @@ namespace WaveBox.Http
 					// Log the progress (only for testing)
 					if (sw.ElapsedMilliseconds > 1000)
 					{
-						Console.WriteLine("[SENDFILE]: [ {0} / {1} | {2:F1}% | {3:F1} Mbps ]", bytesWritten, contentLength+startOffset, (Convert.ToDouble(bytesWritten) / Convert.ToDouble(contentLength+startOffset)) * 100, (((double)(sinceLastReport * 8) / 1024) / 1024) / (double)(sw.ElapsedMilliseconds / 1000));
+						logger.Info("[SENDFILE]: [ {0} / {1} | {2:F1}% | {3:F1} Mbps ]", bytesWritten, contentLength+startOffset, (Convert.ToDouble(bytesWritten) / Convert.ToDouble(contentLength+startOffset)) * 100, (((double)(sinceLastReport * 8) / 1024) / 1024) / (double)(sw.ElapsedMilliseconds / 1000));
 						sinceLastReport = 0;
 						sw.Restart();
 					}
@@ -360,7 +363,7 @@ namespace WaveBox.Http
 						SocketException se = (SocketException)e.InnerException;
 						if (se.SocketErrorCode == System.Net.Sockets.SocketError.ConnectionReset)
 						{
-							Console.WriteLine("[SENDFILE(2)] " + "Connection was forcibly closed by the remote host");
+							logger.Info("[SENDFILE(2)] " + "Connection was forcibly closed by the remote host");
 						}
 					}
 

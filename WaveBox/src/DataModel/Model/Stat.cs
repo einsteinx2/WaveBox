@@ -9,6 +9,7 @@ using System.IO;
 using TagLib;
 using Newtonsoft.Json;
 using System.Diagnostics;
+using NLog;
 
 namespace WaveBox.DataModel.Model
 {
@@ -20,6 +21,8 @@ namespace WaveBox.DataModel.Model
 
 	public static class Stat
 	{
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		// Timestamp is UTC unixtime
 		public static bool RecordStat(int itemId, StatType statType, long timeStamp)
 		{
@@ -40,7 +43,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[SONG(4)] " + e);
+				logger.Error("[SONG(4)] " + e);
 			}
 			finally
 			{

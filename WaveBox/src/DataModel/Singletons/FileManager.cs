@@ -7,11 +7,14 @@ using WaveBox.DataModel.Model;
 using WaveBox.DataModel.FolderScanning;
 using System.IO;
 using WaveBox.OperationQueue;
+using NLog;
 
 namespace WaveBox.DataModel.Singletons
 {
 	class FileManager
 	{
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		// Our list of media folders and the scanning queue which uses them
 		private List<Folder> mediaFolders;
 		private DelayedOperationQueue scanQueue;
@@ -72,12 +75,12 @@ namespace WaveBox.DataModel.Singletons
 							}
 							catch (UnauthorizedAccessException e)
 							{                    
-								Console.WriteLine("[FILEMANAGER] " + e.Message);
+								logger.Info("[FILEMANAGER] " + e.Message);
 								continue;
 							}
 							catch (System.IO.DirectoryNotFoundException e)
 							{
-								Console.WriteLine("[FILEMANAGER] " + e.Message);
+								logger.Info("[FILEMANAGER] " + e.Message);
 								continue;
 							}
 
@@ -91,7 +94,7 @@ namespace WaveBox.DataModel.Singletons
 								watch.Renamed += new RenamedEventHandler(OnRenamed);								
 								watch.EnableRaisingEvents = true;
 
-								Console.WriteLine("[FILEMANAGER] File system watcher added for: {0}", subDirectory);
+								logger.Info("[FILEMANAGER] File system watcher added for: {0}", subDirectory);
 
 								dirs.Push(subDirectory);
 							}
@@ -99,13 +102,13 @@ namespace WaveBox.DataModel.Singletons
 					}
 
 					// Confirm watcher addition
-					Console.WriteLine("[FILEMANAGER] File system watcher added for: {0}", folder.FolderPath);
+					logger.Info("[FILEMANAGER] File system watcher added for: {0}", folder.FolderPath);
 					//watcherList.Add(watch);
 				}
 				else
 				{
 						// Print an error if the folder doesn't exist
-						Console.WriteLine("[FILEMANAGER] warning: folder {0} does not exist, skipping...", folder.FolderPath);
+						logger.Info("[FILEMANAGER] warning: folder {0} does not exist, skipping...", folder.FolderPath);
 				}
 			}
 
@@ -119,7 +122,7 @@ namespace WaveBox.DataModel.Singletons
 		private void OnChanged(object source, FileSystemEventArgs e)
 		{
 			// Specify what is done when a file is changed, created, or deleted.
-			//Console.WriteLine("File: " + e.FullPath + " " + e.ChangeType);
+			//logger.Info("File: " + e.FullPath + " " + e.ChangeType);
 		}
 
 		/// <summary>
@@ -128,12 +131,12 @@ namespace WaveBox.DataModel.Singletons
 		/// </summary>
 		private void OnCreated(object source, FileSystemEventArgs e)
 		{
-			Console.WriteLine("[FILEMANAGER] File created: {0}", e.FullPath);
+			logger.Info("[FILEMANAGER] File created: {0}", e.FullPath);
 
 			// If a file is detected, start a scan of the folder it exists in
 			if (File.Exists(e.FullPath))
 			{
-				Console.WriteLine("[FILEMANAGER] New file detected, starting scanning operation.");
+				logger.Info("[FILEMANAGER] New file detected, starting scanning operation.");
 
 				string dir = new FileInfo(e.FullPath).DirectoryName;
 				scanQueue.queueOperation(new FolderScanOperation(dir, DelayedOperationQueue.DEFAULT_DELAY));
@@ -141,13 +144,13 @@ namespace WaveBox.DataModel.Singletons
 			// If a directory is created, start a scan of the directory
 			else if (Directory.Exists(e.FullPath))
 			{
-				Console.WriteLine("[FILEMANAGER] New directory detected, starting scanning operation.");
+				logger.Info("[FILEMANAGER] New directory detected, starting scanning operation.");
 				scanQueue.queueOperation(new FolderScanOperation(e.FullPath, DelayedOperationQueue.DEFAULT_DELAY));
 			}
 			// Else, edge-case?  Might pick up something weird like a named pipe or socket with a valid media extension.
 			else
 			{
-				Console.WriteLine("[FILEMANAGER] warning: unknown object detected in filesystem at {0}, ignoring...", e.FullPath);
+				logger.Info("[FILEMANAGER] warning: unknown object detected in filesystem at {0}, ignoring...", e.FullPath);
 			}
 		}
 
@@ -168,7 +171,7 @@ namespace WaveBox.DataModel.Singletons
 		{
 			// if a file is renamed, its db entry is probably orphaned.  remove the orphan and
 			// add the renamed file as a new entry
-			Console.WriteLine("[FILEMANAGER] {0} renamed to {1}", e.OldName, e.Name);
+			logger.Info("[FILEMANAGER] {0} renamed to {1}", e.OldName, e.Name);
 
 			// To easily accomplish the above, we just call OnDeleted() and OnCreated(), to reduce redundancy
 			OnDeleted(source, e);

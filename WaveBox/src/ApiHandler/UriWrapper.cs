@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using NLog;
 
 namespace WaveBox.ApiHandler
 {
 	public class UriWrapper
-	{
+	{		
+		//private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		public List<string> UriParts { get; set; }
 		public string UriString { get; set; }
 		public Dictionary<string, string> Parameters { get; set; }

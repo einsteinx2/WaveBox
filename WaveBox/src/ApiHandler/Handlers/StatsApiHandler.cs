@@ -6,11 +6,14 @@ using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
 using Newtonsoft.Json;
 using WaveBox.Http;
+using NLog;
 
 namespace WaveBox.ApiHandler
 {
-	public class StatsApiHandler : IApiHandler
-	{
+	class StatsApiHandler : IApiHandler
+	{		
+		//private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 		

@@ -8,11 +8,14 @@ using System.IO;
 using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
 using WaveBox.Http;
+using NLog;
 
 namespace WaveBox.ApiHandler.Handlers
 {
 	class DatabaseApiHandler : IApiHandler
-	{
+	{		
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 		
@@ -47,7 +50,7 @@ namespace WaveBox.ApiHandler.Handlers
 					{
 						string range = (string)Processor.HttpHeaders["Range"];
 						string start = range.Split(new char[]{'-', '='})[1];
-						Console.WriteLine("[DATABASEAPI] Connection retried.  Resuming from {0}", start);
+						logger.Info("[DATABASEAPI] Connection retried.  Resuming from {0}", start);
 						startOffset = Convert.ToInt32(start);
 					}
 
@@ -90,7 +93,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 				catch (Exception e)
 				{
-					Console.WriteLine("[SONG(1)] " + e);
+					logger.Info("[SONG(1)] " + e);
 				}
 				finally
 				{
@@ -104,7 +107,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 				catch(Exception e)
 				{
-					Console.WriteLine("[DATABASEAPI(1)] ERROR: " + e);
+					logger.Info("[DATABASEAPI(1)] ERROR: " + e);
 				}
 			}
 		}

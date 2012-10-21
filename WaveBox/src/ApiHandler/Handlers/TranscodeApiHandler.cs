@@ -8,11 +8,14 @@ using WaveBox.DataModel.Singletons;
 using System.IO;
 using WaveBox.Http;
 using System.Threading;
+using NLog;
 
 namespace WaveBox.ApiHandler.Handlers
 {
 	class TranscodeApiHandler : IApiHandler
-	{
+	{		
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 		private ITranscoder Transcoder { get; set; }
@@ -25,7 +28,7 @@ namespace WaveBox.ApiHandler.Handlers
 		
 		public void Process()
 		{
-			Console.WriteLine("Stream handler called");
+			logger.Info("Stream handler called");
 			
 			// Try to get the media item id
 			bool success = false;
@@ -80,7 +83,7 @@ namespace WaveBox.ApiHandler.Handlers
 					{
 						string range = (string)Processor.HttpHeaders["Range"];
 						string start = range.Split(new char[]{'-', '='})[1];
-						Console.WriteLine("[SENDFILE] Connection retried.  Resuming from {0}", start);
+						logger.Info("[SENDFILE] Connection retried.  Resuming from {0}", start);
 
 						if (isDirect)
 						{
@@ -194,18 +197,18 @@ namespace WaveBox.ApiHandler.Handlers
 						{
 							if (Transcoder.IsDirect)
 							{
-								Console.WriteLine("[STREAM API] Checking if base stream exists");
+								logger.Info("[STREAM API] Checking if base stream exists");
 								if ((object)Transcoder.TranscodeProcess != null && (object)Transcoder.TranscodeProcess.StandardOutput.BaseStream != null)
 								{
 									// The base stream exists, so the transcoding process has started
-									Console.WriteLine("[STREAM API] Base stream exists, so start the transfer");
+									logger.Info("[STREAM API] Base stream exists, so start the transfer");
 									stream = Transcoder.TranscodeProcess.StandardOutput.BaseStream;
 									break;
 								}
 							}
 							else
 							{
-								Console.WriteLine("[STREAM API] Checking if file exists");
+								logger.Info("[STREAM API] Checking if file exists");
 								if (File.Exists(Transcoder.OutputPath))
 								{
 									// The file exists, so the transcoding process has started
@@ -224,13 +227,13 @@ namespace WaveBox.ApiHandler.Handlers
 					    (Transcoder.IsDirect && (object)stream != null) ||
 					    (!Transcoder.IsDirect && File.Exists(Transcoder.OutputPath)))
 					{
-						Console.WriteLine("transfering the stream");
+						logger.Info("transfering the stream");
 						string mimeType = (object)Transcoder == null ? item.FileType.MimeType() : Transcoder.MimeType;
 						Processor.Transcoder = Transcoder;
 
-						if(Uri.Parameters.ContainsKey("offsetSeconds")) Console.WriteLine("ApiHandlerFactory writing file at offsetSeconds " + Uri.Parameters["offsetSeconds"]);
+						if(Uri.Parameters.ContainsKey("offsetSeconds")) logger.Info("ApiHandlerFactory writing file at offsetSeconds " + Uri.Parameters["offsetSeconds"]);
 						Processor.WriteFile(stream, startOffset, length, mimeType, null);
-                        if(Uri.Parameters.ContainsKey("offsetSeconds")) Console.WriteLine("ApiHandlerFactory DONE writing file at offsetSeconds " + Uri.Parameters["offsetSeconds"]);
+                        if(Uri.Parameters.ContainsKey("offsetSeconds")) logger.Info("ApiHandlerFactory DONE writing file at offsetSeconds " + Uri.Parameters["offsetSeconds"]);
 					}
 					else
 					{
@@ -242,7 +245,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 				catch(Exception e)
 				{
-					Console.WriteLine("[STREAMAPI] ERROR: " + e);
+					logger.Info("[STREAMAPI] ERROR: " + e);
 				}
 			}
 			else

@@ -8,11 +8,14 @@ using System.Threading;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
+using NLog;
 
 namespace WaveBox.Http
 {
 	public class HttpServer 
-	{
+	{		
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		protected int Port { get; set; }
 		private TcpListener Listener { get; set; }
 		private bool IsActive { get; set; }
@@ -34,20 +37,20 @@ namespace WaveBox.Http
 			{
 				if (e.SocketErrorCode.ToString() == "AddressAlreadyInUse")
 				{
-					Console.WriteLine("[HTTPSERVER] Socket already in use, is WaveBox already running?");
+					logger.Info("[HTTPSERVER] Socket already in use, is WaveBox already running?");
 				}
 				else
-					Console.WriteLine("[HTTPSERVER(4)] " + e);
+					logger.Info("[HTTPSERVER(4)] " + e);
 
 				Environment.Exit(-1);
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[HTTPSERVER(5)] " + e);
+				logger.Error("[HTTPSERVER(5)] " + e);
 				Environment.Exit(-1);
 			}
 
-			Console.WriteLine("[HTTPSERVER] HTTP server started");
+			logger.Info("[HTTPSERVER] HTTP server started");
 			while (IsActive) 
 			{                
 				TcpClient s = Listener.AcceptTcpClient();

@@ -7,11 +7,14 @@ using WaveBox.Http;
 using WaveBox.DataModel.Singletons;
 using Newtonsoft.Json;
 using WaveBox.DataModel.Model;
+using NLog;
 
 namespace WaveBox.ApiHandler.Handlers
 {
 	class StatusApiHandler : IApiHandler
-	{
+	{		
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 
@@ -23,7 +26,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 		public void Process()
 		{
-			Console.WriteLine("[STATUS] OK!");
+			logger.Info("[STATUS] OK!");
 			
 			try
 			{
@@ -36,7 +39,7 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 			catch(Exception e)
 			{
-				Console.WriteLine("[STATUS(1)] ERROR: " + e);
+				logger.Error("[STATUS(1)] ERROR: " + e);
 			}
 		}
 

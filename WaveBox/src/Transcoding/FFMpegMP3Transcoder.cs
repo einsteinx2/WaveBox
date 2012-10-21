@@ -1,10 +1,13 @@
 using System;
 using WaveBox.DataModel.Model;
+using NLog;
 
 namespace WaveBox.Transcoding
 {
 	public class FFMpegMP3Transcoder : AbstractTranscoder
-	{
+	{		
+		//private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		public override TranscodeType Type { get { return TranscodeType.MP3; } }
 
 		public override string Command { get { return "ffmpeg"; } }

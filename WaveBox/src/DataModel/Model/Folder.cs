@@ -8,11 +8,14 @@ using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
 using Newtonsoft.Json;
 using System.IO;
+using NLog;
 
 namespace WaveBox.DataModel.Model
 {
 	public class Folder : IItem
 	{
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		[JsonIgnore]
 		public int? ItemId { get { return FolderId; } set { FolderId = ItemId; } }
 
@@ -81,7 +84,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[FOLDER(1)] " + e);
+				logger.Error("[FOLDER(1)] " + e);
 			}
 			finally
 			{
@@ -137,7 +140,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[FOLDER(2)] " + e);
+				logger.Error("[FOLDER(2)] " + e);
 			}
 			finally
 			{
@@ -196,7 +199,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[FOLDER(3)] " + e);
+				logger.Error("[FOLDER(3)] " + e);
 			}
 			finally
 			{
@@ -251,7 +254,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[FOLDER(4)] " + e);
+				logger.Error("[FOLDER(4)] " + e);
 			}
 			finally
 			{
@@ -288,7 +291,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[FOLDER(4)] " + e);
+				logger.Error("[FOLDER(4)] " + e);
 			}
 			finally
 			{
@@ -323,7 +326,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[FOLDER(5)] " + e);
+				logger.Error("[FOLDER(5)] " + e);
 			}
 			finally
 			{
@@ -375,7 +378,7 @@ namespace WaveBox.DataModel.Model
 				{
 					// Use this one
 					artPath = path;
-					//Console.WriteLine("Found standard art for folder " + FolderName + " - file name: " + fileName);
+					//logger.Info("Found standard art for folder " + FolderName + " - file name: " + fileName);
 				}
 			}
 
@@ -386,11 +389,11 @@ namespace WaveBox.DataModel.Model
 
 				/*if ((object)artPath == null)
 				{
-					Console.WriteLine("folder " + FolderName + " contains no images");
+					logger.Info("folder " + FolderName + " contains no images");
 				}
 				else
 				{
-					Console.WriteLine("Found non-standard art for folder " + FolderName + " - path: " + artPath);
+					logger.Info("Found non-standard art for folder " + FolderName + " - path: " + artPath);
 				}*/
 			}
 
@@ -448,7 +451,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[FOLDER(6)] " + e);
+				logger.Error("[FOLDER(6)] " + e);
 			}
 			finally
 			{
@@ -479,7 +482,7 @@ namespace WaveBox.DataModel.Model
 				}
 				else
 				{
-					Console.WriteLine("No db result for parent folder.  Constructing parent folder object.");
+					logger.Info("No db result for parent folder.  Constructing parent folder object.");
 					Folder f = new Folder(parentFolderPath);
 					f.InsertFolder(false);
 					pFolderId = f.FolderId;
@@ -487,7 +490,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[FOLDER(7)] " + e);
+				logger.Error("[FOLDER(7)] " + e);
 			}
 			finally
 			{
@@ -520,7 +523,7 @@ namespace WaveBox.DataModel.Model
 				} 
 				catch (Exception e) 
 				{
-					Console.WriteLine ("[FOLDER(8)] " + e);
+					logger.Info ("[FOLDER(8)] " + e);
 				} 
 				finally
 				{

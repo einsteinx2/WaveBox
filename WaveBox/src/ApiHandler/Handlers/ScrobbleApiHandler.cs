@@ -7,11 +7,14 @@ using WaveBox.DataModel.Model;
 using WaveBox.DataModel.Singletons;
 using Newtonsoft.Json;
 using WaveBox.Http;
+using NLog;
 
 namespace WaveBox.ApiHandler.Handlers
 {
 	class ScrobbleApiHandler : IApiHandler
-	{
+	{		
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 		private User User { get; set; }
@@ -52,7 +55,7 @@ namespace WaveBox.ApiHandler.Handlers
 
             if (!lfm.SessionAuthenticated)
             {
-                Console.WriteLine("[SCROBBLE(1)] You must authenticate before you can scrobble.");
+                logger.Info("[SCROBBLE(1)] You must authenticate before you can scrobble.");
 
                 Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMNotAuthenticated", lfm.AuthUrl)));
                 return;
@@ -129,7 +132,7 @@ namespace WaveBox.ApiHandler.Handlers
                 }
                 catch(Exception e)
                 {
-                    Console.WriteLine("[SCROBBLE(3)] ERROR: " + e);
+                    logger.Info("[SCROBBLE(3)] ERROR: " + e);
                 }
             }
 
@@ -143,7 +146,7 @@ namespace WaveBox.ApiHandler.Handlers
                 }
                 catch(Exception e)
                 {
-                    Console.WriteLine("[SCROBBLE(4)] ERROR: " + e);
+                    logger.Info("[SCROBBLE(4)] ERROR: " + e);
                 }
                 return;
             }
@@ -156,7 +159,7 @@ namespace WaveBox.ApiHandler.Handlers
                 }
                 catch(Exception e)
                 {
-                    Console.WriteLine("[SCROBBLE(5)] ERROR: " + e);
+                    logger.Info("[SCROBBLE(5)] ERROR: " + e);
                 }
                 return;
             }

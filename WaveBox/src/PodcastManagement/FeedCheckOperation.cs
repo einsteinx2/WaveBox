@@ -2,11 +2,14 @@ using System;
 using WaveBox.OperationQueue;
 using WaveBox.PodcastManagement;
 using WaveBox.DataModel.Singletons;
+using NLog;
 
 namespace WaveBox
 {
     public class FeedCheckOperation : IDelayedOperation
-    {
+	{		
+		//private static Logger logger = LogManager.GetCurrentClassLogger();
+
         // property backing ivars
         DelayedOperationState state = DelayedOperationState.None;
         string operationType = "PodcastFeedCheck";

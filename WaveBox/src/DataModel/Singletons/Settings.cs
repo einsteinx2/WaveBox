@@ -5,11 +5,14 @@ using System.Text;
 using Newtonsoft.Json;
 using WaveBox.DataModel.Model;
 using System.IO;
+using NLog;
 
 namespace WaveBox.DataModel.Singletons
 {
 	public class Settings
 	{
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		public static string settingsFileName = "wavebox.conf";
 		public static string SettingsTemplatePath() { return "res" + Path.DirectorySeparatorChar + settingsFileName; }
 		public static string SettingsPath() { return WaveBoxMain.RootPath() + settingsFileName; }
@@ -72,7 +75,7 @@ namespace WaveBox.DataModel.Singletons
             {
                 try
                 {
-                    Console.WriteLine("[SETTINGS] " + "Setting file doesn't exist; Creating it. (WaveBox.conf)");
+                    logger.Info("[SETTINGS] " + "Setting file doesn't exist; Creating it. (WaveBox.conf)");
                     StreamReader settingsTemplate = new StreamReader(SettingsTemplatePath());
                     StreamWriter settingsOut = new StreamWriter(SettingsPath());
 
@@ -83,7 +86,7 @@ namespace WaveBox.DataModel.Singletons
                 } 
 				catch (Exception e)
                 {
-                    Console.WriteLine("[SETTINGS(1)] " + e);
+                    logger.Info("[SETTINGS(1)] " + e);
                 }
             }
 
@@ -99,7 +102,7 @@ namespace WaveBox.DataModel.Singletons
 
 			dynamic json = JsonConvert.DeserializeObject(configFile);
 
-			Console.WriteLine(json.mediaFolders + "\r\n");
+			logger.Info(json.mediaFolders + "\r\n");
 
 			for (int i = 0; i < json.mediaFolders.Count; i++)
 			{

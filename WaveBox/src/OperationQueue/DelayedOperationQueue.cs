@@ -4,11 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Diagnostics;
+using NLog;
 
 namespace WaveBox.OperationQueue
 {
 	public class DelayedOperationQueue
-	{
+	{		
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		public const int DEFAULT_DELAY = 10;
 		public const int DEFAULT_PRECISION = 250;
 
@@ -35,14 +38,14 @@ namespace WaveBox.OperationQueue
 							}
 							catch
 							{
-								//Console.WriteLine("[SCANQUEUE] Queue is empty: ", e);
+								//logger.Info("[SCANQUEUE] Queue is empty: ", e);
 								currentOperation = null;
 							}
 
 							if (currentOperation != null)
 							{
 								currentOperation.Run();
-								Console.WriteLine("[DELAYEDOPQUEUE] {0} fired", currentOperation.ToString());
+								logger.Info("[DELAYEDOPQUEUE] {0} fired", currentOperation.ToString());
 							}
 						}
 					}
@@ -82,12 +85,12 @@ namespace WaveBox.OperationQueue
 							op.ResetWait();
 						}
 					}
-					Console.WriteLine("[SCANQUEUE] ExtendWaitOrRestart {0}!", op.OperationType);
+					logger.Info("[SCANQUEUE] ExtendWaitOrRestart {0}!", op.OperationType);
 				}
 				else
 				{
 					operationQueue.Enqueue(op);
-					Console.WriteLine("[SCANQUEUE] New {0}!", op.OperationType);
+					logger.Info("[SCANQUEUE] New {0}!", op.OperationType);
 				}
 			}
 		}

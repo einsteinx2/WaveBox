@@ -5,11 +5,14 @@ using System.Text;
 using System.Data;
 using WaveBox.DataModel.Singletons;
 using Newtonsoft.Json;
+using NLog;
 
 namespace WaveBox.DataModel.Model
 {
 	public class Album : IItem
 	{
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		[JsonIgnore]
 		public int? ItemId { get { return AlbumId; } set { AlbumId = ItemId; } }
 
@@ -64,7 +67,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[ALBUM(1)] ERROR: " + e);
+				logger.Error("[ALBUM(1)] ERROR: " + e);
 			}
 			finally
 			{
@@ -97,16 +100,16 @@ namespace WaveBox.DataModel.Model
 				if (reader.Read())
 				{
 					SetPropertiesFromQueryReader(reader);
-					//Console.WriteLine("Album constructor, reader.Read = true, AlbumId = " + AlbumId);
+					//logger.Info("Album constructor, reader.Read = true, AlbumId = " + AlbumId);
 				}
 				else
 				{
-					//Console.WriteLine("Album constructor, reader.Read = false, AlbumId = " + AlbumId);
+					//logger.Info("Album constructor, reader.Read = false, AlbumId = " + AlbumId);
 				}
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[ALBUM(2)] ERROR: " + e);
+				logger.Error("[ALBUM(2)] ERROR: " + e);
 			}
 			finally
 			{
@@ -137,7 +140,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[ALBUM(3)] ERROR: " + e);
+				logger.Error("[ALBUM(3)] ERROR: " + e);
 			}
 			finally
 			{
@@ -189,7 +192,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[ALBUM(4)] ERROR: " + e);
+				logger.Error("[ALBUM(4)] ERROR: " + e);
 			}
 			finally
 			{
@@ -247,7 +250,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[ALBUM(5)] ERROR: " + e);
+				logger.Error("[ALBUM(5)] ERROR: " + e);
 			}
 			finally
 			{
@@ -279,7 +282,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[ALBUM(6)] ERROR: " + e);
+				logger.Error("[ALBUM(6)] ERROR: " + e);
 			}
 			finally
 			{

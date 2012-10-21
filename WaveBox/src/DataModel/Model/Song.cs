@@ -9,11 +9,14 @@ using System.IO;
 using TagLib;
 using Newtonsoft.Json;
 using System.Diagnostics;
+using NLog;
 
 namespace WaveBox.DataModel.Model
 {
 	public class Song : MediaItem
 	{
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		public static readonly string[] ValidExtensions = { ".mp3", ".m4a", ".flac", ".wv", ".mpc", ".ogg", ".wma" };
 
         [JsonIgnore]
@@ -74,7 +77,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[SONG(1)] " + e);
+				logger.Error("[SONG(1)] " + e);
 			}
 			finally
 			{
@@ -127,7 +130,7 @@ namespace WaveBox.DataModel.Model
 
 			if (FileType == FileType.Unknown)
 			{
-				Console.WriteLine("[SONG] \"" + filePath + "\" Unknown file type: " + file.Properties.Description);
+				logger.Info("[SONG] \"" + filePath + "\" Unknown file type: " + file.Properties.Description);
 			}
 
 			try
@@ -215,7 +218,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[SONG(2)] " + e);
+				logger.Error("[SONG(2)] " + e);
 			}
 		}
 
@@ -257,9 +260,9 @@ namespace WaveBox.DataModel.Model
 
 				q.ExecuteNonQueryLogged();
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
-				Console.WriteLine("[SONG(3)] " + e);
+				logger.Error("[SONG(3)] " + e);
 			}
 			finally
 			{
@@ -292,14 +295,14 @@ namespace WaveBox.DataModel.Model
 				{
 					//		sw.Start();
 					allsongs.Add(new Song(reader));
-					//		Console.WriteLine("Elapsed: {0}ms", sw.ElapsedMilliseconds);
+					//		logger.Info("Elapsed: {0}ms", sw.ElapsedMilliseconds);
 					//		sw.Restart();
 				}
 				//	sw.Stop();
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[SONG(4)] " + e);
+				logger.Error("[SONG(4)] " + e);
 			}
 			finally
 			{
@@ -368,7 +371,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[SONG(5)] " + e);
+				logger.Error("[SONG(5)] " + e);
 			}
 			finally
 			{

@@ -8,11 +8,14 @@ using WaveBox.ApiHandler;
 using WaveBox.Http;
 using WaveBox.PodcastManagement;
 using Newtonsoft.Json;
+using NLog;
 
 namespace WaveBox.ApiHandler.Handlers
 {
     class PodcastApiHandler : IApiHandler
-    {
+	{		
+		//private static Logger logger = LogManager.GetCurrentClassLogger();
+
         private IHttpProcessor Processor { get; set; }
         private UriWrapper Uri { get; set; }
 

@@ -4,11 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Diagnostics;
+using NLog;
 
 namespace WaveBox.OperationQueue
 {
 	public abstract class AbstractOperation : IDelayedOperation
 	{
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		public bool IsReady { get { return DateTime.UtcNow.CompareTo(RunDateTime) >= 0; } }
 
 		public abstract string OperationType { get; }
@@ -62,7 +65,7 @@ namespace WaveBox.OperationQueue
 			if (state == DelayedOperationState.Queued)
 			{
 				ResetWait();
-				Console.WriteLine("[ABSTRACTOPERATION] Extending wait period.");
+				logger.Info("[ABSTRACTOPERATION] Extending wait period.");
 			}
 			else if (state == DelayedOperationState.Running)
 			{

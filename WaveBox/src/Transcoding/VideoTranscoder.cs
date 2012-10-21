@@ -1,10 +1,13 @@
 using System;
 using WaveBox.DataModel.Model;
+using NLog;
 
 namespace WaveBox.Transcoding
 {
 	public abstract class VideoTranscoder : AbstractTranscoder
-	{
+	{		
+		//private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		public uint? Width { get; set; } 
 		
 		public uint? Height { get; set; } 

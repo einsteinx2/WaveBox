@@ -10,11 +10,14 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using WaveBox.OperationQueue;
 using TagLib;
+using NLog;
 
 namespace WaveBox.DataModel.FolderScanning
 {
     public class FolderScanOperation : AbstractOperation
     {
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
         public override string OperationType { get { return String.Format ("FolderScanOperation:{0}", FolderPath); } }
 
         private string folderPath;
@@ -35,15 +38,15 @@ namespace WaveBox.DataModel.FolderScanning
         {
             ProcessFolder(FolderPath);
 
-			Console.WriteLine("------------FOLDER SCAN --------------------");
-			Console.WriteLine("folders inserted: " + testNumberOfFoldersInserted);
-			Console.WriteLine("folder object create time: " + testFolderObjCreateTime.ElapsedMilliseconds + "ms");
-			Console.WriteLine("get directories time: " + testGetDirectoriesTime.ElapsedMilliseconds + "ms");
-			Console.WriteLine("media file needs updating time: " + testMediaItemNeedsUpdatingTime.ElapsedMilliseconds + "ms");
-			Console.WriteLine("extension valid check time: " + testIsExtensionValidTime.ElapsedMilliseconds + "ms");
+			logger.Info("------------FOLDER SCAN --------------------");
+			logger.Info("folders inserted: " + testNumberOfFoldersInserted);
+			logger.Info("folder object create time: " + testFolderObjCreateTime.ElapsedMilliseconds + "ms");
+			logger.Info("get directories time: " + testGetDirectoriesTime.ElapsedMilliseconds + "ms");
+			logger.Info("media file needs updating time: " + testMediaItemNeedsUpdatingTime.ElapsedMilliseconds + "ms");
+			logger.Info("extension valid check time: " + testIsExtensionValidTime.ElapsedMilliseconds + "ms");
 			long total = testFolderObjCreateTime.ElapsedMilliseconds + testGetDirectoriesTime.ElapsedMilliseconds + testMediaItemNeedsUpdatingTime.ElapsedMilliseconds + testIsExtensionValidTime.ElapsedMilliseconds;
-			Console.WriteLine("total: " + total + "ms = " + total / 1000 + "s");
-			Console.WriteLine("--------------------------------------------");
+			logger.Info("total: " + total + "ms = " + total / 1000 + "s");
+			logger.Info("--------------------------------------------");
         }
 
         public void ProcessFolder(int folderId)
@@ -67,7 +70,7 @@ namespace WaveBox.DataModel.FolderScanning
 					testFolderObjCreateTime.Start();
                     Folder topFolder = new Folder(folderPath);
 					testFolderObjCreateTime.Stop();
-                    //Console.WriteLine("scanning " + topFolder.FolderName + "  id: " + topFolder.FolderId);
+                    //logger.Info("scanning " + topFolder.FolderName + "  id: " + topFolder.FolderId);
 
                     if (topFolder.FolderId == null)
                     {
@@ -127,7 +130,7 @@ namespace WaveBox.DataModel.FolderScanning
                             }
                             //sw.Start();
                             ProcessFolder(subfolder);
-                            //Console.WriteLine("ProcessFolder ({0}) took {1}ms", subfolder, sw.ElapsedMilliseconds);
+                            //logger.Info("ProcessFolder ({0}) took {1}ms", subfolder, sw.ElapsedMilliseconds);
                             //sw.Reset();
                         }
                     }
@@ -164,20 +167,19 @@ namespace WaveBox.DataModel.FolderScanning
             }
             catch (FileNotFoundException e)
             {
-                Console.WriteLine("\t" + "[FOLDERSCAN(1)] \"" + folderPath + "\" : Directory does not exist. " + e);
+				logger.Error("\t" + "[FOLDERSCAN(1)] \"" + folderPath + "\" : Directory does not exist. " + e);
             }
             catch (DirectoryNotFoundException e)
             {
-				Console.WriteLine("    ");
-                Console.WriteLine("\t" + "[FOLDERSCAN(2)] \"" + folderPath + "\" : Directory does not exist. " + e);
+				logger.Error("\t" + "[FOLDERSCAN(2)] \"" + folderPath + "\" : Directory does not exist. " + e);
             }
             catch (IOException e)
             {
-                Console.WriteLine("\t" + "[FOLDERSCAN(3)] \"" + folderPath + "\" : " + e);
+				logger.Error("\t" + "[FOLDERSCAN(3)] \"" + folderPath + "\" : " + e);
             }
             catch (Exception e)
             {
-                Console.WriteLine("\t" + "[FOLDERSCAN(4)] \"" + folderPath + "\" : Error checking to see if the file was a directory: " + e);
+				logger.Error("\t" + "[FOLDERSCAN(4)] \"" + folderPath + "\" : Error checking to see if the file was a directory: " + e);
             }
         }
 
@@ -201,12 +203,12 @@ namespace WaveBox.DataModel.FolderScanning
 					int? itemId = null;
 					bool needsUpdating = MediaItem.FileNeedsUpdating(file, folderId, out isNew, out itemId);
 					testMediaItemNeedsUpdatingTime.Stop();
-					//Console.WriteLine("FileNeedsUpdating: {0} ms", sw.ElapsedMilliseconds);
+					//logger.Info("FileNeedsUpdating: {0} ms", sw.ElapsedMilliseconds);
 					//sw.Reset();
 
 					if (needsUpdating)
 					{
-						Console.WriteLine("[FOLDERSCAN] " + "File needs updating: " + file);
+						logger.Info("[FOLDERSCAN] " + "File needs updating: " + file);
 		                
 						//sw.Start();
 						TagLib.File f = null;
@@ -217,21 +219,21 @@ namespace WaveBox.DataModel.FolderScanning
 						catch(TagLib.CorruptFileException e)
 						{
 							e.ToString();
-							Console.WriteLine("[FOLDERSCAN(5)] " + file + " has a corrupt tag and will not be inserted.");
+							logger.Error("[FOLDERSCAN(5)] " + file + " has a corrupt tag and will not be inserted.");
 							return;
 						}
 						catch(Exception e)
 						{
-							Console.WriteLine("[FOLDERSCAN(6)] " + "Error processing file " + file + ":  " + e);
+							logger.Error("[FOLDERSCAN(6)] " + "Error processing file " + file + ":  " + e);
 						}
-						//Console.WriteLine("Get tag: {0} ms", sw.ElapsedMilliseconds);
+						//logger.Info("Get tag: {0} ms", sw.ElapsedMilliseconds);
 
 						//sw.Reset();
 
 						if (f == null)
 						{
 							// Must be something not supported by TagLib-Sharp
-							Console.WriteLine("[FOLDERSCAN(5)] " + file + " is not supported by taglib and will not be inserted.");
+							logger.Info("[FOLDERSCAN(5)] " + file + " is not supported by taglib and will not be inserted.");
 						}
 						else
 						{
@@ -264,19 +266,19 @@ namespace WaveBox.DataModel.FolderScanning
 			}
             catch (FileNotFoundException e)
             {
-                Console.WriteLine("\t" + "[FOLDERSCAN(5)] \"" + file + "\" : Directory does not exist. " + e);
+				logger.Error("\t" + "[FOLDERSCAN(5)] \"" + file + "\" : Directory does not exist. " + e);
             }
             catch (DirectoryNotFoundException e)
             {
-                Console.WriteLine("\t" + "[FOLDERSCAN(6)] \"" + file + "\" : Directory does not exist. " + e);
+				logger.Error("\t" + "[FOLDERSCAN(6)] \"" + file + "\" : Directory does not exist. " + e);
             }
             catch (IOException e)
             {
-                Console.WriteLine("\t" + "[FOLDERSCAN(7)] \"" + file + "\" : " + e);
+				logger.Error("\t" + "[FOLDERSCAN(7)] \"" + file + "\" : " + e);
             }
             catch (Exception e)
             {
-                Console.WriteLine("\t" + "[FOLDERSCAN(8)] \"" + file + "\" : " + e);
+				logger.Error("\t" + "[FOLDERSCAN(8)] \"" + file + "\" : " + e);
             }
 		}
 	}

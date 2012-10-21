@@ -5,11 +5,14 @@ using Mono.Unix;
 using Mono.Unix.Native;
 using System.Runtime.InteropServices;
 using WaveBox.Transcoding;
+using NLog;
 
 namespace WaveBox
 {
 	public class WaveBoxService : System.ServiceProcess.ServiceBase
 	{
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		// Instance of WaveBox, and the thread which will run it
 		private Thread init;
 		private WaveBoxMain wavebox;
@@ -19,7 +22,7 @@ namespace WaveBox
 		/// </summary>
 		public WaveBoxService()
 		{
-			Console.WriteLine("[SERVICE] Initializing WaveBoxService");
+			logger.Info("[SERVICE] Initializing WaveBoxService");
 			try
 			{
 				// Name the service
@@ -35,9 +38,9 @@ namespace WaveBox
 				this.OnStart();
 			}
 			// Catch any exceptions
-			catch(Exception e)
+			catch (Exception e)
 			{
-				Console.WriteLine("[SERVICE(1)] {0}", e);
+				logger.Error("[SERVICE(1)] {0}", e);
 			}
 		}
 
@@ -64,12 +67,12 @@ namespace WaveBox
 		/// </summary>
 		protected void OnStart()
 		{
-			Console.WriteLine("[SERVICE] Starting...");
+			logger.Info("[SERVICE] Starting...");
 
 			// Launch the WaveBox thread using the Start() function from WaveBox
 			init = new Thread(new ThreadStart(wavebox.Start));
 			init.Start();
-			Console.WriteLine("[SERVICE] Started!");
+			logger.Info("[SERVICE] Started!");
 		}
 
 		/// <summary>
@@ -78,21 +81,21 @@ namespace WaveBox
 		/// </summary>
 		protected override void OnStop()
 		{
-			Console.WriteLine("[SERVICE] Stopping...");
+			logger.Info("[SERVICE] Stopping...");
 
 			// Abort main thread, nullify the WaveBox object
 			init.Abort();
 			wavebox = null;
 
-			Console.WriteLine("[SERVICE] Cancelling any active transcodes...");
+			logger.Info("[SERVICE] Cancelling any active transcodes...");
 			TranscodeManager.Instance.CancelAllTranscodes();
-			Console.WriteLine("[SERVICE] All transcodes canceled");
+			logger.Info("[SERVICE] All transcodes canceled");
 
-			Console.WriteLine("[SERVICE] Turning off ZeroConf...");
+			logger.Info("[SERVICE] Turning off ZeroConf...");
 			WaveBoxMain.DisposeZeroConf();
-			Console.WriteLine("[SERVICE] ZeroConf off");
+			logger.Info("[SERVICE] ZeroConf off");
 
-			Console.WriteLine("[SERVICE] Stopped!");
+			logger.Info("[SERVICE] Stopped!");
 
 			// Gracefully terminate
 			Environment.Exit(0);
@@ -103,7 +106,7 @@ namespace WaveBox
 		/// </summary>
 		protected override void OnContinue()
 		{
-			Console.WriteLine("[SERVICE] Continuing");
+			logger.Info("[SERVICE] Continuing");
 		}
 
 		/// <summary>
@@ -111,7 +114,7 @@ namespace WaveBox
 		/// </summary>
 		protected override void OnPause()
 		{
-			Console.WriteLine("[SERVICE] Pausing");
+			logger.Info("[SERVICE] Pausing");
 		}
 
 		/// <summary>
@@ -119,7 +122,7 @@ namespace WaveBox
 		/// </summary>
 		protected override void OnShutdown()
 		{
-			Console.WriteLine("[SERVICE] Shutting down");
+			logger.Info("[SERVICE] Shutting down");
 		}
 		
 		/// <summary>
@@ -134,7 +137,7 @@ namespace WaveBox
 		        case PlatformID.Win32S:
 		        case PlatformID.Win32Windows:
 					// register application kill notifier
-					Console.WriteLine("Registering shutdown hook for Windows...");
+					logger.Info("Registering shutdown hook for Windows...");
 					windowsShutdownHandler += new EventHandler(ShutdownWindows);
 					SetConsoleCtrlHandler(windowsShutdownHandler, true);
 					break;

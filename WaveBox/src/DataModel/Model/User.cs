@@ -6,11 +6,14 @@ using System.Data;
 using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
 using System.Security.Cryptography;
+using NLog;
 
 namespace WaveBox.DataModel.Model
 {
 	public class User
 	{
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		public int? UserId { get; set; }
 		public string UserName { get; set; }
 		public string PasswordHash { get; set; }
@@ -39,7 +42,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[USER(1)] " + e);
+				logger.Error("[USER(1)] " + e);
 			}
 			finally
 			{
@@ -75,7 +78,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[USER(1)] " + e);
+				logger.Error("[USER(1)] " + e);
 			}
 			finally
 			{
@@ -105,7 +108,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[USER(2)] " + e);
+				logger.Error("[USER(2)] " + e);
 			}
 			finally
 			{
@@ -179,7 +182,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[USER(3)] " + e);
+				logger.Error("[USER(3)] " + e);
 			}
 			finally
 			{
@@ -206,7 +209,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[USER(4)] " + e);
+				logger.Error("[USER(4)] " + e);
 			}
 			finally
 			{
@@ -241,7 +244,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				Console.WriteLine("[USER(5)] " + e);
+				logger.Error("[USER(5)] " + e);
 			}
 			finally
 			{
@@ -286,7 +289,7 @@ namespace WaveBox.DataModel.Model
 				}
 				catch (Exception e)
 				{
-					Console.WriteLine("[USER(6)] " + e);
+					logger.Info("[USER(6)] " + e);
 					return false;
 				}
 				finally

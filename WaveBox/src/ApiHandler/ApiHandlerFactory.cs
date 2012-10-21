@@ -5,14 +5,17 @@ using System.Text;
 using WaveBox.ApiHandler.Handlers;
 using WaveBox.DataModel.Model;
 using WaveBox.Http;
+using NLog;
 
 namespace WaveBox.ApiHandler
 {
 	class ApiHandlerFactory
-	{
+	{		
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		public static IApiHandler CreateApiHandler(string uri, HttpProcessor processor)
 		{
-			Console.WriteLine("[ApiHandlerFactory] uri: " + uri);
+			logger.Info("[ApiHandlerFactory] uri: " + uri);
 
 			// Turn the input string into a UriWrapper, so we can parse its components with ease
 			UriWrapper uriW = new UriWrapper(uri);

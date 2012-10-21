@@ -11,11 +11,14 @@ using WaveBox.DataModel.Model;
 using System.Runtime.InteropServices;
 using System.Reflection;
 using Newtonsoft.Json;
+using NLog;
 
 namespace WaveBox.DataModel.Singletons
 {
 	static class Database
 	{
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		public static string databaseFileName = "wavebox.db";
 		public static string DatabaseTemplatePath() { return "res" + Path.DirectorySeparatorChar + databaseFileName; }
 		public static string DatabasePath() { return WaveBoxMain.RootPath() + databaseFileName; }
@@ -33,7 +36,7 @@ namespace WaveBox.DataModel.Singletons
 			{
 				try
 				{
-					Console.WriteLine("[SETTINGS] " + "Database file doesn't exist; Creating it. (wavebox.db)");
+					logger.Info("[SETTINGS] " + "Database file doesn't exist; Creating it. (wavebox.db)");
 					
 					// new filestream on the template
 					FileStream dbTemplate = new FileStream(DatabaseTemplatePath(), FileMode.Open);
@@ -52,7 +55,7 @@ namespace WaveBox.DataModel.Singletons
 				} 
 				catch (Exception e)
 				{
-					Console.WriteLine("[SETTINGS(2)] " + e);
+					logger.Info("[SETTINGS(2)] " + e);
 				}
 			}
 			
@@ -60,7 +63,7 @@ namespace WaveBox.DataModel.Singletons
 			{
 				try
 				{
-					Console.WriteLine("[SETTINGS] " + "Query log database file doesn't exist; Creating it. (wavebox_querylog.db)");
+					logger.Info("[SETTINGS] " + "Query log database file doesn't exist; Creating it. (wavebox_querylog.db)");
 					
 					// new filestream on the template
 					FileStream dbTemplate = new FileStream(QuerylogTemplatePath(), FileMode.Open);
@@ -79,7 +82,7 @@ namespace WaveBox.DataModel.Singletons
 				} 
 				catch (Exception e)
 				{
-					Console.WriteLine("[SETTINGS(3)] " + e);
+					logger.Info("[SETTINGS(3)] " + e);
 				}
 			}
 		}
@@ -172,7 +175,7 @@ namespace WaveBox.DataModel.Singletons
 					}
 					catch(Exception e)
 					{
-						Console.WriteLine("[DATABASE(1)] " + e);
+						logger.Info("[DATABASE(1)] " + e);
 					}
 					finally
 					{
@@ -197,9 +200,9 @@ namespace WaveBox.DataModel.Singletons
 				q.Prepare();
 				queryId = (long)q.ExecuteScalar();
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
-				Console.WriteLine("[SONG(1)] " + e);
+				logger.Error("[SONG(1)] " + e);
 			}
 			finally
 			{
@@ -281,7 +284,7 @@ namespace WaveBox.DataModel.Singletons
 			} 
 			catch (Exception e) 
 			{
-				Console.WriteLine ("[DATABASE] ERROR deleting item id: " + e);
+				logger.Info ("[DATABASE] ERROR deleting item id: " + e);
 			} 
 			finally 
 			{
@@ -354,28 +357,21 @@ namespace WaveBox.DataModel.Singletons
 					{
 						sqlite3_backup_step(backupHandle, -1);
 						sqlite3_backup_finish(backupHandle);
-						
-						// Delete the user and session tables
-						try
+
+						string[] tablesToDelete = { "user", "session", "server" };
+
+						foreach (string tableName in tablesToDelete)
 						{
-							IDbCommand q = Database.GetDbCommand("DROP TABLE IF EXISTS user", destination);
-							q.Prepare();
-							q.ExecuteNonQuery();
-						}
-						catch(Exception e)
-						{
-							Console.WriteLine("Error deleting user table in backup: " + e);
-						}
-						
-						try
-						{
-							IDbCommand q = Database.GetDbCommand("DROP TABLE IF EXISTS session", destination);
-							q.Prepare();
-							q.ExecuteNonQuery();
-						}
-						catch(Exception e)
-						{
-							Console.WriteLine("Error deleting session table in backup: " + e);
+							try
+							{
+								IDbCommand q = Database.GetDbCommand("DROP TABLE IF EXISTS " + tableName, destination);
+								q.Prepare();
+								q.ExecuteNonQuery();
+							}
+							catch(Exception e)
+							{
+								logger.Info("Error deleting user table in backup: " + e);
+							}
 						}
 						
 						return true;
@@ -384,7 +380,7 @@ namespace WaveBox.DataModel.Singletons
 				}
 				catch(Exception e)
 				{
-					Console.WriteLine("Error backup up database: " + e);
+					logger.Info("Error backup up database: " + e);
 				}
 				finally
 				{
@@ -438,7 +434,7 @@ namespace WaveBox.DataModel.Singletons
 						}
 						catch(Exception e)
 						{
-							Console.WriteLine("Error deleting user table in backup: " + e);
+							logger.Info("Error deleting user table in backup: " + e);
 						}
 						
 						try
@@ -449,7 +445,7 @@ namespace WaveBox.DataModel.Singletons
 						}
 						catch(Exception e)
 						{
-							Console.WriteLine("Error deleting session table in backup: " + e);
+							logger.Info("Error deleting session table in backup: " + e);
 						}
 
 						return true;
@@ -458,7 +454,7 @@ namespace WaveBox.DataModel.Singletons
 				}
 				catch(Exception e)
 				{
-					Console.WriteLine("Error backup up database: " + e);
+					logger.Info("Error backup up database: " + e);
 				}
 				finally
 				{

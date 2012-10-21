@@ -2,11 +2,14 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using WaveBox.Http;
+using NLog;
 
 namespace WaveBox.ApiHandler.Handlers
 {
 	public class WebInterfaceHandler : IApiHandler
-	{
+	{		
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 
@@ -44,7 +47,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 			}
 
-			Console.WriteLine("[WEBINTERFACE] path: " + path);
+			logger.Info("[WEBINTERFACE] path: " + path);
 
 			// Make sure the file exists
 			if (File.Exists(path))
@@ -52,7 +55,7 @@ namespace WaveBox.ApiHandler.Handlers
                 // If it exists, check to see if the headers contains an If-Modified-Since entry
                 if(Processor.HttpHeaders.ContainsKey("If-Modified-Since"))
                 {
-                    Console.WriteLine(Processor.HttpHeaders["If-Modified-Since"]);
+                    logger.Info(Processor.HttpHeaders["If-Modified-Since"]);
 
                     // Took me a while to figure this out, but even if the time zone in the request is GMT, DateTime.Parse converts it to local time.
                     var ims = DateTime.Parse(Processor.HttpHeaders["If-Modified-Since"].ToString());
@@ -60,13 +63,13 @@ namespace WaveBox.ApiHandler.Handlers
 
                     if(ims >= lastMod)
                     {
-                        Console.WriteLine("[WEBINTERFACE] File not modified: " + path);
+                        logger.Info("[WEBINTERFACE] File not modified: " + path);
                         Processor.WriteNotModified();
                         return;
                     }
                 }
 
-				Console.WriteLine("[WEBINTERFACE] serving file at path: " + path);
+				logger.Info("[WEBINTERFACE] serving file at path: " + path);
 
 				// Serve up files inside html directory
 				FileStream file = new FileStream(path, FileMode.Open, FileAccess.Read);
@@ -77,7 +80,7 @@ namespace WaveBox.ApiHandler.Handlers
 				{
 					string range = (string)Processor.HttpHeaders["Range"];
 					string start = range.Split(new char[]{'-', '='})[1];
-					Console.WriteLine("[WEBINTERFACE] Connection retried.  Resuming from {0}", start);
+					logger.Info("[WEBINTERFACE] Connection retried.  Resuming from {0}", start);
 					startOffset = Convert.ToInt32(start);
 				}
 
@@ -92,7 +95,7 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 			else
 			{
-				Console.WriteLine("[WEBINTERFACE] file at path does not exist: " + path);
+				logger.Info("[WEBINTERFACE] file at path does not exist: " + path);
 
 				// File not found
 				Processor.WriteErrorHeader();

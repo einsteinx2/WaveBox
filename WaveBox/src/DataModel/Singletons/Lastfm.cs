@@ -9,11 +9,14 @@ using Newtonsoft.Json;
 using System.Security.Cryptography;
 using System.Web.Services;
 using System.Net.Sockets;
+using NLog;
 
 namespace WaveBox.DataModel.Singletons
 {
 	public class Lastfm
 	{
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		private static string apiKey = "6aec36725ab20cff28e8525cdf5fbd4a";
 		private static string secret = "cd596009d199d51405a2477d4e65c5d7";
 		private string sessionKey = null;
@@ -58,7 +61,7 @@ namespace WaveBox.DataModel.Singletons
 			if (sessionKey == null)
 			{
 				CreateAuthUrl();
-				Console.WriteLine(this.AuthUrl);
+				logger.Info(this.AuthUrl);
 			}
 			else if (sessionKey.Substring(0, 6) == "token:")
 			{
@@ -219,7 +222,7 @@ namespace WaveBox.DataModel.Singletons
 				sessionKey = jsonResponse.session.key.ToString();
                 sessionAuthenticated = true;
 				user.UpdateLastfmSession(sessionKey);
-				Console.WriteLine ("[SCROBBLE] ({0}) Obtain last.fm session key: success", user.UserName);
+				logger.Info ("[SCROBBLE] ({0}) Obtain last.fm session key: success", user.UserName);
 			}
             else sessionAuthenticated = false;
 		}
@@ -261,7 +264,7 @@ namespace WaveBox.DataModel.Singletons
 			if (requestToken != null)
 			{
 				user.UpdateLastfmSession("token:" + requestToken);
-				Console.WriteLine ("[SCROBBLE] ({0}) Obtain last.fm authentication request token: success", user.UserName);
+				logger.Info ("[SCROBBLE] ({0}) Obtain last.fm authentication request token: success", user.UserName);
 			}
 
 			string url = "http://www.last.fm/api/auth/?" + 
@@ -306,7 +309,7 @@ namespace WaveBox.DataModel.Singletons
                 NetworkStream stream = s.GetStream();
                 stream.Write(headerBytes, 0, headerBytes.Length);
 
-                //Console.WriteLine(req.ToString());
+                //logger.Info(req.ToString());
 
                 byte[] receive = new byte[256];
                 MemoryStream m = new MemoryStream();
@@ -320,14 +323,14 @@ namespace WaveBox.DataModel.Singletons
                 byte[] finalByteArray = m.ToArray();
                 resp = Encoding.UTF8.GetString(finalByteArray, 0, finalByteArray.Length);
 
-                //Console.WriteLine(resp);
+                //logger.Info(resp);
                 stream.Close();
                 s.Close();
             } 
 
             catch (Exception e)
             {
-                Console.WriteLine("[LASTFM(1)] " + e);
+                logger.Info("[LASTFM(1)] " + e);
             }
 
             return resp;

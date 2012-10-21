@@ -4,6 +4,7 @@ using System.Net;
 using System.IO;
 using System.Diagnostics;
 using WaveBox.OperationQueue;
+using NLog;
 
 namespace WaveBox.PodcastManagement
 {
@@ -11,14 +12,10 @@ namespace WaveBox.PodcastManagement
     /// The podcast download queue.  This class wraps a list and implements some queue functions.  The reason for doing this is that we needed the queue to be mutable in other ways than pushing and popping.
     /// </summary>
     public static class DownloadQueue
-    {
-        public static int Count
-        {
-            get
-            {
-                return q.Count;
-            }
-        }
+	{		
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
+        public static int Count { get { return q.Count; } }
 
         // this really doesn't belong here, but the current operation queue model says that it should be.
         public static DelayedOperationQueue FeedChecks = new DelayedOperationQueue();
@@ -111,7 +108,7 @@ namespace WaveBox.PodcastManagement
 
                             // clean up any partially downloaded file
                             if(File.Exists(q[index].FilePath)) File.Delete(q[index].FilePath);
-                            Console.WriteLine("Download canceled");
+                            logger.Info("Download canceled");
 
                             // remove the item from the queue
                             Dequeue();
@@ -150,7 +147,7 @@ namespace WaveBox.PodcastManagement
                     
                     // clean up any partially downloaded file
                     if(File.Exists(q[i].FilePath)) File.Delete(q[i].FilePath);
-                    Console.WriteLine("Download canceled");
+                    logger.Info("Download canceled");
                     
                     // remove the item from the queue
                     Dequeue();
@@ -168,7 +165,7 @@ namespace WaveBox.PodcastManagement
             {
                 if (contentLength == 0)
                     contentLength = e.TotalBytesToReceive;
-                //Console.WriteLine(ep.Title + ": " + ((double)e.BytesReceived / (double)e.TotalBytesToReceive) * 100 + "%");
+                //logger.Info(ep.Title + ": " + ((double)e.BytesReceived / (double)e.TotalBytesToReceive) * 100 + "%");
                 totalBytesRead = e.BytesReceived;
             });
 
@@ -176,7 +173,7 @@ namespace WaveBox.PodcastManagement
             {
                 ep.AddToDatabase();
                 sw.Stop();
-                Console.WriteLine("[PODCASTMANAGEMENT] Finished downloading {0} [ {1}, {2}Mbps avg ]", ep.Title, sw.ElapsedMilliseconds / 1000, ((double)totalBytesRead / (double)131072) / (sw.ElapsedMilliseconds / 1000));
+                logger.Info("[PODCASTMANAGEMENT] Finished downloading {0} [ {1}, {2}Mbps avg ]", ep.Title, sw.ElapsedMilliseconds / 1000, ((double)totalBytesRead / (double)131072) / (sw.ElapsedMilliseconds / 1000));
 
                 if(DownloadQueue.Count > 0)
                 {
@@ -194,7 +191,7 @@ namespace WaveBox.PodcastManagement
             ep.FilePath = Podcast.PodcastMediaDirectory + Path.DirectorySeparatorChar + pc.Title + Path.DirectorySeparatorChar + fn;
 
             webClient.DownloadFileAsync(uri, ep.FilePath);
-            Console.WriteLine("[PODCASTMANAGEMENT] Started downloading {0}", ep.Title);
+            logger.Info("[PODCASTMANAGEMENT] Started downloading {0}", ep.Title);
             sw.Start();
         }
 

@@ -6,11 +6,14 @@ using Newtonsoft.Json;
 using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
 using WaveBox.Http;
+using NLog;
 
 namespace WaveBox.ApiHandler.Handlers
 {
 	class FoldersApiHandler : IApiHandler
-	{
+	{		
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 
@@ -88,7 +91,7 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 			catch(Exception e)
 			{
-				Console.WriteLine("[FOLDERAPI(1)] ERROR: " + e);
+				logger.Error("[FOLDERAPI(1)] ERROR: " + e);
 			}
 		}
 

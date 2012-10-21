@@ -8,12 +8,14 @@ using WaveBox.DataModel.Singletons;
 using System.IO;
 using WaveBox.Http;
 using System.Threading;
-
+using NLog;
 
 namespace WaveBox.ApiHandler.Handlers
 {
 	class StreamApiHandler : IApiHandler
-	{
+	{		
+		private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 
@@ -25,7 +27,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 		public void Process()
 		{
-			Console.WriteLine("Stream handler called");
+			logger.Info("Stream handler called");
 
 			// Try to get the media item id
 			bool success = false;
@@ -49,7 +51,7 @@ namespace WaveBox.ApiHandler.Handlers
 					else if (itemType == ItemType.Video)
 					{
 						item = new Video(id);
-						Console.WriteLine("streaming a video, filename " + item.FileName);
+						logger.Info("streaming a video, filename " + item.FileName);
 					}
 
 					// Return an error if none exists
@@ -68,7 +70,7 @@ namespace WaveBox.ApiHandler.Handlers
 					{
 						string range = (string)Processor.HttpHeaders["Range"];
 						string start = range.Split(new char[]{'-', '='})[1];
-						Console.WriteLine("[SENDFILE] Connection retried.  Resuming from {0}", start);
+						logger.Info("[SENDFILE] Connection retried.  Resuming from {0}", start);
 						startOffset = Convert.ToInt32(start);
 					}
 
@@ -81,7 +83,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 				catch(Exception e)
 				{
-					Console.WriteLine("[STREAMAPI] ERROR: " + e);
+					logger.Error("[STREAMAPI] ERROR: " + e);
 				}
 			}
 			else

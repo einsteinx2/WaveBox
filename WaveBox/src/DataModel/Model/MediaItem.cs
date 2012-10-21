@@ -8,11 +8,14 @@ using WaveBox.DataModel.Model;
 using WaveBox.DataModel.Singletons;
 using System.Diagnostics;
 using Newtonsoft.Json;
+using NLog;
 
 namespace WaveBox.DataModel.Model
 {
 	public class MediaItem : IMediaItem
 	{
+		//private static Logger logger = LogManager.GetCurrentClassLogger();
+
 		[JsonIgnore]
 		public virtual ItemType ItemType { get { return ItemType.Unknown; } }
 
