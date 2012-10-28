@@ -79,7 +79,7 @@ namespace WaveBox.ApiHandler.Handlers
                     dict.Add("Last-Modified", lmt);
 
 					// Send the file
-                    Processor.WriteFile(stream, startOffset, length, item.FileType.MimeType(), dict);
+                    Processor.WriteFile(stream, startOffset, length, item.FileType.MimeType(), dict, true);
 				}
 				catch(Exception e)
 				{

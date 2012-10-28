@@ -19,11 +19,11 @@ namespace WaveBox
 		void WriteSuccessHeader(long contentLength, string mimeType, IDictionary<string, string> customHeaders);
 
 		// Body writing methods
-        void WriteNotModified();
+		void WriteNotModifiedHeader();
 		void WriteJson(string json);
 		void WriteText(string text, string mimeType);
 
-		void WriteFile(Stream fs, int startOffset, long length, string mimeType, IDictionary<string, string> customHeaders);
+		void WriteFile(Stream fs, int startOffset, long length, string mimeType, IDictionary<string, string> customHeaders, bool isSendContentLength);
 
         // Utility methods
         //static string DateTimeToLastMod(DateTime theDate);

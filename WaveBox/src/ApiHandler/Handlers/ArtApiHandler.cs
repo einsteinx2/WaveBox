@@ -64,7 +64,7 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 
             var dict = new Dictionary<string, string>();
-            Processor.WriteFile(stream, 0, stream.Length, HttpHeader.MimeTypeForExtension(".jpg"), dict);
+            Processor.WriteFile(stream, 0, stream.Length, HttpHeader.MimeTypeForExtension(".jpg"), dict, true);
 
             // close the file so we don't get sharing violations on future accesses
             stream.Close();

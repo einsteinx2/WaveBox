@@ -29,7 +29,8 @@ namespace WaveBox.Http
 		public HttpServer Srv { get; set; }
 
 		private Stream InputStream { get; set; }
-		public StreamWriter OutputStream { get; set; }
+		//public StreamWriter OutputStream { get; set; }
+		//public StreamWriter HeaderOutputStream { get; set; }
 
 		public String HttpMethod { get; set; }
 		public String HttpUrl { get; set; }
@@ -72,7 +73,6 @@ namespace WaveBox.Http
 			InputStream = new BufferedStream(Socket.GetStream());
 
 			// we probably shouldn't be using a streamwriter for all output from handlers either
-			OutputStream = new StreamWriter(new BufferedStream(Socket.GetStream()));
 			try 
 			{
 				ParseRequest();
@@ -92,28 +92,7 @@ namespace WaveBox.Http
 				WriteErrorHeader();
 			}
 
-			try
-			{
-				OutputStream.Flush();
-			}
-			catch (IOException e)
-			{
-				if (e.InnerException.GetType() == typeof(SocketException))
-				{
-					SocketException se = (SocketException)e.InnerException;
-					if (se.SocketErrorCode == System.Net.Sockets.SocketError.ConnectionReset)
-					{
-						logger.Info("[HTTPSERVER(2)] " + "Connection was forcibly closed by the remote host");
-					}
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error("[HTTPSERVER(3)] " + e);
-			}
-
-			// bs.Flush(); // flush any remaining output
-			InputStream = null; OutputStream = null; // bs = null;
+			InputStream = null;
 			Socket.Close();             
 		}
 
@@ -169,7 +148,7 @@ namespace WaveBox.Http
 
 			sw.Start();
 			apiHandler.Process();
-			logger.Info(apiHandler.GetType() + ": {0}ms", sw.ElapsedMilliseconds);
+			//logger.Info(apiHandler.GetType() + ": {0}ms", sw.ElapsedMilliseconds);
 			sw.Stop();
 		}
 
@@ -218,46 +197,71 @@ namespace WaveBox.Http
 			}
 
 			string data = HttpUrl + "?" + new StreamReader(ms).ReadToEnd();
-			logger.Info("[HTTPSERVER] POST request: {0}", data);
+			//logger.Info("[HTTPSERVER] POST request: {0}", data);
 			
 			Stopwatch sw = new Stopwatch();
 			IApiHandler apiHandler = ApiHandlerFactory.CreateApiHandler(data, this);
 
 			sw.Start();
 			apiHandler.Process();
-			logger.Info(apiHandler.GetType() + ": {0}ms", sw.ElapsedMilliseconds);
+			//logger.Info(apiHandler.GetType() + ": {0}ms", sw.ElapsedMilliseconds);
 			sw.Stop();
 		}
 
-		public void WriteErrorHeader() 
+		public void WriteNotModifiedHeader()
 		{
-			OutputStream.WriteLine("HTTP/1.0 404 File not found");
-			OutputStream.WriteLine("Connection: close");
-			OutputStream.WriteLine("");
+			StreamWriter outStream = new StreamWriter(new BufferedStream(Socket.GetStream()));
+			outStream.WriteLine("HTTP/1.1 304 Not Modified");
+			outStream.WriteLine("Connection: close");
+			outStream.WriteLine("");
+			outStream.Flush();
+		}
+
+		public void WriteErrorHeader()
+		{
+			StreamWriter outStream = new StreamWriter(new BufferedStream(Socket.GetStream()));
+			outStream.WriteLine("HTTP/1.0 404 File not found");
+			outStream.WriteLine("Connection: close");
+			outStream.WriteLine("");
+			outStream.Flush();
 		}
 
 		public void WriteSuccessHeader(long contentLength, string mimeType, IDictionary<string, string> customHeaders)
 		{
-			OutputStream.WriteLine("HTTP/1.0 200 OK");            
-			OutputStream.WriteLine("Content-Type: " + mimeType);
-			OutputStream.WriteLine("Access-Control-Allow-Origin: *");
-			OutputStream.WriteLine("Connection: close");
+			StreamWriter outStream = new StreamWriter(new BufferedStream(Socket.GetStream()));
+			outStream.WriteLine("HTTP/1.0 200 OK");
+			outStream.WriteLine("Content-Type: " + mimeType);
+			if (contentLength >= 0)
+			{
+				outStream.WriteLine("Content-Length: " + contentLength);
+			}
+			outStream.WriteLine("Access-Control-Allow-Origin: *");
 			if ((object)customHeaders != null)
 			{
 				foreach (string key in customHeaders.Keys)
 				{
-					OutputStream.WriteLine(key + ": " + customHeaders[key]);
+					outStream.WriteLine(key + ": " + customHeaders[key]);
 				}
 			}
-			OutputStream.WriteLine("");
-
-			logger.Info("[HTTPSERVER] File header, contentLength: " + contentLength);
+			outStream.WriteLine("Connection: close");
+			outStream.WriteLine("");
+			outStream.Flush();
+			
+			logger.Info("[HTTPSERVER] Success header, contentLength: " + contentLength);
 		}
 
 		public void WriteText(string text, string mimeType)
 		{
-			WriteSuccessHeader(UTF8Encoding.Unicode.GetByteCount(text), mimeType + ";charset=utf-8", null);
-			OutputStream.Write(text);
+			// Makes no sense at all, but for whatever reason, all ajax calls fail with a cross site 
+			// scripting error if Content-Type is set, but the player needs it for files for seeking,
+			// so pass -1 for no Content-Length header for all text requests
+			//
+			//WriteSuccessHeader(UTF8Encoding.Unicode.GetByteCount(text), mimeType + ";charset=utf-8", null);
+			WriteSuccessHeader(-1, mimeType + ";charset=utf-8", null);
+
+			StreamWriter outStream = new StreamWriter(new BufferedStream(Socket.GetStream()));
+			outStream.Write(text);
+			outStream.Flush();
 		}
 
 		public void WriteJson(string json)
@@ -265,7 +269,7 @@ namespace WaveBox.Http
 			WriteText(json, "application/json");
 		}
 
-		public void WriteFile(Stream fs, int startOffset, long length, string mimeType, IDictionary<string, string> customHeaders)
+		public void WriteFile(Stream fs, int startOffset, long length, string mimeType, IDictionary<string, string> customHeaders, bool isSendContentLength)
 		{
 			if ((object)fs == null || !fs.CanRead || length == 0 || startOffset >= length)
 			{ 
@@ -273,23 +277,10 @@ namespace WaveBox.Http
 			}
 
 			long contentLength = length - startOffset;
-			/*HttpHeader header = null;
-			if (fs is FileStream)
-			{
-				FileInfo fsinfo = new FileInfo(((FileStream)fs).Name);
-				header = new HttpHeader(HttpHeader.HttpStatusCode.OK, HttpHeader.ContentTypeForExtension(fsinfo.Extension), contentLength, mimeType);
-			}
-			else
-			{
-				header = new HttpHeader(HttpHeader.HttpStatusCode.OK, HttpHeader.HttpContentType.UNKNOWN, length, mimeType);
-			}
-			header.WriteHeader(OutputStream);*/
 
-			// Write the headers to output stream
-
-			WriteSuccessHeader(contentLength, mimeType, customHeaders);
-			OutputStream.Flush();
-            logger.Info("[HTTPSERVER] File header, contentLength: {0}, contentType: {1}, lastMod: {2}", contentLength, mimeType, customHeaders != null && customHeaders.ContainsKey("Last-Modified") ? customHeaders["Last-Modified"] : String.Empty);
+			WriteSuccessHeader(isSendContentLength ? contentLength : -1, mimeType, customHeaders);
+			//OutputStream.Flush();
+			logger.Info("[HTTPSERVER] File header, contentLength: {0}, contentType: {1}, lastMod: {2}", contentLength, mimeType, customHeaders != null && customHeaders.ContainsKey("Last-Modified") ? customHeaders["Last-Modified"] : String.Empty);
 			//logger.Info("[HTTPSERVER] File header, contentLength: {0}, contentType: {1}, status: {2}", contentLength, header.ContentType, header.StatusCode);
 
 			// Read/Write in 8 KB chunks
@@ -299,7 +290,7 @@ namespace WaveBox.Http
 			byte[] buf = new byte[chunkSize];
 			int bytesRead;
 			long bytesWritten = 0;
-			Stream stream = OutputStream.BaseStream;
+			Stream stream = new BufferedStream(Socket.GetStream());//OutputStream.BaseStream;
 			int sinceLastReport = 0;
 			Stopwatch sw = new Stopwatch();
 
@@ -316,7 +307,7 @@ namespace WaveBox.Http
 			}*/
 
 			sw.Start();
-			while(true)
+			while (true)
 			{
 				try
 				{
@@ -324,14 +315,14 @@ namespace WaveBox.Http
 					bytesRead = fs.Read(buf, 0, chunkSize);
 
 					// Send the bytes out to the client
-				    stream.Write(buf, 0, bytesRead);
-                    stream.Flush();
+					stream.Write(buf, 0, bytesRead);
+					stream.Flush();
 					bytesWritten += bytesRead;
 
 					// Log the progress (only for testing)
 					if (sw.ElapsedMilliseconds > 1000)
 					{
-						logger.Info("[SENDFILE]: [ {0} / {1} | {2:F1}% | {3:F1} Mbps ]", bytesWritten, contentLength+startOffset, (Convert.ToDouble(bytesWritten) / Convert.ToDouble(contentLength+startOffset)) * 100, (((double)(sinceLastReport * 8) / 1024) / 1024) / (double)(sw.ElapsedMilliseconds / 1000));
+						logger.Info("[SENDFILE]: [ {0} / {1} | {2:F1}% | {3:F1} Mbps ]", bytesWritten, contentLength + startOffset, (Convert.ToDouble(bytesWritten) / Convert.ToDouble(contentLength + startOffset)) * 100, (((double)(sinceLastReport * 8) / 1024) / 1024) / (double)(sw.ElapsedMilliseconds / 1000));
 						sinceLastReport = 0;
 						sw.Restart();
 					}
@@ -356,7 +347,7 @@ namespace WaveBox.Http
 						Thread.Sleep(250);
 					}
 				}
-				catch (IOException e)
+				catch(IOException e)
 				{
 					if (e.InnerException.GetType() == typeof(System.Net.Sockets.SocketException))
 					{
@@ -374,13 +365,6 @@ namespace WaveBox.Http
 			sw.Stop();
 			//_sh.writeFailure
 		}
-
-        public void WriteNotModified()
-        {
-            var header = new WaveBox.Http.HttpHeader(HttpHeader.HttpStatusCode.NOTMODIFIED, HttpHeader.HttpContentType.UNKNOWN, 0);
-            header.WriteHeader(OutputStream);
-            return;
-        }
 
         public static string DateTimeToLastMod(DateTime theDate)
         {

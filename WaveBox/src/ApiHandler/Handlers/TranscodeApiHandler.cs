@@ -49,6 +49,12 @@ namespace WaveBox.ApiHandler.Handlers
 					Stream stream = null;
 					int startOffset = 0;
 					long length = 0;
+					bool estimateContentLength = false;
+
+					if (Uri.Parameters.ContainsKey("estimateContentLength"))
+					{
+						estimateContentLength = this.IsTrue(Uri.Parameters["estimateContentLength"]);
+					}
 
 					// Get the media item associated with this id
 					if (itemType == ItemType.Song)
@@ -232,7 +238,7 @@ namespace WaveBox.ApiHandler.Handlers
 						Processor.Transcoder = Transcoder;
 
 						if(Uri.Parameters.ContainsKey("offsetSeconds")) logger.Info("ApiHandlerFactory writing file at offsetSeconds " + Uri.Parameters["offsetSeconds"]);
-						Processor.WriteFile(stream, startOffset, length, mimeType, null);
+						Processor.WriteFile(stream, startOffset, length, mimeType, null, estimateContentLength);
                         if(Uri.Parameters.ContainsKey("offsetSeconds")) logger.Info("ApiHandlerFactory DONE writing file at offsetSeconds " + Uri.Parameters["offsetSeconds"]);
 					}
 					else
