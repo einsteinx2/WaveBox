@@ -5,6 +5,7 @@ using Mono.Unix;
 using Mono.Unix.Native;
 using System.Runtime.InteropServices;
 using WaveBox.Transcoding;
+using WaveBox.DataModel.Singletons;
 using NLog;
 
 namespace WaveBox
@@ -85,15 +86,21 @@ namespace WaveBox
 
 			// Abort main thread, nullify the WaveBox object
 			init.Abort();
-			wavebox = null;
+
+			logger.Info("[SERVICE] Turning off ZeroConf...");
+			wavebox.DisposeZeroConf();
+			logger.Info("[SERVICE] ZeroConf off");
 
 			logger.Info("[SERVICE] Cancelling any active transcodes...");
 			TranscodeManager.Instance.CancelAllTranscodes();
 			logger.Info("[SERVICE] All transcodes canceled");
 
-			logger.Info("[SERVICE] Turning off ZeroConf...");
-			WaveBoxMain.DisposeZeroConf();
-			logger.Info("[SERVICE] ZeroConf off");
+			// Stop the file manager operation queue thread
+			//FileManager.Instance.Stop();
+
+			// Stop the server
+			wavebox.Stop();
+			wavebox = null;
 
 			logger.Info("[SERVICE] Stopped!");
 

@@ -25,11 +25,13 @@ namespace WaveBox
 	{	
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 
-		public static RegisterService ZeroConfService { get; set; }
+		public RegisterService ZeroConfService { get; set; }
 
-		public static string ServerGuid { get; set; }
+		public string ServerGuid { get; set; }
 
-		public static string ServerUrl { get; set; }
+		public string ServerUrl { get; set; }
+
+		private HttpServer httpServer;
 
 		public static string RootPath()
 		{
@@ -108,7 +110,7 @@ namespace WaveBox
 			}
 		}
 
-		private IPAddress LocalIPAddress()
+		private static IPAddress LocalIPAddress()
 		{
 			if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
 			{
@@ -141,7 +143,7 @@ namespace WaveBox
 			}
 		}
 
-		void RegisterUrlCompleted(object sender, DownloadDataCompletedEventArgs e)
+		private static void RegisterUrlCompleted(object sender, DownloadDataCompletedEventArgs e)
 		{
 			// Do nothing for now, check for success and handle failures later
 		}
@@ -187,7 +189,7 @@ namespace WaveBox
 			return;
 		}
 
-		public static void PublishZeroConf()
+		public void PublishZeroConf()
 		{
 			if ((object)ZeroConfService == null)
 			{
@@ -215,7 +217,7 @@ namespace WaveBox
 			}
 		}
 
-		public static void DisposeZeroConf()
+		public void DisposeZeroConf()
 		{
 			if ((object)ZeroConfService != null)
 			{
@@ -227,7 +229,7 @@ namespace WaveBox
 		/// <summary>
 		/// Initialize the HTTP server thread.
 		/// </summary>
-		private static void StartHTTPServer()
+		private void StartHTTPServer()
 		{
 			// thread for the HTTP server.  its listen operation is blocking, so we can't start it before
 			// we do any file scanning otherwise.
@@ -236,8 +238,8 @@ namespace WaveBox
 			// Attempt to start the HTTP server thread
 			try
 			{
-				HttpServer http = new HttpServer(Settings.Port);
-				httpSrv = new Thread(new ThreadStart(http.Listen));
+				httpServer = new HttpServer(Settings.Port);
+				httpSrv = new Thread(new ThreadStart(httpServer.Listen));
 				httpSrv.IsBackground = true;
 				httpSrv.Start();
 			}
@@ -261,6 +263,17 @@ namespace WaveBox
 				logger.Info("[WAVEBOX(3)] ERROR: " + e);
 				Environment.Exit(-1);
 			}
+		}
+
+		public void Stop()
+		{
+			httpServer.Stop();
+		}
+
+		public void Restart()
+		{
+			Stop();
+			StartHTTPServer();
 		}
 	}
 }

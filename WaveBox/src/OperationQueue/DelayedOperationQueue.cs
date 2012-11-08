@@ -54,6 +54,7 @@ namespace WaveBox.OperationQueue
 					Thread.Sleep(DEFAULT_PRECISION);
 				}
 			});
+			queueThread.IsBackground = true;
 			queueThread.Start();
 		}
 

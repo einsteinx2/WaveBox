@@ -109,6 +109,10 @@ namespace WaveBox.ApiHandler
 					{
 						return new StatsApiHandler(uriW, processor, user);
 					}
+					else if (action == "settings")
+					{
+						return new SettingsApiHandler(uriW, processor, user);
+					}
 				}
 			}
 			else

@@ -116,6 +116,11 @@ namespace WaveBox.DataModel.Singletons
 			GC.Collect();
 		}
 
+		public void Stop()
+		{
+			scanQueue.stopScanQueue();
+		}
+
 		/// <summary>
 		/// OnChanged() is currently a stub.
 		/// </summary>

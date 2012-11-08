@@ -28,9 +28,9 @@ namespace WaveBox.Http
 
 		public void Listen()
 		{
-			Listener = new TcpListener(IPAddress.Any, Port);
 			try
 			{
+				Listener = new TcpListener(IPAddress.Any, Port);
 				Listener.Start();
 			}
 			catch (System.Net.Sockets.SocketException e)
@@ -57,8 +57,21 @@ namespace WaveBox.Http
 				//TcpClient d = listener.BeginAcceptTcpClient
 				HttpProcessor processor = new HttpProcessor(s, this);
 				Thread thread = new Thread(new ThreadStart(processor.process));
+				thread.IsBackground = true;
 				thread.Start();
 				Thread.Sleep(1);
+			}
+		}
+
+		public void Stop()
+		{
+			if ((object)Listener != null)
+			{
+				try
+				{
+					Listener.Stop();
+				}
+				catch { }
 			}
 		}
 	}

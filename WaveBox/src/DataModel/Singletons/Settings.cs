@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using WaveBox.DataModel.Model;
 using System.IO;
 using NLog;
@@ -17,26 +18,24 @@ namespace WaveBox.DataModel.Singletons
 		public static string SettingsTemplatePath() { return "res" + Path.DirectorySeparatorChar + settingsFileName; }
 		public static string SettingsPath() { return WaveBoxMain.RootPath() + settingsFileName; }
 
-		private static double version = 1.0;
-		public static double Version { get { return version; } }
+		public static double Version { get { return 1.0; } }
 
-		private static bool prettyJson = true;
-		public static Formatting JsonFormatting { get { return prettyJson ? Formatting.Indented : Formatting.None; } }
+		private static SettingsData settingsModel = new SettingsData();
+		public static SettingsData SettingsModel { get { return settingsModel; } }
 
-		private static short port;
-		public static short Port { get { return port; } }
+		public static Formatting JsonFormatting { get { return settingsModel.PrettyJson ? Formatting.Indented : Formatting.None; } }
 
-        private static string podcastFolder = null;
-        public static string PodcastFolder { get { return podcastFolder; } }
+		public static short Port { get { return settingsModel.Port; } }
 
-        private static int podcastCheckInterval;
-        public static int PodcastCheckInterval { get { return podcastCheckInterval; } }
+		public static string PodcastFolder { get { return settingsModel.PodcastFolder; } }
+
+		public static int PodcastCheckInterval { get { return settingsModel.PodcastCheckInterval; } }
 
 		private static List<Folder> mediaFolders;
 		public static List<Folder> MediaFolders { get { return mediaFolders; } }
 
-		private static List<string> folderArtNames;
-		public static List<string> FolderArtNames { get { return folderArtNames; } }
+		public static List<string> FolderArtNames { get { return settingsModel.FolderArtNames; } }
+
 
 		public static void Reload()
 		{
@@ -48,25 +47,124 @@ namespace WaveBox.DataModel.Singletons
 			StreamReader reader = new StreamReader(SettingsPath());
 			string configFile = RemoveJsonComments(reader);
 
+			// Grab all settings from the file
+			settingsModel = JsonConvert.DeserializeObject<SettingsData>(configFile);
+
+			// Generate Folder objects from the media folders
+			mediaFolders = PopulateMediaFolders();
+
+
+
 			dynamic json = JsonConvert.DeserializeObject(configFile);
+			bool settingsChanged = false;
+			
+			try
+			{
+				string podcastFolderTemp = json.podcastFolderDoesntExist;
+				settingsModel.PodcastFolder = podcastFolderTemp;
+				settingsChanged = true;
+			}
+			catch {}
+
+			Console.WriteLine("settings changed: " + settingsChanged + " port: " + settingsModel.Port);
+		}
+
+		public static bool WriteSettings(string jsonString)
+		{
+			dynamic json = JsonConvert.DeserializeObject(jsonString);
+
+			bool settingsChanged = false;
 
 			try
 			{
-				port = json.port;
+				short? port = json.port;
+				if (port != null)
+				{
+					settingsModel.Port = (short)port;
+					settingsChanged = true;
+				}
 			}
-			catch
+			catch {}
+			 
+			try
 			{
-				port = 6500;
+				if (json.mediaFolders != null)
+				{
+					List<string> mediaFoldersTemp = new List<string>();
+					foreach (string mediaFolderString in json.mediaFolders)
+					{
+						mediaFoldersTemp.Add(mediaFolderString);
+					}
+					settingsModel.MediaFolders = mediaFoldersTemp;
+					mediaFolders = PopulateMediaFolders();
+					settingsChanged = true;
+				}
+			}
+			catch {}
+		
+			try
+			{
+				string podcastFolderTemp = json.podcastFolder;
+				if (podcastFolderTemp != null)
+				{
+					settingsModel.PodcastFolder = podcastFolderTemp;
+					settingsChanged = true;
+				}
+			}
+			catch {}
+
+			try
+			{
+				bool? prettyJsonTemp = json.prettyJson;
+				if (prettyJsonTemp != null)
+				{
+					settingsModel.PrettyJson = (bool)prettyJsonTemp;
+					settingsChanged = true;
+				}
+			}
+			catch {}
+
+			try
+			{
+				int? podcastCheckIntervalTemp = json.podcastCheckInterval;
+				if (podcastCheckIntervalTemp != null)
+				{
+					settingsModel.PodcastCheckInterval = (int)podcastCheckIntervalTemp;
+					settingsChanged = true;
+				}
+			}
+			catch {}
+
+			try
+			{
+				if (json.folderArtNames != null)
+				{
+					List<string> folderArtNamesTemp = new List<string>();
+					foreach (string artName in json.folderArtNames)
+					{
+						folderArtNamesTemp.Add(artName);
+					}
+					settingsModel.FolderArtNames = folderArtNamesTemp;
+					settingsChanged = true;
+				}
+			}
+			catch {}
+			
+			// Now write the settings to disk
+			if (settingsChanged)
+			{
+				FlushSettings();
 			}
 
-			podcastFolder = json.podcastFolder;
-            podcastCheckInterval = json.podcastCheckInterval;
-			mediaFolders = PopulateMediaFolders();
-			folderArtNames = new List<string>();
-			foreach (string name in json.folderArtNames)
-			{
-				folderArtNames.Add(name);
-			}
+			return settingsChanged;
+		}
+
+		public static void FlushSettings()
+		{
+			// Write the settings data model to disk
+			StreamWriter settingsOut = new StreamWriter(SettingsPath());
+			settingsOut.Write(JsonConvert.SerializeObject(settingsModel, Formatting.Indented));
+			settingsOut.Close();
 		}
 
 		public static void SettingsSetup()
@@ -96,22 +194,15 @@ namespace WaveBox.DataModel.Singletons
 		private static List<Folder> PopulateMediaFolders()
 		{
 			List<Folder> folders = new List<Folder>();
-			Folder mf = null;
-			StreamReader reader = new StreamReader(SettingsPath());
-            string configFile = RemoveJsonComments(reader);
 
-			dynamic json = JsonConvert.DeserializeObject(configFile);
-
-			logger.Info(json.mediaFolders + "\r\n");
-
-			for (int i = 0; i < json.mediaFolders.Count; i++)
+			foreach (string mediaFolderString in settingsModel.MediaFolders)
 			{
-				mf = new Folder(json.mediaFolders[i].ToString(), true);
-				if (mf.FolderId == null)
+				Folder mediaFolder = new Folder(mediaFolderString, true);
+				if (mediaFolder.FolderId == null)
 				{
-					mf.InsertFolder(true);
+					mediaFolder.InsertFolder(true);
 				}
-				folders.Add(mf);
+				folders.Add(mediaFolder);
 			}
 
 			return folders;
@@ -174,7 +265,6 @@ namespace WaveBox.DataModel.Singletons
                             AppendDiscardingWhitespace(curr);
                             continue;
                         }
-
                         else
                         {
                             if(curr == '"')
@@ -185,7 +275,6 @@ namespace WaveBox.DataModel.Singletons
                             continue;
                         }
                     }
-
                     else 
                     {
                         // if we are in a block comment, make sure that we shouldn't be ending the block comment
@@ -201,5 +290,26 @@ namespace WaveBox.DataModel.Singletons
             }
 			return js.ToString();
         }
+	}
+
+	public class SettingsData
+	{
+		[JsonProperty("port")]
+		public short Port { get; set; }
+		
+		[JsonProperty("mediaFolders")]
+		public List<string> MediaFolders { get; set; }
+		
+		[JsonProperty("podcastFolder")]
+		public string PodcastFolder { get; set; }
+		
+		[JsonProperty("prettyJson")]
+		public bool PrettyJson { get; set; }
+		
+		[JsonProperty("podcastCheckInterval")]
+		public int PodcastCheckInterval { get; set; }
+		
+		[JsonProperty("folderArtNames")]
+		public List<string> FolderArtNames { get; set; }
 	}
 }
