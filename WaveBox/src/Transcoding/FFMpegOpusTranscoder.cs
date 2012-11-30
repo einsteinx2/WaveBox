@@ -17,6 +17,8 @@ namespace WaveBox.Transcoding
         public override string OutputExtension { get { return "opus"; } }
         
         public override string MimeType { get { return "audio/opus"; } }
+
+        private Process FfmpegProcess;
         
         public FFMpegOpusTranscoder(IMediaItem item, uint quality, bool isDirect, uint offsetSeconds, uint lengthSeconds) : base(item, quality, isDirect, offsetSeconds, lengthSeconds)
         {
@@ -27,12 +29,12 @@ namespace WaveBox.Transcoding
         {
             try 
             {
-                string ffmpegArguments = "-i \"" + Item.FilePath + "\" -f wav -";
+                string ffmpegArguments = "-loglevel quiet -i \"" + Item.FilePath + "\" -f wav -";
                 logger.Info("[TRANSCODE] Forking the process");
                 logger.Info("[TRANSCODE] " + "ffmpeg " + ffmpegArguments);
                 
                 // Create the ffmpeg process
-                var FfmpegProcess = new Process();
+                FfmpegProcess = new Process();
                 FfmpegProcess.StartInfo.FileName = "ffmpeg";
                 FfmpegProcess.StartInfo.Arguments = ffmpegArguments;
                 FfmpegProcess.StartInfo.UseShellExecute = false;
@@ -67,6 +69,7 @@ namespace WaveBox.Transcoding
                     if(bytesRead == 0 && FfmpegProcess.HasExited)
                     {
                         input.Close();
+                        FfmpegProcess.Close();
                         break;
                     }
                 }
@@ -81,7 +84,21 @@ namespace WaveBox.Transcoding
             catch (Exception e) 
             {
                 logger.Info("\t" + "[TRANSCODE] Failed to start transcode process " + e);
-                
+
+                try
+                {
+                    TranscodeProcess.Kill();
+                    TranscodeProcess.Close();
+                }
+                catch { /* do nothing if killing the process fails */ }
+
+                try
+                {
+                    FfmpegProcess.Kill();
+                    FfmpegProcess.Close();
+                }
+                catch { /* do nothing if killing the process fails */ }
+
                 // Set the state
                 State = TranscodeState.Failed;
                 
@@ -176,6 +193,7 @@ namespace WaveBox.Transcoding
         private string OpusencOptions(String codec, uint quality)
         {
             string theString = "--bitrate " + quality;
+            theString += " --quiet";
             Song song = new Song(Item.ItemId.Value);
 
             theString += song.ArtistName == null ? String.Empty : " --comment ARTIST=\"" + song.ArtistName + "\"";

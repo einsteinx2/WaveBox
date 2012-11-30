@@ -29,6 +29,7 @@ namespace WaveBox.ApiHandler.Handlers
 			//List<IMediaItem> listOfMediaItems = new List<IMediaItem>();
 			List<Song> listOfSongs = new List<Song>();
 			List<Video> listOfVideos = new List<Video>();
+            Folder containingFolder = null;
 
 			// Try to get the folder id
 			bool success = false;
@@ -41,8 +42,8 @@ namespace WaveBox.ApiHandler.Handlers
 			if (success)
 			{
 				// Return the folder for this id
-				Folder folder = new Folder(id);
-				listOfFolders = folder.ListOfSubFolders();
+				containingFolder = new Folder(id);
+                listOfFolders = containingFolder.ListOfSubFolders();
 
                 if(Uri.Parameters.ContainsKey("recursiveMedia") && this.IsTrue(Uri.Parameters["recursiveMedia"]))
                 {
@@ -60,13 +61,13 @@ namespace WaveBox.ApiHandler.Handlers
                             recurse(subf);
                         }
                     };
-                    recurse(folder);
+                    recurse(containingFolder);
                 }
                 else 
                 {
     				//listOfMediaItems = folder.ListOfMediaItems();
-    				listOfSongs = folder.ListOfSongs();
-    				listOfVideos = folder.ListOfVideos();
+                    listOfSongs = containingFolder.ListOfSongs();
+                    listOfVideos = containingFolder.ListOfVideos();
                 }
 			}
 			else
@@ -86,7 +87,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 			try
 			{
-				string json = JsonConvert.SerializeObject(new FoldersResponse(null, listOfFolders, listOfSongs, listOfVideos), Settings.JsonFormatting);
+				string json = JsonConvert.SerializeObject(new FoldersResponse(null, containingFolder, listOfFolders, listOfSongs, listOfVideos), Settings.JsonFormatting);
 				Processor.WriteJson(json);
 			}
 			catch(Exception e)
@@ -106,15 +107,19 @@ namespace WaveBox.ApiHandler.Handlers
 	        //[JsonProperty("mediaItems")]
 			//public List<IMediaItem> MediaItems { get; set; }
 
+            [JsonProperty("containingFolder")]
+            public Folder ContainingFolder { get; set; }
+
 			[JsonProperty("songs")]
 			public List<Song> Songs { get; set; }
 
 			[JsonProperty("videos")]
 			public List<Video> Videos { get; set; }
 
-			public FoldersResponse(string error, List<Folder> folders, List<Song> songs, List<Video>videos)
+			public FoldersResponse(string error, Folder containingFolder, List<Folder> folders, List<Song> songs, List<Video>videos)
 			{
 				Error = error;
+                ContainingFolder = containingFolder;
 				Folders = folders;
 				Songs = songs;
 				Videos = videos;
