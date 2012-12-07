@@ -13,10 +13,14 @@ namespace WaveBox.ApiHandler
 
 	static class ApiHandlerExtension
 	{
+		/// <summary>
+		/// Determine if a string is meant to indicate true, return false if none detected
+		/// </summary>
 		public static bool IsTrue(this IApiHandler handler, string boolString)
 		{
 			try
 			{
+				// Null string -> false
 				if (boolString == null)
 				{
 					return false;
@@ -28,16 +32,19 @@ namespace WaveBox.ApiHandler
 
 				if (boolString.Length > 0)
 				{
+					// t or 1 -> true
 					if (boolString[0] == 't' || boolString[0] == '1')
 					{
 						return true;
 					}
 				}
 
+				// Anything else, false
 				return false;
 			}
 			catch
 			{
+				// Exception, false
 				return false;
 			}
 		}

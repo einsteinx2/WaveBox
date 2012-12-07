@@ -7,17 +7,20 @@ using NLog;
 namespace WaveBox.ApiHandler
 {
 	public class UriWrapper
-	{		
-		//private static Logger logger = LogManager.GetCurrentClassLogger();
-
+	{
+		// URI breakdown into parts, a string, and parameters
 		public List<string> UriParts { get; set; }
 		public string UriString { get; set; }
 		public Dictionary<string, string> Parameters { get; set; }
 
+		// Shortcuts for first and last part of URI
 		public string FirstPart { get { return UriPart(0); } }
 		public string LastPart { get { return UriPart(UriParts.Count - 1); } }
 
+		// Determine if URI contains an API call
 		public bool IsApiCall { get { return FirstPart == "api"; } }
+
+		// Determines the action of an API call
 		public string Action { get { return IsApiCall ? UriPart(1).ToLower() : null; } }
 
 		/// <summary>

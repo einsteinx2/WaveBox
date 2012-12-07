@@ -19,12 +19,18 @@ namespace WaveBox.ApiHandler.Handlers
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 
+		/// <summary>
+		/// Constructor for ArtApiHandler class
+		/// </summary>
 		public ArtApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;
 		}
 
+		/// <summary>
+		/// Process returns a file stream containing album art
+		/// </summary>
 		public void Process()
 		{
 			// Check for the itemId
@@ -37,40 +43,52 @@ namespace WaveBox.ApiHandler.Handlers
 			// Convert to integer
 			int artId = Int32.MaxValue;
 			Int32.TryParse(Uri.Parameters["id"], out artId);
+			
+			// If art ID was invalid, write error header
 			if (artId == Int32.MaxValue)
 			{
 				Processor.WriteErrorHeader();
 				return;
 			}
 
+			// Grab art stream
 			Art art = new Art(artId);
 			Stream stream = art.Stream;
+			
+			// If stream is null, write error header
 			if ((object)stream == null)
 			{
 				Processor.WriteErrorHeader();
 				return;
 			}
 
+			// If art size requested...
 			if (Uri.Parameters.ContainsKey("size"))
 			{
 				int size = Int32.MaxValue;
-				Int32.TryParse(Uri.Parameters["size"], out size);	
+				Int32.TryParse(Uri.Parameters["size"], out size);
+				// Parse size if valid
 				if (size != Int32.MaxValue)
 				{
+					// Resize image, put it in memory stream
 					Image resized = ResizeImage(new Bitmap(stream), new Size(size, size));
 					stream = new MemoryStream();
 					resized.Save(stream, System.Drawing.Imaging.ImageFormat.Jpeg);
 				}
 			}
 
+			// Write file to HTTP response
             var dict = new Dictionary<string, string>();
             Processor.WriteFile(stream, 0, stream.Length, HttpHeader.MimeTypeForExtension(".jpg"), dict, true);
 
-            // close the file so we don't get sharing violations on future accesses
+            // Close the file so we don't get sharing violations on future accesses
             stream.Close();
 		}
 
 		// Thanks to http://www.switchonthecode.com/tutorials/csharp-tutorial-image-editing-saving-cropping-and-resizing
+		/// <summary>
+		/// Code which can resize an image and return it as requested
+		/// </summary>
 		private static Image ResizeImage(Image imgToResize, Size size)
 		{
 			int sourceWidth = imgToResize.Width;
