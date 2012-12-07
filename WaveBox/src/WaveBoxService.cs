@@ -12,6 +12,7 @@ namespace WaveBox
 {
 	public class WaveBoxService : System.ServiceProcess.ServiceBase
 	{
+		// Loggererererer... er.
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 
 		// Instance of WaveBox, and the thread which will run it
@@ -87,16 +88,18 @@ namespace WaveBox
 			// Abort main thread, nullify the WaveBox object
 			init.Abort();
 
+			// Shut off ZeroConf
 			logger.Info("[SERVICE] Turning off ZeroConf...");
 			wavebox.DisposeZeroConf();
 			logger.Info("[SERVICE] ZeroConf off");
 
+			// Stop any active transcodes
 			logger.Info("[SERVICE] Cancelling any active transcodes...");
 			TranscodeManager.Instance.CancelAllTranscodes();
 			logger.Info("[SERVICE] All transcodes canceled");
 
 			// Stop the file manager operation queue thread
-			//FileManager.Instance.Stop();
+			FileManager.Instance.Stop();
 
 			// Stop the server
 			wavebox.Stop();
@@ -140,6 +143,7 @@ namespace WaveBox
 		{
 			switch (Environment.OSVersion.Platform)
 			{
+				// Windows
 				case PlatformID.Win32NT:
 		        case PlatformID.Win32S:
 		        case PlatformID.Win32Windows:
@@ -148,6 +152,7 @@ namespace WaveBox
 					windowsShutdownHandler += new EventHandler(ShutdownWindows);
 					SetConsoleCtrlHandler(windowsShutdownHandler, true);
 					break;
+				// UNIX
 				case PlatformID.Unix:
 				case PlatformID.MacOSX:
 					new Thread(ShutdownUnix).Start();
@@ -203,24 +208,35 @@ namespace WaveBox
 		static extern int uname(IntPtr buf); 
 		public enum OS {Windows, MacOSX, Unix, unknown};
 
-		static public OS DetectOS()
+		/// <summary>
+		/// DetectOS uses a couple different tricks to detect if we are running on Windows, Mac OSX, or Unix.
+		/// </summary>
+		public static OS DetectOS()
 		{ 
+			// Detect Windows via directory separator character
 			if (System.IO.Path.DirectorySeparatorChar == '\\')
 			{
 				return OS.Windows;
 			} 
+			// Detect MacOSX using a uname hack
 			else if (IsMacOSX())
 			{
 				return OS.MacOSX;
-			} 
+			}
+			// Detect Unix via OS platform
 			else if (System.Environment.OSVersion.Platform == PlatformID.Unix)
 			{
 				return OS.Unix;
 			}
+			
+			// If no matching cases, OS is unknown
 			return OS.unknown; 
 		}
 
-		static private bool IsMacOSX()
+		/// <summary>
+		/// IsMacOSX uses a uname hack to determine if the operating system is MacOSX
+		/// </summary>
+		private static bool IsMacOSX()
 		{ 
 			IntPtr buf = IntPtr.Zero; 
 			try

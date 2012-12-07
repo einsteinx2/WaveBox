@@ -18,13 +18,18 @@ namespace WaveBox.ApiHandler.Handlers
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 
-
+		/// <summary>
+		/// Constructor for AlbumsApiHandler
+		/// </summary>
 		public AlbumsApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;
 		}
 
+		/// <summary>
+		/// Process returns a serialized list of albums and songs in JSON format
+		/// </summary>
 		public void Process()
 		{
 			List<Song> songs = new List<Song>();
@@ -38,6 +43,7 @@ namespace WaveBox.ApiHandler.Handlers
 				success = Int32.TryParse(Uri.Parameters["id"], out id);
 			}
 
+			// Return specific album on success, with its songs
 			if (success)
 			{
 				Album album = new Album(id);
@@ -46,11 +52,13 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 			else
 			{
+				// On failure, return list of all albums
 				albums = Album.AllAlbums();
 			}
 
 			try
 			{
+				// Serialize AlbumsResponse object, write to HTTP response
 				string json = JsonConvert.SerializeObject(new AlbumsResponse(null, albums, songs), Settings.JsonFormatting);
 				Processor.WriteJson(json);
 			}

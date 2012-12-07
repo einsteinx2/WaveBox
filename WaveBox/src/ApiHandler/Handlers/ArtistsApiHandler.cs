@@ -17,12 +17,18 @@ namespace WaveBox.ApiHandler.Handlers
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 
+		/// <summary>
+		/// Constructor for ArtistsApiHandler class
+		/// </summary>
 		public ArtistsApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;
 		}
 
+		/// <summary>
+		/// Process returns an ArtistsResponse containing a list of artists, albums, and songs
+		/// </summary>
 		public void Process()
         {
             List<Artist> listOfArtists = new List<Artist>();
@@ -39,11 +45,13 @@ namespace WaveBox.ApiHandler.Handlers
                 success = Int32.TryParse(Uri.Parameters["id"], out id);
             }
 
+			// Optionally use Last.fm to gather information
             if (Uri.Parameters.ContainsKey("lastfmInfo"))
             {
                 bool.TryParse(Uri.Parameters["lastfmInfo"], out includeLfm);
             }
 
+			// On valid key, return a specific artist, and a list of their albums
 			if (success)
 			{
 				Artist artist = new Artist(id);
@@ -55,7 +63,7 @@ namespace WaveBox.ApiHandler.Handlers
                     lastfmInfo = Lastfm.GetArtistInfo(artist);
                 }
 
-
+				// If requested, include list of songs in response as well
 				string includeSongs;
 				Uri.Parameters.TryGetValue("includeSongs", out includeSongs);
 
@@ -66,11 +74,13 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 			else
 			{
+				// On invalid key, return all artists
 				listOfArtists = new Artist().AllArtists();
 			}
 
 			try
 			{
+				// Write JSON to HTTP response
 				string json = JsonConvert.SerializeObject(new ArtistsResponse(null, listOfArtists, listOfAlbums, listOfSongs, lastfmInfo), Settings.JsonFormatting);
 				Processor.WriteJson(json);
 			}
