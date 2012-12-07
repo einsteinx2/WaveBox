@@ -81,10 +81,6 @@ namespace WaveBox.ApiHandler
 					{
 						return new LoginApiHandler(uriW, processor, user);
 					}
-					else if (action == "meta")
-					{
-						return new MetaApiHandler(uriW, processor, user);
-					}
 					else if (action == "podcast")
 					{
 						return new PodcastApiHandler(uriW, processor, user);
