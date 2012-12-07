@@ -13,6 +13,9 @@ namespace WaveBox.ApiHandler
 	{		
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 
+		/// <summary>
+		/// Create an API Handler based upon source URI, or serve web interface if no API call present
+		/// </summary>
 		public static IApiHandler CreateApiHandler(string uri, HttpProcessor processor)
 		{
 			logger.Info("[ApiHandlerFactory] uri: " + uri);
@@ -40,6 +43,7 @@ namespace WaveBox.ApiHandler
 				}
 				catch {}
 
+				// Authenticate user
 				User user = Authenticate(action, sessionId, username, password, clientName);
 				if (user == null)
 				{
@@ -49,21 +53,21 @@ namespace WaveBox.ApiHandler
 				else
 				{
 					// Determine call type
-					if (action == "login")
-					{
-						return new LoginApiHandler(uriW, processor, user);
-					}
-					else if (action == "artists")
-					{
-						return new ArtistsApiHandler(uriW, processor, user);
-					}
-					else if (action == "albums")
+					if (action == "albums")
 					{
 						return new AlbumsApiHandler(uriW, processor, user);
 					}
 					else if (action == "art")
 					{
 						return new ArtApiHandler(uriW, processor, user);
+					}
+					else if (action == "artists")
+					{
+						return new ArtistsApiHandler(uriW, processor, user);
+					}
+					else if (action == "database")
+					{
+						return new DatabaseApiHandler(uriW, processor, user);
 					}
 					else if (action == "folders")
 					{
@@ -73,6 +77,10 @@ namespace WaveBox.ApiHandler
 					{
 						return new JukeboxApiHandler(uriW, processor, user);
 					}
+					else if (action == "login")
+					{
+						return new LoginApiHandler(uriW, processor, user);
+					}
 					else if (action == "podcast")
 					{
 						return new PodcastApiHandler(uriW, processor, user);
@@ -81,6 +89,10 @@ namespace WaveBox.ApiHandler
 					{
 						return new ScrobbleApiHandler(uriW, processor, user);
 					}
+					else if (action == "settings")
+					{
+						return new SettingsApiHandler(uriW, processor, user);
+					}
 					else if (action == "songs")
 					{
 						return new SongsApiHandler(uriW, processor, user);
@@ -88,6 +100,10 @@ namespace WaveBox.ApiHandler
 					else if (action == "status")
 					{
 						return new StatusApiHandler(uriW, processor, user);
+					}
+					else if (action == "stats")
+					{
+						return new StatsApiHandler(uriW, processor, user);
 					}
 					else if (action == "stream")
 					{
@@ -101,30 +117,27 @@ namespace WaveBox.ApiHandler
 					{
 						return new TranscodeHlsApiHandler(uriW, processor, user);
 					}
-					else if (action == "database")
+					else if (action == "videos")
 					{
-						return new DatabaseApiHandler(uriW, processor, user);
+						return new VideosApiHandler(uriW, processor, user);
 					}
-					else if (action == "database")
-					{
-						return new StatsApiHandler(uriW, processor, user);
-					}
-					else if (action == "settings")
-					{
-						return new SettingsApiHandler(uriW, processor, user);
+					else
+					{	
+						// If the handler wasn't returned yet, return an error handler
+						return new ErrorApiHandler(uriW, processor);
 					}
 				}
 			}
 			else
 			{
-				// Serve the web interface
+				// Else, no API call present, so serve the web interface
 				return new WebInterfaceHandler(uriW, processor);
 			}
-
-			// If the handler wasn't returned yet, return an error handler
-			return new ErrorApiHandler(uriW, processor);
 		}
 
+		/// <summary>
+		/// Authenticate a user against the database
+		/// </summary>
 		public static User Authenticate(string action, string sessionId, string username, string password, string clientName)
 		{
 			User user = null;

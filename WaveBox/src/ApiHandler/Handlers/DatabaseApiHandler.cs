@@ -19,12 +19,19 @@ namespace WaveBox.ApiHandler.Handlers
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 		
+		/// <summary>
+		/// Constructor for DatabaseApiHandler class
+		/// </summary>
 		public DatabaseApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;
 		}
 		
+		/// <summary>
+		/// Process returns a copy of the media database, and can be used to return SQL deltas to update
+		/// the local copy of the media database
+		/// </summary>
 		public void Process()
 		{	
 			// Try to get the update time
@@ -41,6 +48,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 				else
 				{
+					// Read in entire database file
 					Stream stream = new FileStream(databaseFileName, FileMode.Open, FileAccess.Read);
 					long length = stream.Length;
 					int startOffset = 0;
@@ -70,6 +78,7 @@ namespace WaveBox.ApiHandler.Handlers
 				IList<IDictionary<string, object>> queries = new List<IDictionary<string, object>>();
 				try
 				{
+					// Gather a list of queries from the query log, which can be used to synchronize a local database
 					conn = Database.GetQueryLogDbConnection();
 					IDbCommand q = Database.GetDbCommand("SELECT * FROM query_log " +
 														 "WHERE query_id >= @queryid", conn);
@@ -93,7 +102,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 				catch (Exception e)
 				{
-					logger.Info("[SONG(1)] " + e);
+					logger.Info("[DATABASEAPI(1)] ERROR: " + e);
 				}
 				finally
 				{
@@ -102,12 +111,13 @@ namespace WaveBox.ApiHandler.Handlers
 
 				try
 				{
+					// Send DatabaseResponse containing list of queries
 					string json = JsonConvert.SerializeObject(new DatabaseResponse(null, queries), Settings.JsonFormatting);
 					Processor.WriteJson(json);
 				}
 				catch(Exception e)
 				{
-					logger.Info("[DATABASEAPI(1)] ERROR: " + e);
+					logger.Info("[DATABASEAPI(2)] ERROR: " + e);
 				}
 			}
 		}

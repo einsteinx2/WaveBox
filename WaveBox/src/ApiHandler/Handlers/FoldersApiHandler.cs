@@ -17,16 +17,21 @@ namespace WaveBox.ApiHandler.Handlers
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 
+		/// <summary>
+		/// Constructor for FoldersApiHandler
+		/// </summary>
 		public FoldersApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;
 		}
 
+		/// <summary>
+		/// Process returns a JSON response list of folders
+		/// </summary>
 		public void Process()
 		{
 			List<Folder> listOfFolders = new List<Folder>();
-			//List<IMediaItem> listOfMediaItems = new List<IMediaItem>();
 			List<Song> listOfSongs = new List<Song>();
 			List<Video> listOfVideos = new List<Video>();
             Folder containingFolder = null;
@@ -45,6 +50,7 @@ namespace WaveBox.ApiHandler.Handlers
 				containingFolder = new Folder(id);
                 listOfFolders = containingFolder.ListOfSubFolders();
 
+				// Recursively add media items from sub-folders
                 if(Uri.Parameters.ContainsKey("recursiveMedia") && this.IsTrue(Uri.Parameters["recursiveMedia"]))
                 {
                     listOfSongs = new List<Song>();
@@ -65,7 +71,6 @@ namespace WaveBox.ApiHandler.Handlers
                 }
                 else 
                 {
-    				//listOfMediaItems = folder.ListOfMediaItems();
                     listOfSongs = containingFolder.ListOfSongs();
                     listOfVideos = containingFolder.ListOfVideos();
                 }
@@ -103,9 +108,6 @@ namespace WaveBox.ApiHandler.Handlers
 
 	        [JsonProperty("folders")]
 			public List<Folder> Folders { get; set; }
-
-	        //[JsonProperty("mediaItems")]
-			//public List<IMediaItem> MediaItems { get; set; }
 
             [JsonProperty("containingFolder")]
             public Folder ContainingFolder { get; set; }

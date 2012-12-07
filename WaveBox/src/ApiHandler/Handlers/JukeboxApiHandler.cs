@@ -17,8 +17,10 @@ namespace WaveBox.ApiHandler.Handlers
 		private Jukebox Juke;
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
-		//private int _userId;
 
+		/// <summary>
+		/// Constructor for JukeboxApiHandler class
+		/// </summary>
 		public JukeboxApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Juke = Jukebox.Instance;
@@ -26,17 +28,22 @@ namespace WaveBox.ApiHandler.Handlers
 			Uri = uri;
 		}
 
+		/// <summary>
+		/// Process returns whether a specific call the Jukebox API was successful or not
+		/// </summary>
 		public void Process()
         {
             int index = 0;
             string s = "";
 
+			// Jukebox calls must contain an action
             if (Uri.Parameters.ContainsKey("action"))
             {
                 string action = null;
                 Uri.Parameters.TryGetValue("action", out action);
 
-                if (new string[] {"play", "pause", "stop", "prev", "next", "status", "add", "remove", "move", "clear"}.Contains(action))
+				// Look for valid actions within the parameters
+                if (new string[] {"play", "pause", "stop", "prev", "next", "status", "playlist", "add", "remove", "move", "clear"}.Contains(action))
                 {
                     switch(action)
                     {
@@ -47,11 +54,15 @@ namespace WaveBox.ApiHandler.Handlers
                                 Uri.Parameters.TryGetValue("index", out indexString);
                                 Int32.TryParse(indexString, out index);
                             }
-
-                            if 
-                                (indexString == null) Juke.Play();
-                            else 
+							
+                            if(indexString == null)
+							{
+								Juke.Play();
+							}
+                            else
+							{
                                 Juke.PlaySongAtIndex(index);
+							}
 
                             Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, false, true)));
                             break;
@@ -72,10 +83,10 @@ namespace WaveBox.ApiHandler.Handlers
                             Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, false, true)));
                             break;
                         case "status":
-                            _status();
+                            Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, false, true)));
                             break;
                         case "playlist":
-                            _playlist();
+                            Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, true, false)));
                             break;
                         case "add":
                             if (Uri.Parameters.ContainsKey("id"))
@@ -127,23 +138,29 @@ namespace WaveBox.ApiHandler.Handlers
                             Juke.ClearPlaylist();
                             Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, false, false)));
                             break;
-                        default: break;
+                        default:
+							// This should never happen, unless we forget to add a case.
+							Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("You broke WaveBox", false, false)));
+							break;
 
                     }
                 }
+				else
+				{
+					// Else, invalid action specified, return an error
+					Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("Invalid action '" + action + "' specified", false, false)));
+				}
             }
+			else
+			{
+				// Else, no action provided, return an error
+				Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("No action specified for jukebox", false, false)));
+			}
 		}
 
-		public void _status()
-		{
-			Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, false, true)));
-		}
-
-		public void _playlist()
-		{
-			Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, true, false)));
-		}
-
+		/// <summary>
+		/// Add comma-separated list of songs to the Jukebox
+		/// </summary>
 		public bool AddSongs(string songIds)
 		{
             bool allSongsAddedSuccessfully = true;
@@ -176,6 +193,9 @@ namespace WaveBox.ApiHandler.Handlers
             return allSongsAddedSuccessfully;
 		}
 
+		/// <summary>
+		/// Remove comma-separated list of songs from Jukebox
+		/// </summary>
 		public void RemoveSongs(string songIds)
 		{
 			List<int> indices = new List<int>();
@@ -194,6 +214,9 @@ namespace WaveBox.ApiHandler.Handlers
 			Juke.RemoveSongsAtIndexes(indices);
 		}
 
+		/// <summary>
+		/// Move song in Jukebox
+		/// </summary>
 		public bool Move(string from, string to)
 		{
 			try

@@ -23,16 +23,22 @@ namespace WaveBox
 {
 	class WaveBoxMain
 	{	
+		// Logger
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 
+		// ZeroConf
 		public RegisterService ZeroConfService { get; set; }
 
+		// Server GUID and URL, for publishing
 		public string ServerGuid { get; set; }
-
 		public string ServerUrl { get; set; }
 
+		// HTTP server, which serves up the API
 		private HttpServer httpServer;
 
+		/// <summary>
+		/// Detects WaveBox's root directory, for storing per-user configuration
+		/// </summary>
 		public static string RootPath()
 		{
 			/*foreach (Environment.SpecialFolder val in Enum.GetValues(typeof(Environment.SpecialFolder)))
@@ -53,12 +59,18 @@ namespace WaveBox
 			}
 		}
 
+		/// <summary>
+		/// ServerSetup is used to generate a GUID which can be associated with the URL forwarding service, to 
+		/// uniquely map an instance of WaveBox
+		/// </summary>
 		private void ServerSetup()
 		{
 			IDbConnection conn = null;
 			IDataReader reader = null;
+
 			try
 			{
+				// Grab server GUID and URL from the database
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT * FROM server", conn);
 				q.Prepare();
@@ -82,11 +94,11 @@ namespace WaveBox
 			// If it doesn't exist, generate a new one
 			if ((object)ServerGuid == null)
 			{
-				// Generate the Guid
+				// Generate the GUID
 				Guid guid = Guid.NewGuid();
 				ServerGuid = guid.ToString();
 
-				// Store the Guid
+				// Store the GUID in the database
 				try
 				{
 					conn = Database.GetDbConnection();
@@ -110,24 +122,31 @@ namespace WaveBox
 			}
 		}
 
+		/// <summary>
+		/// Return the IP address of the local adapter which WaveBox is running on
+		/// </summary>
 		private static IPAddress LocalIPAddress()
 		{
+			// If the network isn't available, IP will be null
 			if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
 			{
 				return null;
 			}
 			
+			// Return host's IP address
 			IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
 			
-			return host
-				.AddressList
-				.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork);
+			return host.AddressList.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork);
 		}
 
+		/// <summary>
+		/// Register URL registers this instance of WaveBox with the URL forwarding service
+		/// </summary>
 		public void RegisterUrl()
 		{
 			if ((object)ServerUrl != null)
 			{
+				// Compose the registration request URL
 				string urlString = "http://register.wavebox.es" + 
 					"?host=" + Uri.EscapeUriString(ServerUrl) + 
 					"&serverId=" + Uri.EscapeUriString(ServerGuid) + 
@@ -135,14 +154,18 @@ namespace WaveBox
 					"&isSecure=0" + 
 					"&localIp=" + LocalIPAddress().ToString();
 
-				Console.WriteLine("registering url: " + urlString);
+				logger.Info("[WAVEBOX] Registering URL: {0}", urlString);
 
+				// Perform registration with registration server
 				WebClient client = new WebClient();
 				client.DownloadDataCompleted += new DownloadDataCompletedEventHandler(RegisterUrlCompleted);
 				client.DownloadDataAsync(new Uri(urlString));
 			}
 		}
 
+		/// <summary>
+		/// Handler for determining success and failure of server registration
+		/// </summary>
 		private static void RegisterUrlCompleted(object sender, DownloadDataCompletedEventArgs e)
 		{
 			// Do nothing for now, check for success and handle failures later
@@ -156,23 +179,31 @@ namespace WaveBox
 		{
 			logger.Info("[WAVEBOX] Initializing WaveBox on {0} platform...", Environment.OSVersion.Platform.ToString());
 
-			if (!Directory.Exists(RootPath()))
+			// Create directory for WaveBox's root path, if it doesn't exist
+			string rootDir = RootPath();
+			if (!Directory.Exists(rootDir))
 			{
-				Directory.CreateDirectory(RootPath());
+				Directory.CreateDirectory(rootDir);
 			}
 
-			// Perform initial setup of Settings, create a user
+			// Perform initial setup of Settings, Database
 			Database.DatabaseSetup();
 			Settings.SettingsSetup();
+
+			// Register server with registration service
 			ServerSetup();
 			RegisterUrl();
 
 			// Start the HTTP server
 			StartHTTPServer();
+
+			// Start ZeroConf (broken as of 12/6/12)
 			//PublishZeroConf();
 
+			// Start transcode manager
 			TranscodeManager.Instance.Setup();
 
+			// Temporary: create test user
 			User.CreateUser("test", "test");
 
 			// Start file manager, calculate time it takes to run.
@@ -189,6 +220,9 @@ namespace WaveBox
 			return;
 		}
 
+		/// <summary>
+		/// Publish ZeroConf, so that WaveBox may advertise itself using mDNS to capable devices
+		/// </summary>
 		public void PublishZeroConf()
 		{
 			if ((object)ZeroConfService == null)
@@ -204,7 +238,7 @@ namespace WaveBox
 					ZeroConfService.Port = (short)Settings.Port;
 					
 					TxtRecord record = new TxtRecord();
-					record.Add ("URL", "http://something.wavebox.es");
+					record.Add("URL", "http://something.wavebox.es");
 					ZeroConfService.TxtRecord = record;
 					
 					ZeroConfService.Register();
@@ -217,6 +251,9 @@ namespace WaveBox
 			}
 		}
 
+		/// <summary>
+		/// Dispose of ZeroConf publisher
+		/// </summary>
 		public void DisposeZeroConf()
 		{
 			if ((object)ZeroConfService != null)
@@ -231,8 +268,7 @@ namespace WaveBox
 		/// </summary>
 		private void StartHTTPServer()
 		{
-			// thread for the HTTP server.  its listen operation is blocking, so we can't start it before
-			// we do any file scanning otherwise.
+			// Thread for HTTP server run
 			Thread httpSrv = null;
 
 			// Attempt to start the HTTP server thread
@@ -265,11 +301,17 @@ namespace WaveBox
 			}
 		}
 
+		/// <summary>
+		/// Stop the WaveBox main
+		/// </summary>
 		public void Stop()
 		{
 			httpServer.Stop();
 		}
 
+		/// <summary>
+		/// Restart the WaveBox main
+		/// </summary>
 		public void Restart()
 		{
 			Stop();
