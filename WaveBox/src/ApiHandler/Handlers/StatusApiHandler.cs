@@ -7,9 +7,9 @@ using System.Linq;
 using System.Text;
 using WaveBox.Http;
 using WaveBox.DataModel.Singletons;
-using Newtonsoft.Json;
 using WaveBox.DataModel.Model;
 using WaveBox.Transcoding;
+using Newtonsoft.Json;
 using NLog;
 
 namespace WaveBox.ApiHandler.Handlers
@@ -45,24 +45,23 @@ namespace WaveBox.ApiHandler.Handlers
 				// Gather data about WaveBox process
 				global::System.Diagnostics.Process proc = global::System.Diagnostics.Process.GetCurrentProcess();
 
-				// Get current build date
-				DateTime buildDate = StatusApiHandlerExtension.GetBuildDate();
-
 				// Get process ID
 				status["pid"] = Convert.ToString(proc.Id);
 				// Get WaveBox version, currently in the format 'wavebox-builddate-git' (change to true version later,
 				// something like 'wavebox-1.0.0-alpha'
-				status["version"] = "wavebox-" + buildDate.ToString("yyyyMMdd") + "-git";
+				status["version"] = "wavebox-" + WaveBoxService.BuildDate.ToString("yyyyMMdd") + "-git";
 				// Get build date
-				status["buildDate"] = buildDate.ToString("MMMM dd, yyyy");
+				status["buildDate"] = WaveBoxService.BuildDate.ToString("MMMM dd, yyyy");
 				// Get host platform
-				status["platform"] = StatusApiHandlerExtension.GetPlatform();
+				status["platform"] = WaveBoxService.Platform;
 				// Get current CPU usage
 				status["cpu"] = StatusApiHandlerExtension.GetCPUUsage();
 				// Get current memory usage in MB
 				status["memory"] = Convert.ToString((((double)proc.WorkingSet64 / 1024) / 1024) + "MB");
 				// Get peak memory usage in MB
 				status["peakMemory"] = Convert.ToString((((double)proc.PeakWorkingSet64 / 1024) / 1024) + "MB");
+				// Get list of media types WaveBox can index and serve
+				status["mediaTypes"] = StatusApiHandlerExtension.GetMediaTypes();
 				// Get list of transcoders available
 				status["transcoders"] = StatusApiHandlerExtension.GetTranscoders();
 				// Get last query log ID
@@ -116,57 +115,34 @@ namespace WaveBox.ApiHandler.Handlers
 			return usage + "%";
 		}
 
-		// Borrowed from: http://stackoverflow.com/questions/1600962/displaying-the-build-date
 		/// <summary>
-		/// Returns a DateTime object containing the date on which WaveBox was compiled (good for nightly build names,
-		/// as well as information on reporting issues which may occur later on.
+		/// Grabs a list of valid file types for media files from the enumerator in Wavebox.DataModel.Model.FileType
 		/// </summary>
-		public static DateTime GetBuildDate()
+		public static string GetMediaTypes()
 		{
-			// Read the PE header to get build date
-		    string filePath = System.Reflection.Assembly.GetCallingAssembly().Location;
-		    const int c_PeHeaderOffset = 60;
-		    const int c_LinkerTimestampOffset = 8;
-		    byte[] b = new byte[2048];
-		    System.IO.Stream s = null;
+			var fileTypes = Enum.GetValues(typeof(FileType));
+			Array.Sort(fileTypes);
+			int i = 2;
+			string types = "";
 
-		    try
-		    {
-		        s = new System.IO.FileStream(filePath, System.IO.FileMode.Open, System.IO.FileAccess.Read);
-		        s.Read(b, 0, 2048);
-		    }
-		    finally
-		    {
-		        if (s != null)
-		        {
-					s.Close();
-		        }
-		    }
-
-		    int i = System.BitConverter.ToInt32(b, c_PeHeaderOffset);
-		    int secondsSince1970 = System.BitConverter.ToInt32(b, i + c_LinkerTimestampOffset);
-		    DateTime dt = new DateTime(1970, 1, 1, 0, 0, 0);
-		    dt = dt.AddSeconds(secondsSince1970);
-		    dt = dt.AddHours(TimeZone.CurrentTimeZone.GetUtcOffset(dt).Hours);
-		    return dt;
-		}
-
-		/// <summary>
-		/// Utilizes the DetectOS method from the Service module to determine our running platform
-		/// </summary>
-		public static string GetPlatform()
-		{
-			switch(WaveBoxService.DetectOS())
+			foreach(FileType f in fileTypes)
 			{
-				case WaveBoxService.OS.Windows:
-					return "Windows";
-				case WaveBoxService.OS.MacOSX:
-					return "Mac OS X";
-				case WaveBoxService.OS.Unix:
-					return "UNIX/Linux";
-				default:
-					return "Unknown";
+				if(f != FileType.Unknown)
+				{
+					if(i == fileTypes.Length)
+					{
+						types += f.ToString();
+					}
+					else
+					{
+						types += f.ToString() + ", ";
+					}
+				}
+
+				i++;
 			}
+
+			return types;
 		}
 
 		/// <summary>

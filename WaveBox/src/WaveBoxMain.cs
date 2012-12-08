@@ -41,11 +41,6 @@ namespace WaveBox
 		/// </summary>
 		public static string RootPath()
 		{
-			/*foreach (Environment.SpecialFolder val in Enum.GetValues(typeof(Environment.SpecialFolder)))
-			{
-				logger.Info(val + ": " + Environment.GetFolderPath(val));
-			}*/
-			
 			switch (WaveBoxService.DetectOS())
 			{
 				case WaveBoxService.OS.Windows:
@@ -177,7 +172,7 @@ namespace WaveBox
 		/// </summary>
 		public void Start()
 		{
-			logger.Info("[WAVEBOX] Initializing WaveBox on {0} platform...", Environment.OSVersion.Platform.ToString());
+			logger.Info("[WAVEBOX] Initializing WaveBox on {0} platform...", WaveBoxService.Platform);
 
 			// Create directory for WaveBox's root path, if it doesn't exist
 			string rootDir = RootPath();
