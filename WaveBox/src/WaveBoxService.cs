@@ -1,6 +1,7 @@
 using System;
 using System.ServiceProcess;
 using System.Threading;
+using System.Diagnostics;
 using Mono.Unix;
 using Mono.Unix.Native;
 using System.Runtime.InteropServices;
