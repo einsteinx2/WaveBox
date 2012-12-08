@@ -26,15 +26,15 @@ namespace WaveBox.Transcoding
 	public enum TranscodeType
 	{
 		// Audio
-		MP3, 
-		AAC, 
+		AAC,
+		MP3,
 		OGG,
         OPUS,
 
 		// Video
 		MP4,
-		X264,
-		MPEGTS
+		MPEGTS,
+		X264
 	}
 
 	public static class TranscodeTypeExtensions

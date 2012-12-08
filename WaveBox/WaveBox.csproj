@@ -162,6 +162,7 @@
     <Compile Include="src\DataModel\Model\IItem.cs" />
     <Compile Include="src\Transcoding\FFMpegOpusTranscoder.cs" />
     <Compile Include="src\ApiHandler\Handlers\SettingsApiHandler.cs" />
+	<Compile Include="src\Transcoding\FFMpegOGGTranscoder.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="lib\Newtonsoft.Json.dll" />
