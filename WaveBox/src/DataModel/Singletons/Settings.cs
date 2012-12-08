@@ -66,8 +66,7 @@ namespace WaveBox.DataModel.Singletons
 			}
 			catch {}
 
-			//Console.WriteLine("settings changed: " + settingsChanged + " port: " + settingsModel.Port);
-			logger.Info("[SETTINGS] settings changed: " + settingsChanged + "port: " + settingsModel.Port);
+			logger.Info("[SETTINGS] settings changed: " + settingsChanged + " | port: " + settingsModel.Port);
 		}
 
 		public static bool WriteSettings(string jsonString)
