@@ -66,34 +66,38 @@ namespace WaveBox.Http
 			return data;
 		}
 
-		public void process() 
-		{
-			// we can't use a StreamReader for input, because it buffers up extra data on us inside it's
-			// "processed" view of the world, and we want the data raw after the headers
-			InputStream = new BufferedStream(Socket.GetStream());
+		public void process()
+        {
+            // we can't use a StreamReader for input, because it buffers up extra data on us inside it's
+            // "processed" view of the world, and we want the data raw after the headers
+            InputStream = new BufferedStream(Socket.GetStream());
 
-			// we probably shouldn't be using a streamwriter for all output from handlers either
-			try 
-			{
-				ParseRequest();
-				ReadHeaders();
-				if (HttpMethod.Equals("GET")) 
-				{
-					HandleGETRequest();
-				} 
-				else if (HttpMethod.Equals("POST"))
-				{
-					HandlePOSTRequest();
-				}
-			} 
-			catch (Exception e) 
-			{
-				logger.Info("[HTTPSERVER(1)] " + e);
-				WriteErrorHeader();
-			}
-
-			InputStream = null;
-			Socket.Close();             
+            // we probably shouldn't be using a streamwriter for all output from handlers either
+            try
+            {
+                ParseRequest();
+                ReadHeaders();
+                if (HttpMethod.Equals("GET"))
+                {
+                    HandleGETRequest();
+                }
+                else if (HttpMethod.Equals("POST"))
+                {
+                    HandlePOSTRequest();
+                }
+            }
+            catch(Exception e)
+            {
+                logger.Info("[HTTPSERVER(1)] " + e);
+                WriteErrorHeader();
+            }
+            finally
+            {
+                InputStream = null;
+                Socket.GetStream().Close();
+                Socket.Client.Close();
+                Socket.Close();
+            }
 		}
 
 		public void ParseRequest() 
@@ -161,7 +165,6 @@ namespace WaveBox.Http
 			// we hand him needs to let him see the "end of the stream" at this content 
 			// length, because otherwise he won't know when he's seen it all! 
 
-			//logger.Info("get post data start");
 			int content_len = 0;
 			MemoryStream ms = new MemoryStream();
 			if (HttpHeaders.ContainsKey("Content-Length")) 
@@ -257,9 +260,8 @@ namespace WaveBox.Http
 			// so pass -1 for no Content-Length header for all text requests
 			//
 			//WriteSuccessHeader(UTF8Encoding.Unicode.GetByteCount(text), mimeType + ";charset=utf-8", null);
-			WriteSuccessHeader(-1, mimeType + ";charset=utf-8", null);
-
-			StreamWriter outStream = new StreamWriter(new BufferedStream(Socket.GetStream()));
+            WriteSuccessHeader(Encoding.UTF8.GetByteCount(text) + 3, mimeType + ";charset=utf-8", null);
+			StreamWriter outStream = new StreamWriter(new BufferedStream(Socket.GetStream()), Encoding.UTF8);
 			outStream.Write(text);
 			outStream.Flush();
 		}
@@ -290,6 +292,7 @@ namespace WaveBox.Http
 			byte[] buf = new byte[chunkSize];
 			int bytesRead;
 			long bytesWritten = 0;
+            Socket.SendTimeout = 30000;
 			Stream stream = new BufferedStream(Socket.GetStream());//OutputStream.BaseStream;
 			int sinceLastReport = 0;
 			Stopwatch sw = new Stopwatch();
