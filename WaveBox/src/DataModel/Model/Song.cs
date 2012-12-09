@@ -162,7 +162,8 @@ namespace WaveBox.DataModel.Model
 
 			try
 			{
-				ReleaseYear = Convert.ToInt32(tag.Year);
+                int y = Convert.ToInt32(file.Tag.Year);
+                ReleaseYear = y;
 			}
 			catch
 			{

@@ -246,7 +246,10 @@ namespace WaveBox.DataModel.FolderScanning
 								}
 								else if (itemId != null)
 								{
-									new Song((int)itemId).InsertMediaItem();
+                                    var oldSong = new Song((int)itemId);
+                                    var newSong = new Song(file, folderId, f);
+                                    newSong.ItemId = oldSong.ItemId;
+                                    newSong.InsertMediaItem();
 								}
 							}
 							else if (type == ItemType.Video)
