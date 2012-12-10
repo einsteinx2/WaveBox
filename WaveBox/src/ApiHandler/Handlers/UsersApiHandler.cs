@@ -6,7 +6,7 @@ using NLog;
 
 namespace WaveBox.ApiHandler.Handlers
 {
-	public class LoginApiHandler : IApiHandler
+	public class UsersApiHandler : IApiHandler
 	{		
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -14,7 +14,7 @@ namespace WaveBox.ApiHandler.Handlers
 		private UriWrapper Uri { get; set; }
 		private User User { get; set; }
 
-		public LoginApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
+		public UsersApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;
@@ -25,27 +25,23 @@ namespace WaveBox.ApiHandler.Handlers
 		{
 			try
 			{
-				string json = JsonConvert.SerializeObject(new LoginResponse(null, User.SessionId), Settings.JsonFormatting);
+				string json = JsonConvert.SerializeObject(new UsersResponse("UsersApiHandler not yet implemented"), Settings.JsonFormatting);
 				Processor.WriteJson(json);
 			}
 			catch (Exception e)
 			{
-				logger.Error("[LOGINAPI(1)] ERROR: " + e);
+				logger.Error("[USERSAPI(1)] ERROR: " + e);
 			}
 		}
 
-		private class LoginResponse
+		private class UsersResponse
 		{
 			[JsonProperty("error")]
 			public string Error { get; set; }
 
-			[JsonProperty("sessionId")]
-			public string SessionId { get; set; }
-
-			public LoginResponse(string error, string sessionId)
+			public UsersResponse(string error)
 			{
 				Error = error;
-				SessionId = sessionId;
 			}
 		}
 	}
