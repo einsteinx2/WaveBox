@@ -26,8 +26,17 @@ namespace WaveBox.ApiHandler
 			// Ensure URL contains API call
 			if (uriW.IsApiCall)
 			{
-				// Grab the action and authentication info
-				string action = uriW.Action;
+				// Grab the action and authentication info (if call is /api/, no action, so return error)
+				string action = "";
+				try
+				{
+					action = uriW.Action;
+				}
+				catch
+				{
+					action = null;
+					return new ErrorApiHandler(uriW, processor, "No API call action provided");
+				}
 
 				string sessionId = null;
 				string username = null;
@@ -41,7 +50,10 @@ namespace WaveBox.ApiHandler
 					uriW.Parameters.TryGetValue("p", out password);
 					uriW.Parameters.TryGetValue("c", out clientName);
 				}
-				catch {}
+				catch
+				{
+					// If we fail to grab a parameter needed by a requested handler, it will report the error
+				}
 
 				// Authenticate user
 				User user = Authenticate(action, sessionId, username, password, clientName);
@@ -52,79 +64,48 @@ namespace WaveBox.ApiHandler
 				}
 				else
 				{
-					// Determine call type
-					if (action == "albums")
+					// Determine call type (note: switch is actually faster than if/else for strings in Mono)
+					// source: http://stackoverflow.com/questions/445067/if-vs-switch-speed
+					switch(action)
 					{
-						return new AlbumsApiHandler(uriW, processor, user);
-					}
-					else if (action == "art")
-					{
-						return new ArtApiHandler(uriW, processor, user);
-					}
-					else if (action == "artists")
-					{
-						return new ArtistsApiHandler(uriW, processor, user);
-					}
-					else if (action == "database")
-					{
-						return new DatabaseApiHandler(uriW, processor, user);
-					}
-					else if (action == "folders")
-					{
-						return new FoldersApiHandler(uriW, processor, user);
-					}
-					else if (action == "jukebox")
-					{
-						return new JukeboxApiHandler(uriW, processor, user);
-					}
-					else if (action == "login")
-					{
-						return new LoginApiHandler(uriW, processor, user);
-					}
-					else if (action == "podcast")
-					{
-						return new PodcastApiHandler(uriW, processor, user);
-					}
-					else if (action == "scrobble")
-					{
-						return new ScrobbleApiHandler(uriW, processor, user);
-					}
-					else if (action == "settings")
-					{
-						return new SettingsApiHandler(uriW, processor, user);
-					}
-					else if (action == "songs")
-					{
-						return new SongsApiHandler(uriW, processor, user);
-					}
-					else if (action == "status")
-					{
-						return new StatusApiHandler(uriW, processor, user);
-					}
-					else if (action == "stats")
-					{
-						return new StatsApiHandler(uriW, processor, user);
-					}
-					else if (action == "stream")
-					{
-						return new StreamApiHandler(uriW, processor, user);
-					}
-					else if (action == "transcode")
-					{
-						return new TranscodeApiHandler(uriW, processor, user);
-					}
-					else if (action == "transcodehls")
-					{
-						return new TranscodeHlsApiHandler(uriW, processor, user);
-					}
-					else if (action == "videos")
-					{
-						return new VideosApiHandler(uriW, processor, user);
-					}
-					else
-					{	
-						// If the handler wasn't returned yet, return an error handler
-						return new ErrorApiHandler(uriW, processor);
+						case "albums":
+							return new AlbumsApiHandler(uriW, processor, user);
+						case "art":
+							return new ArtApiHandler(uriW, processor, user);
+						case "artists":
+							return new ArtistsApiHandler(uriW, processor, user);
+						case "database":
+							return new DatabaseApiHandler(uriW, processor, user);
+						case "folders":
+							return new FoldersApiHandler(uriW, processor, user);
+						case "jukebox":
+							return new JukeboxApiHandler(uriW, processor, user);
+						case "login":
+							return new LoginApiHandler(uriW, processor, user);
+						case "podcast":
+							return new PodcastApiHandler(uriW, processor, user);						
+						case "scrobble":
+							return new ScrobbleApiHandler(uriW, processor, user);
+						case "settings":
+							return new SettingsApiHandler(uriW, processor, user);
+						case "songs":
+							return new SongsApiHandler(uriW, processor, user);
+						case "status":
+							return new StatusApiHandler(uriW, processor, user);
+						case "stats":
+							return new StatsApiHandler(uriW, processor, user);
+						case "stream":
+							return new StreamApiHandler(uriW, processor, user);
+						case "transcode":
+							return new TranscodeApiHandler(uriW, processor, user);
+						case "transcodehls":
+							return new TranscodeHlsApiHandler(uriW, processor, user);
+						case "users":
+							return new UsersApiHandler(uriW, processor, user);
+						case "videos":
+							return new VideosApiHandler(uriW, processor, user);
+						default:
+							return new ErrorApiHandler(uriW, processor);
 					}
 				}
 			}
@@ -136,12 +117,12 @@ namespace WaveBox.ApiHandler
 		}
 
 		/// <summary>
-		/// Authenticate a user against the database
+		/// Authenticate a user or session against the database
 		/// </summary>
 		public static User Authenticate(string action, string sessionId, string username, string password, string clientName)
 		{
 			User user = null;
-			if (action == "login" || action == "users")
+			if (action == "login")
 			{
 				// Must use username and password, and create a session
 				user = new User(username);
