@@ -48,26 +48,35 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 				else
 				{
-					// Read in entire database file
-					Stream stream = new FileStream(databaseFileName, FileMode.Open, FileAccess.Read);
-					long length = stream.Length;
-					int startOffset = 0;
-					
-					// Handle the Range header to start from later in the file
-					if (Processor.HttpHeaders.ContainsKey("Range"))
+					try
 					{
-						string range = (string)Processor.HttpHeaders["Range"];
-						string start = range.Split(new char[]{'-', '='})[1];
-						logger.Info("[DATABASEAPI] Connection retried.  Resuming from {0}", start);
-						startOffset = Convert.ToInt32(start);
-					}
-
-					// We send the last query id as a custom header
-					IDictionary<string, string> customHeader = new Dictionary<string, string>();
-					customHeader["WaveBox-LastQueryId"] = databaseLastQueryId.ToString();
+						// Read in entire database file
+						Stream stream = new FileStream(databaseFileName, FileMode.Open, FileAccess.Read);
+						long length = stream.Length;
+						int startOffset = 0;
 					
-					// Send the database file
-					Processor.WriteFile(stream, startOffset, length, "application/octet-stream", customHeader, true);
+						// Handle the Range header to start from later in the file
+						if (Processor.HttpHeaders.ContainsKey("Range"))
+						{
+							string range = (string)Processor.HttpHeaders["Range"];
+							string start = range.Split(new char[]{'-', '='})[1];
+							logger.Info("[DATABASEAPI] Connection retried.  Resuming from {0}", start);
+							startOffset = Convert.ToInt32(start);
+						}
+
+						// We send the last query id as a custom header
+						IDictionary<string, string> customHeader = new Dictionary<string, string>();
+						customHeader["WaveBox-LastQueryId"] = databaseLastQueryId.ToString();
+					
+						// Send the database file
+						Processor.WriteFile(stream, startOffset, length, "application/octet-stream", customHeader, true);
+					}
+					catch
+					{
+						// Send JSON on error
+						string json = JsonConvert.SerializeObject(new DatabaseResponse("Could not open backup database " + databaseFileName, null), Settings.JsonFormatting);
+						Processor.WriteJson(json);
+					}
 				}
 			}
 			else
