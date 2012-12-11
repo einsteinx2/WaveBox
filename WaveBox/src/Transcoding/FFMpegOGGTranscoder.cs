@@ -10,6 +10,8 @@ namespace WaveBox.Transcoding
 
 		public override TranscodeType Type { get { return TranscodeType.OGG; } }
 
+		public override string Codec { get { return "libvorbis"; } }
+
 		public override string Command { get { return "ffmpeg"; } }
 
 		public override string OutputExtension { get { return "ogg"; } }
@@ -25,28 +27,27 @@ namespace WaveBox.Transcoding
 	    {
 			get 
 			{ 
-				string codec = "libvorbis";
 		        string options = null;
 		        switch (Quality)
 		        {
 		            case (uint)TranscodeQuality.Low:
 		                // VBR - Q0 quality (~64 kbps)
-		                options = FFMpegOptionsWith(codec, 0);
+		                options = FFMpegOptionsWith(0);
 						break;
 					case (uint)TranscodeQuality.Medium:
 		                // VBR - Q4 quality (~128 kbps)
-		                options = FFMpegOptionsWith(codec, 5);
+		                options = FFMpegOptionsWith(5);
 						break;
 					case (uint)TranscodeQuality.High:
 		                // VBR - Q5 quality (~160 kbps)
-		                options = FFMpegOptionsWith(codec, 2);
+		                options = FFMpegOptionsWith(2);
 						break;
 					case (uint)TranscodeQuality.Extreme:
 		                // VBR - Q6 quality (~192 kbps)
-		                options = FFMpegOptionsWith(codec, 0);
+		                options = FFMpegOptionsWith(0);
 						break;
 					default:
-						options = FFMpegOptionsWith(codec, Quality);
+						options = FFMpegOptionsWith(Quality);
 						break;
 		        }
 		        return options;
@@ -80,12 +81,12 @@ namespace WaveBox.Transcoding
 			}
 	    }
 
-		private string FFMpegOptionsWith(String codec, uint quality)
+		private string FFMpegOptionsWith(uint quality)
 		{
 			if (quality > 12)
-				return "-loglevel quiet -i \"" + Item.FilePath + "\" -acodec " + codec + " -ab " + quality + " " + OutputPath;
+				return "-loglevel quiet -i \"" + Item.FilePath + "\" -acodec " + Codec + " -ab " + quality + " " + OutputPath;
 			else
-				return "-loglevel quiet -i \"" + Item.FilePath + "\" -acodec " + codec + " -aq " + quality + " " + OutputPath;
+				return "-loglevel quiet -i \"" + Item.FilePath + "\" -acodec " + Codec + " -aq " + quality + " " + OutputPath;
 		}
 	}
 }
