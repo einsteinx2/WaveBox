@@ -83,7 +83,9 @@ namespace WaveBox.ApiHandler
 						case "login":
 							return new LoginApiHandler(uriW, processor, user);
 						case "podcast":
-							return new PodcastApiHandler(uriW, processor, user);						
+							return new PodcastApiHandler(uriW, processor, user);
+						case "search":
+							return new SearchApiHandler(uriW, processor, user);
 						case "scrobble":
 							return new ScrobbleApiHandler(uriW, processor, user);
 						case "settings":

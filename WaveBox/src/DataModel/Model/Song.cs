@@ -275,7 +275,7 @@ namespace WaveBox.DataModel.Model
 			Art.UpdateArtItemRelationship(ArtId, FolderId, false); // Only update a folder art relationship if it has no folder art
 		}
 
-		public static List<Song> allSongs()
+		public static List<Song> AllSongs()
 		{
 			List<Song> allsongs = new List<Song>();
 			IDbConnection conn = null;
@@ -311,6 +311,46 @@ namespace WaveBox.DataModel.Model
 			}
 
 			return allsongs;
+		}
+		
+		public static List<Song> SearchSong(string query)
+		{
+			List<Song> result = new List<Song>();
+
+			if(query == null)
+			{
+				return result;
+			}
+
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT * FROM Song WHERE Song_name LIKE @songname", conn);
+				q.AddNamedParam("@songname", "%" + query + "%");
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				Song s;
+
+				while(reader.Read())
+				{
+					s = new Song(reader);
+					result.Add(s);
+				}
+			}
+			catch(Exception e)
+			{
+				logger.Error("[SONGSEARCH] ERROR: " + e);
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			return result;
 		}
 
 		// stub!

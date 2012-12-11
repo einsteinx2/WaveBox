@@ -86,9 +86,10 @@ namespace WaveBox.Http
                     HandlePOSTRequest();
                 }
             }
-            catch(Exception e)
+            catch
             {
-                logger.Info("[HTTPSERVER(1)] " + e);
+				logger.Error("[HTTPSERVER(1)] Received malformed URL from client");
+                //logger.Info("[HTTPSERVER(1)] " + e);
                 WriteErrorHeader();
             }
             finally

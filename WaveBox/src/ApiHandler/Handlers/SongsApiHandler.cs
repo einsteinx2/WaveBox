@@ -41,7 +41,7 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 			else
 			{
-				listOfSongs = Song.allSongs();
+				listOfSongs = Song.AllSongs();
 			}
 
 			try

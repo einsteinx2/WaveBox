@@ -299,6 +299,46 @@ namespace WaveBox.DataModel.Model
 			return artists;
 		}
 
+		public static List<Artist> SearchArtist(string query)
+		{
+			List<Artist> result = new List<Artist>();
+
+			if(query == null)
+			{
+				return result;
+			}
+
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT * FROM artist WHERE artist_name LIKE @artistname", conn);
+				q.AddNamedParam("@artistname", "%" + query + "%");
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				Artist a;
+
+				while(reader.Read())
+				{
+					a = new Artist(reader);
+					result.Add(a);
+				}
+			}
+			catch(Exception e)
+			{
+				logger.Error("[ARTISTSEARCH] ERROR: " + e);
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			return result;
+		}
+		
 		public static int CompareArtistsByName(Artist x, Artist y)
 		{
 			return StringComparer.OrdinalIgnoreCase.Compare(x.ArtistName, y.ArtistName);
