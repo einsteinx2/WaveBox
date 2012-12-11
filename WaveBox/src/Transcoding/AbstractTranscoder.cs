@@ -32,6 +32,8 @@ namespace WaveBox.Transcoding
 
 		public abstract uint? EstimatedBitrate { get; }
 
+		public abstract string Codec { get; }
+
 		public abstract string Command { get; }
 		
 		public abstract string Arguments { get; }

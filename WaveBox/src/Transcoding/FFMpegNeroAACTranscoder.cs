@@ -6,24 +6,24 @@ using NLog;
 
 namespace WaveBox.Transcoding
 {
-    public class FFMpegOpusTranscoder : AbstractTranscoder
+    public class FFMpegNeroAACTranscoder : AbstractTranscoder
 	{		
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 
-        public override TranscodeType Type { get { return TranscodeType.OPUS; } }
-       
-		// Placeholder for ffmpeg opus support
-		public override string Codec { get { return "libopus"; } }
+        public override TranscodeType Type { get { return TranscodeType.AAC; } }
+
+		// Probably will never be needed, but placeholder in case we use ffmpeg AAC encoders
+		public override string Codec { get { return "neroaac"; } }
 
         public override string Command { get { return "ffmpeg"; } }
         
-        public override string OutputExtension { get { return "opus"; } }
+        public override string OutputExtension { get { return "mp4"; } }
         
-        public override string MimeType { get { return "audio/opus"; } }
+        public override string MimeType { get { return "audio/mp4"; } }
 
         private Process FfmpegProcess;
         
-        public FFMpegOpusTranscoder(IMediaItem item, uint quality, bool isDirect, uint offsetSeconds, uint lengthSeconds) : base(item, quality, isDirect, offsetSeconds, lengthSeconds)
+        public FFMpegNeroAACTranscoder(IMediaItem item, uint quality, bool isDirect, uint offsetSeconds, uint lengthSeconds) : base(item, quality, isDirect, offsetSeconds, lengthSeconds)
         {
             
         }
@@ -44,22 +44,21 @@ namespace WaveBox.Transcoding
                 FfmpegProcess.StartInfo.RedirectStandardOutput = true;
                 FfmpegProcess.StartInfo.RedirectStandardError = true;
 
-
-                // Create the opusenc object
-                logger.Info("opusenc " + Arguments);
+                // Create the neroAacEnc object
+                logger.Info("neroAacEnc " + Arguments);
                 TranscodeProcess = new Process();
-                TranscodeProcess.StartInfo.FileName = "opusenc";
+                TranscodeProcess.StartInfo.FileName = "neroAacEnc";
                 TranscodeProcess.StartInfo.Arguments = Arguments;
                 TranscodeProcess.StartInfo.UseShellExecute = false;
                 TranscodeProcess.StartInfo.RedirectStandardInput = true;
-                TranscodeProcess.StartInfo.RedirectStandardOutput = true;
+                TranscodeProcess.StartInfo.RedirectStandardOutput = false;
                 TranscodeProcess.StartInfo.RedirectStandardError = false;
 
                 var buffer = new byte[8192];
                 FfmpegProcess.Start();
                 TranscodeProcess.Start();
-
-                var input = new BinaryWriter(TranscodeProcess.StandardInput.BaseStream);
+                
+				var input = new BinaryWriter(TranscodeProcess.StandardInput.BaseStream);
                 int totalWritten = 0;
 
                 while(true)
@@ -138,28 +137,27 @@ namespace WaveBox.Transcoding
         {
             get 
             { 
-                string codec = "libmp3lame";
                 string options = null;
                 switch (Quality)
                 {
                 case (uint)TranscodeQuality.Low:
                     // VBR - V9 quality (~64 kbps)
-                    options = OpusencOptions(codec, 64);
+                    options = NeroAacEncOptions(64 * 1000);
                     break;
                 case (uint)TranscodeQuality.Medium:
                     // VBR - V5 quality (~128 kbps)
-                    options = OpusencOptions(codec, 96);
+                    options = NeroAacEncOptions(96 * 1000);
                     break;
                 case (uint)TranscodeQuality.High:
                     // VBR - V2 quality (~192 kbps)
-                    options = OpusencOptions(codec, 128);
+                    options = NeroAacEncOptions(128 * 1000);
                     break;
                 case (uint)TranscodeQuality.Extreme:
                     // VBR - V0 quality (~224 kbps)
-                    options = OpusencOptions(codec, 160);
+                    options = NeroAacEncOptions(160 * 1000);
                     break;
                 default:
-                    options = OpusencOptions(codec, Quality);
+                    options = NeroAacEncOptions(Quality * 1000);
                     break;
                 }
                 return options;
@@ -193,6 +191,23 @@ namespace WaveBox.Transcoding
             }
         }
         
+		private string NeroAacEncOptions(uint quality)
+		{
+			string theString = "-cbr " + quality;
+			//Song song = new Song(Item.ItemId.Value);
+
+			// Options for neroAacTag, needs to be chained in
+			//theString += song.ArtistName == null ? String.Empty : " -meta:artist=\"" + song.ArtistName + "\"";
+			//theString += song.AlbumName == null ? String.Empty : " -meta:album=\"" + song.AlbumName + "\"";
+			//theString += song.SongName == null ? String.Empty : " -meta:title=\"" + song.SongName + "\"";
+			//theString += song.ReleaseYear == null ? String.Empty : " -meta:date=\"" + song.ReleaseYear + "\"";
+
+			theString += " -ignorelength -if - -of " + this.OutputPath;
+
+			return theString;
+		}
+
+		/*
         private string OpusencOptions(String codec, uint quality)
         {
             string theString = "--bitrate " + quality;
@@ -208,6 +223,7 @@ namespace WaveBox.Transcoding
 
             return theString;
         }
+		*/
     }
 }
 
