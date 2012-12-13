@@ -14,38 +14,42 @@ namespace WaveBox.ApiHandler.Handlers
 {
     class PodcastApiHandler : IApiHandler
 	{		
-		//private static Logger logger = LogManager.GetCurrentClassLogger();
-
         private IHttpProcessor Processor { get; set; }
         private UriWrapper Uri { get; set; }
 
+		/// <summary>
+		/// Constructor for PodcastApiHandler
+		/// </summary>
         public PodcastApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
         {
             Processor = processor;
             Uri = uri;
         }
 
+		/// <summary>
+		/// Process handles all functions needed for the Podcast API
+		/// </summary>
         public void Process()
         {
             List<Podcast> listToReturn = new List<Podcast>();
 
             if (Uri.UriPart(2) == null)
             {
-                if(Uri.Parameters.ContainsKey("action"))
+                if (Uri.Parameters.ContainsKey("action"))
                 {
                     string action = null;
                     Uri.Parameters.TryGetValue("action", out action);
 
-                    if(action == null)
+                    if (action == null)
                     {
                         Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Parameter 'action' contained an invalid value", null), Settings.JsonFormatting));
                     }
 
                     else
                     {
-                        if(action == "add")
+                        if (action == "add")
                         {
-                            if(Uri.Parameters.ContainsKey("podcastUrl") && Uri.Parameters.ContainsKey("podcastKeepCap"))
+                            if ((Uri.Parameters.ContainsKey("podcastUrl")) && (Uri.Parameters.ContainsKey("podcastKeepCap")))
                             {
                                 string podcastUrl = null;
                                 string keepCapTemp = null;
@@ -53,18 +57,18 @@ namespace WaveBox.ApiHandler.Handlers
                                 Uri.Parameters.TryGetValue("podcastUrl", out podcastUrl);
                                 Uri.Parameters.TryGetValue("podcastKeepCap", out keepCapTemp);
 
-                                if(podcastUrl == null)
+                                if (podcastUrl == null)
                                 {
                                     Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Parameter 'podcastUrl' contained an invalid value", null), Settings.JsonFormatting));
                                 }
 
-                                else if(keepCapTemp == null)
+                                else if (keepCapTemp == null)
                                 {
                                     Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Parameter 'podcastKeepCap' contained an invalid value", null), Settings.JsonFormatting));
                                 }
                                 else 
                                 {
-                                    if(!Int32.TryParse(keepCapTemp, out keepCap))
+                                    if (!Int32.TryParse(keepCapTemp, out keepCap))
                                     {
                                         Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Parameter 'podcastKeepCap' contained an invalid value", null), Settings.JsonFormatting));
                                     }
@@ -82,12 +86,12 @@ namespace WaveBox.ApiHandler.Handlers
                         }
                         else if (action == "delete")
                         {
-                            if(!(Uri.Parameters.ContainsKey("podcastId") || Uri.Parameters.ContainsKey("podcastEpisodeId")))
+                            if (!(Uri.Parameters.ContainsKey("podcastId") || Uri.Parameters.ContainsKey("podcastEpisodeId")))
                             {
                                 Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Missing parameter for action 'delete'", null), Settings.JsonFormatting));
                                 return;
                             }
-                            else if(Uri.Parameters.ContainsKey("podcastId") && Uri.Parameters.ContainsKey("podcastEpisodeId"))
+                            else if (Uri.Parameters.ContainsKey("podcastId") && Uri.Parameters.ContainsKey("podcastEpisodeId"))
                             {
                                 Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Ambiguous parameters for action 'delete'.  'delete' accepts either a podcastId or a podcastEpisodeId, but not both.", null), Settings.JsonFormatting));
                                 return;
@@ -98,7 +102,7 @@ namespace WaveBox.ApiHandler.Handlers
                                 string idString = null;
 
                                 Uri.Parameters.TryGetValue("podcastId", out idString);
-                                if(Int32.TryParse(idString, out id))
+                                if (Int32.TryParse(idString, out id))
                                 {
                                     Processor.WriteJson(JsonConvert.SerializeObject(new PodcastActionResponse(null, new Podcast(id).Delete()), Settings.JsonFormatting));
                                     return;
@@ -115,7 +119,7 @@ namespace WaveBox.ApiHandler.Handlers
                                 string idString = null;
 
                                 Uri.Parameters.TryGetValue("podcastEpisodeId", out idString);
-                                if(Int32.TryParse(idString, out id))
+                                if (Int32.TryParse(idString, out id))
                                 {
                                     Processor.WriteJson(JsonConvert.SerializeObject(new PodcastActionResponse(null, new PodcastEpisode(id).Delete()), Settings.JsonFormatting));
                                     return;
@@ -139,7 +143,7 @@ namespace WaveBox.ApiHandler.Handlers
                 int podcastId = 0;
                 Int32.TryParse(Uri.UriPart(2), out podcastId);
 
-                if(podcastId != 0)
+                if (podcastId != 0)
                 {
                     Podcast thisPodcast = new Podcast(podcastId);
                     List<PodcastEpisode> epList = thisPodcast.ListOfStoredEpisodes();

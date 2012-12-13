@@ -13,8 +13,6 @@ namespace WaveBox.ApiHandler
 {
 	class SettingsApiHandler : IApiHandler
 	{		
-		//private static Logger logger = LogManager.GetCurrentClassLogger();
-		
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 		
@@ -31,6 +29,7 @@ namespace WaveBox.ApiHandler
 				// Take in settings in the JSON format (same as it is stored on disk) and pass it on to the Settings class for processing=
 				string settingsJson = Uri.Parameters["settingsJson"];
 
+				// Attempt to write settings
 				bool success = false;
 				try
 				{
@@ -38,21 +37,25 @@ namespace WaveBox.ApiHandler
 				}
 				catch (JsonException)
 				{
+					// Failure if invalid JSON provided
 					Processor.WriteJson(JsonConvert.SerializeObject(new SettingsResponse("Invalid JSON", Settings.SettingsModel), Settings.JsonFormatting));
 					return;
 				}
 				
+				// If settings wrote successfully, return success object
 				if (success)
 				{
 					Processor.WriteJson(JsonConvert.SerializeObject(new SettingsResponse(null, Settings.SettingsModel), Settings.JsonFormatting));
 				}
 				else
 				{
+					// If no settings changed, report a 'harmless' error
 					Processor.WriteJson(JsonConvert.SerializeObject(new SettingsResponse("No settings were changed", Settings.SettingsModel), Settings.JsonFormatting));
 				}
 			}
 			else
 			{
+				// If no parameter provided, return settings
 				Processor.WriteJson(JsonConvert.SerializeObject(new SettingsResponse(null, Settings.SettingsModel), Settings.JsonFormatting));
 			}
 		}

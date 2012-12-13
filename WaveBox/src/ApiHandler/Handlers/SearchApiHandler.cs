@@ -10,12 +10,13 @@ namespace WaveBox.ApiHandler.Handlers
 {
 	public class SearchApiHandler : IApiHandler
 	{		
-		//private static Logger logger = LogManager.GetCurrentClassLogger();
-
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 		private User User { get; set; }
 
+		/// <summary>
+		/// Constructor for SearchApiHandler
+		/// </summary>
 		public SearchApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
@@ -23,22 +24,34 @@ namespace WaveBox.ApiHandler.Handlers
 			User = user;
 		}
 
+		/// <summary>
+		/// Process performs a search for a query with specified types
+		/// </summary>
 		public void Process()
 		{
+			// Lists to return as results
 			List<Artist> artists = new List<Artist>();
 			List<Album> albums = new List<Album>();
 			List<Song> songs = new List<Song>();
+			List<Video> videos = new List<Video>();
 
-			if(Uri.Parameters.ContainsKey("q"))
+			// If a query is provided...
+			if (Uri.Parameters.ContainsKey("q"))
 			{
+				// URL decode to strip any URL-encoded characters
 				string query = HttpUtility.UrlDecode(Uri.Parameters["q"]);
-				if(query.Length > 0)
-				{	 
-					if(Uri.Parameters.ContainsKey("t"))
+
+				// Ensure query is not blank
+				if (query.Length > 0)
+				{
+					// If a query type is provided...
+					if (Uri.Parameters.ContainsKey("t"))
 					{
-						foreach(string type in Uri.Parameters["t"].Split(','))
+						// Iterate all comma-separated values in query type
+						foreach (string type in Uri.Parameters["t"].Split(','))
 						{
-							switch(type)
+							// Return results, populating lists depending on parameters specified
+							switch (type)
 							{
 								case "artist":
 								case "artists":
@@ -52,39 +65,50 @@ namespace WaveBox.ApiHandler.Handlers
 								case "songs":
 									songs = Song.SearchSong(query);
 									break;
+								case "video":
+								case "videos":
+									videos = Video.SearchVideo(query);
+									break;
 								default:
 									artists = Artist.SearchArtist(query);
 									albums = Album.SearchAlbum(query);
 									songs = Song.SearchSong(query);
+									videos = Video.SearchVideo(query);
 									break;
 							}
 						}
 					}
 					else
 					{
+						// For no type, provide all types of data
 						artists = Artist.SearchArtist(query);
 						albums = Album.SearchAlbum(query);
 						songs = Song.SearchSong(query);
+						videos = Video.SearchVideo(query);
 					}
 
+					// On no results, return a 'harmless' error stating no results
 					string error = null;
-					if(artists.Count == 0 && albums.Count == 0 && songs.Count == 0)
+					if ((artists.Count == 0) && (albums.Count == 0) && (songs.Count == 0) && (videos.Count == 0))
 					{
 						error = "No search results found for query '" + query + "'";
 					}
 			
-					string json = JsonConvert.SerializeObject(new SearchResponse(error, artists, albums, songs), Settings.JsonFormatting);
+					// Return all results
+					string json = JsonConvert.SerializeObject(new SearchResponse(error, artists, albums, songs, videos), Settings.JsonFormatting);
 					Processor.WriteJson(json);
 				}
 				else
 				{
-					string json = JsonConvert.SerializeObject(new SearchResponse("Query cannot be empty", artists, albums, songs), Settings.JsonFormatting);
+					// Return error JSON for empty query
+					string json = JsonConvert.SerializeObject(new SearchResponse("Query cannot be empty", artists, albums, songs, videos), Settings.JsonFormatting);
 					Processor.WriteJson(json);
 				}
 			}
 			else
 			{
-				string json = JsonConvert.SerializeObject(new SearchResponse("No search query provided", artists, albums, songs), Settings.JsonFormatting);
+				// Return error JSON for no query parameter
+				string json = JsonConvert.SerializeObject(new SearchResponse("No search query provided", artists, albums, songs, videos), Settings.JsonFormatting);
 				Processor.WriteJson(json);
 			}
 		}
@@ -103,12 +127,16 @@ namespace WaveBox.ApiHandler.Handlers
 			[JsonProperty("songs")]
 			public List<Song> Songs { get; set; }
 
-			public SearchResponse(string error, List<Artist> artists, List<Album> albums, List<Song> songs)
+			[JsonProperty("videos")]
+			public List<Video> Videos { get; set; }
+
+			public SearchResponse(string error, List<Artist> artists, List<Album> albums, List<Song> songs, List<Video> videos)
 			{
 				Error = error;
 				Artists = artists;
 				Albums = albums;
 				Songs = songs;
+				Videos = videos;
 			}
 		}
 	}

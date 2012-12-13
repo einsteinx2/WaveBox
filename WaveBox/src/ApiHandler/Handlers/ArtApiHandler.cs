@@ -14,8 +14,6 @@ namespace WaveBox.ApiHandler.Handlers
 {
 	class ArtApiHandler : IApiHandler
 	{
-		//private static Logger logger = LogManager.GetCurrentClassLogger();
-
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 
@@ -55,7 +53,7 @@ namespace WaveBox.ApiHandler.Handlers
 			Art art = new Art(artId);
 			Stream stream = art.Stream;
 			
-			// If stream is null, write error header
+			// If the stream could not be produced, return error
 			if ((object)stream == null)
 			{
 				Processor.WriteErrorHeader();
@@ -67,6 +65,7 @@ namespace WaveBox.ApiHandler.Handlers
 			{
 				int size = Int32.MaxValue;
 				Int32.TryParse(Uri.Parameters["size"], out size);
+
 				// Parse size if valid
 				if (size != Int32.MaxValue)
 				{

@@ -149,7 +149,7 @@ namespace WaveBox.DataModel.Model
 			}
 		}
 
-		public static List<Video> allVideos()
+		public static List<Video> AllVideos()
 		{
 			List<Video> allVideos = new List<Video>();
 			IDbConnection conn = null;
@@ -183,6 +183,46 @@ namespace WaveBox.DataModel.Model
 			}
 			
 			return allVideos;
+		}
+		
+		public static List<Video> SearchVideo(string query)
+		{
+			List<Video> result = new List<Video>();
+
+			if(query == null)
+			{
+				return result;
+			}
+
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT * FROM video WHERE video_file_name LIKE @videofilename", conn);
+				q.AddNamedParam("@videofilename", "%" + query + "%");
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				Video v;
+
+				while(reader.Read())
+				{
+					v = new Video(reader);
+					result.Add(v);
+				}
+			}
+			catch(Exception e)
+			{
+				logger.Error("[VIDEOSEARCH] ERROR: " + e);
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			return result;
 		}
 
 		public static bool VideoNeedsUpdating(string filePath, int? folderId, out bool isNew, out int? songId)

@@ -13,16 +13,24 @@ namespace WaveBox.ApiHandler.Handlers
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 
+		// Define root project directory containing web interface
 		private const string rootPath = "html";
 
+		/// <summary>
+		/// Constructor for WebInterfaceHandler
+		/// </summary>
 		public WebInterfaceHandler(UriWrapper uri, IHttpProcessor processor)
 		{
 			Uri = uri;
 			Processor = processor;
 		}
 
+		/// <summary>
+		/// Process returns a page from the WaveBox web interface
+		/// </summary>
 		public void Process()
 		{
+			// Store root path, return index by default
 			string path = rootPath;
 			if (Uri.UriParts.Count == 0)
 			{
@@ -31,6 +39,7 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 			else
 			{
+				// Iterate UriParts to send web pages
 				for (int i = 0; i < Uri.UriParts.Count; i++)
 				{
 					string pathPart = Uri.UriParts[i];
@@ -91,7 +100,6 @@ namespace WaveBox.ApiHandler.Handlers
                 dict.Add("Last-Modified", lwt);
 
 				Processor.WriteFile(file, startOffset, length, HttpHeader.MimeTypeForExtension(Path.GetExtension(path)), dict, true);
-
 			}
 			else
 			{
@@ -102,6 +110,9 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 		}
         
+		/// <summary>
+		/// Returns an integer representation of a month string
+		/// </summary>
         private static int MonthForAbbreviation(string abb)
         {
             switch (abb.ToLower())
