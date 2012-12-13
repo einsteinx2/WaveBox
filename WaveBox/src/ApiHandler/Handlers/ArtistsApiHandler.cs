@@ -31,14 +31,19 @@ namespace WaveBox.ApiHandler.Handlers
 		/// </summary>
 		public void Process()
         {
+			// Return lists to be passed as JSON
             List<Artist> listOfArtists = new List<Artist>();
             List<Song> listOfSongs = new List<Song>();
             List<Album> listOfAlbums = new List<Album>();
+
+			// Last.fm integration
+			// Info regarding artist
             string lastfmInfo = null;
+			// Enable/disable Last.fm info
+            bool includeLfm = false;
 
             // Try to get the artist id
             bool success = false;
-            bool includeLfm = false;
             int id = 0;
             if (Uri.Parameters.ContainsKey("id"))
             {
@@ -58,7 +63,8 @@ namespace WaveBox.ApiHandler.Handlers
 				listOfArtists.Add(artist);
 				listOfAlbums = artist.ListOfAlbums();
 
-                if(includeLfm == true)
+				// Grab Last.fm data if requested
+				if (includeLfm == true)
                 {
                     lastfmInfo = Lastfm.GetArtistInfo(artist);
                 }
@@ -66,7 +72,6 @@ namespace WaveBox.ApiHandler.Handlers
 				// If requested, include list of songs in response as well
 				string includeSongs;
 				Uri.Parameters.TryGetValue("includeSongs", out includeSongs);
-
 				if ((object)includeSongs != null && includeSongs.ToLower() == "true")
 				{
 					listOfSongs = artist.ListOfSongs();
@@ -84,7 +89,7 @@ namespace WaveBox.ApiHandler.Handlers
 				string json = JsonConvert.SerializeObject(new ArtistsResponse(null, listOfArtists, listOfAlbums, listOfSongs, lastfmInfo), Settings.JsonFormatting);
 				Processor.WriteJson(json);
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				logger.Error("[ARTISTSAPI(1)] ERROR: " + e);
 			}
@@ -123,12 +128,16 @@ namespace WaveBox.ApiHandler.Handlers
                 Songs = songs;
                 Albums = albums;
 
-                if(lastfmInfo != null)
+				// Deserialize Last.fm info if requested
+                if (lastfmInfo != null)
                 {
                     var jsonParse = JsonConvert.DeserializeObject(lastfmInfo);
                     LastfmInfo = jsonParse;
                 }
-                else LastfmInfo = null;
+                else
+				{
+					LastfmInfo = null;
+				}
             }
 		}
 	}

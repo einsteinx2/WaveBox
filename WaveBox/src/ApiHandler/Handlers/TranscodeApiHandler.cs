@@ -2,33 +2,40 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using WaveBox.DataModel.Model;
-using WaveBox.Transcoding;
-using WaveBox.DataModel.Singletons;
 using System.IO;
-using WaveBox.Http;
 using System.Threading;
+using WaveBox.DataModel.Model;
+using WaveBox.DataModel.Singletons;
+using WaveBox.Http;
+using WaveBox.Transcoding;
+using Newtonsoft.Json;
 using NLog;
 
 namespace WaveBox.ApiHandler.Handlers
 {
-	class TranscodeApiHandler : IApiHandler
+	public class TranscodeApiHandler : IApiHandler
 	{		
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 		private ITranscoder Transcoder { get; set; }
-		
+
+		/// <summary>
+		/// Constructor for TranscodeApiHandler
+		/// </summary>
 		public TranscodeApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;
 		}
 		
+		/// <summary>
+		/// Process handles the initialization of the file transcoding sequence
+		/// <summary>
 		public void Process()
 		{
-			logger.Info("Stream handler called");
+			logger.Info("[TRANSCODEAPI] Starting file transcoding sequence");
 			
 			// Try to get the media item id
 			bool success = false;
@@ -42,6 +49,7 @@ namespace WaveBox.ApiHandler.Handlers
 			{
 				try
 				{
+					// Set up default transcoding parameters
 					ItemType itemType = Item.ItemTypeForItemId(id);
 					IMediaItem item = null;
 					TranscodeType transType = TranscodeType.MP3;
@@ -51,6 +59,7 @@ namespace WaveBox.ApiHandler.Handlers
 					long length = 0;
 					bool estimateContentLength = false;
 
+					// Optionally estimate content length
 					if (Uri.Parameters.ContainsKey("estimateContentLength"))
 					{
 						estimateContentLength = this.IsTrue(Uri.Parameters["estimateContentLength"]);
@@ -60,25 +69,29 @@ namespace WaveBox.ApiHandler.Handlers
 					if (itemType == ItemType.Song)
 					{
 						item = new Song(id);
-
+						logger.Info("[TRANSCODEAPI] Preparing audio transcode: " + item.FileName);
+						
 						// Default to MP3 transcoding
 						transType = TranscodeType.MP3;
 					}
 					else if (itemType == ItemType.Video)
 					{
 						item = new Video(id);
+						logger.Info("[TRANSCODEAPI] Preparing video transcode: " + item.FileName);
 
 						// Default to h.264 transcoding
 						transType = TranscodeType.X264;
 					}
 					
 					// Return an error if no item exists
-					if (item == null)
+					if ((item == null) || (!File.Exists(item.FilePath)))
 					{
-						new ErrorApiHandler(Uri, Processor, "No media item exists for id: " + id).Process();
+						string json = JsonConvert.SerializeObject(new TranscodeResponse("No media item exists with ID: " + id), Settings.JsonFormatting);
+						Processor.WriteJson(json);
 						return;
 					}
 
+					// Optionally add isDirect parameter
 					if (Uri.Parameters.ContainsKey("isDirect"))
 					{
 						isDirect = this.IsTrue(Uri.Parameters["isDirect"]);
@@ -115,6 +128,7 @@ namespace WaveBox.ApiHandler.Handlers
 					// Get the transcoding type if specified
 					if (Uri.Parameters.ContainsKey("transType"))
 					{
+						// Parse transcoding type
 						TranscodeType transTypeTemp;
 						if (Enum.TryParse<TranscodeType>(Uri.Parameters["transType"], true, out transTypeTemp))
 						{
@@ -149,10 +163,12 @@ namespace WaveBox.ApiHandler.Handlers
 					// Create the transcoder
 					if (item.ItemType == ItemType.Song)
 					{
+						// Begin transcoding song
 						Transcoder = TranscodeManager.Instance.TranscodeSong(item, transType, (uint)quality, isDirect, 0, (uint)item.Duration);
 					}
 					else
 					{
+						// Video transcoding is just a bit more complicated.
 						// Check to see if the width, height, and maintainAspect options were used
 						uint? width = null;
 						if (Uri.Parameters.ContainsKey("width"))
@@ -177,6 +193,7 @@ namespace WaveBox.ApiHandler.Handlers
 							}
 						}
 						
+						// Check for offset seconds and length seconds parameters
 						uint offsetSeconds = 0;
 						if (Uri.Parameters.ContainsKey("offsetSeconds"))
 						{
@@ -188,12 +205,15 @@ namespace WaveBox.ApiHandler.Handlers
 						{
 							UInt32.TryParse(Uri.Parameters["lengthSeconds"], out lengthSeconds);
 						}
+
 						// Either stream the rest of the file, or the duration specified
 						lengthSeconds = lengthSeconds == 0 ? (uint)item.Duration - offsetSeconds : lengthSeconds;
 						
+						// Begin video transcoding
 						Transcoder = TranscodeManager.Instance.TranscodeVideo(item, transType, quality, isDirect, width, height, maintainAspect, offsetSeconds, lengthSeconds);
 					}
 					
+					// If a transcoder was generated...
 					if ((object)Transcoder != null)
 					{
 						length = (long)Transcoder.EstimatedOutputSize;
@@ -203,18 +223,18 @@ namespace WaveBox.ApiHandler.Handlers
 						{
 							if (Transcoder.IsDirect)
 							{
-								logger.Info("[STREAM API] Checking if base stream exists");
+								logger.Info("[TRANSCODEAPI] Checking if base stream exists");
 								if ((object)Transcoder.TranscodeProcess != null && (object)Transcoder.TranscodeProcess.StandardOutput.BaseStream != null)
 								{
 									// The base stream exists, so the transcoding process has started
-									logger.Info("[STREAM API] Base stream exists, so start the transfer");
+									logger.Info("[TRANSCODEAPI] Base stream exists, so start the transfer");
 									stream = Transcoder.TranscodeProcess.StandardOutput.BaseStream;
 									break;
 								}
 							}
 							else
 							{
-								logger.Info("[STREAM API] Checking if file exists");
+								logger.Info("[TRANSCODEAPI] Checking if file exists");
 								if (File.Exists(Transcoder.OutputPath))
 								{
 									// The file exists, so the transcoding process has started
@@ -233,13 +253,23 @@ namespace WaveBox.ApiHandler.Handlers
 					    (Transcoder.IsDirect && (object)stream != null) ||
 					    (!Transcoder.IsDirect && File.Exists(Transcoder.OutputPath)))
 					{
-						logger.Info("transfering the stream");
+						logger.Info("[TRANSCODEAPI] Sending direct stream");
 						string mimeType = (object)Transcoder == null ? item.FileType.MimeType() : Transcoder.MimeType;
 						Processor.Transcoder = Transcoder;
 
-						if(Uri.Parameters.ContainsKey("offsetSeconds")) logger.Info("ApiHandlerFactory writing file at offsetSeconds " + Uri.Parameters["offsetSeconds"]);
+						if (Uri.Parameters.ContainsKey("offsetSeconds"))
+						{
+							logger.Info("ApiHandlerFactory writing file at offsetSeconds " + Uri.Parameters["offsetSeconds"]);
+						}
+
+						// Direct write file
 						Processor.WriteFile(stream, startOffset, length, mimeType, null, estimateContentLength);
-                        if(Uri.Parameters.ContainsKey("offsetSeconds")) logger.Info("ApiHandlerFactory DONE writing file at offsetSeconds " + Uri.Parameters["offsetSeconds"]);
+						logger.Info("[TRANSCODEAPI] Successfully sent direct stream");
+
+                        if (Uri.Parameters.ContainsKey("offsetSeconds"))
+						{
+							logger.Info("ApiHandlerFactory DONE writing file at offsetSeconds " + Uri.Parameters["offsetSeconds"]);
+						}
 					}
 					else
 					{
@@ -249,14 +279,26 @@ namespace WaveBox.ApiHandler.Handlers
 					// Consume the transcode (if transcoded)
 					TranscodeManager.Instance.ConsumedTranscode(Transcoder);
 				}
-				catch(Exception e)
+				catch (Exception e)
 				{
-					logger.Info("[STREAMAPI] ERROR: " + e);
+					logger.Error("[TRANSCODEAPI] ERROR: " + e);
 				}
 			}
 			else
 			{
-				new ErrorApiHandler(Uri, Processor, "Missing parameter: \"id\"").Process();
+				string json = JsonConvert.SerializeObject(new TranscodeResponse("Missing required parameter 'id'"), Settings.JsonFormatting);
+				Processor.WriteJson(json);
+			}
+		}
+		
+		private class TranscodeResponse
+		{
+			[JsonProperty("error")]
+			public string Error { get; set; }
+			
+			public TranscodeResponse(string error)
+			{
+				Error = error;
 			}
 		}
 	}

@@ -14,6 +14,9 @@ namespace WaveBox.ApiHandler.Handlers
 		private UriWrapper Uri { get; set; }
 		private User User { get; set; }
 
+		/// <summary>
+		/// Constructors for UsersApiHandler
+		/// </summary>
 		public UsersApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
@@ -21,6 +24,9 @@ namespace WaveBox.ApiHandler.Handlers
 			User = user;
 		}
 
+		/// <summary>
+		/// Process allows the modification of users and their properties
+		/// </summary>
 		public void Process()
 		{
 			try
@@ -30,7 +36,7 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 			catch (Exception e)
 			{
-				logger.Error("[USERSAPI(1)] ERROR: " + e);
+				logger.Error("[USERSAPI] ERROR: " + e);
 			}
 		}
 
