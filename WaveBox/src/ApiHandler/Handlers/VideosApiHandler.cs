@@ -17,17 +17,24 @@ namespace WaveBox.ApiHandler.Handlers
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 		
+		/// <summary>
+		/// Constructor for VideosApiHandler
+		/// </summary>
 		public VideosApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;
 		}
 		
+		/// <summary>
+		/// Process returns a list of videos from WaveBox
+		/// </summary>
 		public void Process()
 		{
+			// Return list of videos
 			List<Video> listOfVideos = new List<Video>();
 			
-			// Try to get the song id
+			// Try to fetch video ID
 			bool success = false;
 			int id = 0;
 			if (Uri.Parameters.ContainsKey("id"))
@@ -35,15 +42,18 @@ namespace WaveBox.ApiHandler.Handlers
 				success = Int32.TryParse(Uri.Parameters["id"], out id);
 			}
 			
+			// On successful ID, grab one video
 			if (success)
 			{
 				listOfVideos.Add(new Video(id));
 			}
 			else
 			{
-				listOfVideos = Video.allVideos();
+				// Else, grab all videos
+				listOfVideos = Video.AllVideos();
 			}
 			
+			// Return video list in a response
 			try
 			{
 				string json = JsonConvert.SerializeObject(new VideosResponse(null, listOfVideos), Settings.JsonFormatting);
@@ -51,7 +61,7 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 			catch (Exception e)
 			{
-				logger.Error("[SONGAPI] ERROR: " + e);
+				logger.Error("[VIDEOAPI] ERROR: " + e);
 			}
 		}
 		

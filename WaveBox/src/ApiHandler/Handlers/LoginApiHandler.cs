@@ -14,6 +14,9 @@ namespace WaveBox.ApiHandler.Handlers
 		private UriWrapper Uri { get; set; }
 		private User User { get; set; }
 
+		/// <summary>
+		/// Constructor for LoginApiHandler
+		/// </summary>
 		public LoginApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
@@ -21,6 +24,9 @@ namespace WaveBox.ApiHandler.Handlers
 			User = user;
 		}
 
+		/// <summary>
+		/// Process returns a new session key for this user upon successful login
+		/// <summary>
 		public void Process()
 		{
 			try

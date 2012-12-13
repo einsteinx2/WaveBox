@@ -17,17 +17,24 @@ namespace WaveBox.ApiHandler.Handlers
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 
+		/// <summary>
+		/// Constructor for SongsApiHandler
+		/// </summary>
 		public SongsApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;
 		}
 
+		/// <summary>
+		/// Process generates a JSON list of songs
+		/// </summary>
 		public void Process()
 		{
+			// Return list of songs
 			List<Song> listOfSongs = new List<Song>();
 
-			// Try to get the song id
+			// Fetch song ID from parameters
 			bool success = false;
 			int id = 0;
 			if (Uri.Parameters.ContainsKey("id"))
@@ -37,19 +44,22 @@ namespace WaveBox.ApiHandler.Handlers
 
 			if (success)
 			{
+				// Add song by ID to the list
 				listOfSongs.Add(new Song(id));
 			}
 			else
 			{
-				listOfSongs = Song.allSongs();
+				// Add all songs to list
+				listOfSongs = Song.AllSongs();
 			}
 
+			// Return generated list of songs
 			try
 			{
 				string json = JsonConvert.SerializeObject(new SongsResponse(null, listOfSongs), Settings.JsonFormatting);
 				Processor.WriteJson(json);
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				logger.Error("[SONGAPI] ERROR: " + e);
 			}

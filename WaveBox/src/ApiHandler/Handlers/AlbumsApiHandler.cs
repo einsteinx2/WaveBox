@@ -32,6 +32,7 @@ namespace WaveBox.ApiHandler.Handlers
 		/// </summary>
 		public void Process()
 		{
+			// List of songs and albums to be returned via handler
 			List<Song> songs = new List<Song>();
 			List<Album> albums = new List<Album>();
 
@@ -62,7 +63,7 @@ namespace WaveBox.ApiHandler.Handlers
 				string json = JsonConvert.SerializeObject(new AlbumsResponse(null, albums, songs), Settings.JsonFormatting);
 				Processor.WriteJson(json);
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				logger.Error("[ALBUMSAPI(1)] ERROR: " + e);
 			}

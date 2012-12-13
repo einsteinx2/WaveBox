@@ -42,6 +42,7 @@ namespace WaveBox.ApiHandler.Handlers
 				// No id parameter, so send down the whole backup database
 				long databaseLastQueryId = -1;
 				string databaseFileName = Database.Backup(out databaseLastQueryId);
+
 				if ((object)databaseFileName == null)
 				{
 					Processor.WriteErrorHeader();
@@ -55,7 +56,7 @@ namespace WaveBox.ApiHandler.Handlers
 						long length = stream.Length;
 						int startOffset = 0;
 					
-						// Handle the Range header to start from later in the file
+						// Handle the Range header to start from later in the file if connection interrupted
 						if (Processor.HttpHeaders.ContainsKey("Range"))
 						{
 							string range = (string)Processor.HttpHeaders["Range"];
@@ -89,18 +90,19 @@ namespace WaveBox.ApiHandler.Handlers
 				{
 					// Gather a list of queries from the query log, which can be used to synchronize a local database
 					conn = Database.GetQueryLogDbConnection();
-					IDbCommand q = Database.GetDbCommand("SELECT * FROM query_log " +
-														 "WHERE query_id >= @queryid", conn);
+					IDbCommand q = Database.GetDbCommand("SELECT * FROM query_log WHERE query_id >= @queryid", conn);
 					q.AddNamedParam("@queryid", id);
 					q.Prepare();
 					reader = q.ExecuteReader();
 					
+					// Read in queries and pull query data into list
 					while (reader.Read())
 					{
 						long queryId = reader.GetInt64(0);
 						string queryString = reader.GetString(1);
 						string values = reader.GetString(2);
 
+						// Generate dictionary containing delta of queries, add to list
 						IDictionary<string, object> query = new Dictionary<string, object>();
 						query["id"] = queryId;
 						query["query"] = queryString;
@@ -115,6 +117,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 				finally
 				{
+					// Ensure database closed
 					Database.Close(conn, null);
 				}
 
@@ -124,7 +127,7 @@ namespace WaveBox.ApiHandler.Handlers
 					string json = JsonConvert.SerializeObject(new DatabaseResponse(null, queries), Settings.JsonFormatting);
 					Processor.WriteJson(json);
 				}
-				catch(Exception e)
+				catch (Exception e)
 				{
 					logger.Info("[DATABASEAPI(2)] ERROR: " + e);
 				}

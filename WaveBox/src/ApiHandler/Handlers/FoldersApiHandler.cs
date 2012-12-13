@@ -31,6 +31,7 @@ namespace WaveBox.ApiHandler.Handlers
 		/// </summary>
 		public void Process()
 		{
+			// Generate return lists of folders, songs, videos
 			List<Folder> listOfFolders = new List<Folder>();
 			List<Song> listOfSongs = new List<Song>();
 			List<Video> listOfVideos = new List<Video>();
@@ -51,18 +52,18 @@ namespace WaveBox.ApiHandler.Handlers
                 listOfFolders = containingFolder.ListOfSubFolders();
 
 				// Recursively add media items from sub-folders
-                if(Uri.Parameters.ContainsKey("recursiveMedia") && this.IsTrue(Uri.Parameters["recursiveMedia"]))
+                if (Uri.Parameters.ContainsKey("recursiveMedia") && this.IsTrue(Uri.Parameters["recursiveMedia"]))
                 {
                     listOfSongs = new List<Song>();
                     listOfVideos = new List<Video>();
 
-                    // recursively add media in all subfolders to the list.
+                    // Recursively add media in all subfolders to the list.
                     Action<Folder> recurse = null;
                     recurse = f =>
                     {
                         listOfSongs.AddRange(f.ListOfSongs());
                         listOfVideos.AddRange(f.ListOfVideos());
-                        foreach(var subf in f.ListOfSubFolders())
+                        foreach (var subf in f.ListOfSubFolders())
                         {
                             recurse(subf);
                         }
@@ -71,6 +72,7 @@ namespace WaveBox.ApiHandler.Handlers
                 }
                 else 
                 {
+					// If not recursing, grab media in current folder
                     listOfSongs = containingFolder.ListOfSongs();
                     listOfVideos = containingFolder.ListOfVideos();
                 }
@@ -90,12 +92,13 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 			}
 
+			// Return all results
 			try
 			{
 				string json = JsonConvert.SerializeObject(new FoldersResponse(null, containingFolder, listOfFolders, listOfSongs, listOfVideos), Settings.JsonFormatting);
 				Processor.WriteJson(json);
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				logger.Error("[FOLDERAPI(1)] ERROR: " + e);
 			}

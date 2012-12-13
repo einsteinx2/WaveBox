@@ -260,6 +260,46 @@ namespace WaveBox.DataModel.Model
 			albums.Sort(CompareAlbumsByName);
 			return albums;
 		}
+		
+		public static List<Album> SearchAlbum(string query)
+		{
+			List<Album> result = new List<Album>();
+
+			if(query == null)
+			{
+				return result;
+			}
+
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT * FROM album WHERE album_name LIKE @albumname", conn);
+				q.AddNamedParam("@albumname", "%" + query + "%");
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				Album a;
+
+				while(reader.Read())
+				{
+					a = new Album(reader);
+					result.Add(a);
+				}
+			}
+			catch(Exception e)
+			{
+				logger.Error("[ALBUMSEARCH] ERROR: " + e);
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			return result;
+		}
 
 		public static List<Album> RandomAlbums()
 		{

@@ -45,17 +45,17 @@ namespace WaveBox.ApiHandler.Handlers
 				// Look for valid actions within the parameters
                 if (new string[] {"play", "pause", "stop", "prev", "next", "status", "playlist", "add", "remove", "move", "clear"}.Contains(action))
                 {
-                    switch(action)
+                    switch (action)
                     {
                         case "play":
                             string indexString = null;
-                            if(Uri.Parameters.ContainsKey("index"))
+                            if (Uri.Parameters.ContainsKey("index"))
                             {
                                 Uri.Parameters.TryGetValue("index", out indexString);
                                 Int32.TryParse(indexString, out index);
                             }
 							
-                            if(indexString == null)
+                            if (indexString == null)
 							{
 								Juke.Play();
 							}
@@ -93,8 +93,10 @@ namespace WaveBox.ApiHandler.Handlers
                             {
                                 s = "";
                                 Uri.Parameters.TryGetValue("id", out s);
-                                if(AddSongs(s))
+                                if (AddSongs(s))
+								{
                                     Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, true, false), Settings.JsonFormatting));
+								}
                             }
                             break;
                         case "remove":
@@ -110,12 +112,12 @@ namespace WaveBox.ApiHandler.Handlers
                             if (Uri.Parameters.ContainsKey("index"))
                             {
                                 string[] arr = null;
-                                if(Uri.Parameters.TryGetValue("index", out s))
+                                if (Uri.Parameters.TryGetValue("index", out s))
                                 {
                                     arr = s.Split(',');
-                                    if(arr.Length == 2)
+                                    if (arr.Length == 2)
                                     {
-                                        if(Move(arr[0], arr[1]))
+                                        if (Move(arr[0], arr[1]))
                                         {
                                             Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, true, false), Settings.JsonFormatting));
                                         }
@@ -142,7 +144,6 @@ namespace WaveBox.ApiHandler.Handlers
 							// This should never happen, unless we forget to add a case.
 							Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("You broke WaveBox", false, false), Settings.JsonFormatting));
 							break;
-
                     }
                 }
 				else
@@ -165,11 +166,11 @@ namespace WaveBox.ApiHandler.Handlers
 		{
             bool allSongsAddedSuccessfully = true;
 			List<Song> songs = new List<Song>();
-			foreach(string p in songIds.Split(','))
+			foreach (string p in songIds.Split(','))
 			{
 				try
 				{
-                    if(Item.ItemTypeForItemId(int.Parse(p)) == ItemType.Song)
+                    if (Item.ItemTypeForItemId(int.Parse(p)) == ItemType.Song)
                     {
                         Song s = new Song(int.Parse(p));
     					songs.Add(s);
@@ -179,7 +180,7 @@ namespace WaveBox.ApiHandler.Handlers
                         allSongsAddedSuccessfully = false;
                     }
 				}
-				catch(Exception e)
+				catch (Exception e)
 				{
 					logger.Error("[JUKEBOXAPI(2)] Error getting songs to add: " + e);
                     Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("Error getting songs to add", false, false), Settings.JsonFormatting));
@@ -188,8 +189,11 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 			Juke.AddSongs(songs);
 
-            if(!allSongsAddedSuccessfully)
+            if (!allSongsAddedSuccessfully)
+			{
                 Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("One or more items provided were not of the appropriate type and were not added to the playlist.", true, false), Settings.JsonFormatting));
+			}
+
             return allSongsAddedSuccessfully;
 		}
 
@@ -226,7 +230,7 @@ namespace WaveBox.ApiHandler.Handlers
 				Juke.MoveSong(fromI, toI);
                 return true;
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				logger.Error("[JUKEBOXAPI(4)] Error moving songs: " + e);
                 return false;
@@ -275,10 +279,14 @@ namespace WaveBox.ApiHandler.Handlers
             { 
                 get 
                 { 
-                    if(includeStatus) 
-                        return new JukeboxStatus(); 
-                    else 
+                    if (includeStatus)
+					{
+                        return new JukeboxStatus();
+					}
+                    else
+					{
                         return null;
+					}
                 } 
             }
 
@@ -287,10 +295,14 @@ namespace WaveBox.ApiHandler.Handlers
             { 
                 get 
                 { 
-                    if(includePlaylist)
-                        return Jukebox.Instance.ListOfSongs(); 
+                    if (includePlaylist)
+					{
+                        return Jukebox.Instance.ListOfSongs();
+					}
                     else
+					{
                         return null;
+					}
                 } 
             }
 
