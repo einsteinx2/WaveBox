@@ -37,7 +37,7 @@ namespace WaveBox.Http
 			{
 				if (e.SocketErrorCode.ToString() == "AddressAlreadyInUse")
 				{
-					logger.Info("[HTTPSERVER] Socket already in use, is WaveBox already running?");
+					logger.Info("[HTTPSERVER] Socket already in use.  Is WaveBox already running?");
 				}
 				else
 					logger.Info("[HTTPSERVER(4)] " + e);
@@ -51,16 +51,8 @@ namespace WaveBox.Http
 			}
 
 			logger.Info("[HTTPSERVER] HTTP server started");
-			while (IsActive) 
-			{                
-				TcpClient s = Listener.AcceptTcpClient();
-				//TcpClient d = listener.BeginAcceptTcpClient
-				HttpProcessor processor = new HttpProcessor(s, this);
-				Thread thread = new Thread(new ThreadStart(processor.process));
-				thread.IsBackground = true;
-				thread.Start();
-				Thread.Sleep(1);
-			}
+
+            Listener.BeginAcceptTcpClient(AcceptClientCallback, null);
 		}
 
 		public void Stop()
@@ -74,5 +66,13 @@ namespace WaveBox.Http
 				catch { }
 			}
 		}
+
+        public void AcceptClientCallback(IAsyncResult result)
+        {
+            Listener.BeginAcceptTcpClient(AcceptClientCallback, null);
+            TcpClient s = Listener.EndAcceptTcpClient(result);
+            HttpProcessor processor = new HttpProcessor(s, this);
+            processor.process();
+        }
 	}
 }

@@ -71,6 +71,7 @@ namespace WaveBox.ApiHandler.Handlers
 					
 						// Send the database file
 						Processor.WriteFile(stream, startOffset, length, "application/octet-stream", customHeader, true);
+                        stream.Close();
 					}
 					catch
 					{

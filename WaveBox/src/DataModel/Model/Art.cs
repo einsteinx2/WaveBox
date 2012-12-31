@@ -16,6 +16,7 @@ namespace WaveBox.DataModel.Model
 {
 	public class Art
 	{
+        public static readonly string[] ValidExtensions = { ".jpg", ".jpeg", ".png", ".bmp", ".gif" };
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 
 		/// <summary>

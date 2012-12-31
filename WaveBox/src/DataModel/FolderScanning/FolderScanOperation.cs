@@ -78,37 +78,37 @@ namespace WaveBox.DataModel.FolderScanning
                         topFolder.InsertFolder(false);
                     }
 
-					// Check the folder art
-					string artPath = topFolder.ArtPath;
-					if (Art.FileNeedsUpdating(artPath, topFolder.FolderId))
-					{
-						// Find the old art id, if it exists
-						int? oldArtId = topFolder.ArtId;
-						int? newArtId = new Art(artPath).ArtId;
-
-						if ((object)oldArtId == null)
-						{
-							// Insert the relationship
-							Art.UpdateArtItemRelationship(newArtId, topFolder.FolderId, true);
-						}
-						else
-						{
-							Art oldArt = new Art((int)oldArtId);
-
-							// Check if the previous folder art was actually from embedded tag art
-							if ((object)oldArt.FilePath == null)
-							{
-								// This was embedded tag art, so only update the folder's relationship
-								Art.UpdateArtItemRelationship(newArtId, topFolder.FolderId, true);
-							}
-							else
-							{
-								// Update any existing references, that would include both this folder
-								// and any children that were using this art in lieu of embedded art
-								Art.UpdateItemsToNewArtId(oldArtId, newArtId);
-							}
-						}
-					}
+//					// Check the folder art
+//					string artPath = topFolder.ArtPath;
+//					if (Art.FileNeedsUpdating(artPath, topFolder.FolderId))
+//					{
+//						// Find the old art id, if it exists
+//						int? oldArtId = topFolder.ArtId;
+//						int? newArtId = new Art(artPath).ArtId;
+//
+//						if ((object)oldArtId == null)
+//						{
+//							// Insert the relationship
+//							Art.UpdateArtItemRelationship(newArtId, topFolder.FolderId, true);
+//						}
+//						else
+//						{
+//							Art oldArt = new Art((int)oldArtId);
+//
+//							// Check if the previous folder art was actually from embedded tag art
+//							if ((object)oldArt.FilePath == null)
+//							{
+//								// This was embedded tag art, so only update the folder's relationship
+//								Art.UpdateArtItemRelationship(newArtId, topFolder.FolderId, true);
+//							}
+//							else
+//							{
+//								// Update any existing references, that would include both this folder
+//								// and any children that were using this art in lieu of embedded art
+//								Art.UpdateItemsToNewArtId(oldArtId, newArtId);
+//							}
+//						}
+//					}
 
                     //Stopwatch sw = new Stopwatch();
 					testGetDirectoriesTime.Start();
@@ -266,6 +266,60 @@ namespace WaveBox.DataModel.FolderScanning
 						}
 					}
 				}
+                else if (type == ItemType.Art)
+                {
+                    if(Art.FileNeedsUpdating(file, folderId))
+                    {
+                        var folder = new Folder(folderId);
+
+                        // Find the old art id, if it exists
+                        int? oldArtId = folder.ArtId;
+                        int? newArtId = new Art(file).ArtId;
+                        
+                        if ((object)oldArtId == null)
+                        {
+                            Console.WriteLine("There was no old art id");
+                            // Insert the relationship
+                            Art.UpdateArtItemRelationship(newArtId, folder.FolderId, true);
+
+                            // If there was no old art id, there will be no items that have said non-existent art id.
+                            //Art.UpdateItemsToNewArtId(oldArtId, newArtId);
+                        }
+                        else
+                        {
+                            Console.WriteLine("There was an old art id");
+
+                            Art oldArt = new Art((int)oldArtId);
+                            
+                            // Check if the previous folder art was actually from embedded tag art
+                            if ((object)oldArt.FilePath == null)
+                            {
+                                // This was embedded tag art, so only update the folder's relationship
+                                Console.WriteLine("It was embedded art, {0}, newArtId: {1}, folderId: {2}", Art.UpdateArtItemRelationship(newArtId, folder.FolderId, true), newArtId, folder.FolderId);
+                            }
+                            else
+                            {
+                                // Update any existing references, that would include both this folder
+                                // and any children that were using this art in lieu of embedded art
+                                Art.UpdateItemsToNewArtId(oldArtId, newArtId);
+                            }
+                        }
+
+                        // Add this art to any media items in this folder which have no art.
+                        var items = folder.ListOfMediaItems();
+                        
+                        foreach(MediaItem m in items)
+                        {
+                            if(m.ArtId == null)
+                            {
+                                logger.Info("Updating art id for item {0}. ({1} -> {2})", m.ItemId, m.ArtId == null ? "null" : m.ArtId.ToString(), newArtId);
+                                Art.UpdateArtItemRelationship(newArtId, m.ItemId, false);
+                            }
+                        }
+
+                        Console.WriteLine("Art needs updating: {0}", folder.ArtPath);
+                    }
+                }
 			}
             catch (FileNotFoundException e)
             {

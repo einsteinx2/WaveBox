@@ -92,6 +92,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 					// Send the file
                     Processor.WriteFile(stream, startOffset, length, item.FileType.MimeType(), dict, true);
+                    stream.Close();
 					
 					logger.Info("[STREAMAPI] Successfully streamed file!");
 				}

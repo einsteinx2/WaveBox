@@ -264,6 +264,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 						// Direct write file
 						Processor.WriteFile(stream, startOffset, length, mimeType, null, estimateContentLength);
+                        stream.Close();
 						logger.Info("[TRANSCODEAPI] Successfully sent direct stream");
 
                         if (Uri.Parameters.ContainsKey("offsetSeconds"))

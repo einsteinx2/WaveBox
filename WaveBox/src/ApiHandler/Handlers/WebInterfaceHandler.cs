@@ -100,6 +100,7 @@ namespace WaveBox.ApiHandler.Handlers
                 dict.Add("Last-Modified", lwt);
 
 				Processor.WriteFile(file, startOffset, length, HttpHeader.MimeTypeForExtension(Path.GetExtension(path)), dict, true);
+                file.Close();
 			}
 			else
 			{
