@@ -234,7 +234,7 @@ namespace WaveBox.ApiHandler.Handlers
 							}
 							else
 							{
-								logger.Info("[TRANSCODEAPI] Checking if file exists");
+                                logger.Info("[TRANSCODEAPI] Checking if file exists ({0})", Transcoder.OutputPath);
 								if (File.Exists(Transcoder.OutputPath))
 								{
 									// The file exists, so the transcoding process has started

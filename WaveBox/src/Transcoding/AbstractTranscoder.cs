@@ -76,8 +76,17 @@ namespace WaveBox.Transcoding
 				{
                     var f = new FileInfo(Item.FilePath);
                     float ratio = (float)EstimatedBitrate / (float)Item.Bitrate;
-                    Console.WriteLine("Bitrate ratio: {0}, Item filesize: {1}, Estimated size: {2}", ratio, f.Length, (long)(f.Length * ratio));
-                    return (long)(f.Length * ratio);
+
+                    if (float.IsInfinity(ratio))
+                    {
+                        Console.WriteLine("Ratio was infinity.  Estimated size is: {0}", (long)Item.Duration * (long)EstimatedBitrate);
+                        return ((long)Item.Duration * (long)EstimatedBitrate * (long)1024) / 8;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Bitrate ratio: {0}, Item filesize: {1}, Estimated size: {2}, Item bitrate: {3}", ratio, f.Length, (long)(f.Length * ratio), Item.Bitrate);
+                        return (long)(f.Length * ratio);
+                    }
 					//logger.Info("Item.Duration: " + Item.Duration + "  EstimatedBitrate: " + EstimatedBitrate);
 				    //return (long)LengthSeconds * (long)(EstimatedBitrate * 128);
 				}
