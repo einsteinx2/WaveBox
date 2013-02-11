@@ -53,14 +53,30 @@ namespace WaveBox.Http
 
 		private string streamReadLine(Stream inputStream) 
 		{
-			int next_char;
+			int next_char, readTries = 0;
 			string data = "";
 			while (true)
 			{
 				next_char = inputStream.ReadByte();
+
+                if (next_char == -1) 
+                {
+                    if (readTries >= 29)
+                    {
+                        throw new Exception("ReadByte timed out", null);
+                    }
+                    readTries++;
+                    Thread.Sleep(1); 
+                    continue; 
+                }
+                else
+                {
+                    readTries = 0;
+                }
+
 				if (next_char == '\n') { break; }
 				if (next_char == '\r') { continue; }
-				if (next_char == -1) { Thread.Sleep(1); continue; };
+
 				data += Convert.ToChar(next_char);
 			}
 			return data;
@@ -70,11 +86,12 @@ namespace WaveBox.Http
         {
             // we can't use a StreamReader for input, because it buffers up extra data on us inside it's
             // "processed" view of the world, and we want the data raw after the headers
-            InputStream = new BufferedStream(Socket.GetStream());
+            InputStream = Socket.GetStream();
 
             // we probably shouldn't be using a streamwriter for all output from handlers either
             try
             {
+                InputStream.ReadTimeout = 30000;
                 ParseRequest();
                 ReadHeaders();
                 if (HttpMethod.Equals("GET"))

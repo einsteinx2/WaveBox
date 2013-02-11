@@ -197,12 +197,19 @@ namespace WaveBox.DataModel.Singletons
 
 			foreach (string mediaFolderString in settingsModel.MediaFolders)
 			{
-				Folder mediaFolder = new Folder(mediaFolderString, true);
-				if (mediaFolder.FolderId == null)
-				{
-					mediaFolder.InsertFolder(true);
-				}
-				folders.Add(mediaFolder);
+                if (Directory.Exists(mediaFolderString))
+                {
+    				Folder mediaFolder = new Folder(mediaFolderString, true);
+    				if (mediaFolder.FolderId == null)
+    				{
+    					mediaFolder.InsertFolder(true);
+    				}
+    				folders.Add(mediaFolder);
+                }
+                else 
+                {
+                    logger.Info(String.Format("Media folder does not exist: {0}", mediaFolderString));
+                }
 			}
 
 			return folders;

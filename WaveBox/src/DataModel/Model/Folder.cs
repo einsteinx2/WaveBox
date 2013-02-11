@@ -444,8 +444,7 @@ namespace WaveBox.DataModel.Model
 				if (affected > 0)
 				{
 					// get the id of the previous insert.  weird.
-					q.CommandText = "SELECT last_insert_rowid()";
-					FolderId = Convert.ToInt32(q.ExecuteScalar().ToString());
+                    FolderId = itemId;
 					//FolderId = Convert.ToInt32(((SqlDecimal)q.ExecuteScalar()).ToString());
 				}
 			}
