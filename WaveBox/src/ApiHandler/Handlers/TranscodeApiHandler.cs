@@ -277,8 +277,10 @@ namespace WaveBox.ApiHandler.Handlers
 						Processor.WriteErrorHeader();
 					}
 					
-					// Consume the transcode (if transcoded)
-					TranscodeManager.Instance.ConsumedTranscode(Transcoder);
+					// Spin off a thread to consume the transcoder in 30 seconds.
+					Thread consume = new Thread(() => TranscodeManager.Instance.ConsumedTranscode(Transcoder));
+					consume.Start();
+					//TranscodeManager.Instance.ConsumedTranscode(Transcoder);
 				}
 				catch (Exception e)
 				{
