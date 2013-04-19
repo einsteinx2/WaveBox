@@ -52,7 +52,8 @@ namespace WaveBox.ApiHandler.Handlers
 			// Grab art stream
 			Art art = new Art(artId);
 			Stream stream = art.Stream;
-			
+
+
 			// If the stream could not be produced, return error
 			if ((object)stream == null)
 			{
@@ -69,10 +70,20 @@ namespace WaveBox.ApiHandler.Handlers
 				// Parse size if valid
 				if (size != Int32.MaxValue)
 				{
-					// Resize image, put it in memory stream
-					Image resized = ResizeImage(new Bitmap(stream), new Size(size, size));
-					stream = new MemoryStream();
-					resized.Save(stream, System.Drawing.Imaging.ImageFormat.Jpeg);
+					if (WaveBoxService.DetectOS() == WaveBoxService.OS.Windows)
+					{
+						Console.WriteLine("Using GDI to resize image");
+						// Resize image, put it in memory stream
+						Image resized = ResizeImageGDI(new Bitmap(stream), new Size(size, size));
+						stream = new MemoryStream();
+						resized.Save(stream, System.Drawing.Imaging.ImageFormat.Jpeg);
+					}
+					else 
+					{
+						Console.WriteLine("Using Magick to resize image");
+						Byte[] data = ResizeImageMagick(stream, size);
+						stream = new MemoryStream(data, false);
+					}
 				}
 			}
 
@@ -85,11 +96,61 @@ namespace WaveBox.ApiHandler.Handlers
             stream.Close();
 		}
 
+
+		private static byte[] ResizeImageMagick(Stream stream, int width)
+		{
+			ImageMagickInterop.WandGenesis();
+
+			// new wand
+			IntPtr wand = ImageMagickInterop.NewWand();
+
+			// get original image
+			byte[] b = new byte[stream.Length];
+			stream.Read(b, 0, (int)stream.Length);
+			ImageMagickInterop.ReadImageBlob(wand, b);
+
+			int sourceWidth = (int)ImageMagickInterop.GetWidth(wand);
+			int sourceHeight = (int)ImageMagickInterop.GetHeight(wand);
+
+			Console.WriteLine("sourceWidth: {0}, sourceHeight: {1}", sourceWidth, sourceHeight);
+			
+			float nPercent = 0;
+			float nPercentW = 0;
+			float nPercentH = 0;
+			
+			nPercentW = ((float)width / (float)sourceWidth);
+			nPercentH = ((float)width / (float)sourceHeight);
+			
+			if (nPercentH < nPercentW)
+			{
+				nPercent = nPercentH;
+			}
+			else
+			{
+				nPercent = nPercentW;
+			}
+			
+			int destWidth = (int)(sourceWidth * nPercent);
+			int destHeight = (int)(sourceHeight * nPercent);
+
+			Console.WriteLine("destWidth: {0}, destHeight: {1}", destWidth, destHeight);
+
+			ImageMagickInterop.ResizeImage(wand, (IntPtr)destWidth, (IntPtr)destHeight, ImageMagickInterop.Filter.Lanczos, 1.0);
+			byte[] newData = ImageMagickInterop.GetImageBlob(wand);
+
+			Console.WriteLine("new wand size: width = {0}, height = {1}; newData len = {2}", ImageMagickInterop.GetWidth(wand), ImageMagickInterop.GetHeight(wand), newData.Length);
+
+			// cleanup
+			ImageMagickInterop.DestroyWand(wand);
+			ImageMagickInterop.WandTerminus();
+			return newData;
+		}
+
 		// Thanks to http://www.switchonthecode.com/tutorials/csharp-tutorial-image-editing-saving-cropping-and-resizing
 		/// <summary>
 		/// Code which can resize an image and return it as requested
 		/// </summary>
-		private static Image ResizeImage(Image imgToResize, Size size)
+		private static Image ResizeImageGDI(Image imgToResize, Size size)
 		{
 			int sourceWidth = imgToResize.Width;
 			int sourceHeight = imgToResize.Height;
@@ -115,8 +176,9 @@ namespace WaveBox.ApiHandler.Handlers
 
 			Bitmap b = new Bitmap(destWidth, destHeight);
 			Graphics g = Graphics.FromImage((Image)b);
-			g.InterpolationMode = InterpolationMode.HighQualityBilinear;
-			g.CompositingMode = CompositingMode.SourceCopy;
+			g.CompositingQuality = CompositingQuality.HighQuality;
+			g.SmoothingMode = SmoothingMode.HighQuality;
+			g.InterpolationMode = InterpolationMode.HighQualityBicubic;
 
 			g.DrawImage(imgToResize, 0, 0, destWidth, destHeight);
 			g.Dispose();

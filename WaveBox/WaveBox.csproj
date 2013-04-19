@@ -166,6 +166,7 @@
     <Compile Include="src\ApiHandler\Handlers\UsersApiHandler.cs" />
     <Compile Include="src\Transcoding\FFMpegAACTranscoder.cs" />
     <Compile Include="src\ApiHandler\Handlers\SearchApiHandler.cs" />
+    <Compile Include="src\ImageMagickInterop.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="lib\Newtonsoft.Json.dll" />
