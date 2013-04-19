@@ -3,6 +3,7 @@ using System.IO;
 using System.Diagnostics;
 using System.Collections.Generic;
 using WaveBox.DataModel.Model;
+using System.Threading;
 using NLog;
 
 namespace WaveBox.Transcoding
@@ -49,7 +50,7 @@ namespace WaveBox.Transcoding
 						break;
 				}
 
-				StartTranscoder(transcoder);
+				transcoder = StartTranscoder(transcoder);
 
 		        return transcoder;
 			}
@@ -71,14 +72,15 @@ namespace WaveBox.Transcoding
 						break;
 				}
 				
-				StartTranscoder(transcoder);
+				transcoder = StartTranscoder(transcoder);
 				
 				return transcoder;
 			}
 		}
 
-		private void StartTranscoder(ITranscoder transcoder)
+		private ITranscoder StartTranscoder(ITranscoder inTranscoder)
 		{
+			ITranscoder transcoder = inTranscoder;
 			if ((object)transcoder != null)
 			{
 				// Don't reuse direct transcoders
@@ -107,10 +109,17 @@ namespace WaveBox.Transcoding
 					transcoder.StartTranscode();
 				}
 			}
+			return transcoder;
 		}
 
 	    public void ConsumedTranscode(ITranscoder transcoder)
 		{
+			logger.Info("Waiting on {0} for 30 more seconds... State: {1}", transcoder.Item.FileName, transcoder.State);
+
+			for (int i = 30; i > 0; i--)
+			{
+				Thread.Sleep(1000);
+			}
 			// Do nothing if the transcoder is null or is a stdout transcoder
 			if ((object)transcoder == null)
 			{
