@@ -9,7 +9,7 @@ using NLog;
 namespace WaveBox.OperationQueue
 {
 	public class DelayedOperationQueue
-	{		
+	{
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 
 		public const int DEFAULT_DELAY = 10;

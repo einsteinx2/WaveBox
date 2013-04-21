@@ -13,7 +13,7 @@ using NLog;
 namespace WaveBox.Http
 {
 	public class HttpServer 
-	{		
+	{
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 
 		protected int Port { get; set; }
@@ -40,7 +40,9 @@ namespace WaveBox.Http
 					logger.Info("[HTTPSERVER] Socket already in use.  Is WaveBox already running?");
 				}
 				else
+				{
 					logger.Info("[HTTPSERVER(4)] " + e);
+				}
 
 				Environment.Exit(-1);
 			}
@@ -52,7 +54,7 @@ namespace WaveBox.Http
 
 			logger.Info("[HTTPSERVER] HTTP server started");
 
-            Listener.BeginAcceptTcpClient(AcceptClientCallback, null);
+			Listener.BeginAcceptTcpClient(AcceptClientCallback, null);
 		}
 
 		public void Stop()
@@ -67,12 +69,12 @@ namespace WaveBox.Http
 			}
 		}
 
-        public void AcceptClientCallback(IAsyncResult result)
-        {
-            Listener.BeginAcceptTcpClient(AcceptClientCallback, null);
-            TcpClient s = Listener.EndAcceptTcpClient(result);
-            HttpProcessor processor = new HttpProcessor(s, this);
-            processor.process();
-        }
+		public void AcceptClientCallback(IAsyncResult result)
+		{
+			Listener.BeginAcceptTcpClient(AcceptClientCallback, null);
+			TcpClient s = Listener.EndAcceptTcpClient(result);
+			HttpProcessor processor = new HttpProcessor(s, this);
+			processor.process();
+		}
 	}
 }

@@ -17,48 +17,48 @@ namespace WaveBox.Transcoding
 		public override string MimeType { get { return "audio/mp4"; } }
 
 		public FFMpegAACTranscoder(IMediaItem item, uint quality, bool isDirect, uint offsetSeconds, uint lengthSeconds) : base(item, quality, isDirect, offsetSeconds, lengthSeconds)
-    	{
-        	
-    	}
+		{
+			
+		}
 
-	    public override string Arguments
-	    {
+		public override string Arguments
+		{
 			get 
 			{ 
-		        string options = null;
-		        switch (Quality)
-		        {
-		            case (uint)TranscodeQuality.Low:
-		                // VBR - 70 quality (~64 kbps)
-		                options = FFMpegOptionsWith(70);
+				string options = null;
+				switch (Quality)
+				{
+					case (uint)TranscodeQuality.Low:
+						// VBR - 70 quality (~64 kbps)
+						options = FFMpegOptionsWith(70);
 						break;
 					case (uint)TranscodeQuality.Medium:
-		                // VBR - 100 quality (~128 kbps)
-		                options = FFMpegOptionsWith(100);
+						// VBR - 100 quality (~128 kbps)
+						options = FFMpegOptionsWith(100);
 						break;
 					case (uint)TranscodeQuality.High:
-		                // VBR - V2 quality (~192 kbps)
-		                options = FFMpegOptionsWith(120);
+						// VBR - V2 quality (~192 kbps)
+						options = FFMpegOptionsWith(120);
 						break;
 					case (uint)TranscodeQuality.Extreme:
-		                // VBR - V0 quality (~224 kbps)
-		                options = FFMpegOptionsWith(130);
+						// VBR - V0 quality (~224 kbps)
+						options = FFMpegOptionsWith(130);
 						break;
 					default:
 						options = FFMpegOptionsWith(Quality);
 						break;
-		        }
-		        return options;
+				}
+				return options;
 			}
-	    }
+		}
 
-	    public override uint? EstimatedBitrate
-	    {
+		public override uint? EstimatedBitrate
+		{
 			get 
 			{ 
 				uint? bitrate = null;
-		        switch (Quality)
-		        {
+				switch (Quality)
+				{
 					case (uint)TranscodeQuality.Low: 
 						bitrate = 64;
 						break;
@@ -74,10 +74,10 @@ namespace WaveBox.Transcoding
 					default: 
 						bitrate = Quality;
 						break;
-		        }
-		        return bitrate;
+				}
+				return bitrate;
 			}
-	    }
+		}
 
 		private string FFMpegOptionsWith(uint quality)
 		{

@@ -93,7 +93,7 @@ namespace WaveBox.ApiHandler.Handlers
 					{
 						error = "No search results found for query '" + query + "'";
 					}
-			
+
 					// Return all results
 					string json = JsonConvert.SerializeObject(new SearchResponse(error, artists, albums, songs, videos), Settings.JsonFormatting);
 					Processor.WriteJson(json);

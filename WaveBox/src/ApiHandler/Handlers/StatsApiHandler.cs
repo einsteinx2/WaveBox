@@ -11,7 +11,7 @@ using NLog;
 namespace WaveBox.ApiHandler
 {
 	class StatsApiHandler : IApiHandler
-	{		
+	{
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 		
@@ -23,7 +23,7 @@ namespace WaveBox.ApiHandler
 			Processor = processor;
 			Uri = uri;
 		}
-		
+
 		/// <summary>
 		/// Process records play stats for artists, albums, songs
 		/// </summary>

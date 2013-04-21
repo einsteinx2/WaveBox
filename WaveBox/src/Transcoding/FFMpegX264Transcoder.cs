@@ -5,7 +5,7 @@ using NLog;
 namespace WaveBox.Transcoding
 {
 	public class FFMpegX264Transcoder : VideoTranscoder
-	{		
+	{
 		//private static Logger logger = LogManager.GetCurrentClassLogger();
 
 		public override TranscodeType Type { get { return TranscodeType.X264; } }
@@ -20,6 +20,7 @@ namespace WaveBox.Transcoding
 
 		public FFMpegX264Transcoder(IMediaItem item, uint quality, bool isDirect, uint? width, uint? height, bool maintainAspect, uint offsetSeconds, uint lengthSeconds) : base(item, quality, isDirect, width, height, maintainAspect, offsetSeconds, lengthSeconds)
 		{
+
 		}
 
 		protected override string GenerateArguments(uint abitrate, uint vbitrate, uint width, uint height)

@@ -25,8 +25,8 @@ namespace WaveBox
 
 		void WriteFile(Stream fs, int startOffset, long length, string mimeType, IDictionary<string, string> customHeaders, bool isSendContentLength);
 
-        // Utility methods
-        //static string DateTimeToLastMod(DateTime theDate);
+		// Utility methods
+		//static string DateTimeToLastMod(DateTime theDate);
 	}
 }
 

@@ -5,7 +5,7 @@ using NLog;
 namespace WaveBox.Transcoding
 {
 	public class FFMpegOGGTranscoder : AbstractTranscoder
-	{		
+	{
 		//private static Logger logger = LogManager.GetCurrentClassLogger();
 
 		public override TranscodeType Type { get { return TranscodeType.OGG; } }
@@ -19,48 +19,48 @@ namespace WaveBox.Transcoding
 		public override string MimeType { get { return "audio/ogg"; } }
 
 		public FFMpegOGGTranscoder(IMediaItem item, uint quality, bool isDirect, uint offsetSeconds, uint lengthSeconds) : base(item, quality, isDirect, offsetSeconds, lengthSeconds)
-    	{
-        	
-    	}
+		{
+			
+		}
 
-	    public override string Arguments
-	    {
+		public override string Arguments
+		{
 			get 
 			{ 
-		        string options = null;
-		        switch (Quality)
-		        {
-		            case (uint)TranscodeQuality.Low:
-		                // VBR - Q0 quality (~64 kbps)
-		                options = FFMpegOptionsWith(0);
+				string options = null;
+				switch (Quality)
+				{
+					case (uint)TranscodeQuality.Low:
+						// VBR - Q0 quality (~64 kbps)
+						options = FFMpegOptionsWith(0);
 						break;
 					case (uint)TranscodeQuality.Medium:
-		                // VBR - Q4 quality (~128 kbps)
-		                options = FFMpegOptionsWith(5);
+						// VBR - Q4 quality (~128 kbps)
+						options = FFMpegOptionsWith(5);
 						break;
 					case (uint)TranscodeQuality.High:
-		                // VBR - Q5 quality (~160 kbps)
-		                options = FFMpegOptionsWith(2);
+						// VBR - Q5 quality (~160 kbps)
+						options = FFMpegOptionsWith(2);
 						break;
 					case (uint)TranscodeQuality.Extreme:
-		                // VBR - Q6 quality (~192 kbps)
-		                options = FFMpegOptionsWith(0);
+						// VBR - Q6 quality (~192 kbps)
+						options = FFMpegOptionsWith(0);
 						break;
 					default:
 						options = FFMpegOptionsWith(Quality);
 						break;
-		        }
-		        return options;
+				}
+				return options;
 			}
-	    }
+		}
 
-	    public override uint? EstimatedBitrate
-	    {
+		public override uint? EstimatedBitrate
+		{
 			get 
 			{ 
 				uint? bitrate = null;
-		        switch (Quality)
-		        {
+				switch (Quality)
+				{
 					case (uint)TranscodeQuality.Low: 
 						bitrate = 64;
 						break;
@@ -76,17 +76,21 @@ namespace WaveBox.Transcoding
 					default: 
 						bitrate = Quality;
 						break;
-		        }
-		        return bitrate;
+				}
+				return bitrate;
 			}
-	    }
+		}
 
 		private string FFMpegOptionsWith(uint quality)
 		{
 			if (quality > 12)
+			{
 				return "-loglevel quiet -i \"" + Item.FilePath + "\" -acodec " + Codec + " -ab " + quality + " " + OutputPath;
+			}
 			else
+			{
 				return "-loglevel quiet -i \"" + Item.FilePath + "\" -acodec " + Codec + " -aq " + quality + " " + OutputPath;
+			}
 		}
 	}
 }

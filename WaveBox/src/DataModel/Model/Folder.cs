@@ -72,14 +72,22 @@ namespace WaveBox.DataModel.Model
 					FolderName = reader.GetString(reader.GetOrdinal("folder_name"));
 					FolderPath = reader.GetString(reader.GetOrdinal("folder_path"));
 					if (reader.GetValue(reader.GetOrdinal("parent_folder_id")) == DBNull.Value)
+					{
 						ParentFolderId = null;
+					}
 					else 
+					{
 						ParentFolderId = reader.GetInt32(reader.GetOrdinal("parent_folder_id"));
+					}
 
-                    if (reader.GetValue(reader.GetOrdinal("folder_media_folder_id")) == DBNull.Value)
-                        MediaFolderId = null;
-                    else 
-                        MediaFolderId = reader.GetInt32(reader.GetOrdinal("parent_folder_id"));
+					if (reader.GetValue(reader.GetOrdinal("folder_media_folder_id")) == DBNull.Value)
+					{
+						MediaFolderId = null;
+					}
+					else 
+					{
+						MediaFolderId = reader.GetInt32(reader.GetOrdinal("parent_folder_id"));
+					}
 				}
 			}
 			catch (Exception e)
@@ -184,14 +192,22 @@ namespace WaveBox.DataModel.Model
 						FolderName = reader.GetString(reader.GetOrdinal("folder_path"));
 
 						if (reader.GetValue(reader.GetOrdinal("parent_folder_id")) == DBNull.Value)
+						{
 							ParentFolderId = null;
-						else 
+						}
+						else
+						{
 							ParentFolderId = reader.GetInt32(reader.GetOrdinal("parent_folder_id"));
+						}
 
-                        if (reader.GetValue(reader.GetOrdinal("folder_media_folder_id")) == DBNull.Value)
-                            MediaFolderId = null;
-                        else 
-                            MediaFolderId = reader.GetInt32(reader.GetOrdinal("folder_media_folder_id"));
+						if (reader.GetValue(reader.GetOrdinal("folder_media_folder_id")) == DBNull.Value)
+						{
+							MediaFolderId = null;
+						}
+						else
+						{
+							MediaFolderId = reader.GetInt32(reader.GetOrdinal("folder_media_folder_id"));
+						}
 					}
 				}
 				reader.Close();
@@ -239,9 +255,9 @@ namespace WaveBox.DataModel.Model
 			{
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " +
-				                                     "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
-				                                     "LEFT JOIN album ON song_album_id = album.album_id " +
-				                                     "WHERE song_folder_id = @folderid", conn);
+													 "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
+													 "LEFT JOIN album ON song_album_id = album.album_id " +
+													 "WHERE song_folder_id = @folderid", conn);
 				
 				q.AddNamedParam("@folderid", FolderId);
 				q.Prepare();
@@ -278,7 +294,7 @@ namespace WaveBox.DataModel.Model
 			{
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT * FROM video " +
-				                                     "WHERE video_folder_id = @folderid", conn);
+													 "WHERE video_folder_id = @folderid", conn);
 				
 				q.AddNamedParam("@folderid", FolderId);
 				q.Prepare();
@@ -348,24 +364,24 @@ namespace WaveBox.DataModel.Model
 			else return false;
 		}
 
-        public static bool ContainsImages(string dir, out string firstImageFoundPath)
-        {
-            string[] validImageExtensions = new string[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
-            string ext = null;
+		public static bool ContainsImages(string dir, out string firstImageFoundPath)
+		{
+			string[] validImageExtensions = new string[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
+			string ext = null;
 			firstImageFoundPath = null;
 
-            foreach (string file in Directory.GetFiles(dir))
-            {
-                ext = Path.GetExtension(file).ToLower();
-                if (validImageExtensions.Contains(ext) && !Path.GetFileName(file).StartsWith("."))
-                {
-                    firstImageFoundPath = file;
-                }
-            }
+			foreach (string file in Directory.GetFiles(dir))
+			{
+				ext = Path.GetExtension(file).ToLower();
+				if (validImageExtensions.Contains(ext) && !Path.GetFileName(file).StartsWith("."))
+				{
+					firstImageFoundPath = file;
+				}
+			}
 
 			// Return true if firstImageFoundPath exists
 			return ((object)firstImageFoundPath != null);
-        }
+		}
 
 		private string FindArtPath()
 		{
@@ -417,7 +433,9 @@ namespace WaveBox.DataModel.Model
 		{
 			int? itemId = Item.GenerateItemId(ItemType.Folder);
 			if (itemId == null)
+			{
 				return;
+			}
 
 			IDbConnection conn = null;
 			IDataReader reader = null;
@@ -432,9 +450,13 @@ namespace WaveBox.DataModel.Model
 				q.AddNamedParam("@folderpath", FolderPath);
 
 				if (isMediaFolder == true)
+				{
 					q.AddNamedParam("@parentfolderid", DBNull.Value);
+				}
 				else
+				{
 					q.AddNamedParam("@parentfolderid", GetParentFolderId(FolderPath));
+				}
 
 				q.AddNamedParam("@mediafolderid", MediaFolderId);
 				
@@ -444,7 +466,7 @@ namespace WaveBox.DataModel.Model
 				if (affected > 0)
 				{
 					// get the id of the previous insert.  weird.
-                    FolderId = itemId;
+					FolderId = itemId;
 					//FolderId = Convert.ToInt32(((SqlDecimal)q.ExecuteScalar()).ToString());
 				}
 			}

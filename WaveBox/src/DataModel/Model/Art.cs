@@ -16,7 +16,7 @@ namespace WaveBox.DataModel.Model
 {
 	public class Art
 	{
-        public static readonly string[] ValidExtensions = { ".jpg", ".jpeg", ".png", ".bmp", ".gif" };
+		public static readonly string[] ValidExtensions = { ".jpg", ".jpeg", ".png", ".bmp", ".gif" };
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 
 		/// <summary>
@@ -47,6 +47,7 @@ namespace WaveBox.DataModel.Model
 
 		public Art()
 		{
+
 		}
 
 		public Art(int artId)
@@ -121,10 +122,12 @@ namespace WaveBox.DataModel.Model
 		}
 
 		public void InsertArt()
-		{			
+		{
 			int? itemId = Item.GenerateItemId(ItemType.Art);
 			if (itemId == null)
+			{
 				return;
+			}
 
 			IDbConnection conn = null;
 			IDataReader reader = null;
@@ -204,7 +207,7 @@ namespace WaveBox.DataModel.Model
 
 				stream = new MemoryStream(data);
 			}
-			catch(TagLib.CorruptFileException e)
+			catch (TagLib.CorruptFileException e)
 			{
 				logger.Info("[ART(1)] " + song.FileName + " has a corrupt tag so can't return the art. " + e);
 			}
@@ -234,7 +237,7 @@ namespace WaveBox.DataModel.Model
 		// Based off of example at http://msdn.microsoft.com/en-us/library/s02tk69a.aspx
 		static string CalcMd5Hash(byte[] input)
 		{
-			using(MD5 md5 = MD5.Create())
+			using (MD5 md5 = MD5.Create())
 			{
 				// Convert the input string to a byte array and compute the hash. 
 				byte[] data = md5.ComputeHash(input);
@@ -257,7 +260,7 @@ namespace WaveBox.DataModel.Model
 
 		static string CalcMd5Hash(Stream input)
 		{
-			using(MD5 md5 = MD5.Create())
+			using (MD5 md5 = MD5.Create())
 			{
 				// Convert the input string to a byte array and compute the hash. 
 				byte[] data = md5.ComputeHash(input);
@@ -285,7 +288,7 @@ namespace WaveBox.DataModel.Model
 				return false;
 			}
 
-            // We don't need to instantiate another folder to know what the folder id is.  This should be known when the method is called.
+			// We don't need to instantiate another folder to know what the folder id is.  This should be known when the method is called.
 
 			//Stopwatch sw = new Stopwatch();
 			long lastModified = Convert.ToInt64(System.IO.File.GetLastWriteTime(filePath).Ticks);
@@ -296,12 +299,12 @@ namespace WaveBox.DataModel.Model
 
 			try
 			{
-                // Turns out that COUNT(*) on large tables is REALLY slow in SQLite because it does a full table search.  I created an index on folder_id(because weirdly enough,
-                // even though it's a primary key, SQLite doesn't automatically make one!  :O).  We'll pull that, and if we get a row back, then we'll know that this thing exists.
+				// Turns out that COUNT(*) on large tables is REALLY slow in SQLite because it does a full table search.  I created an index on folder_id(because weirdly enough,
+				// even though it's a primary key, SQLite doesn't automatically make one!  :O).  We'll pull that, and if we get a row back, then we'll know that this thing exists.
 
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT art_id FROM art WHERE art_last_modified = @lastmod AND art_file_path = @filepath", conn);
-                //IDbCommand q = Database.GetDbCommand("SELECT COUNT(*) AS count FROM song WHERE song_folder_id = @folderid AND song_file_name = @filename AND song_last_modified = @lastmod", conn);
+				//IDbCommand q = Database.GetDbCommand("SELECT COUNT(*) AS count FROM song WHERE song_folder_id = @folderid AND song_file_name = @filename AND song_last_modified = @lastmod", conn);
 
 				q.AddNamedParam("@filepath", filePath);
 				q.AddNamedParam("@lastmod", lastModified);
@@ -316,7 +319,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[MEDIAITEM(1)] " + e);
+				logger.Error("[ART(1)] " + e);
 			}
 			finally
 			{
@@ -404,7 +407,9 @@ namespace WaveBox.DataModel.Model
 		public static int? ArtIdForMd5(string hash)
 		{
 			if ((object)hash == null)
+			{
 				return null;
+			}
 
 			IDbConnection conn = null;
 			IDataReader reader = null;
@@ -427,7 +432,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[DATABASE(3)] ERROR: " + e);
+				logger.Error("[ART(3)] ERROR: " + e);
 			}
 			finally
 			{
@@ -467,7 +472,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[DATABASE(4)] " + e);
+				logger.Error("[ART(4)] " + e);
 			}
 			finally
 			{
@@ -567,7 +572,7 @@ namespace WaveBox.DataModel.Model
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT art_id FROM art WHERE art_id = @art_id AND md5_hash = @md5hash", conn);
 
-                q.AddNamedParam("@folderid", folderId);
+				q.AddNamedParam("@folderid", folderId);
 				q.AddNamedParam("@filename", fileName);
 				q.AddNamedParam("@lastmod", lastModified);
 
@@ -606,7 +611,7 @@ namespace WaveBox.DataModel.Model
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT art_id FROM art WHERE art_id = @art_id AND md5_hash = @md5hash", conn);
 
-                q.AddNamedParam("@folderid", folderId);
+				q.AddNamedParam("@folderid", folderId);
 				q.AddNamedParam("@filename", fileName);
 				q.AddNamedParam("@lastmod", lastModified);
 

@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 namespace WaveBox.DataModel.Model
 {
 	public interface IMediaItem : IItem
-	{	
+	{
 		[JsonProperty("folderId")]
 		int? FolderId { get; set; }
 		

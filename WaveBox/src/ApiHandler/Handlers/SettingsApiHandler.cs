@@ -12,7 +12,7 @@ using NLog;
 namespace WaveBox.ApiHandler
 {
 	class SettingsApiHandler : IApiHandler
-	{		
+	{
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 		

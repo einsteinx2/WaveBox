@@ -14,7 +14,7 @@ using NLog;
 namespace WaveBox.ApiHandler.Handlers
 {
 	public class TranscodeHlsApiHandler : IApiHandler
-	{		
+	{
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 
 		private IHttpProcessor Processor { get; set; }
@@ -28,14 +28,14 @@ namespace WaveBox.ApiHandler.Handlers
 			Processor = processor;
 			Uri = uri;
 		}
-		
+
 		/// <summary>
 		/// Process performs a HLS transcode on a media item
 		/// </summary>
 		public void Process()
 		{
 			logger.Info("[TRANSCODEHLSAPI] Starting HLS transcoding sequence");
-		
+
 			// Try to get the media item id
 			bool success = false;
 			int id = 0;
@@ -43,7 +43,7 @@ namespace WaveBox.ApiHandler.Handlers
 			{
 				success = Int32.TryParse(Uri.Parameters["id"], out id);
 			}
-			
+
 			if (success)
 			{
 				try
@@ -64,7 +64,7 @@ namespace WaveBox.ApiHandler.Handlers
 						item = new Video(id);
 						logger.Info("[TRANSCODEHLSAPI] Preparing video stream: " + item.FileName);
 					}
-					
+
 					// Return an error if none exists
 					if ((item == null) || (!File.Exists(item.FilePath)))
 					{
@@ -86,7 +86,7 @@ namespace WaveBox.ApiHandler.Handlers
 						// This is a multi playlist
 						response = GenerateMultiPlaylist(item, transQualities);
 					}
-				
+
 					Processor.WriteText(response, "application/x-mpegURL");
 					logger.Info("[TRANSCODEHLSAPI] Successfully HLS transcoded file!");
 				}
@@ -218,12 +218,12 @@ namespace WaveBox.ApiHandler.Handlers
 
 			return builder.ToString();
 		}
-		
+
 		private class TranscodeHlsResponse
 		{
 			[JsonProperty("error")]
 			public string Error { get; set; }
-			
+
 			public TranscodeHlsResponse(string error)
 			{
 				Error = error;
