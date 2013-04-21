@@ -88,6 +88,9 @@
     <Reference Include="NLog">
       <HintPath>lib\NLog.dll</HintPath>
     </Reference>
+    <Reference Include="RTP">
+      <HintPath>lib\RTP.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -107,6 +110,7 @@
     <Compile Include="src\ApiHandler\Handlers\SongsApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\StatusApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\StreamApiHandler.cs" />
+    <Compile Include="src\Broadcast\MulticastStreamer.cs" />
     <Compile Include="src\DataModel\FolderScanning\FolderScanOperation.cs" />
     <Compile Include="src\DataModel\FolderScanning\OrphanScanOperation.cs" />
     <Compile Include="src\DataModel\Model\Album.cs" />

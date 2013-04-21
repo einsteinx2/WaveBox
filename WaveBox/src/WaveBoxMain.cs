@@ -14,6 +14,7 @@ using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using WaveBox.DataModel.Model;
 using WaveBox.Transcoding;
+using WaveBox.Broadcast;
 using Mono.Zeroconf;
 using NLog;
 using System.Net;
@@ -208,6 +209,10 @@ namespace WaveBox
             // Start podcast download queue
             PodcastManagement.DownloadQueue.FeedChecks.queueOperation(new FeedCheckOperation(0));
             PodcastManagement.DownloadQueue.FeedChecks.startScanQueue();
+
+			// Start RTP multicast streamer
+			MulticastStreamer broadcast = new MulticastStreamer();
+			broadcast.Start();
 
 			// sleep the main thread so we can go about handling api calls and stuff on other threads.
 			//Thread.Sleep(Timeout.Infinite);
