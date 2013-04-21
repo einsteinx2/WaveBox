@@ -14,7 +14,7 @@ using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using WaveBox.DataModel.Model;
 using WaveBox.Transcoding;
-using WaveBox.Broadcast;
+using WaveBox.Multicast;
 using Mono.Zeroconf;
 using NLog;
 using System.Net;
@@ -38,7 +38,7 @@ namespace WaveBox
 		private HttpServer httpServer;
 
 		// Multicast RTP streamer, which serves up Jukebox to clients
-		private MulticastStreamer broadcast;
+		private MulticastStreamer multicast;
 
 		/// <summary>
 		/// Detects WaveBox's root directory, for storing per-user configuration
@@ -214,8 +214,8 @@ namespace WaveBox
 			PodcastManagement.DownloadQueue.FeedChecks.startScanQueue();
 
 			// Start RTP multicast streamer
-			broadcast = new MulticastStreamer();
-			broadcast.Start();
+			multicast = new MulticastStreamer();
+			multicast.Start();
 
 			// sleep the main thread so we can go about handling api calls and stuff on other threads.
 			//Thread.Sleep(Timeout.Infinite);
@@ -314,7 +314,7 @@ namespace WaveBox
 		public void Stop()
 		{
 			httpServer.Stop();
-			broadcast.Stop();
+			multicast.Stop();
 		}
 
 		/// <summary>
@@ -324,7 +324,7 @@ namespace WaveBox
 		{
 			Stop();
 			StartHTTPServer();
-			broadcast.Start();
+			multicast.Start();
 		}
 	}
 }

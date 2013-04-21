@@ -2,7 +2,7 @@ using System;
 using RTP;
 using NLog;
 
-namespace WaveBox.Broadcast
+namespace WaveBox.Multicast
 {
 	public class MulticastStreamer
 	{
@@ -44,22 +44,22 @@ namespace WaveBox.Broadcast
 		}
 
 		/// <summary>
-		/// Begin broadcasting a RTP multicast stream
+		/// Begin a RTP multicast stream
 		/// </summary>
 		public void Start()
 		{
-			logger.Info("[MULTICASTSTREAMER] Starting RTP broadcast: " + this.ip + ':' + this.port);
+			logger.Info("[MULTICASTSTREAMER] Starting RTP multicast: " + this.ip + ':' + this.port);
 
 			// Initialize multicast sender
 			this.sender = new MulticastSender(this.ip, this.port, this.ttl);
 		}
 
 		/// <summary>
-		/// Stop broadcasting a RTP multicast stream
+		/// Stop a RTP multicast stream
 		/// </summary>
 		public void Stop()
 		{
-			logger.Info("[MULTICASTSTREAMER] Stopping RTP broadcast");
+			logger.Info("[MULTICASTSTREAMER] Stopping RTP multicast");
 
 			// Stop multicast sender
 			this.sender.Close();
