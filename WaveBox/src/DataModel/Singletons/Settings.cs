@@ -53,8 +53,6 @@ namespace WaveBox.DataModel.Singletons
 			// Generate Folder objects from the media folders
 			mediaFolders = PopulateMediaFolders();
 
-
-
 			dynamic json = JsonConvert.DeserializeObject(configFile);
 			bool settingsChanged = false;
 			
@@ -64,7 +62,7 @@ namespace WaveBox.DataModel.Singletons
 				settingsModel.PodcastFolder = podcastFolderTemp;
 				settingsChanged = true;
 			}
-			catch {}
+			catch { }
 
 			logger.Info("[SETTINGS] settings changed: " + settingsChanged + " | port: " + settingsModel.Port);
 		}
@@ -84,8 +82,8 @@ namespace WaveBox.DataModel.Singletons
 					settingsChanged = true;
 				}
 			}
-			catch {}
-			 
+			catch { }
+
 			try
 			{
 				if (json.mediaFolders != null)
@@ -100,8 +98,8 @@ namespace WaveBox.DataModel.Singletons
 					settingsChanged = true;
 				}
 			}
-			catch {}
-		
+			catch { }
+
 			try
 			{
 				string podcastFolderTemp = json.podcastFolder;
@@ -111,7 +109,7 @@ namespace WaveBox.DataModel.Singletons
 					settingsChanged = true;
 				}
 			}
-			catch {}
+			catch { }
 
 			try
 			{
@@ -122,7 +120,7 @@ namespace WaveBox.DataModel.Singletons
 					settingsChanged = true;
 				}
 			}
-			catch {}
+			catch { }
 
 			try
 			{
@@ -133,7 +131,7 @@ namespace WaveBox.DataModel.Singletons
 					settingsChanged = true;
 				}
 			}
-			catch {}
+			catch { }
 
 			try
 			{
@@ -148,8 +146,8 @@ namespace WaveBox.DataModel.Singletons
 					settingsChanged = true;
 				}
 			}
-			catch {}
-			
+			catch { }
+
 			// Now write the settings to disk
 			if (settingsChanged)
 			{
@@ -168,25 +166,25 @@ namespace WaveBox.DataModel.Singletons
 		}
 
 		public static void SettingsSetup()
-        {
-            if (!File.Exists(SettingsPath()))
-            {
-                try
-                {
-                    logger.Info("[SETTINGS] " + "Setting file doesn't exist; Creating it. (WaveBox.conf)");
-                    StreamReader settingsTemplate = new StreamReader(SettingsTemplatePath());
-                    StreamWriter settingsOut = new StreamWriter(SettingsPath());
+		{
+			if (!File.Exists(SettingsPath()))
+			{
+				try
+				{
+					logger.Info("[SETTINGS] " + "Setting file doesn't exist; Creating it. (WaveBox.conf)");
+					StreamReader settingsTemplate = new StreamReader(SettingsTemplatePath());
+					StreamWriter settingsOut = new StreamWriter(SettingsPath());
 
-                    settingsOut.Write(settingsTemplate.ReadToEnd());
+					settingsOut.Write(settingsTemplate.ReadToEnd());
 
-                    settingsTemplate.Close();
-                    settingsOut.Close();
-                } 
+					settingsTemplate.Close();
+					settingsOut.Close();
+				} 
 				catch (Exception e)
-                {
-                    logger.Info("[SETTINGS(1)] " + e);
-                }
-            }
+				{
+					logger.Info("[SETTINGS(1)] " + e);
+				}
+			}
 
 			Reload();
 		}
@@ -197,106 +195,109 @@ namespace WaveBox.DataModel.Singletons
 
 			foreach (string mediaFolderString in settingsModel.MediaFolders)
 			{
-                if (Directory.Exists(mediaFolderString))
-                {
-    				Folder mediaFolder = new Folder(mediaFolderString, true);
-    				if (mediaFolder.FolderId == null)
-    				{
-    					mediaFolder.InsertFolder(true);
-    				}
-    				folders.Add(mediaFolder);
-                }
-                else 
-                {
-                    logger.Info(String.Format("Media folder does not exist: {0}", mediaFolderString));
-                }
+				if (Directory.Exists(mediaFolderString))
+				{
+					Folder mediaFolder = new Folder(mediaFolderString, true);
+					if (mediaFolder.FolderId == null)
+					{
+						mediaFolder.InsertFolder(true);
+					}
+					folders.Add(mediaFolder);
+				}
+				else 
+				{
+					logger.Info(String.Format("Media folder does not exist: {0}", mediaFolderString));
+				}
 			}
 
 			return folders;
 		}
 
-        private static string RemoveJsonComments(StreamReader reader)
-        {
-            StringBuilder js = new StringBuilder();
-            string line = null;
-            bool inBlockComment = false;
-            bool inStringLiteral = false;
+		private static string RemoveJsonComments(StreamReader reader)
+		{
+			StringBuilder js = new StringBuilder();
+			string line = null;
+			bool inBlockComment = false;
+			bool inStringLiteral = false;
 
-            Action<char> AppendDiscardingWhitespace = (c) => 
-            {
-                if(c != '\t' && c != ' ') js.Append(c);
-            };
+			Action<char> AppendDiscardingWhitespace = (c) => 
+			{
+				if(c != '\t' && c != ' ') js.Append(c);
+			};
 
-            while ((line = reader.ReadLine()) != null)
-            {
-                char curr, next;
-                for(int i = 0; i < line.Length; i++)
-                {
-                    curr = line[i];
+			while ((line = reader.ReadLine()) != null)
+			{
+				char curr, next;
+				for (int i = 0; i < line.Length; i++)
+				{
+					curr = line[i];
 
-                    try
-                    {
-                        next = line[i + 1];
-                    }
-                    catch
-                    {
-                        //curr == '"' || curr == ','
-                        if(line.Length == 1 || !inBlockComment)
-                            AppendDiscardingWhitespace(curr);
-                        break;
-                    }
+					try
+					{
+						next = line[i + 1];
+					}
+					catch
+					{
+						//curr == '"' || curr == ','
+						if (line.Length == 1 || !inBlockComment)
+						{
+							AppendDiscardingWhitespace(curr);
+						}
+						break;
+					}
 
-                    if(!inBlockComment)
-                    {
-                        if(!inStringLiteral)
-                        {
-                            if(curr == '"')
-                            {
-                                inStringLiteral = true;
-                            }
+					if (!inBlockComment)
+					{
+						if (!inStringLiteral)
+						{
+							if (curr == '"')
+							{
+								inStringLiteral = true;
+							}
+							else if (curr == '/')
+							{
+								// this is a line comment. throw out the rest of the line.
+								if (next == '/')
+								{
+									break;
+								}
+								// this is a block comment.  flip the block comment switch and continue to the next char
+								if (next == '*')
+								{
+									inBlockComment = true;
+									continue;
+								}
+							}
 
-                            else if(curr == '/')
-                            {
-                                // this is a line comment.  throw out the rest of the line.
-                                if(next == '/') break;
-
-                                // this is a block comment.  flip the block comment switch and continue to the next char
-                                if(next == '*')
-                                {
-                                    inBlockComment = true;
-                                    continue;
-                                }
-                            }
-
-                            // if the combination of this char and the next char doesn't make a comment token, append to the string and continue.
-                            AppendDiscardingWhitespace(curr);
-                            continue;
-                        }
-                        else
-                        {
-                            if(curr == '"')
-                            {
-                                inStringLiteral = false;
-                            }
-                            js.Append(curr);
-                            continue;
-                        }
-                    }
-                    else 
-                    {
-                        // if we are in a block comment, make sure that we shouldn't be ending the block comment
-                        if(curr == '*' && next == '/')
-                        {
-                            // advance the read position so we don't write the /
-                            i++;
-                            inBlockComment = false;
-                            continue;
-                        }
-                    }
-                }
-            }
+							// if the combination of this char and the next char doesn't make a comment token, append to the string and continue.
+							AppendDiscardingWhitespace(curr);
+							continue;
+						}
+						else
+						{
+							if (curr == '"')
+							{
+								inStringLiteral = false;
+							}
+							js.Append(curr);
+							continue;
+						}
+					}
+					else 
+					{
+						// if we are in a block comment, make sure that we shouldn't be ending the block comment
+						if (curr == '*' && next == '/')
+						{
+							// advance the read position so we don't write the /
+							i++;
+							inBlockComment = false;
+							continue;
+						}
+					}
+				}
+			}
 			return js.ToString();
-        }
+		}
 	}
 
 	public class SettingsData

@@ -25,7 +25,7 @@ namespace WaveBox.ApiHandler
 				{
 					return false;
 				}
-			  	
+
 				// Lowercase and trim whitespace
 				boolString = boolString.ToLower();
 				boolString = boolString.Trim();

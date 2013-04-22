@@ -5,7 +5,7 @@ using NLog;
 namespace WaveBox.Transcoding
 {
 	public class FFMpegMpegtsTranscoder : VideoTranscoder
-	{		
+	{
 		//private static Logger logger = LogManager.GetCurrentClassLogger();
 
 		public override TranscodeType Type { get { return TranscodeType.MPEGTS; } }
@@ -20,6 +20,7 @@ namespace WaveBox.Transcoding
 
 		public FFMpegMpegtsTranscoder(IMediaItem item, uint quality, bool isDirect, uint? width, uint? height, bool maintainAspect, uint offsetSeconds, uint lengthSeconds) : base(item, quality, isDirect, width, height, maintainAspect, offsetSeconds, lengthSeconds)
 		{
+
 		}
 
 		protected override string GenerateArguments(uint abitrate, uint vbitrate, uint width, uint height)
@@ -44,7 +45,9 @@ namespace WaveBox.Transcoding
 			get
 			{
 				if ((object)Quality == null)
+				{
 					return null;
+				}
 				
 				return (uint)((double)TotalBitrateForQuality(Quality) * 1.5);
 			}

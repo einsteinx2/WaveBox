@@ -8,15 +8,15 @@ namespace WaveBox.DataModel.Model
 {
 	public enum FileType
 	{
-        AAC = 1, // Starts with 1 for database compatibility
-        MP3 = 2,
-        MPC = 3,
-        OGG = 4,
-        WMA = 5,
-        ALAC = 6,
-        APE = 7,
-        FLAC = 8,
-        WV = 9,
+		AAC = 1, // Starts with 1 for database compatibility
+		MP3 = 2,
+		MPC = 3,
+		OGG = 4,
+		WMA = 5,
+		ALAC = 6,
+		APE = 7,
+		FLAC = 8,
+		WV = 9,
 		MP4 = 10,
 		MKV = 11,
 		AVI = 12,
@@ -31,7 +31,7 @@ namespace WaveBox.DataModel.Model
 		{
 			logger.Info("format string: " + formatString);
 
-            // Lossy codecs
+			// Lossy codecs
 			if (formatString == "MPEG-4 Audio (mp4a)")
 				return FileType.AAC;
 			else if (formatString == "MPEG Version 1 Audio, Layer 3 VBR" || formatString == "MPEG Version 1 Audio, Layer 3")
@@ -42,19 +42,19 @@ namespace WaveBox.DataModel.Model
 				return FileType.OGG;
 			else if (formatString == "Microsoft WMA2 Audio" || formatString == "Microsoft Lossless WMA Audio")
 				return FileType.WMA;
-            // Lossless codecs; reordered slightly to prevent ArgumentOutOfRange exception on substring()
+			// Lossless codecs; reordered slightly to prevent ArgumentOutOfRange exception on substring()
 			else if (formatString == "MPEG-4 Audio (alac)")
 				return FileType.ALAC;
 			else if (formatString == "Flac Audio")
 				return FileType.FLAC;
-            // These two use substrings because their version numbers constantly increment with each release
+			// These two use substrings because their version numbers constantly increment with each release
 			else if (formatString.Contains("WavPack"))
 				return FileType.WV;
 			else if (formatString.Contains("Monkey's Audio"))
 				return FileType.APE;
 			else if (formatString.Contains("MPEG-4 Video (avc1)"))
 				return FileType.MP4;
-            else
+			else
 				return FileType.Unknown;
 		}*/
 
@@ -62,33 +62,50 @@ namespace WaveBox.DataModel.Model
 		{
 			//logger.Info("mime type: " + mimeType);
 
-			// Lossy codecs
-			if (mimeType == "taglib/m4a" || mimeType == "taglib/aac") 
-				return FileType.AAC;
-			else if (mimeType == "taglib/mp3")
-				return FileType.MP3;
-			else if (mimeType == "taglib/mpc")
-				return FileType.MPC;
-			else if (mimeType == "taglib/oggo")
-				return FileType.OGG;
-			else if (mimeType == "taglib/wma")
-				return FileType.WMA;
-			//else if (formatString == "MPEG-4 Audio (alac)")
-			//	return FileType.ALAC;
-			else if (mimeType == "taglib/flac")
-				return FileType.FLAC;
-			else if (mimeType == "taglib/wv")
-				return FileType.WV;
-			else if (mimeType == "taglib/ape")
-				return FileType.APE;
-			else if (mimeType.Contains("taglib/mp4"))
+			// Try audio types
+			switch (mimeType)
+			{
+				case "taglib/m4a":
+				case "taglib/aac":
+					return FileType.AAC;
+				case "taglib/mp3":
+					return FileType.MP3;
+				case "taglib/mpc":
+					return FileType.MPC;
+				case "taglib/oggo":
+					return FileType.OGG;
+				case "taglib/wma":
+					return FileType.WMA;
+				/*
+				case "MPEG-4 Audio (alac)":
+					return FileType.ALAC;
+				*/
+				case "taglib/flac":
+					return FileType.FLAC;
+				case "taglib/wv":
+					return FileType.WV;
+				case "taglib/ape":
+					return FileType.APE;
+				default:
+					break;
+			}
+
+			// Then video types
+			if (mimeType.Contains("taglib/mp4"))
+			{
 				return FileType.MP4;
+			}
 			else if (mimeType.Contains("taglib/mkv"))
+			{
 				return FileType.MKV;
+			}
 			else if (mimeType.Contains("taglib/avi"))
+			{
 				return FileType.AVI;
-			else
-				return FileType.Unknown;
+			}
+
+			// Else, unknown!
+			return FileType.Unknown;
 		}
 
 		public static string MimeType(this FileType ft)
@@ -111,7 +128,6 @@ namespace WaveBox.DataModel.Model
 				default: return "text/plain";
 			}
 		}
-
 
 		public static FileType FileTypeForId(this FileType ft, int id)
 		{

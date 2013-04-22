@@ -11,7 +11,7 @@ using NLog;
 namespace WaveBox.ApiHandler.Handlers
 {
 	class ArtistsApiHandler : IApiHandler
-	{		
+	{
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 
 		private IHttpProcessor Processor { get; set; }
@@ -30,31 +30,31 @@ namespace WaveBox.ApiHandler.Handlers
 		/// Process returns an ArtistsResponse containing a list of artists, albums, and songs
 		/// </summary>
 		public void Process()
-        {
+		{
 			// Return lists to be passed as JSON
-            List<Artist> listOfArtists = new List<Artist>();
-            List<Song> listOfSongs = new List<Song>();
-            List<Album> listOfAlbums = new List<Album>();
+			List<Artist> listOfArtists = new List<Artist>();
+			List<Song> listOfSongs = new List<Song>();
+			List<Album> listOfAlbums = new List<Album>();
 
 			// Last.fm integration
 			// Info regarding artist
-            string lastfmInfo = null;
+			string lastfmInfo = null;
 			// Enable/disable Last.fm info
-            bool includeLfm = false;
+			bool includeLfm = false;
 
-            // Try to get the artist id
-            bool success = false;
-            int id = 0;
-            if (Uri.Parameters.ContainsKey("id"))
-            {
-                success = Int32.TryParse(Uri.Parameters["id"], out id);
-            }
+			// Try to get the artist id
+			bool success = false;
+			int id = 0;
+			if (Uri.Parameters.ContainsKey("id"))
+			{
+				success = Int32.TryParse(Uri.Parameters["id"], out id);
+			}
 
 			// Optionally use Last.fm to gather information
-            if (Uri.Parameters.ContainsKey("lastfmInfo"))
-            {
-                bool.TryParse(Uri.Parameters["lastfmInfo"], out includeLfm);
-            }
+			if (Uri.Parameters.ContainsKey("lastfmInfo"))
+			{
+				bool.TryParse(Uri.Parameters["lastfmInfo"], out includeLfm);
+			}
 
 			// On valid key, return a specific artist, and a list of their albums
 			if (success)
@@ -65,9 +65,9 @@ namespace WaveBox.ApiHandler.Handlers
 
 				// Grab Last.fm data if requested
 				if (includeLfm == true)
-                {
-                    lastfmInfo = Lastfm.GetArtistInfo(artist);
-                }
+				{
+					lastfmInfo = Lastfm.GetArtistInfo(artist);
+				}
 
 				// If requested, include list of songs in response as well
 				string includeSongs;
@@ -109,8 +109,8 @@ namespace WaveBox.ApiHandler.Handlers
 			[JsonProperty("songs")]
 			public List<Song> Songs { get; set; }
 
-            [JsonProperty("lastfmInfo")]
-            public dynamic LastfmInfo { get; set; }
+			[JsonProperty("lastfmInfo")]
+			public dynamic LastfmInfo { get; set; }
 
 			public ArtistsResponse(string error, List<Artist> artists, List<Album> albums, List<Song> songs)
 			{
@@ -118,27 +118,27 @@ namespace WaveBox.ApiHandler.Handlers
 				Artists = artists;
 				Songs = songs;
 				Albums = albums;
-                LastfmInfo = null;
+				LastfmInfo = null;
 			}
 
-            public ArtistsResponse(string error, List<Artist> artists, List<Album> albums, List<Song> songs, string lastfmInfo)
-            {
-                Error = error;
-                Artists = artists;
-                Songs = songs;
-                Albums = albums;
+			public ArtistsResponse(string error, List<Artist> artists, List<Album> albums, List<Song> songs, string lastfmInfo)
+			{
+				Error = error;
+				Artists = artists;
+				Songs = songs;
+				Albums = albums;
 
 				// Deserialize Last.fm info if requested
-                if (lastfmInfo != null)
-                {
-                    var jsonParse = JsonConvert.DeserializeObject(lastfmInfo);
-                    LastfmInfo = jsonParse;
-                }
-                else
+				if (lastfmInfo != null)
+				{
+					var jsonParse = JsonConvert.DeserializeObject(lastfmInfo);
+					LastfmInfo = jsonParse;
+				}
+				else
 				{
 					LastfmInfo = null;
 				}
-            }
+			}
 		}
 	}
 }

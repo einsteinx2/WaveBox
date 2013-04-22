@@ -14,14 +14,14 @@ using NLog;
 
 namespace WaveBox.DataModel.FolderScanning
 {
-    public class FolderScanOperation : AbstractOperation
-    {
+	public class FolderScanOperation : AbstractOperation
+	{
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 
-        public override string OperationType { get { return String.Format ("FolderScanOperation:{0}", FolderPath); } }
+		public override string OperationType { get { return String.Format ("FolderScanOperation:{0}", FolderPath); } }
 
-        private string folderPath;
-        public string FolderPath { get { return folderPath; } }
+		private string folderPath;
+		public string FolderPath { get { return folderPath; } }
 
 		int testNumberOfFoldersInserted = 0;
 		Stopwatch testFolderObjCreateTime = new Stopwatch();
@@ -29,14 +29,14 @@ namespace WaveBox.DataModel.FolderScanning
 		Stopwatch testMediaItemNeedsUpdatingTime = new Stopwatch();
 		Stopwatch testIsExtensionValidTime = new Stopwatch();
 
-        public FolderScanOperation(string path, int secondsDelay) : base(secondsDelay)
-        {
-            folderPath = path;
-        }
+		public FolderScanOperation(string path, int secondsDelay) : base(secondsDelay)
+		{
+			folderPath = path;
+		}
 
-        public override void Start()
-        {
-            ProcessFolder(FolderPath);
+		public override void Start()
+		{
+			ProcessFolder(FolderPath);
 
 			logger.Info("------------FOLDER SCAN --------------------");
 			logger.Info("folders inserted: " + testNumberOfFoldersInserted);
@@ -47,143 +47,147 @@ namespace WaveBox.DataModel.FolderScanning
 			long total = testFolderObjCreateTime.ElapsedMilliseconds + testGetDirectoriesTime.ElapsedMilliseconds + testMediaItemNeedsUpdatingTime.ElapsedMilliseconds + testIsExtensionValidTime.ElapsedMilliseconds;
 			logger.Info("total: " + total + "ms = " + total / 1000 + "s");
 			logger.Info("--------------------------------------------");
-        }
+		}
 
-        public void ProcessFolder(int folderId)
-        {
+		public void ProcessFolder(int folderId)
+		{
 			Folder folder = new Folder(folderId);
-            ProcessFolder(folder.FolderPath);
-        }
+			ProcessFolder(folder.FolderPath);
+		}
 
-        public void ProcessFolder(string folderPath)
-        {
-            if (isRestart)
-            {
-                return;
-            }
+		public void ProcessFolder(string folderPath)
+		{
+			if (isRestart)
+			{
+				return;
+			}
 
-            try
-            {
-                // if the file is a directory
-                if (Directory.Exists(folderPath))
-                {
+			try
+			{
+				// if the file is a directory
+				if (Directory.Exists(folderPath))
+				{
 					testFolderObjCreateTime.Start();
-                    Folder topFolder = new Folder(folderPath);
+					Folder topFolder = new Folder(folderPath);
 					testFolderObjCreateTime.Stop();
-                    //logger.Info("scanning " + topFolder.FolderName + "  id: " + topFolder.FolderId);
+					//logger.Info("scanning " + topFolder.FolderName + "  id: " + topFolder.FolderId);
 
-                    if (topFolder.FolderId == null)
-                    {
+					if (topFolder.FolderId == null)
+					{
 						testNumberOfFoldersInserted++;
-                        topFolder.InsertFolder(false);
-                    }
+						topFolder.InsertFolder(false);
+					}
 
-//					// Check the folder art
-//					string artPath = topFolder.ArtPath;
-//					if (Art.FileNeedsUpdating(artPath, topFolder.FolderId))
-//					{
-//						// Find the old art id, if it exists
-//						int? oldArtId = topFolder.ArtId;
-//						int? newArtId = new Art(artPath).ArtId;
-//
-//						if ((object)oldArtId == null)
-//						{
-//							// Insert the relationship
-//							Art.UpdateArtItemRelationship(newArtId, topFolder.FolderId, true);
-//						}
-//						else
-//						{
-//							Art oldArt = new Art((int)oldArtId);
-//
-//							// Check if the previous folder art was actually from embedded tag art
-//							if ((object)oldArt.FilePath == null)
-//							{
-//								// This was embedded tag art, so only update the folder's relationship
-//								Art.UpdateArtItemRelationship(newArtId, topFolder.FolderId, true);
-//							}
-//							else
-//							{
-//								// Update any existing references, that would include both this folder
-//								// and any children that were using this art in lieu of embedded art
-//								Art.UpdateItemsToNewArtId(oldArtId, newArtId);
-//							}
-//						}
-//					}
+					/*
+					// Check the folder art
+					string artPath = topFolder.ArtPath;
+					if (Art.FileNeedsUpdating(artPath, topFolder.FolderId))
+					{
+						// Find the old art id, if it exists
+						int? oldArtId = topFolder.ArtId;
+						int? newArtId = new Art(artPath).ArtId;
 
-                    //Stopwatch sw = new Stopwatch();
+						if ((object)oldArtId == null)
+						{
+							// Insert the relationship
+							Art.UpdateArtItemRelationship(newArtId, topFolder.FolderId, true);
+						}
+						else
+						{
+							Art oldArt = new Art((int)oldArtId);
+
+							// Check if the previous folder art was actually from embedded tag art
+							if ((object)oldArt.FilePath == null)
+							{
+								// This was embedded tag art, so only update the folder's relationship
+								Art.UpdateArtItemRelationship(newArtId, topFolder.FolderId, true);
+							}
+							else
+							{
+								// Update any existing references, that would include both this folder
+								// and any children that were using this art in lieu of embedded art
+								Art.UpdateItemsToNewArtId(oldArtId, newArtId);
+							}
+						}
+					}
+					*/
+
+					//Stopwatch sw = new Stopwatch();
 					testGetDirectoriesTime.Start();
 					string[] directories = Directory.GetDirectories(folderPath);
 					testGetDirectoriesTime.Stop();
-                    foreach (string subfolder in directories)
-                    {
-                        if (!(subfolder.Contains(".AppleDouble")))
-                        {
+					foreach (string subfolder in directories)
+					{
+						if (!(subfolder.Contains(".AppleDouble")))
+						{
 							testFolderObjCreateTime.Start();
-                            Folder folder = new Folder(subfolder);
+							Folder folder = new Folder(subfolder);
 							testFolderObjCreateTime.Stop();
 
-                            // if the folder isn't already in the database, add it.
-                            if (folder.FolderId == null)
-                            {
+							// if the folder isn't already in the database, add it.
+							if (folder.FolderId == null)
+							{
 								testNumberOfFoldersInserted++;
-                                folder.InsertFolder(false);
-                            }
-                            //sw.Start();
-                            ProcessFolder(subfolder);
-                            //logger.Info("ProcessFolder ({0}) took {1}ms", subfolder, sw.ElapsedMilliseconds);
-                            //sw.Reset();
-                        }
-                    }
-                    //sw.Stop();
+								folder.InsertFolder(false);
+							}
+							//sw.Start();
+							ProcessFolder(subfolder);
+							//logger.Info("ProcessFolder ({0}) took {1}ms", subfolder, sw.ElapsedMilliseconds);
+							//sw.Reset();
+						}
+					}
+					/*
+					sw.Stop();
 
-                    //sw.Start();
-                    /*foreach (string currentFile in Directory.GetFiles(folderPath))
-                    {
-                    	ProcessFile(currentFile, topFolder.FolderId);
-                    }*/
+					sw.Start();
+					foreach (string currentFile in Directory.GetFiles(folderPath))
+					{
+						ProcessFile(currentFile, topFolder.FolderId);
+					}
 
-                    //sw.Stop();
+					sw.Stop();
 
-                    //Parallel.ForEach(Directory.GetDirectories(topFile.FullName), currentFile =>
-                    //    {
-                    //        if (!(currentFile.Contains(".AppleDouble")))
-                    //        {
-                    //            Folder folder = new Folder(currentFile);
-                    //
-                    //            // if the folder isn't already in the database, add it.
-                    //            if (folder.FolderId == 0)
-                    //            {
-                    //                folder.addToDatabase(false);
-                    //            }
-                    //            processFolder(currentFile);
-                    //        }
-                    //    });
+					Parallel.ForEach(Directory.GetDirectories(topFile.FullName), currentFile =>
+						{
+							if (!(currentFile.Contains(".AppleDouble")))
+							{
+								Folder folder = new Folder(currentFile);
 
-                    Parallel.ForEach(Directory.GetFiles(folderPath), currentFile =>
-                        {
-                            ProcessFile(currentFile, topFolder.FolderId);
-                        });
-                }
-            }
-            catch (FileNotFoundException e)
-            {
+								 // if the folder isn't already in the database, add it.
+								if (folder.FolderId == 0)
+								{
+									folder.addToDatabase(false);
+								}
+								processFolder(currentFile);
+							}
+						});
+					*/
+
+					Parallel.ForEach(Directory.GetFiles(folderPath), currentFile =>
+						{
+							ProcessFile(currentFile, topFolder.FolderId);
+						});
+				}
+			}
+			catch (FileNotFoundException e)
+			{
 				logger.Error("\t" + "[FOLDERSCAN(1)] \"" + folderPath + "\" : Directory does not exist. " + e);
-            }
-            catch (DirectoryNotFoundException e)
-            {
+			}
+			catch (DirectoryNotFoundException e)
+			{
 				logger.Error("\t" + "[FOLDERSCAN(2)] \"" + folderPath + "\" : Directory does not exist. " + e);
-            }
-            catch (IOException e)
-            {
+			}
+			catch (IOException e)
+			{
 				logger.Error("\t" + "[FOLDERSCAN(3)] \"" + folderPath + "\" : " + e);
-            }
-            catch (Exception e)
-            {
+			}
+			catch (Exception e)
+			{
 				logger.Error("\t" + "[FOLDERSCAN(4)] \"" + folderPath + "\" : Error checking to see if the file was a directory: " + e);
-            }
-        }
+			}
+		}
 
-        public void ProcessFile(string file, int? folderId)
+		public void ProcessFile(string file, int? folderId)
 		{
 			if (isRestart)
 			{
@@ -209,7 +213,7 @@ namespace WaveBox.DataModel.FolderScanning
 					if (needsUpdating)
 					{
 						logger.Info("[FOLDERSCAN] " + "File needs updating: " + file);
-		                
+						
 						//sw.Start();
 						TagLib.File f = null;
 						try
@@ -224,7 +228,7 @@ namespace WaveBox.DataModel.FolderScanning
 						}
 						catch(Exception e)
 						{
-							logger.Error("[FOLDERSCAN(6)] " + "Error processing file " + file + ":  " + e);
+							logger.Error("[FOLDERSCAN(6)] " + "Error processing file " + file + ":	" + e);
 						}
 						//logger.Info("Get tag: {0} ms", sw.ElapsedMilliseconds);
 
@@ -246,10 +250,10 @@ namespace WaveBox.DataModel.FolderScanning
 								}
 								else if (itemId != null)
 								{
-                                    var oldSong = new Song((int)itemId);
-                                    var newSong = new Song(file, folderId, f);
-                                    newSong.ItemId = oldSong.ItemId;
-                                    newSong.InsertMediaItem();
+									var oldSong = new Song((int)itemId);
+									var newSong = new Song(file, folderId, f);
+									newSong.ItemId = oldSong.ItemId;
+									newSong.InsertMediaItem();
 								}
 							}
 							else if (type == ItemType.Video)
@@ -266,77 +270,77 @@ namespace WaveBox.DataModel.FolderScanning
 						}
 					}
 				}
-                else if (type == ItemType.Art)
-                {
-                    if(Art.FileNeedsUpdating(file, folderId))
-                    {
-                        var folder = new Folder(folderId);
+				else if (type == ItemType.Art)
+				{
+					if (Art.FileNeedsUpdating(file, folderId))
+					{
+						var folder = new Folder(folderId);
 
-                        // Find the old art id, if it exists
-                        int? oldArtId = folder.ArtId;
-                        int? newArtId = new Art(file).ArtId;
-                        
-                        if ((object)oldArtId == null)
-                        {
-                            Console.WriteLine("There was no old art id");
-                            // Insert the relationship
-                            Art.UpdateArtItemRelationship(newArtId, folder.FolderId, true);
+						// Find the old art id, if it exists
+						int? oldArtId = folder.ArtId;
+						int? newArtId = new Art(file).ArtId;
+						
+						if ((object)oldArtId == null)
+						{
+							Console.WriteLine("There was no old art id");
+							// Insert the relationship
+							Art.UpdateArtItemRelationship(newArtId, folder.FolderId, true);
 
-                            // If there was no old art id, there will be no items that have said non-existent art id.
-                            //Art.UpdateItemsToNewArtId(oldArtId, newArtId);
-                        }
-                        else
-                        {
-                            Console.WriteLine("There was an old art id");
+							// If there was no old art id, there will be no items that have said non-existent art id.
+							//Art.UpdateItemsToNewArtId(oldArtId, newArtId);
+						}
+						else
+						{
+							Console.WriteLine("There was an old art id");
 
-                            Art oldArt = new Art((int)oldArtId);
-                            
-                            // Check if the previous folder art was actually from embedded tag art
-                            if ((object)oldArt.FilePath == null)
-                            {
-                                // This was embedded tag art, so only update the folder's relationship
-                                Console.WriteLine("It was embedded art, {0}, newArtId: {1}, folderId: {2}", Art.UpdateArtItemRelationship(newArtId, folder.FolderId, true), newArtId, folder.FolderId);
-                            }
-                            else
-                            {
-                                // Update any existing references, that would include both this folder
-                                // and any children that were using this art in lieu of embedded art
-                                Art.UpdateItemsToNewArtId(oldArtId, newArtId);
-                            }
-                        }
+							Art oldArt = new Art((int)oldArtId);
+							
+							// Check if the previous folder art was actually from embedded tag art
+							if ((object)oldArt.FilePath == null)
+							{
+								// This was embedded tag art, so only update the folder's relationship
+								Console.WriteLine("It was embedded art, {0}, newArtId: {1}, folderId: {2}", Art.UpdateArtItemRelationship(newArtId, folder.FolderId, true), newArtId, folder.FolderId);
+							}
+							else
+							{
+								// Update any existing references, that would include both this folder
+								// and any children that were using this art in lieu of embedded art
+								Art.UpdateItemsToNewArtId(oldArtId, newArtId);
+							}
+						}
 
-                        // Add this art to any media items in this folder which have no art.
-                        var items = folder.ListOfMediaItems();
-                        
-                        foreach(MediaItem m in items)
-                        {
-                            if(m.ArtId == null)
-                            {
-                                logger.Info("Updating art id for item {0}. ({1} -> {2})", m.ItemId, m.ArtId == null ? "null" : m.ArtId.ToString(), newArtId);
-                                Art.UpdateArtItemRelationship(newArtId, m.ItemId, false);
-                            }
-                        }
+						// Add this art to any media items in this folder which have no art.
+						var items = folder.ListOfMediaItems();
+						
+						foreach(MediaItem m in items)
+						{
+							if(m.ArtId == null)
+							{
+								logger.Info("Updating art id for item {0}. ({1} -> {2})", m.ItemId, m.ArtId == null ? "null" : m.ArtId.ToString(), newArtId);
+								Art.UpdateArtItemRelationship(newArtId, m.ItemId, false);
+							}
+						}
 
-                        Console.WriteLine("Art needs updating: {0}", folder.ArtPath);
-                    }
-                }
+						Console.WriteLine("Art needs updating: {0}", folder.ArtPath);
+					}
+				}
 			}
-            catch (FileNotFoundException e)
-            {
+			catch (FileNotFoundException e)
+			{
 				logger.Error("\t" + "[FOLDERSCAN(5)] \"" + file + "\" : Directory does not exist. " + e);
-            }
-            catch (DirectoryNotFoundException e)
-            {
+			}
+			catch (DirectoryNotFoundException e)
+			{
 				logger.Error("\t" + "[FOLDERSCAN(6)] \"" + file + "\" : Directory does not exist. " + e);
-            }
-            catch (IOException e)
-            {
+			}
+			catch (IOException e)
+			{
 				logger.Error("\t" + "[FOLDERSCAN(7)] \"" + file + "\" : " + e);
-            }
-            catch (Exception e)
-            {
+			}
+			catch (Exception e)
+			{
 				logger.Error("\t" + "[FOLDERSCAN(8)] \"" + file + "\" : " + e);
-            }
+			}
 		}
 	}
 }

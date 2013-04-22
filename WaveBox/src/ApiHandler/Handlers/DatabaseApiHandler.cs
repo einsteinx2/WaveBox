@@ -13,7 +13,7 @@ using NLog;
 namespace WaveBox.ApiHandler.Handlers
 {
 	class DatabaseApiHandler : IApiHandler
-	{		
+	{
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 
 		private IHttpProcessor Processor { get; set; }
@@ -33,7 +33,7 @@ namespace WaveBox.ApiHandler.Handlers
 		/// the local copy of the media database
 		/// </summary>
 		public void Process()
-		{	
+		{
 			// Try to get the update time
 			string id = Uri.Parameters.ContainsKey("id") ? Uri.Parameters["id"] : null;
 
@@ -134,7 +134,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 			}
 		}
-		
+
 		private class DatabaseResponse
 		{
 			[JsonProperty("error")]

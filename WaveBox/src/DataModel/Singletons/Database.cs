@@ -105,7 +105,9 @@ namespace WaveBox.DataModel.Singletons
 		public static IDbConnection GetDbConnection(string dbName)
 		{
 			if ((object)dbName == null)
+			{
 				return null;
+			}
 
 			string connString = "Data Source=" + dbName + ";Version=3;Pooling=True;Max Pool Size=100;synchronous=OFF;";
 			IDbConnection conn = new SQLiteConnection(connString);
@@ -139,7 +141,7 @@ namespace WaveBox.DataModel.Singletons
 		//private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 		public static int ExecuteNonQueryLogged(this IDbCommand command)
 		{
-			lock(dbBackupLock)
+			lock (dbBackupLock)
 			{
 				int result = command.ExecuteNonQuery();
 
@@ -148,18 +150,18 @@ namespace WaveBox.DataModel.Singletons
 					// Only log successful queries
 					IDataParameterCollection parameters = command.Parameters;
 					List<object> values = new List<object>();
-					
+
 					// Format the query for saving
 					string query = command.CommandText;
 					foreach (IDbDataParameter dbParam in parameters)
 					{
 						// Replace parameter names with ?'s
 						query = query.Replace(dbParam.ParameterName, "?");
-						
+
 						// Add the values to the array
 						values.Add(dbParam.Value);
 					}
-					
+
 					// Log the query
 					IDbConnection conn = null;
 					try
@@ -169,7 +171,7 @@ namespace WaveBox.DataModel.Singletons
 							"VALUES (@querystring, @valuesstring)", conn);
 						q.AddNamedParam("@querystring", query);
 						q.AddNamedParam("@valuesstring", JsonConvert.SerializeObject(values, Formatting.None));
-						
+
 						q.Prepare();
 						q.ExecuteNonQuery();
 					}
@@ -196,7 +198,7 @@ namespace WaveBox.DataModel.Singletons
 			{
 				conn = Database.GetQueryLogDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT max(query_id) FROM query_log", conn);
-				
+
 				q.Prepare();
 				queryId = (long)q.ExecuteScalar();
 			}
@@ -213,7 +215,6 @@ namespace WaveBox.DataModel.Singletons
 		}
 
 		// IDbCommand extension to add named parameters without writing a bunch of code each time
-		//
 		public static void AddNamedParam(this IDbCommand command, string name, Object value)
 		{
 			IDataParameter param = command.CreateParameter();
@@ -223,7 +224,6 @@ namespace WaveBox.DataModel.Singletons
 		}
 
 		// IDataReader extension to safely get null values
-		//
 		public static object GetValueOrNull(this IDataReader reader, int ordinal)
 		{
 			object value = reader.GetValue(ordinal);
@@ -299,7 +299,7 @@ namespace WaveBox.DataModel.Singletons
 
 		[DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
 		internal static extern IntPtr sqlite3_backup_init(IntPtr destDb, byte[] destname, IntPtr srcDB, byte[] srcname);
-		                                                                                                    
+																											
 		[DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
 		internal static extern int sqlite3_backup_step(IntPtr backup, int pages);
 
@@ -311,26 +311,30 @@ namespace WaveBox.DataModel.Singletons
 
 		[DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
 		internal static extern int sqlite3_sleep(int milliseconds);
-		                                                                                                    
+																											
 		[DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
 		internal static extern int sqlite3_backup_finish(IntPtr backup);
 
 		private static readonly object dbBackupLock = new object();
 		public static string Backup(out long lastQueryId)
 		{
-			lock(dbBackupLock)
+			lock (dbBackupLock)
 			{
 				lastQueryId = LastQueryLogId();
 				string fileName = BackupFileName(lastQueryId);
 
 				// If the database is already backed up at this point, return it
 				if (File.Exists(fileName))
+				{
 					return fileName;
+				}
 
 				// If not, do the backup then return it
 				bool success = Backup((SQLiteConnection)GetDbConnection(), (SQLiteConnection)GetBackupDbConnection(lastQueryId));
 				if (success)
+				{
 					return fileName;
+				}
 
 				// Something failed so return null
 				lastQueryId = -1;
@@ -342,16 +346,16 @@ namespace WaveBox.DataModel.Singletons
 		{
 			return BackupLive((SQLiteConnection)GetDbConnection(), (SQLiteConnection)GetBackupDbConnection());
 		}*/
-		       
+			   
 		public static bool Backup(SQLiteConnection source, SQLiteConnection destination)
 		{
-			lock(dbBackupLock)
+			lock (dbBackupLock)
 			{
 				try
 				{
 					IntPtr sourceHandle = GetConnectionHandle(source);
 					IntPtr destinationHandle = GetConnectionHandle(destination);
-					
+
 					IntPtr backupHandle = sqlite3_backup_init(destinationHandle, SQLiteConvert.ToUTF8("main"), sourceHandle, SQLiteConvert.ToUTF8("main"));
 					if (backupHandle != IntPtr.Zero)
 					{
@@ -373,12 +377,11 @@ namespace WaveBox.DataModel.Singletons
 								logger.Info("Error deleting user table in backup: " + e);
 							}
 						}
-						
 						return true;
 					}
 					return false;
 				}
-				catch(Exception e)
+				catch (Exception e)
 				{
 					logger.Info("Error backup up database: " + e);
 				}
@@ -407,10 +410,10 @@ namespace WaveBox.DataModel.Singletons
 					if (backupHandle != IntPtr.Zero)
 					{
 						// Each iteration of this loop copies 5 database pages from database
-	      				// pDb to the backup database. If the return value of backup_step()
-	      				// indicates that there are still further pages to copy, sleep for
-	      				// 250 ms before repeating. 
-	      				int rc = 0;
+						// pDb to the backup database. If the return value of backup_step()
+						// indicates that there are still further pages to copy, sleep for
+						// 250 ms before repeating. 
+						int rc = 0;
 						do
 						{
 							rc = sqlite3_backup_step(backupHandle, 10);
@@ -464,22 +467,22 @@ namespace WaveBox.DataModel.Singletons
 				return false;
 			}
 		}*/
-		                                                                                                    
-        private static IntPtr GetConnectionHandle(SQLiteConnection source)
-        {
+
+		private static IntPtr GetConnectionHandle(SQLiteConnection source)
+		{
 			object sqlLite3 = GetPrivateFieldValue(source, "_sql");
 			object connectionHandle = GetPrivateFieldValue(sqlLite3, "_sql");
 			IntPtr handle = (IntPtr)GetPrivateFieldValue(connectionHandle, "handle");
-			
+
 			return handle;
-        }		
-		                                                                                                    
+		}
+
 		private static object GetPrivateFieldValue(object instance, string fieldName)
 		{
 			var filedType = instance.GetType().GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
-			
+
 			object result = filedType.GetValue(instance);
 			return result;
-        }
+		}
 	}
 }

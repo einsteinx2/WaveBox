@@ -38,6 +38,7 @@ namespace WaveBox.DataModel.Model
 		
 		public Artist()
 		{
+
 		}
 
 		public Artist(IDataReader reader)
@@ -47,7 +48,10 @@ namespace WaveBox.DataModel.Model
 
 		public Artist(int? artistId)
 		{
-            if(artistId == null) return;
+            if (artistId == null)
+			{
+				return;
+			}
 
 			IDbConnection conn = null;
 			IDataReader reader = null;
@@ -131,7 +135,9 @@ namespace WaveBox.DataModel.Model
 		{
 			int? itemId = Item.GenerateItemId(ItemType.Artist);
 			if (itemId == null)
+			{
 				return false;
+			}
 			
 			bool success = false;
 			IDbConnection conn = null;
@@ -303,7 +309,7 @@ namespace WaveBox.DataModel.Model
 		{
 			List<Artist> result = new List<Artist>();
 
-			if(query == null)
+			if (query == null)
 			{
 				return result;
 			}
@@ -321,7 +327,7 @@ namespace WaveBox.DataModel.Model
 
 				Artist a;
 
-				while(reader.Read())
+				while (reader.Read())
 				{
 					a = new Artist(reader);
 					result.Add(a);

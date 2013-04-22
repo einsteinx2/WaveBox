@@ -66,7 +66,7 @@ namespace WaveBox.ApiHandler
 				{
 					// Determine call type (note: switch is actually faster than if/else for strings in Mono)
 					// source: http://stackoverflow.com/questions/445067/if-vs-switch-speed
-					switch(action)
+					switch (action)
 					{
 						case "albums":
 							return new AlbumsApiHandler(uriW, processor, user);

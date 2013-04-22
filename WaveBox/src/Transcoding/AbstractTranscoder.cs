@@ -8,7 +8,7 @@ using NLog;
 namespace WaveBox.Transcoding
 {
 	public abstract class AbstractTranscoder : ITranscoder
-	{		
+	{
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 
 		protected ITranscoderDelegate TranscoderDelegate { get; set; }
@@ -58,13 +58,12 @@ namespace WaveBox.Transcoding
 			get 
 			{ 
 				if (Item != null)
-	        	{
-	            	string path = IsDirect ? "-" : TranscodeManager.TRANSCODE_PATH + Path.DirectorySeparatorChar + OutputFilename;
-	            	//log2File(INFO, "transcoding to " + path);
+				{
+					string path = IsDirect ? "-" : TranscodeManager.TRANSCODE_PATH + Path.DirectorySeparatorChar + OutputFilename;
 					return path;
-	        	}
+				}
 
-	        	return null; 
+				return null; 
 			} 
 		}
 
@@ -74,36 +73,36 @@ namespace WaveBox.Transcoding
 			{
 				if (this.State == TranscodeState.Finished)
 				{
-					logger.Info("{0} finished transcoding.  Reporting actual file length.", this.Item.FileName);
+					logger.Info("{0} finished transcoding.	Reporting actual file length.", this.Item.FileName);
 					var transFileInfo = new FileInfo(this.OutputPath);
 					return transFileInfo.Length;
 				}
 				if (Item != null)
 				{
-                	return ((long)Item.Duration * (long)EstimatedBitrate * (long)1024) / 8;
+					return ((long)Item.Duration * (long)EstimatedBitrate * (long)1024) / 8;
 				}
-	        	return null;
+				return null;
 			}
 		}
 
 		public AbstractTranscoder(IMediaItem item, uint quality, bool isDirect, uint offsetSeconds, uint lengthSeconds)
-	    {
+		{
 			State = TranscodeState.None;
-	        Item = item;
-	        Quality = quality;
+			Item = item;
+			Quality = quality;
 			IsDirect = isDirect;
 			OffsetSeconds = offsetSeconds;
 			LengthSeconds = lengthSeconds;
-	    }
+		}
 
-	    public void CancelTranscode()
-	    {
-	        if (TranscodeProcess != null)
-	        {
+		public void CancelTranscode()
+		{
+			if (TranscodeProcess != null)
+			{
 				logger.Info("[TRANSCODE] cancelling transcode for " + Item.FileName);
 
 				// Kill the process
-	            TranscodeProcess.Kill();
+				TranscodeProcess.Kill();
 				TranscodeProcess = null;
 
 				// Wait for the thread to die
@@ -114,15 +113,19 @@ namespace WaveBox.Transcoding
 				State = TranscodeState.Canceled;
 
 				// Inform the delegate
-                if ((object)TranscoderDelegate != null)
-                    TranscoderDelegate.TranscodeFailed(this);
-	        }
-	    }
+				if ((object)TranscoderDelegate != null)
+				{
+					TranscoderDelegate.TranscodeFailed(this);
+				}
+			}
+		}
 
-	    public void StartTranscode()
+		public void StartTranscode()
 		{
-			if ((object)TranscodeThread != null || (object)TranscodeProcess != null) 
+			if ((object)TranscodeThread != null || (object)TranscodeProcess != null)
+			{
 				return;
+			}
 
 			logger.Info("[TRANSCODE] starting transcode for " + Item.FileName);
 
@@ -130,24 +133,26 @@ namespace WaveBox.Transcoding
 			State = TranscodeState.Active;
 
 			// Delete any existing file of this name
-			if(File.Exists(OutputPath))
-               File.Delete(OutputPath);
+			if (File.Exists(OutputPath))
+			{
+			   File.Delete(OutputPath);
+			}
 
 			// Start a new thread for the transcode
 			TranscodeThread = new Thread(new ThreadStart(Run));
 			TranscodeThread.IsBackground = true;
 			TranscodeThread.Start();
-	    }
+		}
 
 		public virtual void Run()
-	    {
+		{
 			try 
 			{
 				logger.Info("[TRANSCODE] Forking the process");
 				logger.Info("[TRANSCODE] " + Command + " " + Arguments);
 
 				// Fork the process
-			    TranscodeProcess = new Process();
+				TranscodeProcess = new Process();
 				TranscodeProcess.StartInfo.FileName = Command;
 				TranscodeProcess.StartInfo.Arguments = Arguments;
 				TranscodeProcess.StartInfo.UseShellExecute = false;
@@ -169,37 +174,43 @@ namespace WaveBox.Transcoding
 				// Set the state
 				State = TranscodeState.Failed;
 
-			    // Inform the delegate
-                if ((object)TranscoderDelegate != null)
-                    TranscoderDelegate.TranscodeFailed(this);
+				// Inform the delegate
+				if ((object)TranscoderDelegate != null)
+				{
+					TranscoderDelegate.TranscodeFailed(this);
+				}
 
-                return;
+				return;
 			}
 
 			if (TranscodeProcess != null)
 			{
-			    int exitValue = TranscodeProcess.ExitCode;
-			    logger.Info("[TRANSCODE] exit value " + exitValue);
+				int exitValue = TranscodeProcess.ExitCode;
+				logger.Info("[TRANSCODE] exit value " + exitValue);
 
 				if (exitValue == 0)
 				{
 					State = TranscodeState.Finished;
 
-                    if ((object)TranscoderDelegate != null)
-                        TranscoderDelegate.TranscodeFinished(this);
+					if ((object)TranscoderDelegate != null)
+					{
+						TranscoderDelegate.TranscodeFinished(this);
+					}
 				}
-			    else
+				else
 				{
 					State = TranscodeState.Failed;
-			        
-                    if ((object)TranscoderDelegate != null)
-                        TranscoderDelegate.TranscodeFailed(this);
+					
+					if ((object)TranscoderDelegate != null)
+					{
+						TranscoderDelegate.TranscodeFailed(this);
+					}
 				}
 			}
-	    }
+		}
 
 		public override bool Equals(Object obj)
-	    {
+		{
 			// If they are the exact same object, return true
 			if (Object.ReferenceEquals(this, obj))
 			{
@@ -211,11 +222,11 @@ namespace WaveBox.Transcoding
 				return false;
 			}
 
-	        // If parameter is null return false.
-	        if ((object)obj == null)
-	        {
-	            return false;
-	        }
+			// If parameter is null return false.
+			if ((object)obj == null)
+			{
+				return false;
+			}
 
 			// If the types don't match exactly, return false
 			if (this.GetType() != obj.GetType())
@@ -224,36 +235,36 @@ namespace WaveBox.Transcoding
 			}
 
 			// If parameter cannot be cast to AbstractTranscoder return false.
-	        AbstractTranscoder op = obj as AbstractTranscoder;
-	        if ((object)op == null)
-	        {
-	            return false;
-	        }
+			AbstractTranscoder op = obj as AbstractTranscoder;
+			if ((object)op == null)
+			{
+				return false;
+			}
 
-	        // Return true if the fields match:
-	        return Equals(op);
-	    }
+			// Return true if the fields match:
+			return Equals(op);
+		}
 
-	    public bool Equals(AbstractTranscoder op)
-	    {
-	        // If parameter is null return false:
-	        if ((object)op == null)
-	        {
-	            return false;
-	        }
+		public bool Equals(AbstractTranscoder op)
+		{
+			// If parameter is null return false:
+			if ((object)op == null)
+			{
+				return false;
+			}
 
-	        // Return true if they match
+			// Return true if they match
 			return Item.Equals(op.Item) && Type == op.Type && Quality == op.Quality;
-	    }
+		}
 
-	    public override int GetHashCode()
-	    {
+		public override int GetHashCode()
+		{
 			int hash = 13;
 			hash = (hash * 7) + (Item == null ? Item.GetHashCode() : 0);
 			hash = (hash * 7) + Type.GetHashCode();
 			hash = (hash * 7) + Quality.GetHashCode();
 			return hash;
-	    }
+		}
 	}
 }
 

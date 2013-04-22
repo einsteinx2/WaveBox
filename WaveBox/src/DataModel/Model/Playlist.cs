@@ -201,12 +201,14 @@ namespace WaveBox.DataModel.Model
 				{
 					int? itemId = Item.GenerateItemId(ItemType.Playlist);
 					if (itemId == null)
+					{
 						return;
+					}
 
 					PlaylistId = itemId;
-                    PlaylistCount = 0;
-                    PlaylistDuration = 0;
-                    LastUpdateTime = ((DateTime.Now.Ticks / 10) - (new DateTime(1970, 1, 1).Ticks / 10));
+					PlaylistCount = 0;
+					PlaylistDuration = 0;
+					LastUpdateTime = ((DateTime.Now.Ticks / 10) - (new DateTime(1970, 1, 1).Ticks / 10));
 					q = Database.GetDbCommand("INSERT INTO playlist (playlist_id, playlist_name, playlist_count, playlist_duration, md5_hash, last_update) " +
 											"VALUES (@playlistid, @playlistname, @playlistcount, @playlistduration, @md5, @lastupdate)", conn);
 					//q = Database.GetDbCommand("INSERT INTO playlist VALUES (@playlistid, @playlistname, @playlistcount, @playlistduration, @md5, @lastupdate)");
@@ -220,14 +222,16 @@ namespace WaveBox.DataModel.Model
 						+ "md5_hash = @md5, "
 						+ "last_update = @lastupdate "
 						+ "WHERE playlist_id = @playlistid", conn);
-
-
 				}
 
 				if (PlaylistName == null)
+				{
 					q.AddNamedParam("@playlistname", "");
+				}
 				else
+				{
 					q.AddNamedParam("@playlistname", PlaylistName);
+				}
 
 				q.AddNamedParam("@playlistcount", PlaylistCount);
 				q.AddNamedParam("@playlistduration", PlaylistDuration);
@@ -308,16 +312,14 @@ namespace WaveBox.DataModel.Model
 
 					switch (it)
 					{
-					case ItemType.Song:
-						item = new Song(itemid);
-						break;
-
-					case ItemType.Video:
+						case ItemType.Song:
+							item = new Song(itemid);
+							break;
+						case ItemType.Video:
 							// nothing for now
-						break;
-
-					default:
-						break;
+							break;
+						default:
+							break;
 					}
 				}
 			}
@@ -356,11 +358,9 @@ namespace WaveBox.DataModel.Model
 						case (int)ItemType.Song:
 							items.Add(new Song(itemid));
 							break;
-
 						case (int)ItemType.Video:
-								// nothing for now
+							// nothing for now
 							break;
-
 						default:
 							break;
 					}
@@ -575,12 +575,12 @@ namespace WaveBox.DataModel.Model
 
 			try
 			{
-                int? id = Item.GenerateItemId(ItemType.PlaylistItem);
+				int? id = Item.GenerateItemId(ItemType.PlaylistItem);
 				// to do - better way of knowing whether or not a query has been successfully completed.
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("INSERT INTO playlist_item (playlist_item_id, playlist_id, item_type_id, item_id, item_position) VALUES " +
 													"(@playlistitemid, @playlistid, @itemtypeid, @itemid, @itempos)", conn);
-                q.AddNamedParam("@playlistitemid", id);
+				q.AddNamedParam("@playlistitemid", id);
 				q.AddNamedParam("@playlistid", PlaylistId);
 				q.AddNamedParam("@itemtypeid", item.ItemTypeId);
 				q.AddNamedParam("@itemid", item.ItemId);
@@ -601,13 +601,13 @@ namespace WaveBox.DataModel.Model
 
 		public void AddMediaItems(List<IMediaItem> items)
 		{
-			if(PlaylistId == 0 || items == null)
+			if (PlaylistId == 0 || items == null)
 			{
 				return;
 			}
 
 			int duration = 0;
-			foreach(IMediaItem item in items)
+			foreach (IMediaItem item in items)
 			{
 				AddMediaItem(item, false);
 
@@ -620,6 +620,7 @@ namespace WaveBox.DataModel.Model
 
 		public void InsertMediaItem(IMediaItem item, int index)
 		{
+
 		}
 
 		public void ClearPlaylist()
@@ -646,9 +647,9 @@ namespace WaveBox.DataModel.Model
 				Database.Close(conn, reader);
 			}
 
-            PlaylistCount = 0;
-            PlaylistDuration = 0;
-            UpdateDatabase();
+			PlaylistCount = 0;
+			PlaylistDuration = 0;
+			UpdateDatabase();
 		}
 
 		public void CreatePlaylist()
@@ -658,7 +659,7 @@ namespace WaveBox.DataModel.Model
 
 		public void DeletePlaylist()
 		{
-		}
 
+		}
 	}
 }

@@ -167,3 +167,6 @@ WaveBox.userprefs
 # NUnit tests
 test-results
 WaveBox/test-results
+
+# Log file
+WaveBox/wavebox_log.txt

@@ -7,7 +7,7 @@ using NLog;
 namespace WaveBox.ApiHandler.Handlers
 {
 	public class LoginApiHandler : IApiHandler
-	{		
+	{
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 
 		private IHttpProcessor Processor { get; set; }
