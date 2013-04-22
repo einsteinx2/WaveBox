@@ -107,8 +107,8 @@ namespace WaveBox.DataModel.Singletons
 				}
 				else
 				{
-						// Print an error if the folder doesn't exist
-						logger.Info("[FILEMANAGER] warning: folder {0} does not exist, skipping...", folder.FolderPath);
+					// Print an error if the folder doesn't exist
+					logger.Info("[FILEMANAGER] warning: folder {0} does not exist, skipping...", folder.FolderPath);
 				}
 			}
 

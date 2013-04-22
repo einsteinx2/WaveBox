@@ -14,7 +14,7 @@ using NLog;
 namespace WaveBox.ApiHandler.Handlers
 {
 	public class StreamApiHandler : IApiHandler
-	{		
+	{
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 
 		private IHttpProcessor Processor { get; set; }
@@ -86,13 +86,13 @@ namespace WaveBox.ApiHandler.Handlers
 					}
 
 					// Write additional file headers
-                    var dict = new Dictionary<string, string>();
-                    var lmt = HttpProcessor.DateTimeToLastMod(new FileInfo(item.FilePath).LastWriteTimeUtc);
-                    dict.Add("Last-Modified", lmt);
+					var dict = new Dictionary<string, string>();
+					var lmt = HttpProcessor.DateTimeToLastMod(new FileInfo(item.FilePath).LastWriteTimeUtc);
+					dict.Add("Last-Modified", lmt);
 
 					// Send the file
-                    Processor.WriteFile(stream, startOffset, length, item.FileType.MimeType(), dict, true);
-                    stream.Close();
+					Processor.WriteFile(stream, startOffset, length, item.FileType.MimeType(), dict, true);
+					stream.Close();
 					
 					logger.Info("[STREAMAPI] Successfully streamed file!");
 				}

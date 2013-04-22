@@ -12,7 +12,7 @@ namespace WaveBox.DataModel.Singletons
 	{
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 
-	    private static readonly Jukebox instance = new Jukebox();
+		private static readonly Jukebox instance = new Jukebox();
 		public static Jukebox Instance { get { return instance; } }
 
 		public bool IsInitialized { get; set; }
@@ -29,7 +29,7 @@ namespace WaveBox.DataModel.Singletons
 		private Jukebox()
 		{
 			playlist = new Playlist(PLAYLIST_NAME);
-			if(playlist.PlaylistId == null)
+			if (playlist.PlaylistId == null)
 			{
 				// playlist doesn't exist, so create it.
 				playlist.CreatePlaylist();
@@ -80,14 +80,14 @@ namespace WaveBox.DataModel.Singletons
 			PlaySongAtIndex(CurrentIndex);
 		}
 
-		public void Next ()
+		public void Next()
 		{
 			CurrentIndex = CurrentIndex + 1;
 
 			if (CurrentIndex >= playlist.PlaylistCount) 
 			{
 				CurrentIndex = CurrentIndex - 1;
-				Stop ();
+				Stop();
 			} 
 			else
 			{
@@ -133,9 +133,11 @@ namespace WaveBox.DataModel.Singletons
 						IsPlaying = true;
 					}
 				}
-
 				// jukebox mode currently only plays songs, so skip if it's not a song.
-				else Next();
+				else
+				{
+					Next();
+				}
 			}
 		}
 
@@ -185,7 +187,10 @@ namespace WaveBox.DataModel.Singletons
 		{
 			// if we are initializing, we want to make sure that we're not
 			// already initialized.
-			if(IsInitialized) BassFree();
+			if (IsInitialized)
+			{
+				BassFree();
+			}
 
 			// set the buffer to 200ms, which is the minimum.
 			Bass.BASS_SetConfig(BASSConfig.BASS_CONFIG_BUFFER, Bass.BASS_GetConfig(BASSConfig.BASS_CONFIG_UPDATEPERIOD + 200));
@@ -195,7 +200,7 @@ namespace WaveBox.DataModel.Singletons
 			Bass.BASS_SetConfig(BASSConfig.BASS_CONFIG_FLOATDSP, 1);
 
 			// initialize the audio output device
-			if(!Bass.BASS_Init(-1, 44100, BASSInit.BASS_DEVICE_DEFAULT, System.IntPtr.Zero))
+			if (!Bass.BASS_Init(-1, 44100, BASSInit.BASS_DEVICE_DEFAULT, System.IntPtr.Zero))
 			{
 				logger.Info("[JUKEBOX] Error initializing BASS!");
 			}

@@ -9,16 +9,16 @@ using NLog;
 namespace WaveBox.Transcoding
 {
 	public class TranscodeManager
-	{		
+	{
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 
-	    public const string TRANSCODE_PATH = "trans";
+		public const string TRANSCODE_PATH = "trans";
 
 		private TranscodeManager() { }
-	    private static readonly TranscodeManager instance = new TranscodeManager();
+		private static readonly TranscodeManager instance = new TranscodeManager();
 		public static TranscodeManager Instance { get { return instance; } }
 
-	    private IList<ITranscoder> transcoders = new List<ITranscoder>();
+		private IList<ITranscoder> transcoders = new List<ITranscoder>();
 
 		public void Setup()
 		{
@@ -38,12 +38,12 @@ namespace WaveBox.Transcoding
 				{
 					case TranscodeType.MP3:
 						transcoder = new FFMpegMP3Transcoder(song, quality, isDirect, offsetSeconds, lengthSeconds);
-                        break;
+						break;
 					case TranscodeType.OGG:
 						transcoder = new FFMpegOGGTranscoder(song, quality, isDirect, offsetSeconds, lengthSeconds);
 						break;
-                    case TranscodeType.OPUS:
-                        transcoder = new FFMpegOpusTranscoder(song, quality, isDirect, offsetSeconds, lengthSeconds);
+					case TranscodeType.OPUS:
+						transcoder = new FFMpegOpusTranscoder(song, quality, isDirect, offsetSeconds, lengthSeconds);
 						break;
 					case TranscodeType.AAC: 
 						transcoder = new FFMpegAACTranscoder(song, quality, isDirect, offsetSeconds, lengthSeconds);
@@ -52,9 +52,9 @@ namespace WaveBox.Transcoding
 
 				transcoder = StartTranscoder(transcoder);
 
-		        return transcoder;
+				return transcoder;
 			}
-	    }
+		}
 
 		public ITranscoder TranscodeVideo(IMediaItem video, TranscodeType type, uint quality, bool isDirect, uint? width, uint? height, bool maintainAspect, uint offsetSeconds, uint lengthSeconds)
 		{
@@ -112,7 +112,7 @@ namespace WaveBox.Transcoding
 			return transcoder;
 		}
 
-	    public void ConsumedTranscode(ITranscoder transcoder)
+		public void ConsumedTranscode(ITranscoder transcoder)
 		{
 			logger.Info("Waiting on {0} for 30 more seconds... State: {1}", transcoder.Item.FileName, transcoder.State);
 
@@ -155,9 +155,9 @@ namespace WaveBox.Transcoding
 					}
 				}
 			}
-	    }
+		}
 
-	    public void CancelTranscode(ITranscoder transcoder)
+		public void CancelTranscode(ITranscoder transcoder)
 		{
 			// Do nothing if the transcoder is null or is a stdout transcoder
 			if ((object)transcoder == null)
@@ -176,7 +176,7 @@ namespace WaveBox.Transcoding
 				// Consume the transcoder
 				ConsumedTranscode(transcoder);
 			}
-	    }
+		}
 
 		public void CancelAllTranscodes()
 		{
@@ -188,21 +188,21 @@ namespace WaveBox.Transcoding
 			}
 		}
 
-	    /*
-	     * Transcoder delegate
-	     */
+		/*
+		 * Transcoder delegate
+		 */
 
-	    public void TranscodeFinished(ITranscoder transcoder)
-	    {
+		public void TranscodeFinished(ITranscoder transcoder)
+		{
 			// Do something
 			logger.Info("[TRANSCODE] Transcode finished for " + transcoder.Item.FileName);
-	    }
+		}
 
-	    public void TranscodeFailed(ITranscoder transcoder)
-	    {
-	        // Do something
+		public void TranscodeFailed(ITranscoder transcoder)
+		{
+			// Do something
 			logger.Info("[TRANSCODE] Transcode failed for " + transcoder.Item.FileName);
-	    }
+		}
 	}
 }
 

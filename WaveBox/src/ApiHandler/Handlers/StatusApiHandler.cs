@@ -15,7 +15,7 @@ using NLog;
 namespace WaveBox.ApiHandler.Handlers
 {
 	class StatusApiHandler : IApiHandler
-	{		
+	{
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 
 		private IHttpProcessor Processor { get; set; }
@@ -109,7 +109,7 @@ namespace WaveBox.ApiHandler.Handlers
 			float usage = cpuCounter.NextValue();
 
 			// If CPU usage is negative (ie, sudden drop in usage between cpuCounter.NextValue()), just return 0%
-			if(usage < 0.00)
+			if (usage < 0.00)
 			{
 				usage = 0.0f;
 			}
@@ -127,11 +127,11 @@ namespace WaveBox.ApiHandler.Handlers
 			int i = 2;
 			string types = "";
 
-			foreach(FileType f in fileTypes)
+			foreach (FileType f in fileTypes)
 			{
-				if(f != FileType.Unknown)
+				if (f != FileType.Unknown)
 				{
-					if(i == fileTypes.Length)
+					if (i == fileTypes.Length)
 					{
 						types += f.ToString();
 					}
@@ -156,9 +156,9 @@ namespace WaveBox.ApiHandler.Handlers
 			int i = 1;
 			string trans = "";
 
-			foreach(TranscodeType t in transcoders)
+			foreach (TranscodeType t in transcoders)
 			{
-				if(i == transcoders.Length)
+				if (i == transcoders.Length)
 				{
 					trans += t.ToString();
 				}

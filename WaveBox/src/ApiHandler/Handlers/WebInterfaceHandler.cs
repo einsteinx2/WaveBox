@@ -7,7 +7,7 @@ using NLog;
 namespace WaveBox.ApiHandler.Handlers
 {
 	public class WebInterfaceHandler : IApiHandler
-	{		
+	{
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 
 		private IHttpProcessor Processor { get; set; }
@@ -61,22 +61,22 @@ namespace WaveBox.ApiHandler.Handlers
 			// Make sure the file exists
 			if (File.Exists(path))
 			{
-                // If it exists, check to see if the headers contains an If-Modified-Since entry
-                if(Processor.HttpHeaders.ContainsKey("If-Modified-Since"))
-                {
-                    logger.Info(Processor.HttpHeaders["If-Modified-Since"]);
+				// If it exists, check to see if the headers contains an If-Modified-Since entry
+				if (Processor.HttpHeaders.ContainsKey("If-Modified-Since"))
+				{
+					logger.Info(Processor.HttpHeaders["If-Modified-Since"]);
 
-                    // Took me a while to figure this out, but even if the time zone in the request is GMT, DateTime.Parse converts it to local time.
-                    var ims = DateTime.Parse(Processor.HttpHeaders["If-Modified-Since"].ToString());
-                    var lastMod = File.GetLastWriteTime(path);
+					// Took me a while to figure this out, but even if the time zone in the request is GMT, DateTime.Parse converts it to local time.
+					var ims = DateTime.Parse(Processor.HttpHeaders["If-Modified-Since"].ToString());
+					var lastMod = File.GetLastWriteTime(path);
 
-                    if(ims >= lastMod)
-                    {
-                        logger.Info("[WEBINTERFACE] File not modified: " + path);
+					if (ims >= lastMod)
+					{
+						logger.Info("[WEBINTERFACE] File not modified: " + path);
 						Processor.WriteNotModifiedHeader();
-                        return;
-                    }
-                }
+						return;
+					}
+				}
 
 				logger.Info("[WEBINTERFACE] serving file at path: " + path);
 
@@ -95,12 +95,12 @@ namespace WaveBox.ApiHandler.Handlers
 
 				long length = file.Length - startOffset;
 
-                var dict = new Dictionary<string, string>();
-                var lwt = HttpProcessor.DateTimeToLastMod(new FileInfo(path).LastWriteTimeUtc);
-                dict.Add("Last-Modified", lwt);
+				var dict = new Dictionary<string, string>();
+				var lwt = HttpProcessor.DateTimeToLastMod(new FileInfo(path).LastWriteTimeUtc);
+				dict.Add("Last-Modified", lwt);
 
 				Processor.WriteFile(file, startOffset, length, HttpHeader.MimeTypeForExtension(Path.GetExtension(path)), dict, true);
-                file.Close();
+				file.Close();
 			}
 			else
 			{
@@ -110,29 +110,29 @@ namespace WaveBox.ApiHandler.Handlers
 				Processor.WriteErrorHeader();
 			}
 		}
-        
+		
 		/// <summary>
 		/// Returns an integer representation of a month string
 		/// </summary>
-        private static int MonthForAbbreviation(string abb)
-        {
-            switch (abb.ToLower())
-            {
-	            case "jan": return 1;
-	            case "feb": return 2;
-	            case "mar": return 3;
-	            case "apr": return 4;
-	            case "may": return 5;
-	            case "jun": return 6;
-	            case "jul": return 7;
-	            case "aug": return 8;
-	            case "sep": return 9;
-	            case "oct": return 10;
-	            case "nov": return 11;
-	            case "dec": return 12;
-	            default: return 0;
-            }
-        }
-    }
+		private static int MonthForAbbreviation(string abb)
+		{
+			switch (abb.ToLower())
+			{
+				case "jan": return 1;
+				case "feb": return 2;
+				case "mar": return 3;
+				case "apr": return 4;
+				case "may": return 5;
+				case "jun": return 6;
+				case "jul": return 7;
+				case "aug": return 8;
+				case "sep": return 9;
+				case "oct": return 10;
+				case "nov": return 11;
+				case "dec": return 12;
+				default: return 0;
+			}
+		}
+	}
 }
 

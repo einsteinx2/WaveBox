@@ -84,39 +84,39 @@ namespace WaveBox.OperationQueue
 		}
 
 		public override bool Equals(Object obj)
-	    {
-	        // If parameter is null return false.
-	        if ((object)obj == null)
-	        {
-	            return false;
-	        }
+		{
+			// If parameter is null return false.
+			if ((object)obj == null)
+			{
+				return false;
+			}
 
-	        // If parameter cannot be cast to DelayedOperation return false.
-	        AbstractOperation op = obj as AbstractOperation;
-	        if ((object)op == null)
-	        {
-	            return false;
-	        }
+			// If parameter cannot be cast to DelayedOperation return false.
+			AbstractOperation op = obj as AbstractOperation;
+			if ((object)op == null)
+			{
+				return false;
+			}
 
-	        // Return true if the fields match:
-	        return Equals(op);
-	    }
+			// Return true if the fields match:
+			return Equals(op);
+		}
 
-	    public bool Equals(AbstractOperation op)
-	    {
-	        // If parameter is null return false:
-	        if ((object)op == null)
-	        {
-	            return false;
-	        }
+		public bool Equals(AbstractOperation op)
+		{
+			// If parameter is null return false:
+			if ((object)op == null)
+			{
+				return false;
+			}
 
-	        // Return true if the operation types match:
-	        return OperationType.Equals(op.OperationType);
-	    }
+			// Return true if the operation types match:
+			return OperationType.Equals(op.OperationType);
+		}
 
-	    public override int GetHashCode()
-	    {
-	        return OperationType.GetHashCode();
-	    }
+		public override int GetHashCode()
+		{
+			return OperationType.GetHashCode();
+		}
 	}
 }

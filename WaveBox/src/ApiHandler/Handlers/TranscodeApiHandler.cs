@@ -14,7 +14,7 @@ using NLog;
 namespace WaveBox.ApiHandler.Handlers
 {
 	public class TranscodeApiHandler : IApiHandler
-	{		
+	{
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 
 		private IHttpProcessor Processor { get; set; }
@@ -159,7 +159,7 @@ namespace WaveBox.ApiHandler.Handlers
 							quality = qualityValue;
 						}
 					}
-					
+
 					// Create the transcoder
 					if (item.ItemType == ItemType.Song)
 					{
@@ -176,14 +176,14 @@ namespace WaveBox.ApiHandler.Handlers
 							uint widthTemp;
 							width = UInt32.TryParse(Uri.Parameters["width"], out widthTemp) ? (uint?)widthTemp : null;
 						}
-						
+
 						uint? height;
 						if (Uri.Parameters.ContainsKey("height"))
 						{
 							uint heightTemp;
 							height = UInt32.TryParse(Uri.Parameters["height"], out heightTemp) ? (uint?)heightTemp : null;
 						}
-						
+
 						bool maintainAspect = true;
 						if (Uri.Parameters.ContainsKey("maintainAspect"))
 						{
@@ -192,14 +192,14 @@ namespace WaveBox.ApiHandler.Handlers
 								maintainAspect = true;
 							}
 						}
-						
+
 						// Check for offset seconds and length seconds parameters
 						uint offsetSeconds = 0;
 						if (Uri.Parameters.ContainsKey("offsetSeconds"))
 						{
 							UInt32.TryParse(Uri.Parameters["offsetSeconds"], out offsetSeconds);
 						}
-						
+
 						uint lengthSeconds = 0;
 						if (Uri.Parameters.ContainsKey("lengthSeconds"))
 						{
@@ -217,7 +217,7 @@ namespace WaveBox.ApiHandler.Handlers
 					if ((object)Transcoder != null)
 					{
 						length = (long)Transcoder.EstimatedOutputSize;
-						
+
 						// Wait up 5 seconds for file or basestream to appear
 						for (int i = 0; i < 20; i++)
 						{
@@ -234,7 +234,7 @@ namespace WaveBox.ApiHandler.Handlers
 							}
 							else
 							{
-                                logger.Info("[TRANSCODEAPI] Checking if file exists ({0})", Transcoder.OutputPath);
+								logger.Info("[TRANSCODEAPI] Checking if file exists ({0})", Transcoder.OutputPath);
 								if (File.Exists(Transcoder.OutputPath))
 								{
 									// The file exists, so the transcoding process has started
@@ -245,13 +245,13 @@ namespace WaveBox.ApiHandler.Handlers
 							Thread.Sleep(250);
 						}
 					}
-					
+
 					// Send the file if either there is no transcoder and the original file exists OR
 					// it's a direct transcoder and the base stream exists OR
 					// it's a file transcoder and the transcoded file exists
 					if ((object)Transcoder == null && File.Exists(item.FilePath) || 
-					    (Transcoder.IsDirect && (object)stream != null) ||
-					    (!Transcoder.IsDirect && File.Exists(Transcoder.OutputPath)))
+						(Transcoder.IsDirect && (object)stream != null) ||
+						(!Transcoder.IsDirect && File.Exists(Transcoder.OutputPath)))
 					{
 						logger.Info("[TRANSCODEAPI] Sending direct stream");
 						string mimeType = (object)Transcoder == null ? item.FileType.MimeType() : Transcoder.MimeType;
@@ -264,10 +264,10 @@ namespace WaveBox.ApiHandler.Handlers
 
 						// Direct write file
 						Processor.WriteFile(stream, startOffset, length, mimeType, null, estimateContentLength);
-                        stream.Close();
+						stream.Close();
 						logger.Info("[TRANSCODEAPI] Successfully sent direct stream");
 
-                        if (Uri.Parameters.ContainsKey("offsetSeconds"))
+						if (Uri.Parameters.ContainsKey("offsetSeconds"))
 						{
 							logger.Info("ApiHandlerFactory DONE writing file at offsetSeconds " + Uri.Parameters["offsetSeconds"]);
 						}
@@ -276,7 +276,7 @@ namespace WaveBox.ApiHandler.Handlers
 					{
 						Processor.WriteErrorHeader();
 					}
-					
+
 					// Spin off a thread to consume the transcoder in 30 seconds.
 					Thread consume = new Thread(() => TranscodeManager.Instance.ConsumedTranscode(Transcoder));
 					consume.Start();
@@ -293,12 +293,12 @@ namespace WaveBox.ApiHandler.Handlers
 				Processor.WriteJson(json);
 			}
 		}
-		
+
 		private class TranscodeResponse
 		{
 			[JsonProperty("error")]
 			public string Error { get; set; }
-			
+
 			public TranscodeResponse(string error)
 			{
 				Error = error;

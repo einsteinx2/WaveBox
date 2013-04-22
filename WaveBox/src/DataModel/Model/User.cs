@@ -54,6 +54,7 @@ namespace WaveBox.DataModel.Model
 		
 		public User()
 		{
+
 		}
 
 		public User(int userId)
@@ -144,6 +145,9 @@ namespace WaveBox.DataModel.Model
 			return BitConverter.ToString(provider.ComputeHash(Encoding.ASCII.GetBytes(sumthis))).Replace("-", "");
 		}
 
+		// Could consider using stronger hash algorithm?
+		// Maybe bcrypt would be overkill, but sha1 is pretty weak.
+		// - mdlayher, 4/21/13
 		private static string ComputePasswordHash(string password, string salt)
 		{
 			//long startTime = DateTime.Now.Ticks;
@@ -157,6 +161,8 @@ namespace WaveBox.DataModel.Model
 			return hash;
 		}
 
+		// As above, could look into an option with more entropy for salt generation.
+		// - mdlayher, 4/21/13
 		private static string GeneratePasswordSalt()
 		{
 			return Sha1(Convert.ToString(DateTime.Now.Ticks));
@@ -223,7 +229,9 @@ namespace WaveBox.DataModel.Model
 		{
 			int? itemId = Item.GenerateItemId(ItemType.User);
 			if (itemId == null)
+			{
 				return null;
+			}
 
 			string salt = GeneratePasswordSalt();
 			string hash = ComputePasswordHash(password, salt);

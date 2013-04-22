@@ -103,7 +103,7 @@ namespace WaveBox.DataModel.Model
 
 			if (FileType == FileType.Unknown)
 			{
-				logger.Info("[SONG] \"" + filePath + "\" Unknown file type: " + file.Properties.Description);
+				logger.Info("[VIDEO] \"" + filePath + "\" Unknown file type: " + file.Properties.Description);
 			}
 
 			Width = file.Properties.VideoWidth;
@@ -113,13 +113,13 @@ namespace WaveBox.DataModel.Model
 			FileSize = fsFile.Length;
 			LastModified = Convert.ToInt64(fsFile.LastWriteTime.Ticks);
 			FileName = fsFile.Name;
-			
+
 			// Generate an art id from the embedded art, if it exists
 			int? artId = new Art(file).ArtId;
-			
+
 			// If there was no embedded art, use the folder's art
 			artId = (object)artId == null ? Art.ArtIdForItemId(FolderId) : artId;
-			
+
 			// Create the art/item relationship
 			Art.UpdateArtItemRelationship(artId, ItemId, true);
 		}
@@ -145,7 +145,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[SONG(2)] " + e);
+				logger.Error("[VIDEO(2)] " + e);
 			}
 		}
 
@@ -154,7 +154,7 @@ namespace WaveBox.DataModel.Model
 			List<Video> allVideos = new List<Video>();
 			IDbConnection conn = null;
 			IDataReader reader = null;
-			
+
 			try
 			{
 				conn = Database.GetDbConnection();
@@ -163,33 +163,33 @@ namespace WaveBox.DataModel.Model
 				q.Prepare();
 				reader = q.ExecuteReader();
 				
-				//	Stopwatch sw = new Stopwatch();
+				//Stopwatch sw = new Stopwatch();
 				while (reader.Read())
 				{
-					//		sw.Start();
+					//sw.Start();
 					allVideos.Add(new Video(reader));
-					//		logger.Info("Elapsed: {0}ms", sw.ElapsedMilliseconds);
-					//		sw.Restart();
+					//logger.Info("Elapsed: {0}ms", sw.ElapsedMilliseconds);
+					//sw.Restart();
 				}
-				//	sw.Stop();
+				//sw.Stop();
 			}
 			catch (Exception e)
 			{
-				logger.Error("[SONG(4)] " + e);
+				logger.Error("[VIDEO(4)] " + e);
 			}
 			finally
 			{
 				Database.Close(conn, reader);
 			}
-			
+
 			return allVideos;
 		}
-		
+
 		public static List<Video> SearchVideo(string query)
 		{
 			List<Video> result = new List<Video>();
 
-			if(query == null)
+			if (query == null)
 			{
 				return result;
 			}
@@ -232,10 +232,10 @@ namespace WaveBox.DataModel.Model
 			bool needsUpdating = true;
 			isNew = true;
 			songId = null;
-			
+
 			IDbConnection conn = null;
 			IDataReader reader = null;
-			
+
 			try
 			{
 				conn = Database.GetDbConnection();
@@ -243,14 +243,14 @@ namespace WaveBox.DataModel.Model
 				                                     "FROM video WHERE video_folder_id = @folderid AND video_file_name = @filename", conn);
 				q.AddNamedParam("@folderid", folderId);
 				q.AddNamedParam("@filename", fileName);
-				
+
 				q.Prepare();
 				reader = q.ExecuteReader();
-				
+
 				if (reader.Read())
 				{
 					isNew = false;
-					
+
 					songId = reader.GetInt32(0);
 					long lastModDb = reader.GetInt64(1);
 					if (lastModDb == lastModified)
@@ -267,12 +267,12 @@ namespace WaveBox.DataModel.Model
 			{
 				Database.Close(conn, reader);
 			}
-			
+
 			return needsUpdating;
 		}
 
 		public override void InsertMediaItem()
-		{			
+		{
 			IDbConnection conn = null;
 			IDataReader reader = null;
 			try
@@ -282,7 +282,7 @@ namespace WaveBox.DataModel.Model
 				IDbCommand q = Database.GetDbCommand("REPLACE INTO video (video_id, video_folder_id, video_duration, video_bitrate, video_file_size, video_last_modified, video_file_name, video_width, video_height, video_file_type_id) " + 
 				                                     "VALUES (@videoid, @folderid, @duration, @bitrate, @filesize, @lastmod, @filename, @width, @height, @filetype)"
 				                                     , conn);
-				
+
 				q.AddNamedParam("@videoid", ItemId);
 				q.AddNamedParam("@folderid", FolderId);
 				q.AddNamedParam("@duration", Duration);
@@ -306,7 +306,7 @@ namespace WaveBox.DataModel.Model
 			{
 				Database.Close(conn, reader);
 			}
-			
+
 			Art.UpdateArtItemRelationship(ArtId, ItemId, true);
 			Art.UpdateArtItemRelationship(ArtId, FolderId, false); // Only update a folder art relationship if it has no folder art
 		}

@@ -59,20 +59,20 @@ namespace WaveBox.Http
 			{
 				next_char = inputStream.ReadByte();
 
-                if (next_char == -1) 
-                {
-                    if (readTries >= 29)
-                    {
-                        throw new Exception("ReadByte timed out", null);
-                    }
-                    readTries++;
-                    Thread.Sleep(1); 
-                    continue; 
-                }
-                else
-                {
-                    readTries = 0;
-                }
+				if (next_char == -1) 
+				{
+					if (readTries >= 29)
+					{
+						throw new Exception("ReadByte timed out", null);
+					}
+					readTries++;
+					Thread.Sleep(1); 
+					continue; 
+				}
+				else
+				{
+					readTries = 0;
+				}
 
 				if (next_char == '\n') { break; }
 				if (next_char == '\r') { continue; }
@@ -83,39 +83,39 @@ namespace WaveBox.Http
 		}
 
 		public void process()
-        {
-            // we can't use a StreamReader for input, because it buffers up extra data on us inside it's
-            // "processed" view of the world, and we want the data raw after the headers
-            InputStream = Socket.GetStream();
+		{
+			// we can't use a StreamReader for input, because it buffers up extra data on us inside it's
+			// "processed" view of the world, and we want the data raw after the headers
+			InputStream = Socket.GetStream();
 
-            // we probably shouldn't be using a streamwriter for all output from handlers either
-            try
-            {
-                InputStream.ReadTimeout = 30000;
-                ParseRequest();
-                ReadHeaders();
-                if (HttpMethod.Equals("GET"))
-                {
-                    HandleGETRequest();
-                }
-                else if (HttpMethod.Equals("POST"))
-                {
-                    HandlePOSTRequest();
-                }
-            }
-            catch
-            {
+			// we probably shouldn't be using a streamwriter for all output from handlers either
+			try
+			{
+				InputStream.ReadTimeout = 30000;
+				ParseRequest();
+				ReadHeaders();
+				if (HttpMethod.Equals("GET"))
+				{
+					HandleGETRequest();
+				}
+				else if (HttpMethod.Equals("POST"))
+				{
+					HandlePOSTRequest();
+				}
+			}
+			catch
+			{
 				logger.Error("[HTTPSERVER(1)] Received malformed URL from client");
-                //logger.Info("[HTTPSERVER(1)] " + e);
-                WriteErrorHeader();
-            }
-            finally
-            {
-                InputStream = null;
-                Socket.GetStream().Close();
-                Socket.Client.Close();
-                Socket.Close();
-            }
+				//logger.Info("[HTTPSERVER(1)] " + e);
+				WriteErrorHeader();
+			}
+			finally
+			{
+				InputStream = null;
+				Socket.GetStream().Close();
+				Socket.Client.Close();
+				Socket.Close();
+			}
 		}
 
 		public void ParseRequest() 
@@ -192,7 +192,7 @@ namespace WaveBox.Http
 				{
 					throw new Exception(String.Format("POST Content-Length({0}) too big for this simple server", content_len));
 				}
-				byte[] buf = new byte[BUF_SIZE];              
+				byte[] buf = new byte[BUF_SIZE];			  
 				int to_read = content_len;
 				while (to_read > 0) 
 				{  
@@ -278,7 +278,7 @@ namespace WaveBox.Http
 			// so pass -1 for no Content-Length header for all text requests
 			//
 			//WriteSuccessHeader(UTF8Encoding.Unicode.GetByteCount(text), mimeType + ";charset=utf-8", null);
-            WriteSuccessHeader(Encoding.UTF8.GetByteCount(text) + 3, mimeType + ";charset=utf-8", null);
+			WriteSuccessHeader(Encoding.UTF8.GetByteCount(text) + 3, mimeType + ";charset=utf-8", null);
 			StreamWriter outStream = new StreamWriter(new BufferedStream(Socket.GetStream()), Encoding.UTF8);
 			outStream.Write(text);
 			outStream.Flush();
@@ -310,7 +310,7 @@ namespace WaveBox.Http
 			byte[] buf = new byte[chunkSize];
 			int bytesRead;
 			long bytesWritten = 0;
-            Socket.SendTimeout = 30000;
+			Socket.SendTimeout = 30000;
 			Stream stream = new BufferedStream(Socket.GetStream());//OutputStream.BaseStream;
 			int sinceLastReport = 0;
 			Stopwatch sw = new Stopwatch();
@@ -387,55 +387,55 @@ namespace WaveBox.Http
 			//_sh.writeFailure
 		}
 
-        public static string DateTimeToLastMod(DateTime theDate)
-        {
-            string dayOfWeek;
+		public static string DateTimeToLastMod(DateTime theDate)
+		{
+			string dayOfWeek;
 
-            //var offset = TimeZone.CurrentTimeZone.GetUtcOffset(theDate).Ticks;
-            //var theDateUtc = theDate.AddTicks(-offset);
-            var d = theDate.DayOfWeek;
-            if(d == DayOfWeek.Sunday)
-                dayOfWeek = "Sun";
-            else if(d == DayOfWeek.Monday)
-                dayOfWeek = "Mon";
-            else if(d == DayOfWeek.Tuesday)
-                dayOfWeek = "Tue";
-            else if(d == DayOfWeek.Wednesday)
-                dayOfWeek = "Wed";
-            else if(d == DayOfWeek.Thursday)
-                dayOfWeek = "Thu";
-            else if(d == DayOfWeek.Friday)
-                dayOfWeek = "Fri";
-            else dayOfWeek = "Sat";
+			//var offset = TimeZone.CurrentTimeZone.GetUtcOffset(theDate).Ticks;
+			//var theDateUtc = theDate.AddTicks(-offset);
+			var d = theDate.DayOfWeek;
+			if(d == DayOfWeek.Sunday)
+				dayOfWeek = "Sun";
+			else if(d == DayOfWeek.Monday)
+				dayOfWeek = "Mon";
+			else if(d == DayOfWeek.Tuesday)
+				dayOfWeek = "Tue";
+			else if(d == DayOfWeek.Wednesday)
+				dayOfWeek = "Wed";
+			else if(d == DayOfWeek.Thursday)
+				dayOfWeek = "Thu";
+			else if(d == DayOfWeek.Friday)
+				dayOfWeek = "Fri";
+			else dayOfWeek = "Sat";
 
-            string month;
-            var m = theDate.Month;
-            if(m == 1)
-                month = "Jan";
-            else if(m == 2)
-                month = "Feb";
-            else if(m == 3)
-                month = "Mar";
-            else if(m == 4)
-                month = "Apr";
-            else if(m == 5)
-                month = "May";
-            else if(m == 6)
-                month = "Jun";
-            else if(m == 7)
-                month = "Jul";
-            else if(m == 8)
-                month = "Aug";
-            else if(m == 9)
-                month = "Sep";
-            else if(m == 10)
-                month = "Oct";
-            else if(m == 11)
-                month = "Nov";
-            else month = "Dec";
+			string month;
+			var m = theDate.Month;
+			if(m == 1)
+				month = "Jan";
+			else if(m == 2)
+				month = "Feb";
+			else if(m == 3)
+				month = "Mar";
+			else if(m == 4)
+				month = "Apr";
+			else if(m == 5)
+				month = "May";
+			else if(m == 6)
+				month = "Jun";
+			else if(m == 7)
+				month = "Jul";
+			else if(m == 8)
+				month = "Aug";
+			else if(m == 9)
+				month = "Sep";
+			else if(m == 10)
+				month = "Oct";
+			else if(m == 11)
+				month = "Nov";
+			else month = "Dec";
 
-            return dayOfWeek + ", " + theDate.Day + " " + month + " " + theDate.Year + " " + string.Format("{0:HH}:{0:mm}:{0:ss}", theDate) + " GMT";
-        }
+			return dayOfWeek + ", " + theDate.Day + " " + month + " " + theDate.Year + " " + string.Format("{0:HH}:{0:mm}:{0:ss}", theDate) + " GMT";
+		}
 	}
 }
 

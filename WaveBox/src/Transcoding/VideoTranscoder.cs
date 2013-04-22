@@ -5,7 +5,7 @@ using NLog;
 namespace WaveBox.Transcoding
 {
 	public abstract class VideoTranscoder : AbstractTranscoder
-	{		
+	{
 		//private static Logger logger = LogManager.GetCurrentClassLogger();
 
 		public uint? Width { get; set; } 
@@ -30,7 +30,9 @@ namespace WaveBox.Transcoding
 				// Make sure this is actually a video
 				Video video = Item as Video;
 				if ((object)video == null)
+				{
 					return null;
+				}
 
 				// Start with the requested width and height
 				uint? width = Width;
@@ -57,7 +59,9 @@ namespace WaveBox.Transcoding
 				{
 					// If both are specified, and the aspect ratio should be maintained, make sure it is correct, based on width
 					if (MaintainAspect)
+					{
 						width = (uint)((float)height * video.AspectRatio);
+					}
 				}
 				
 				// The user entered an actual bitrate number, so calculate the audio and video bitrates
@@ -111,7 +115,9 @@ namespace WaveBox.Transcoding
 			get
 			{
 				if ((object)Quality == null)
+				{
 					return null;
+				}
 				
 				return TotalBitrateForQuality(Quality);
 			}

@@ -96,29 +96,29 @@ namespace WaveBox
 		}
 
 		public static ItemType ItemTypeForFilePath(string filePath)
-        {
-            // Make sure it's not null
-            if (filePath == null)
-            {
-                return ItemType.Unknown;
-            }
+		{
+			// Make sure it's not null
+			if (filePath == null)
+			{
+				return ItemType.Unknown;
+			}
 
-            // Get the extension
-            string extension = Path.GetExtension(filePath).ToLower();
+			// Get the extension
+			string extension = Path.GetExtension(filePath).ToLower();
 
-            // Compare to valid song extensions
-            if (Song.ValidExtensions.Contains(extension))
-            {
-                return ItemType.Song;
-            }
-            else if (Video.ValidExtensions.Contains(extension))
-            {
-                return ItemType.Video;
-            }
-            else if (Art.ValidExtensions.Contains(extension))
-            {
-                return ItemType.Art;
-            }
+			// Compare to valid song extensions
+			if (Song.ValidExtensions.Contains(extension))
+			{
+				return ItemType.Song;
+			}
+			else if (Video.ValidExtensions.Contains(extension))
+			{
+				return ItemType.Video;
+			}
+			else if (Art.ValidExtensions.Contains(extension))
+			{
+				return ItemType.Art;
+			}
 
 			// Return unknown, if we didn't return yet
 			return ItemType.Unknown;

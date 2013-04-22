@@ -19,8 +19,8 @@ namespace WaveBox.DataModel.Model
 
 		public static readonly string[] ValidExtensions = { ".mp3", ".m4a", ".flac", ".wv", ".mpc", ".ogg", ".wma" };
 
-        [JsonIgnore]
-        public override ItemType ItemType { get { return ItemType.Song; } }
+		[JsonIgnore]
+		public override ItemType ItemType { get { return ItemType.Song; } }
 
 		[JsonProperty("itemTypeId")]
 		public override int ItemTypeId { get { return (int)ItemType.Song; } }
@@ -99,7 +99,6 @@ namespace WaveBox.DataModel.Model
 
 			FileInfo fsFile = new FileInfo(filePath);
 			TagLib.Tag tag = file.Tag;
-			//var lol = file.Properties.Codecs;
 			FolderId = folderId;
 
 			try
@@ -162,8 +161,8 @@ namespace WaveBox.DataModel.Model
 
 			try
 			{
-                int y = Convert.ToInt32(file.Tag.Year);
-                ReleaseYear = y;
+				int y = Convert.ToInt32(file.Tag.Year);
+				ReleaseYear = y;
 			}
 			catch
 			{
@@ -201,7 +200,7 @@ namespace WaveBox.DataModel.Model
 				ArtistId = reader.GetInt32OrNull(reader.GetOrdinal("song_artist_id"));
 				ArtistName = reader.GetStringOrNull(reader.GetOrdinal("artist_name"));
 				AlbumId = reader.GetInt32OrNull(reader.GetOrdinal("song_album_id"));
- 				AlbumName = reader.GetStringOrNull(reader.GetOrdinal("album_name"));
+				AlbumName = reader.GetStringOrNull(reader.GetOrdinal("album_name"));
 				int? fileTypeId = reader.GetInt32OrNull(reader.GetOrdinal("song_file_type_id"));
 				if (fileTypeId != null)
 				{
@@ -210,10 +209,10 @@ namespace WaveBox.DataModel.Model
 				SongName = reader.GetStringOrNull(reader.GetOrdinal("song_name"));
 				TrackNumber = reader.GetInt32OrNull(reader.GetOrdinal("song_track_num"));
 				DiscNumber = reader.GetInt32OrNull(reader.GetOrdinal("song_disc_num"));
-                Duration = reader.GetInt32OrNull(reader.GetOrdinal("song_duration"));
-                Bitrate = reader.GetInt32OrNull(reader.GetOrdinal("song_bitrate"));
-                FileSize = reader.GetInt64OrNull(reader.GetOrdinal("song_file_size"));
-                LastModified = reader.GetInt64OrNull(reader.GetOrdinal("song_last_modified"));
+				Duration = reader.GetInt32OrNull(reader.GetOrdinal("song_duration"));
+				Bitrate = reader.GetInt32OrNull(reader.GetOrdinal("song_bitrate"));
+				FileSize = reader.GetInt64OrNull(reader.GetOrdinal("song_file_size"));
+				LastModified = reader.GetInt64OrNull(reader.GetOrdinal("song_last_modified"));
 				FileName = reader.GetStringOrNull(reader.GetOrdinal("song_file_name"));
 				ReleaseYear = reader.GetInt32OrNull(reader.GetOrdinal("song_release_year"));
 			}
@@ -294,10 +293,10 @@ namespace WaveBox.DataModel.Model
 				//	Stopwatch sw = new Stopwatch();
 				while (reader.Read())
 				{
-					//		sw.Start();
+					//sw.Start();
 					allsongs.Add(new Song(reader));
-					//		logger.Info("Elapsed: {0}ms", sw.ElapsedMilliseconds);
-					//		sw.Restart();
+					//logger.Info("Elapsed: {0}ms", sw.ElapsedMilliseconds);
+					//sw.Restart();
 				}
 				//	sw.Stop();
 			}
@@ -317,7 +316,7 @@ namespace WaveBox.DataModel.Model
 		{
 			List<Song> result = new List<Song>();
 
-			if(query == null)
+			if (query == null)
 			{
 				return result;
 			}
@@ -335,13 +334,13 @@ namespace WaveBox.DataModel.Model
 
 				Song s;
 
-				while(reader.Read())
+				while (reader.Read())
 				{
 					s = new Song(reader);
 					result.Add(s);
 				}
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				logger.Error("[SONGSEARCH] ERROR: " + e);
 			}
@@ -353,7 +352,6 @@ namespace WaveBox.DataModel.Model
 			return result;
 		}
 
-		// stub!
 		public static int CompareSongsByDiscAndTrack(Song x, Song y)
 		{
 			// if one track contains a disc number and the other doesn't, the one with the disc number is greater
@@ -373,7 +371,7 @@ namespace WaveBox.DataModel.Model
 		{
 			// We don't need to instantiate another folder to know what the folder id is.  This should be known when the method is called.
 			//Stopwatch sw = new Stopwatch();
-            string fileName = Path.GetFileName(filePath);
+			string fileName = Path.GetFileName(filePath);
 			long lastModified = Convert.ToInt64(System.IO.File.GetLastWriteTime(filePath).Ticks);
 			bool needsUpdating = true;
 			isNew = true;
@@ -384,15 +382,15 @@ namespace WaveBox.DataModel.Model
 
 			try
 			{
-                // Turns out that COUNT(*) on large tables is REALLY slow in SQLite because it does a full table search.  I created an index on folder_id(because weirdly enough,
-                // even though it's a primary key, SQLite doesn't automatically make one!  :O).  We'll pull that, and if we get a row back, then we'll know that this thing exists.
+				// Turns out that COUNT(*) on large tables is REALLY slow in SQLite because it does a full table search.  I created an index on folder_id(because weirdly enough,
+				// even though it's a primary key, SQLite doesn't automatically make one!  :O).  We'll pull that, and if we get a row back, then we'll know that this thing exists.
 
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT song_id, song_last_modified, song_file_size " +
 													 "FROM song WHERE song_folder_id = @folderid AND song_file_name = @filename", conn); //AND song_file_size = @filesize", conn);
-                //IDbCommand q = Database.GetDbCommand("SELECT COUNT(*) AS count FROM song WHERE song_folder_id = @folderid AND song_file_name = @filename AND song_last_modified = @lastmod", conn);
+				//IDbCommand q = Database.GetDbCommand("SELECT COUNT(*) AS count FROM song WHERE song_folder_id = @folderid AND song_file_name = @filename AND song_last_modified = @lastmod", conn);
 
-                q.AddNamedParam("@folderid", folderId);
+				q.AddNamedParam("@folderid", folderId);
 				q.AddNamedParam("@filename", fileName);
 
 				q.Prepare();

@@ -22,7 +22,7 @@ using System.Net.Sockets;
 namespace WaveBox
 {
 	class WaveBoxMain
-	{	
+	{
 		// Logger
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -105,7 +105,7 @@ namespace WaveBox
 						ServerGuid = null;
 					}
 				}
-				catch(Exception e)
+				catch (Exception e)
 				{
 					logger.Error("[WAVEBOX] exception saving guid" + e);
 					ServerGuid = null;
@@ -205,9 +205,9 @@ namespace WaveBox
 			logger.Info("[WAVEBOX] Scanning media directories...");
 			FileManager.Instance.Setup();
 
-            // Start podcast download queue
-            PodcastManagement.DownloadQueue.FeedChecks.queueOperation(new FeedCheckOperation(0));
-            PodcastManagement.DownloadQueue.FeedChecks.startScanQueue();
+			// Start podcast download queue
+			PodcastManagement.DownloadQueue.FeedChecks.queueOperation(new FeedCheckOperation(0));
+			PodcastManagement.DownloadQueue.FeedChecks.startScanQueue();
 
 			// sleep the main thread so we can go about handling api calls and stuff on other threads.
 			//Thread.Sleep(Timeout.Infinite);
@@ -280,9 +280,13 @@ namespace WaveBox
 				// If the address is in use, WaveBox (or another service) is probably bound to that port; error out
 				// For another sockets exception, just print the message
 				if (e.SocketErrorCode.ToString() == "AddressAlreadyInUse")
+				{
 					logger.Info("[WAVEBOX(1)] ERROR: Socket already in use.  Ensure that WaveBox is not already running.");
+				}
 				else
+				{
 					logger.Info("[WAVEBOX(2)] ERROR: " + e);
+				}
 
 				// Quit with error return code
 				Environment.Exit(-1);
