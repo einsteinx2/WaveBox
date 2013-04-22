@@ -12,7 +12,8 @@ namespace WaveBox.DataModel.Model
 {
 	public class User
 	{
-		public const int HashIterations = 1500;
+		// PBKDF2 iterations
+		public const int HashIterations = 2500;
 
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -181,7 +182,7 @@ namespace WaveBox.DataModel.Model
 			}
 
 			// Return string representation
-			return Encoding.Default.GetString(salt);
+			return Convert.ToBase64String(salt);
 		}
 
 		public void UpdatePassword(string password)
@@ -280,7 +281,7 @@ namespace WaveBox.DataModel.Model
 
 		public bool Authenticate(string password)
 		{
-			string hash = ComputePasswordHash(password, PasswordSalt, HashIterations);
+			string hash = ComputePasswordHash(password, PasswordSalt);
 			return hash == PasswordHash;
 		}
 
