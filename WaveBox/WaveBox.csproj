@@ -88,9 +88,6 @@
     <Reference Include="NLog">
       <HintPath>lib\NLog.dll</HintPath>
     </Reference>
-    <Reference Include="RTP">
-      <HintPath>lib\RTP.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -126,7 +123,6 @@
     <Compile Include="src\DataModel\Singletons\FileManager.cs" />
     <Compile Include="src\DataModel\Singletons\Jukebox.cs" />
     <Compile Include="src\DataModel\Singletons\Settings.cs" />
-    <Compile Include="src\Multicast\MulticastStreamer.cs" />
     <Compile Include="src\OperationQueue\DelayedOperationQueue.cs" />
     <Compile Include="src\OperationQueue\IDelayedOperation.cs" />
     <Compile Include="src\DataModel\FolderScanning\AbstractOperation.cs" />
