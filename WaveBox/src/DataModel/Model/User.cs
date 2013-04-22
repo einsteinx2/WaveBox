@@ -12,6 +12,8 @@ namespace WaveBox.DataModel.Model
 {
 	public class User
 	{
+		public const int HashIterations = 1500;
+
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 
 		public int? UserId { get; set; }
@@ -145,27 +147,41 @@ namespace WaveBox.DataModel.Model
 			return BitConverter.ToString(provider.ComputeHash(Encoding.ASCII.GetBytes(sumthis))).Replace("-", "");
 		}
 
-		// Could consider using stronger hash algorithm?
-		// Maybe bcrypt would be overkill, but sha1 is pretty weak.
-		// - mdlayher, 4/21/13
+		// Compute password hash using PBKDF2
 		private static string ComputePasswordHash(string password, string salt)
 		{
-			//long startTime = DateTime.Now.Ticks;
-			string hash = Sha1(password + salt);
-
-			for (int i = 0; i < 50; i++)
-			{
-				hash = Sha1(hash + salt);
-			}
-
-			return hash;
+			// Hash using predefined iterations
+			return ComputePasswordHash(password, salt, HashIterations);
 		}
 
-		// As above, could look into an option with more entropy for salt generation.
-		// - mdlayher, 4/21/13
+		// Compute password hash using PBKDF2
+		private static string ComputePasswordHash(string password, string salt, int iterations)
+		{
+			// Convert salt to byte array
+			byte[] saltBytes = Encoding.UTF8.GetBytes(salt);
+
+			// Hash using PBKDF2 with salt and predefined iterations
+			using (Rfc2898DeriveBytes pbkdf2 = new Rfc2898DeriveBytes(password, saltBytes, iterations))
+			{
+				var key = pbkdf2.GetBytes(64);
+				return Convert.ToBase64String(key);
+			}
+		}
+
+		// Use RNG crypto service to generate random bytes for salt
 		private static string GeneratePasswordSalt()
 		{
-			return Sha1(Convert.ToString(DateTime.Now.Ticks));
+			// Create byte array to store salt
+			byte[] salt = new byte[32];
+
+			// Fill array using RNG
+			using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
+			{
+				rng.GetBytes(salt);
+			}
+
+			// Return string representation
+			return Encoding.Default.GetString(salt);
 		}
 
 		public void UpdatePassword(string password)
@@ -264,7 +280,7 @@ namespace WaveBox.DataModel.Model
 
 		public bool Authenticate(string password)
 		{
-			string hash = ComputePasswordHash(password, PasswordSalt);
+			string hash = ComputePasswordHash(password, PasswordSalt, HashIterations);
 			return hash == PasswordHash;
 		}
 
