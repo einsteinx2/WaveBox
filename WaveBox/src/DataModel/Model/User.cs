@@ -279,10 +279,27 @@ namespace WaveBox.DataModel.Model
 			return new User(userName);
 		}
 
+		// Verify password, using timing attack resistant approach
+		// Credit to PHP5.5 Password API for this method
 		public bool Authenticate(string password)
 		{
+			// Compute hash
 			string hash = ComputePasswordHash(password, PasswordSalt);
-			return hash == PasswordHash;
+
+			// Ensure hashes are same length
+			if (hash.Length != PasswordHash.Length)
+			{
+				return false;
+			}
+
+			// Compare ASCII value of each character, bitwise OR any diff
+			short status = 0;
+			for (int i = 0; i < hash.Length; i++)
+			{
+				status |= ((int)hash[i] ^ (int)PasswordHash[i]);
+			}
+
+			return status == 0;
 		}
 
 		public bool CreateSession(string password, string clientName)
