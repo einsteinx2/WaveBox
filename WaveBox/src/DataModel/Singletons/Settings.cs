@@ -27,6 +27,9 @@ namespace WaveBox.DataModel.Singletons
 
 		public static short Port { get { return settingsModel.Port; } }
 
+		public static string AudioTranscoder { get { return settingsModel.AudioTranscoder; } }
+		public static string VideoTranscoder { get { return settingsModel.VideoTranscoder; } }
+
 		public static string PodcastFolder { get { return settingsModel.PodcastFolder; } }
 
 		public static int PodcastCheckInterval { get { return settingsModel.PodcastCheckInterval; } }
@@ -58,6 +61,9 @@ namespace WaveBox.DataModel.Singletons
 			
 			try
 			{
+				settingsModel.AudioTranscoder = json.audioTranscoder;
+				settingsModel.VideoTranscoder = json.videoTranscoder;
+
 				string podcastFolderTemp = json.podcastFolderDoesntExist;
 				settingsModel.PodcastFolder = podcastFolderTemp;
 				settingsChanged = true;
@@ -70,9 +76,9 @@ namespace WaveBox.DataModel.Singletons
 		public static bool WriteSettings(string jsonString)
 		{
 			dynamic json = JsonConvert.DeserializeObject(jsonString);
-
 			bool settingsChanged = false;
 
+			// WaveBox port
 			try
 			{
 				short? port = json.port;
@@ -84,6 +90,7 @@ namespace WaveBox.DataModel.Singletons
 			}
 			catch { }
 
+			// List of media folders
 			try
 			{
 				if (json.mediaFolders != null)
@@ -100,6 +107,29 @@ namespace WaveBox.DataModel.Singletons
 			}
 			catch { }
 
+			// Default audio transcoder
+			try
+			{
+				if (json.audioTranscoder != null)
+				{
+					settingsModel.AudioTranscoder = json.audioTranscoder;
+					settingsChanged = true;
+				}
+			}
+			catch { }
+
+			// Default video transcoder
+			try
+			{
+				if (json.videoTranscoder != null)
+				{
+					settingsModel.VideoTranscoder = json.videoTranscoder;
+					settingsChanged = true;
+				}
+			}
+			catch { }
+
+			// Podcast folder
 			try
 			{
 				string podcastFolderTemp = json.podcastFolder;
@@ -111,6 +141,7 @@ namespace WaveBox.DataModel.Singletons
 			}
 			catch { }
 
+			// Pretty-printed JSON for API output
 			try
 			{
 				bool? prettyJsonTemp = json.prettyJson;
@@ -122,6 +153,7 @@ namespace WaveBox.DataModel.Singletons
 			}
 			catch { }
 
+			// Interval to check for new podcast episodes
 			try
 			{
 				int? podcastCheckIntervalTemp = json.podcastCheckInterval;
@@ -133,6 +165,7 @@ namespace WaveBox.DataModel.Singletons
 			}
 			catch { }
 
+			// List of names to check for folder art
 			try
 			{
 				if (json.folderArtNames != null)
@@ -222,7 +255,10 @@ namespace WaveBox.DataModel.Singletons
 
 			Action<char> AppendDiscardingWhitespace = (c) => 
 			{
-				if(c != '\t' && c != ' ') js.Append(c);
+				if (c != '\t' && c != ' ')
+				{
+					js.Append(c);
+				}
 			};
 
 			while ((line = reader.ReadLine()) != null)
@@ -307,6 +343,12 @@ namespace WaveBox.DataModel.Singletons
 		
 		[JsonProperty("mediaFolders")]
 		public List<string> MediaFolders { get; set; }
+
+		[JsonProperty("audioTranscoder")]
+		public string AudioTranscoder { get; set; }
+
+		[JsonProperty("videoTranscoder")]
+		public string VideoTranscoder { get; set; }
 		
 		[JsonProperty("podcastFolder")]
 		public string PodcastFolder { get; set; }
