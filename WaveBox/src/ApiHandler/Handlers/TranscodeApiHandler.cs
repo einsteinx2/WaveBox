@@ -70,19 +70,39 @@ namespace WaveBox.ApiHandler.Handlers
 					{
 						item = new Song(id);
 						logger.Info("[TRANSCODEAPI] Preparing audio transcode: " + item.FileName);
-						
-						// Default to MP3 transcoding
-						transType = TranscodeType.MP3;
+
+						// Use transcode type from config file, or the default if it's invalid
+						TranscodeType transTypeTemp = TranscodeTypeExtensions.StringToTranscodeType(Settings.AudioTranscoder);
+						if (transTypeTemp != TranscodeType.UNKNOWN)
+						{
+							// Use configuration file settings
+							transType = transTypeTemp;
+						}
+						else
+						{
+							// Default to MP3 transcoding
+							transType = TranscodeType.MP3;
+						}
 					}
 					else if (itemType == ItemType.Video)
 					{
 						item = new Video(id);
 						logger.Info("[TRANSCODEAPI] Preparing video transcode: " + item.FileName);
 
-						// Default to h.264 transcoding
-						transType = TranscodeType.X264;
+						// Use transcode type from config file, or the default if it's invalid
+						TranscodeType transTypeTemp = TranscodeTypeExtensions.StringToTranscodeType(Settings.VideoTranscoder);
+						if (transTypeTemp != TranscodeType.UNKNOWN)
+						{
+							// Use configuration file settings
+							transType = transTypeTemp;
+						}
+						else
+						{
+							// Default to X264 encoding
+							transType = TranscodeType.X264;
+						}
 					}
-					
+
 					// Return an error if no item exists
 					if ((item == null) || (!File.Exists(item.FilePath)))
 					{

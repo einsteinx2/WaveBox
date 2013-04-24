@@ -34,7 +34,10 @@ namespace WaveBox.Transcoding
 		// Video
 		MP4,
 		MPEGTS,
-		X264
+		X264,
+
+		// Bad type (for defaults)
+		UNKNOWN
 	}
 
 	public static class TranscodeTypeExtensions
@@ -62,6 +65,19 @@ namespace WaveBox.Transcoding
 			}
 
 			return false;
+		}
+
+		// Return transcode type parsed from input string
+		public static TranscodeType StringToTranscodeType(string transType)
+		{
+			// Try to parse into a TranscodeType
+			TranscodeType result;
+			if (!Enum.TryParse(transType, out result))
+			{
+				return TranscodeType.UNKNOWN;
+			}
+
+			return result;
 		}
 	}
 
