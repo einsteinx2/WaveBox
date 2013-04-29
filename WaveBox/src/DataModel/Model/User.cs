@@ -293,7 +293,7 @@ namespace WaveBox.DataModel.Model
 			}
 
 			// Compare ASCII value of each character, bitwise OR any diff
-			short status = 0;
+			int status = 0;
 			for (int i = 0; i < hash.Length; i++)
 			{
 				status |= ((int)hash[i] ^ (int)PasswordHash[i]);

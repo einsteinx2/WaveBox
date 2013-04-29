@@ -26,6 +26,9 @@ namespace WaveBox
 		// Logger
 		private static Logger logger = LogManager.GetCurrentClassLogger();
 
+		// Nat
+		public Nat Nat;
+
 		// ZeroConf
 		public RegisterService ZeroConfService { get; set; }
 
@@ -184,6 +187,10 @@ namespace WaveBox
 			// Perform initial setup of Settings, Database
 			Database.DatabaseSetup();
 			Settings.SettingsSetup();
+
+			// Start NAT routing
+			this.Nat = new Nat();
+			this.Nat.Start();
 
 			// Register server with registration service
 			ServerSetup();

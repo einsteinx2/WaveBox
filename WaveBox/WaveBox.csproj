@@ -88,6 +88,9 @@
     <Reference Include="NLog">
       <HintPath>lib\NLog.dll</HintPath>
     </Reference>
+    <Reference Include="Mono.Nat">
+      <HintPath>lib\Mono.Nat.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -167,6 +170,8 @@
     <Compile Include="src\Transcoding\FFMpegAACTranscoder.cs" />
     <Compile Include="src\ApiHandler\Handlers\SearchApiHandler.cs" />
     <Compile Include="src\ImageMagickInterop.cs" />
+    <Compile Include="src\Nat.cs" />
+    <Compile Include="src\DataModel\Model\Genre.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="lib\Newtonsoft.Json.dll" />
@@ -247,6 +252,16 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="libsqlite3.x86.so.0">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="lib\Mono.Nat.dll" />
+    <None Include="libMagickWand-Q16.7.dylib">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="libMagickCore-Q16.7.dylib">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="libltdl.7.dylib">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

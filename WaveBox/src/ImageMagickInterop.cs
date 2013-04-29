@@ -101,7 +101,7 @@ namespace WaveBox
 			IntPtr buf=GetImageBlob(wand, out len);
 			
 			// Copy it
-			var dest=new byte[len.ToInt32()];
+			var dest = new byte[len.ToInt32()];
 			Marshal.Copy(buf, dest, 0, len.ToInt32());
 			
 			// Relinquish

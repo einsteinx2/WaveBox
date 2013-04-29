@@ -107,12 +107,12 @@ namespace WaveBox.ApiHandler.Handlers
 			// get original image
 			byte[] b = new byte[stream.Length];
 			stream.Read(b, 0, (int)stream.Length);
-			ImageMagickInterop.ReadImageBlob(wand, b);
+			bool success = ImageMagickInterop.ReadImageBlob(wand, b);
 
 			int sourceWidth = (int)ImageMagickInterop.GetWidth(wand);
 			int sourceHeight = (int)ImageMagickInterop.GetHeight(wand);
 
-			Console.WriteLine("sourceWidth: {0}, sourceHeight: {1}", sourceWidth, sourceHeight);
+			Console.WriteLine("sourceWidth: {0}, sourceHeight: {1}, stream length: {2}, success: {3}, wand: {4}", sourceWidth, sourceHeight, stream.Length, success, wand);
 			
 			float nPercent = 0;
 			float nPercentW = 0;
