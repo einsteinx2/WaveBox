@@ -35,7 +35,7 @@ namespace WaveBox.DataModel.Model
 		public int? ReleaseYear { get; set; }
 
 		[JsonProperty("artId")]
-		public int? ArtId { get { return Art.ArtIdForItemId(AlbumId); } }
+		public int? ArtId { get { return DetermineArtId(); } }
 
 		public Album()
 		{
@@ -115,6 +115,115 @@ namespace WaveBox.DataModel.Model
 			{
 				Database.Close(conn, reader);
 			}
+		}
+
+		public int? DetermineArtId()
+		{
+			// Return the art id (if any) for this album, based on the current best art id using either a song art id or the folder art id
+
+			List<int> songArtIds = SongArtIds();
+			if (songArtIds.Count == 1)
+			{
+				// There is one unique art ID for these songs, so return it
+				return songArtIds[0];
+			}
+			else
+			{
+				// Check the folder art id(s)
+				List<int> folderArtIds = FolderArtIds();
+				if (folderArtIds.Count == 0)
+				{
+					// There is no folder art
+					if (songArtIds.Count == 0)
+					{
+						// There is no art for this album
+						return null;
+					}
+					else
+					{
+						// For now, just return the first art id
+						return songArtIds[0];
+					}
+				}
+				else if (folderArtIds.Count == 1)
+				{
+					// There are multiple different art ids for the songs, but only one folder art, so use that. Likely this is a compilation album
+					return folderArtIds[0];
+				}
+				else 
+				{
+					// There are multiple song and folder art ids, so let's just return the first song art id for now
+					return songArtIds[0];
+				}
+			}
+		}
+
+		private List<int> SongArtIds()
+		{
+			List<int> artIds = new List<int>();
+			
+			IDbConnection conn = null;
+			IDataReader reader = null;
+			
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT art_item.art_id FROM song " +
+				                                     "LEFT JOIN art_item ON song_id = art_item.item_id " +
+				                                     "WHERE song.song_album_id = @albumid AND art_item.art_id IS NOT NULL GROUP BY art_item.art_id", conn);
+				q.AddNamedParam("@albumid", AlbumId);
+				q.Prepare();
+				reader = q.ExecuteReader();
+				
+				while (reader.Read())
+				{
+					artIds.Add(reader.GetInt32(0));
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error("[ALBUM] ERROR: " + e);
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+			
+			return artIds;
+		}
+
+		private List<int> FolderArtIds()
+		{
+			List<int> artIds = new List<int>();
+			
+			IDbConnection conn = null;
+			IDataReader reader = null;
+			
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT art_item.art_id FROM song " +
+				                                     "LEFT JOIN art_item ON song_folder_id = art_item.item_id " +
+				                                     "WHERE song.song_album_id = @albumid AND art_item.art_id IS NOT NULL GROUP BY art_item.art_id", conn);
+				q.AddNamedParam("@albumid", AlbumId);
+				q.Prepare();
+				reader = q.ExecuteReader();
+				
+				while (reader.Read())
+				{
+					artIds.Add(reader.GetInt32(0));
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error("[ALBUM] ERROR: " + e);
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+			
+			return artIds;
 		}
 
 		private static bool InsertAlbum(string albumName, int? artistId)
