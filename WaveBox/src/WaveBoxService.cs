@@ -8,6 +8,9 @@ using System.Runtime.InteropServices;
 using WaveBox.Transcoding;
 using WaveBox.DataModel.Singletons;
 using NLog;
+using System.Text;
+using System.Net;
+using System.Web;
 
 namespace WaveBox
 {
@@ -67,10 +70,11 @@ namespace WaveBox
 				// Start it!
 				this.OnStart();
 			}
-			// Catch any exceptions
+			// Handle any uncaught exceptions
 			catch (Exception e)
 			{
-				logger.Error("[SERVICE(1)] {0}", e);
+				//logger.Error("[SERVICE(1)] {0}", e);
+				WaveBoxService.ReportCrash(e, false);
 			}
 		}
 
@@ -326,6 +330,44 @@ namespace WaveBox
 		    dt = dt.AddSeconds(secondsSince1970);
 		    dt = dt.AddHours(TimeZone.CurrentTimeZone.GetUtcOffset(dt).Hours);
 		    return dt;
+		}
+
+		public static void ReportCrash(Exception exception, bool terminateProcess) 
+		{
+			logger.Error("ReportCrash called");
+			logger.Error(exception.ToString());
+
+			// Submit to the web service
+			Uri URI = new Uri("http://crash.waveboxapp.com");
+			string parameters = "exception=" + HttpUtility.UrlEncode(exception.ToString());
+			
+			using (WebClient wc = new WebClient())
+			{
+				wc.Headers[HttpRequestHeader.ContentType] = "application/x-www-form-urlencoded";
+
+				if (terminateProcess)
+				{
+					// We're about to terminate, so send it synchronously
+					string response = wc.UploadString(URI, parameters);
+					logger.Error("Crash report server response: " + response);
+				}
+				else
+				{
+					// We're stayin' alive, stayin' alive, so send it asynchronously
+					wc.UploadStringCompleted += new UploadStringCompletedEventHandler((sender, e) => logger.Error("Crash report server async response: " + e.Result));
+					wc.UploadStringAsync(URI, parameters);
+				}
+			}
+
+			if (terminateProcess)
+			{
+				System.Environment.FailFast("Unhandled exception caught, bailing as we're now in an unknown state.");
+			}
+		}
+
+		private static void ReportCrashAsyncCallback(object sender, UploadStringCompletedEventArgs e)
+		{
+			logger.Error("Crash report server async response: " + e.Result);
 		}
 	}
 }
