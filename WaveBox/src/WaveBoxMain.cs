@@ -177,6 +177,9 @@ namespace WaveBox
 		{
 			logger.Info("[WAVEBOX] Initializing WaveBox on {0} platform...", WaveBoxService.Platform);
 
+			// Initialize ImageMagick
+			ImageMagickInterop.WandGenesis();
+
 			// Create directory for WaveBox's root path, if it doesn't exist
 			string rootDir = RootPath();
 			if (!Directory.Exists(rootDir))
@@ -313,6 +316,9 @@ namespace WaveBox
 		public void Stop()
 		{
 			httpServer.Stop();
+
+			// Dispose of ImageMagick
+			ImageMagickInterop.WandTerminus();
 		}
 
 		/// <summary>

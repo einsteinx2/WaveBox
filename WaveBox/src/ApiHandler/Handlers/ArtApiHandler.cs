@@ -9,6 +9,7 @@ using WaveBox.Http;
 using WaveBox.DataModel.Singletons;
 using TagLib;
 using NLog;
+using System.Runtime.InteropServices;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -99,8 +100,6 @@ namespace WaveBox.ApiHandler.Handlers
 
 		private static byte[] ResizeImageMagick(Stream stream, int width)
 		{
-			ImageMagickInterop.WandGenesis();
-
 			// new wand
 			IntPtr wand = ImageMagickInterop.NewWand();
 
@@ -142,7 +141,6 @@ namespace WaveBox.ApiHandler.Handlers
 
 			// cleanup
 			ImageMagickInterop.DestroyWand(wand);
-			ImageMagickInterop.WandTerminus();
 			return newData;
 		}
 

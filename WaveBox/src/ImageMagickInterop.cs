@@ -78,6 +78,12 @@ namespace WaveBox
 		
 		[DllImport("libMagickWand", EntryPoint = "MagickGetImageHeight")]
 		public static extern IntPtr GetHeight(IntPtr wand);
+
+		[DllImport("libMagickWand", EntryPoint = "MagickGetException")]
+		public static extern IntPtr GetException(IntPtr wand, IntPtr severity);
+
+		[DllImport("libMagickWand", EntryPoint = "MagickGetExceptionType")]
+		public static extern int GetExceptionType(IntPtr wand);
 		
 		// Interop
 		public static bool ReadImageBlob(IntPtr wand, byte[] blob)
