@@ -172,6 +172,7 @@
     <Compile Include="src\ImageMagickInterop.cs" />
     <Compile Include="src\Nat.cs" />
     <Compile Include="src\DataModel\Model\Genre.cs" />
+    <Compile Include="src\ApiHandler\Handlers\GenresApiHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="lib\Newtonsoft.Json.dll" />

@@ -80,7 +80,7 @@ namespace WaveBox.ApiHandler.Handlers
 			else
 			{
 				// On invalid key, return all artists
-				listOfArtists = new Artist().AllArtists();
+				listOfArtists = Artist.AllArtists();
 			}
 
 			try

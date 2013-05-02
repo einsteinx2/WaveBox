@@ -26,7 +26,13 @@ namespace WaveBox.DataModel.Model
 		
 		[JsonProperty("fileName")]
 		string FileName { get; set; }
-		
+
+		[JsonProperty("genreId")]
+		int? GenreId { get; set; }
+
+		[JsonProperty("genreName")]
+		string GenreName { get; set; }
+
 		[JsonProperty("artId")]
 		int? ArtId { get; }
 		

@@ -61,10 +61,11 @@ namespace WaveBox.DataModel.Model
 			try
 			{
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " +
-					"LEFT JOIN artist ON song_artist_id = artist.artist_id " +
-					"LEFT JOIN album ON song_album_id = album.album_id " +
-					"WHERE song_id = @songid", conn);
+				IDbCommand q = Database.GetDbCommand("SELECT song.*, artist.artist_name, album.album_name, genre.genre_name FROM song " +
+				                                     "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
+				                                     "LEFT JOIN album ON song_album_id = album.album_id " +
+				                                     "LEFT JOIN genre ON song_genre_id = genre.genre_id " +
+				                                     "WHERE song_id = @songid", conn);
 				q.AddNamedParam("@songid", songId);
 
 				q.Prepare();
@@ -161,12 +162,26 @@ namespace WaveBox.DataModel.Model
 
 			try
 			{
-				int y = Convert.ToInt32(file.Tag.Year);
-				ReleaseYear = y;
+				ReleaseYear = Convert.ToInt32(tag.Year);
 			}
 			catch
 			{
 				ReleaseYear = null;
+			}
+
+			try
+			{
+				GenreName = tag.FirstGenre;
+			}
+			catch
+			{
+				GenreName = null;
+			}
+
+			if ((object)GenreName != null)
+			{
+				// Retreive the genre id
+				GenreId = new Genre(GenreName).GenreId;
 			}
 
 			Duration = Convert.ToInt32(file.Properties.Duration.TotalSeconds);
@@ -215,6 +230,8 @@ namespace WaveBox.DataModel.Model
 				LastModified = reader.GetInt64OrNull(reader.GetOrdinal("song_last_modified"));
 				FileName = reader.GetStringOrNull(reader.GetOrdinal("song_file_name"));
 				ReleaseYear = reader.GetInt32OrNull(reader.GetOrdinal("song_release_year"));
+				GenreId = reader.GetInt32OrNull(reader.GetOrdinal("song_genre_id"));
+				GenreName = reader.GetStringOrNull(reader.GetOrdinal("genre_name"));
 			}
 			catch (Exception e)
 			{
@@ -230,8 +247,8 @@ namespace WaveBox.DataModel.Model
 			{
 				// insert the song into the database
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("REPLACE INTO song (song_id, song_folder_id, song_artist_id, song_album_id, song_file_type_id, song_name, song_track_num, song_disc_num, song_duration, song_bitrate, song_file_size, song_last_modified, song_file_name, song_release_year) " + 
-													 "VALUES (@songid, @folderid, @artistid, @albumid, @filetype, @songname, @tracknum, @discnum, @duration, @bitrate, @filesize, @lastmod, @filename, @releaseyear)"
+				IDbCommand q = Database.GetDbCommand("REPLACE INTO song (song_id, song_folder_id, song_artist_id, song_album_id, song_file_type_id, song_name, song_track_num, song_disc_num, song_duration, song_bitrate, song_file_size, song_last_modified, song_file_name, song_release_year, song_genre_id) " + 
+													 "VALUES (@songid, @folderid, @artistid, @albumid, @filetype, @songname, @tracknum, @discnum, @duration, @bitrate, @filesize, @lastmod, @filename, @releaseyear, @genreid)"
 													 , conn);
 
 				q.AddNamedParam("@songid", ItemId);
@@ -255,6 +272,7 @@ namespace WaveBox.DataModel.Model
 				{
 					q.AddNamedParam("@releaseyear", ReleaseYear);
 				}
+				q.AddNamedParam("@genreid", GenreId);
 
 				q.Prepare();
 
@@ -283,9 +301,11 @@ namespace WaveBox.DataModel.Model
 			try
 			{
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " +
-					"LEFT JOIN artist ON song_artist_id = artist.artist_id " +
-					"LEFT JOIN album ON song_album_id = album.album_id ", conn);
+				IDbCommand q = Database.GetDbCommand("SELECT song.*, artist.artist_name, album.album_name, genre.genre_name FROM song " +
+				                                     "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
+				                                     "LEFT JOIN album ON song_album_id = album.album_id " +
+				                                     "LEFT JOIN genre ON song_genre_id = genre.genre_id"
+				                                     , conn);
 
 				q.Prepare();
 				reader = q.ExecuteReader();

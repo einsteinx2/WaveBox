@@ -127,6 +127,9 @@ namespace WaveBox.DataModel.Model
 
 		private void SetPropertiesFromQueryReader(IDataReader reader)
 		{
+			if ((object)reader == null)
+				return;
+
 			ArtistId = reader.GetInt32OrNull(reader.GetOrdinal("artist_id"));
 			ArtistName = reader.GetStringOrNull(reader.GetOrdinal("artist_name"));
 		}
@@ -215,10 +218,11 @@ namespace WaveBox.DataModel.Model
 			try
 			{
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " + 
-					"LEFT JOIN artist ON song_artist_id = artist.artist_id " +
-					"LEFT JOIN album ON song_album_id = album.album_id " +
-					"WHERE song_artist_id = @artistid", conn);
+				IDbCommand q = Database.GetDbCommand("SELECT song.*, artist.artist_name, album.album_name, genre.genre_name FROM song " + 
+				                                     "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
+				                                     "LEFT JOIN album ON song_album_id = album.album_id " +
+				                                     "LEFT JOIN genre ON song_genre_id = genre.genre_id " +
+				                                     "WHERE song_artist_id = @artistid", conn);
 				q.AddNamedParam("@artistid", ArtistId);
 
 				q.Prepare();
@@ -272,7 +276,7 @@ namespace WaveBox.DataModel.Model
 			return anArtist;
 		}
 
-		public List<Artist> AllArtists()
+		public static List<Artist> AllArtists()
 		{
 			List<Artist> artists = new List<Artist>();
 

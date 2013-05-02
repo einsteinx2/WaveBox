@@ -60,7 +60,7 @@ namespace WaveBox.DataModel.Model
 				conn = Database.GetDbConnection();
 
 				IDbCommand q = Database.GetDbCommand("SELECT * FROM folder " + 
-					"WHERE folder_id = @folderid LIMIT 1", conn);
+				                                     "WHERE folder_id = @folderid LIMIT 1", conn);
 
 				q.AddNamedParam("@folderid", folderId);
 				q.Prepare();
@@ -68,26 +68,7 @@ namespace WaveBox.DataModel.Model
 
 				if (reader.Read())
 				{
-					FolderId = reader.GetInt32(reader.GetOrdinal("folder_id"));
-					FolderName = reader.GetString(reader.GetOrdinal("folder_name"));
-					FolderPath = reader.GetString(reader.GetOrdinal("folder_path"));
-					if (reader.GetValue(reader.GetOrdinal("parent_folder_id")) == DBNull.Value)
-					{
-						ParentFolderId = null;
-					}
-					else 
-					{
-						ParentFolderId = reader.GetInt32(reader.GetOrdinal("parent_folder_id"));
-					}
-
-					if (reader.GetValue(reader.GetOrdinal("folder_media_folder_id")) == DBNull.Value)
-					{
-						MediaFolderId = null;
-					}
-					else 
-					{
-						MediaFolderId = reader.GetInt32(reader.GetOrdinal("parent_folder_id"));
-					}
+					SetPropertiesFromQueryReader(reader);
 				}
 			}
 			catch (Exception e)
@@ -185,29 +166,9 @@ namespace WaveBox.DataModel.Model
 
 				while (reader.Read())
 				{
-					if (path == reader.GetString(reader.GetOrdinal("folder_path")))
+					if (path.Equals(reader.GetString(reader.GetOrdinal("folder_path"))))
 					{
-						FolderId = reader.GetInt32(reader.GetOrdinal("folder_id"));
-						FolderName = reader.GetString(reader.GetOrdinal("folder_name"));
-						FolderName = reader.GetString(reader.GetOrdinal("folder_path"));
-
-						if (reader.GetValue(reader.GetOrdinal("parent_folder_id")) == DBNull.Value)
-						{
-							ParentFolderId = null;
-						}
-						else
-						{
-							ParentFolderId = reader.GetInt32(reader.GetOrdinal("parent_folder_id"));
-						}
-
-						if (reader.GetValue(reader.GetOrdinal("folder_media_folder_id")) == DBNull.Value)
-						{
-							MediaFolderId = null;
-						}
-						else
-						{
-							MediaFolderId = reader.GetInt32(reader.GetOrdinal("folder_media_folder_id"));
-						}
+						SetPropertiesFromQueryReader(reader);
 					}
 				}
 				reader.Close();
@@ -223,6 +184,14 @@ namespace WaveBox.DataModel.Model
 			}
 		}
 
+		public Folder(IDataReader reader)
+		{
+			if ((object)reader == null)
+				return;
+
+			SetPropertiesFromQueryReader(reader);
+		}
+
 		public Folder ParentFolder()
 		{
 			return new Folder(ParentFolderId);
@@ -231,6 +200,33 @@ namespace WaveBox.DataModel.Model
 		public void Scan()
 		{
 			// TO DO: scanning!  yay!
+		}
+
+		private void SetPropertiesFromQueryReader(IDataReader reader)
+		{
+			if ((object)reader == null)
+				return;
+			
+			FolderId = reader.GetInt32(reader.GetOrdinal("folder_id"));
+			FolderName = reader.GetString(reader.GetOrdinal("folder_name"));
+			FolderPath = reader.GetString(reader.GetOrdinal("folder_path"));
+			if (reader.GetValue(reader.GetOrdinal("parent_folder_id")) == DBNull.Value)
+			{
+				ParentFolderId = null;
+			}
+			else 
+			{
+				ParentFolderId = reader.GetInt32(reader.GetOrdinal("parent_folder_id"));
+			}
+			
+			if (reader.GetValue(reader.GetOrdinal("folder_media_folder_id")) == DBNull.Value)
+			{
+				MediaFolderId = null;
+			}
+			else 
+			{
+				MediaFolderId = reader.GetInt32(reader.GetOrdinal("parent_folder_id"));
+			}
 		}
 
 		public List<IMediaItem> ListOfMediaItems()
@@ -254,9 +250,10 @@ namespace WaveBox.DataModel.Model
 			try
 			{
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT song.*, artist.artist_name, album.album_name FROM song " +
+				IDbCommand q = Database.GetDbCommand("SELECT song.*, artist.artist_name, album.album_name, genre.genre_name FROM song " +
 													 "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
 													 "LEFT JOIN album ON song_album_id = album.album_id " +
+				                                     "LEFT JOIN genre ON song_genre_id = genre.genre_id " +
 													 "WHERE song_folder_id = @folderid", conn);
 				
 				q.AddNamedParam("@folderid", FolderId);
@@ -521,9 +518,9 @@ namespace WaveBox.DataModel.Model
 			return pFolderId;
 		}
 
-		public static List<Folder> MediaFolders ()
+		public static List<Folder> MediaFolders()
 		{
-			List<Folder> folders = new List<Folder> ();
+			List<Folder> folders = new List<Folder>();
 			IDbConnection conn = null;
 			IDataReader reader = null;
 
