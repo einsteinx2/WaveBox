@@ -4,7 +4,6 @@ using System.Web;
 using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
 using Newtonsoft.Json;
-using NLog;
 
 namespace WaveBox.ApiHandler.Handlers
 {

@@ -6,13 +6,12 @@ using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
 using System.Data;
 using System.Collections.Concurrent;
-using NLog;
 
 namespace WaveBox.PodcastManagement
 {
 	public class Podcast
 	{
-		private static Logger logger = LogManager.GetCurrentClassLogger();
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		public static readonly string PodcastMediaDirectory = Settings.PodcastFolder;
 
@@ -63,7 +62,7 @@ namespace WaveBox.PodcastManagement
 				AddToDatabase();
 			}
 
-			//logger.Info(Title + "\r\n " + Author + "\r\n " + Description + "\r\n\r\n");
+			//if (logger.IsInfoEnabled) logger.Info(Title + "\r\n " + Author + "\r\n " + Description + "\r\n\r\n");
 		}
 
 		public Podcast(long? podcastId)
@@ -97,7 +96,7 @@ namespace WaveBox.PodcastManagement
 			}
 			catch (Exception e)
 			{
-				logger.Info("[PODCAST (2)] ERROR: " +  e);
+				logger.Error(e);
 			}
 			finally
 			{
@@ -133,7 +132,7 @@ namespace WaveBox.PodcastManagement
 			}
 			catch (Exception e)
 			{
-				logger.Info("[PODCAST (1)] ERROR: " +  e);
+				logger.Error(e);
 			}
 			finally
 			{
@@ -204,7 +203,7 @@ namespace WaveBox.PodcastManagement
 			}
 			catch (Exception e)
 			{
-				logger.Info("[PODCAST (2)] ERROR: " + e);
+				logger.Error(e);
 			}
 			finally
 			{
@@ -241,7 +240,7 @@ namespace WaveBox.PodcastManagement
 			}
 			catch (Exception e)
 			{
-				logger.Info("[PODCAST (2)] ERROR: " +  e);
+				logger.Error(e);
 			}
 			finally
 			{
@@ -295,7 +294,7 @@ namespace WaveBox.PodcastManagement
 			}
 			catch (Exception e)
 			{
-				logger.Info("[PODCAST (3)] ERROR: " +  e);
+				logger.Error(e);
 			}
 			finally
 			{
@@ -335,7 +334,7 @@ namespace WaveBox.PodcastManagement
 			}
 			catch (Exception e)
 			{
-				logger.Info("[PODCAST (3)] ERROR: " +  e);
+				logger.Error(e);
 			}
 			finally
 			{
@@ -364,7 +363,7 @@ namespace WaveBox.PodcastManagement
 			}
 			catch (Exception e)
 			{
-				logger.Info("[PODCAST (3)] ERROR: " +  e);
+				logger.Error(e);
 			}
 			finally
 			{

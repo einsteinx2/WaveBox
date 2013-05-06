@@ -2,13 +2,12 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using WaveBox.Http;
-using NLog;
 
 namespace WaveBox.ApiHandler.Handlers
 {
 	public class WebInterfaceHandler : IApiHandler
 	{
-		private static Logger logger = LogManager.GetCurrentClassLogger();
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
@@ -56,7 +55,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 			}
 
-			logger.Info("[WEBINTERFACE] path: " + path);
+			if (logger.IsInfoEnabled) logger.Info("path: " + path);
 
 			// Make sure the file exists
 			if (File.Exists(path))
@@ -64,7 +63,7 @@ namespace WaveBox.ApiHandler.Handlers
 				// If it exists, check to see if the headers contains an If-Modified-Since entry
 				if (Processor.HttpHeaders.ContainsKey("If-Modified-Since"))
 				{
-					logger.Info(Processor.HttpHeaders["If-Modified-Since"]);
+					if (logger.IsInfoEnabled) logger.Info(Processor.HttpHeaders["If-Modified-Since"]);
 
 					// Took me a while to figure this out, but even if the time zone in the request is GMT, DateTime.Parse converts it to local time.
 					var ims = DateTime.Parse(Processor.HttpHeaders["If-Modified-Since"].ToString());
@@ -72,13 +71,13 @@ namespace WaveBox.ApiHandler.Handlers
 
 					if (ims >= lastMod)
 					{
-						logger.Info("[WEBINTERFACE] File not modified: " + path);
+						if (logger.IsInfoEnabled) logger.Info("File not modified: " + path);
 						Processor.WriteNotModifiedHeader();
 						return;
 					}
 				}
 
-				logger.Info("[WEBINTERFACE] serving file at path: " + path);
+				if (logger.IsInfoEnabled) logger.Info("serving file at path: " + path);
 
 				// Serve up files inside html directory
 				FileStream file = new FileStream(path, FileMode.Open, FileAccess.Read);
@@ -89,7 +88,7 @@ namespace WaveBox.ApiHandler.Handlers
 				{
 					string range = (string)Processor.HttpHeaders["Range"];
 					string start = range.Split(new char[]{'-', '='})[1];
-					logger.Info("[WEBINTERFACE] Connection retried.  Resuming from {0}", start);
+					if (logger.IsInfoEnabled) logger.Info("Connection retried.  Resuming from " + start);
 					startOffset = Convert.ToInt32(start);
 				}
 
@@ -104,7 +103,7 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 			else
 			{
-				logger.Info("[WEBINTERFACE] file at path does not exist: " + path);
+				if (logger.IsInfoEnabled) logger.Info("file at path does not exist: " + path);
 
 				// File not found
 				Processor.WriteErrorHeader();

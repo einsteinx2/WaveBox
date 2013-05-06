@@ -4,7 +4,6 @@ using System.Net;
 using System.IO;
 using System.Diagnostics;
 using WaveBox.OperationQueue;
-using NLog;
 
 namespace WaveBox.PodcastManagement
 {
@@ -13,7 +12,7 @@ namespace WaveBox.PodcastManagement
 	/// </summary>
 	public static class DownloadQueue
 	{
-		private static Logger logger = LogManager.GetCurrentClassLogger();
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		public static int Count { get { return q.Count; } }
 
@@ -127,7 +126,7 @@ namespace WaveBox.PodcastManagement
 							{
 								File.Delete(q[index].FilePath);
 							}
-							logger.Info("Download canceled");
+							if (logger.IsInfoEnabled) logger.Info("Download canceled");
 
 							// remove the item from the queue
 							Dequeue();
@@ -176,7 +175,7 @@ namespace WaveBox.PodcastManagement
 					{
 						File.Delete(q[i].FilePath);
 					}
-					logger.Info("Download canceled");
+					if (logger.IsInfoEnabled) logger.Info("Download canceled");
 					
 					// remove the item from the queue
 					Dequeue();
@@ -199,7 +198,7 @@ namespace WaveBox.PodcastManagement
 				{
 					contentLength = e.TotalBytesToReceive;
 				}
-				//logger.Info(ep.Title + ": " + ((double)e.BytesReceived / (double)e.TotalBytesToReceive) * 100 + "%");
+				//if (logger.IsInfoEnabled) logger.Info(ep.Title + ": " + ((double)e.BytesReceived / (double)e.TotalBytesToReceive) * 100 + "%");
 				totalBytesRead = e.BytesReceived;
 			});
 
@@ -207,7 +206,7 @@ namespace WaveBox.PodcastManagement
 			{
 				ep.AddToDatabase();
 				sw.Stop();
-				logger.Info("[PODCASTMANAGEMENT] Finished downloading {0} [ {1}, {2}Mbps avg ]", ep.Title, sw.ElapsedMilliseconds / 1000, ((double)totalBytesRead / (double)131072) / (sw.ElapsedMilliseconds / 1000));
+				if (logger.IsInfoEnabled) logger.Info("Finished downloading " + ep.Title + " [ " + sw.ElapsedMilliseconds / 1000 + ", " + ((double)totalBytesRead / (double)131072) / (sw.ElapsedMilliseconds / 1000) + "Mbps avg ]");
 
 				if (DownloadQueue.Count > 0)
 				{
@@ -227,7 +226,7 @@ namespace WaveBox.PodcastManagement
 			ep.FilePath = Podcast.PodcastMediaDirectory + Path.DirectorySeparatorChar + pc.Title + Path.DirectorySeparatorChar + fn;
 
 			webClient.DownloadFileAsync(uri, ep.FilePath);
-			logger.Info("[PODCASTMANAGEMENT] Started downloading {0}", ep.Title);
+			if (logger.IsInfoEnabled) logger.Info("Started downloading " + ep.Title);
 			sw.Start();
 		}
 

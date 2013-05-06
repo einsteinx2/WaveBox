@@ -8,7 +8,6 @@ using WaveBox.DataModel.Model;
 using WaveBox.DataModel.Singletons;
 using System.Diagnostics;
 using Newtonsoft.Json;
-using NLog;
 
 namespace WaveBox.DataModel.Model
 {

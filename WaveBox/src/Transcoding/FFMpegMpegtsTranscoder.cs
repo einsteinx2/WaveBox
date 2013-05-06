@@ -1,6 +1,5 @@
 using System;
 using WaveBox.DataModel.Model;
-using NLog;
 
 namespace WaveBox.Transcoding
 {

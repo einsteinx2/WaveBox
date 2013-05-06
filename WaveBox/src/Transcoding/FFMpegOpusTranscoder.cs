@@ -2,13 +2,12 @@ using System;
 using WaveBox.DataModel.Model;
 using System.Diagnostics;
 using System.IO;
-using NLog;
 
 namespace WaveBox.Transcoding
 {
 	public class FFMpegOpusTranscoder : AbstractTranscoder
 	{
-		private static Logger logger = LogManager.GetCurrentClassLogger();
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		public override TranscodeType Type { get { return TranscodeType.OPUS; } }
 	   
@@ -33,8 +32,8 @@ namespace WaveBox.Transcoding
 			try 
 			{
 				string ffmpegArguments = "-loglevel quiet -i \"" + Item.FilePath + "\" -f wav -";
-				logger.Info("[TRANSCODE] Forking the process");
-				logger.Info("[TRANSCODE] " + "ffmpeg " + ffmpegArguments);
+				if (logger.IsInfoEnabled) logger.Info("Forking the process");
+				if (logger.IsInfoEnabled) logger.Info("ffmpeg " + ffmpegArguments);
 				
 				// Create the ffmpeg process
 				FfmpegProcess = new Process();
@@ -46,7 +45,7 @@ namespace WaveBox.Transcoding
 
 
 				// Create the opusenc object
-				logger.Info("opusenc " + Arguments);
+				if (logger.IsInfoEnabled) logger.Info("opusenc " + Arguments);
 				TranscodeProcess = new Process();
 				TranscodeProcess.StartInfo.FileName = "opusenc";
 				TranscodeProcess.StartInfo.Arguments = Arguments;
@@ -70,7 +69,7 @@ namespace WaveBox.Transcoding
 					{
 						input.Write(buffer, 0, bytesRead);
 					}
-					//logger.Info("{0} bytes written to buffer ({1} this iteration)", totalWritten, bytesRead);
+					//if (logger.IsInfoEnabled) logger.Info("{0} bytes written to buffer ({1} this iteration)", totalWritten, bytesRead);
 
 					if (bytesRead == 0 && FfmpegProcess.HasExited)
 					{
@@ -80,16 +79,16 @@ namespace WaveBox.Transcoding
 					}
 				}
 				
-				logger.Info("[TRANSCODE] Waiting for processes to finish");
+				if (logger.IsInfoEnabled) logger.Info("Waiting for processes to finish");
 				
 				// Block until done
 				TranscodeProcess.WaitForExit();
 				
-				logger.Info("[TRANSCODE] Process finished");
+				if (logger.IsInfoEnabled) logger.Info("Process finished");
 			}
 			catch (Exception e) 
 			{
-				logger.Info("\t" + "[TRANSCODE] Failed to start transcode process " + e);
+				if (logger.IsInfoEnabled) logger.Info("\t" + "Failed to start transcode process " + e);
 
 				try
 				{
@@ -120,7 +119,7 @@ namespace WaveBox.Transcoding
 			if (TranscodeProcess != null)
 			{
 				int exitValue = TranscodeProcess.ExitCode;
-				logger.Info("[TRANSCODE] exit value " + exitValue);
+				if (logger.IsInfoEnabled) logger.Info("exit value " + exitValue);
 				
 				if (exitValue == 0)
 				{

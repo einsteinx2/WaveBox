@@ -8,13 +8,12 @@ using System.Data.SQLite;
 using System.IO;
 using WaveBox.DataModel.Model;
 using WaveBox.DataModel.Singletons;
-using NLog;
 
 namespace WaveBox
 {
 	public static class Item
 	{
-		private static Logger logger = LogManager.GetCurrentClassLogger();
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		public static int? GenerateItemId(ItemType itemType)
 		{
@@ -45,7 +44,7 @@ namespace WaveBox
 					}
 					catch(Exception e)
 					{
-						logger.Info("[ITEMID] GenerateItemId ERROR: " + e);
+						logger.Error(e);
 					}
 					finally
 					{
@@ -55,7 +54,7 @@ namespace WaveBox
 			}
 			catch (Exception e)
 			{
-				logger.Error("[ITEMID] GenerateItemId ERROR: " + e);
+				logger.Error("GenerateItemId ERROR: ", e);
 			}
 			finally
 			{
@@ -85,7 +84,7 @@ namespace WaveBox
 			}
 			catch (Exception e)
 			{
-				logger.Error("[DATABASE(1)] ERROR: " + e);
+				logger.Error(e);
 			}
 			finally
 			{

@@ -15,13 +15,16 @@ namespace WaveBox
 
 	public class Nat
 	{
+		// Logger
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
 		public NatStatus Status { get; set; }
 
 		public void Start()
 		{
 			this.Status = NatStatus.WaitingForDevice;
 
-			Console.WriteLine("[Nat] Starting NAT process");
+			if (logger.IsInfoEnabled) logger.Info("Starting NAT process");
 
 			// Hook into the events so you know when a router has been detected or has gone offline
 			NatUtility.DeviceFound += DeviceFound;
@@ -42,7 +45,7 @@ namespace WaveBox
 			// Create a mapping to forward external port to local port
 			device.CreatePortMap(new Mapping(Protocol.Tcp, Settings.Port, Settings.Port));
 
-			Console.WriteLine("[Nat] Device Found");
+			if (logger.IsInfoEnabled) logger.Info("Device Found");
 
 			this.Status = NatStatus.PortForwardedSuccessfully;
 			
@@ -63,15 +66,15 @@ namespace WaveBox
 
 			INatDevice device = args.Device;
 			
-			Console.WriteLine("[Nat] Device Lost");
-			Console.WriteLine("[Nat] Type: {0}", device.GetType().Name);
+			if (logger.IsInfoEnabled) logger.Info("Device Lost");
+			if (logger.IsInfoEnabled) logger.Info("Type: " + device.GetType().Name);
 		}
 
 		private void UnhandledException(object sender, UnhandledExceptionEventArgs args)
 		{
 			this.Status = NatStatus.PortForwardingFailed;
 
-			Console.WriteLine("[Nat] Unhandled exception: {0}", args);
+			if (logger.IsInfoEnabled) logger.Info("Unhandled exception: " + args);
 		}
 	}
 }

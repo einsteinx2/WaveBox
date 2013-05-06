@@ -7,13 +7,12 @@ using System.Data;
 using WaveBox.DataModel.Singletons;
 using System.Security.Cryptography;
 using Newtonsoft.Json;
-using NLog;
 
 namespace WaveBox.DataModel.Model
 {
 	public class Playlist : IItem
 	{
-		private static Logger logger = LogManager.GetCurrentClassLogger();
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		[JsonIgnore]
 		public int? ItemId { get { return PlaylistId; } set { PlaylistId = ItemId; } }
@@ -73,7 +72,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[PLAYLIST(1)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -104,7 +103,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[PLAYLIST(2)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -128,7 +127,7 @@ namespace WaveBox.DataModel.Model
 
 			catch (Exception e)
 			{
-				logger.Error("[PLAYLIST(3)] " + e);
+				logger.Error(e.ToString());
 			}
 		}
 
@@ -161,7 +160,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[PLAYLIST(4)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -244,7 +243,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[PLAYLIST(5)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -277,7 +276,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[PLAYLIST(6)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -325,7 +324,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[PLAYLIST(7)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -368,7 +367,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[PLAYLIST(8)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -431,7 +430,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[PLAYLIST(9)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -501,7 +500,7 @@ namespace WaveBox.DataModel.Model
 				{
 					trans.Rollback();
 				}
-				logger.Info("[PLAYLIST(10)] " + e);
+				logger.Error(e);
 			}
 			finally
 			{
@@ -560,7 +559,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[PLAYLIST(11)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -591,7 +590,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[PLAYLIST(12)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -640,7 +639,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[PLAYLIST(13)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{

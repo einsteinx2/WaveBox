@@ -8,7 +8,6 @@ using WaveBox.ApiHandler;
 using WaveBox.Http;
 using WaveBox.PodcastManagement;
 using Newtonsoft.Json;
-using NLog;
 
 namespace WaveBox.ApiHandler.Handlers
 {

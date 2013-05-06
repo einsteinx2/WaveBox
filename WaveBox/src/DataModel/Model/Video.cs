@@ -9,13 +9,12 @@ using System.IO;
 using TagLib;
 using Newtonsoft.Json;
 using System.Diagnostics;
-using NLog;
 
 namespace WaveBox.DataModel.Model
 {
 	public class Video : MediaItem
 	{
-		private static Logger logger = LogManager.GetCurrentClassLogger();
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		public static readonly string[] ValidExtensions = { ".m4v", ".mp4", ".mpg", ".mkv", ".avi" };
 
@@ -74,7 +73,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[VIDEO(1)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -103,7 +102,7 @@ namespace WaveBox.DataModel.Model
 
 			if (FileType == FileType.Unknown)
 			{
-				logger.Info("[VIDEO] \"" + filePath + "\" Unknown file type: " + file.Properties.Description);
+				if (logger.IsInfoEnabled) logger.Info("\"" + filePath + "\" Unknown file type: " + file.Properties.Description);
 			}
 
 			Width = file.Properties.VideoWidth;
@@ -145,7 +144,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[VIDEO(2)] " + e);
+				logger.Error(e.ToString());
 			}
 		}
 
@@ -168,14 +167,14 @@ namespace WaveBox.DataModel.Model
 				{
 					//sw.Start();
 					allVideos.Add(new Video(reader));
-					//logger.Info("Elapsed: {0}ms", sw.ElapsedMilliseconds);
+					//if (logger.IsInfoEnabled) logger.Info("Elapsed: {0}ms", sw.ElapsedMilliseconds);
 					//sw.Restart();
 				}
 				//sw.Stop();
 			}
 			catch (Exception e)
 			{
-				logger.Error("[VIDEO(4)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -215,7 +214,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch(Exception e)
 			{
-				logger.Error("[VIDEOSEARCH] ERROR: " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -261,7 +260,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[VIDEO(1)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -300,7 +299,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[VIDEO(3)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{

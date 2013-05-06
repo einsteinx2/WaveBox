@@ -10,14 +10,13 @@ using WaveBox.DataModel.Model;
 using System.Security.Cryptography;
 using TagLib;
 using Newtonsoft.Json;
-using NLog;
 
 namespace WaveBox.DataModel.Model
 {
 	public class Art
 	{
 		public static readonly string[] ValidExtensions = { ".jpg", ".jpeg", ".png", ".bmp", ".gif" };
-		private static Logger logger = LogManager.GetCurrentClassLogger();
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		/// <summary>
 		/// Properties
@@ -75,7 +74,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[COVERART(1)] ERROR: " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -155,7 +154,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[SONG(3)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -209,11 +208,11 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (TagLib.CorruptFileException e)
 			{
-				logger.Info("[ART(1)] " + song.FileName + " has a corrupt tag so can't return the art. " + e);
+				if (logger.IsInfoEnabled) logger.Info(song.FileName + " has a corrupt tag so can't return the art. " + e);
 			}
 			catch (Exception e)
 			{
-				logger.Error("[ART(2)] " + "Error processing file: " + e);
+				logger.Error("Error processing file: ", e);
 			}
 
 			return stream;
@@ -319,7 +318,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[ART(1)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -354,7 +353,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[DATABASE(2)] ERROR: " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -394,7 +393,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[DATABASE(2)] ERROR: " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -432,7 +431,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[ART(3)] ERROR: " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -472,7 +471,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[ART(4)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -509,7 +508,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[DATABASE(4)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -547,7 +546,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[DATABASE(4)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -586,7 +585,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[MEDIAITEM(1)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -625,7 +624,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[MEDIAITEM(1)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -665,7 +664,7 @@ namespace WaveBox.DataModel.Model
 					}
 					catch (Exception e)
 					{
-						logger.Info("[COVERART(2)] ERROR: " + e);
+						if (logger.IsInfoEnabled) logger.Info("[COVERART(2)] ERROR: " + e);
 					}
 
 					try
@@ -680,7 +679,7 @@ namespace WaveBox.DataModel.Model
 
 						if (result < 1)
 						{
-							logger.Info("Something went wrong with the art insert: ");
+							if (logger.IsInfoEnabled) logger.Info("Something went wrong with the art insert: ");
 						}
 
 						try
@@ -690,8 +689,8 @@ namespace WaveBox.DataModel.Model
 						}
 						catch (Exception e)
 						{
-							logger.Info("[COVERART(3)]");
-							logger.Info("\r\n\r\nGetting identity: " + e. + "\r\n\r\n");
+							if (logger.IsInfoEnabled) logger.Info("[COVERART(3)]");
+							if (logger.IsInfoEnabled) logger.Info("\r\n\r\nGetting identity: " + e. + "\r\n\r\n");
 						}
 						finally
 						{
@@ -700,14 +699,14 @@ namespace WaveBox.DataModel.Model
 					}
 					catch (Exception e)
 					{
-						logger.Info("[COVERART(4)]");
-						logger.Info("\r\n\r\n" + e.Message + "\r\n\r\n");
+						if (logger.IsInfoEnabled) logger.Info("[COVERART(4)]");
+						if (logger.IsInfoEnabled) logger.Info("\r\n\r\n" + e.Message + "\r\n\r\n");
 					}
 				}
 			}
 			catch (Exception e)
 			{
-				logger.Error("[COVERART(5)] ERROR: " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{

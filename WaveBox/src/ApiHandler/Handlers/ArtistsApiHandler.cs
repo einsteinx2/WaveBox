@@ -6,13 +6,12 @@ using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
 using Newtonsoft.Json;
 using WaveBox.Http;
-using NLog;
 
 namespace WaveBox.ApiHandler.Handlers
 {
 	class ArtistsApiHandler : IApiHandler
 	{
-		private static Logger logger = LogManager.GetCurrentClassLogger();
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
@@ -91,7 +90,7 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 			catch (Exception e)
 			{
-				logger.Error("[ARTISTSAPI(1)] ERROR: " + e);
+				logger.Error(e);
 			}
 		}
 

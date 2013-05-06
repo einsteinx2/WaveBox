@@ -9,13 +9,12 @@ using System.Data;
 using System.IO;
 using System.Diagnostics;
 using WaveBox.OperationQueue;
-using NLog;
 
 namespace WaveBox.DataModel.FolderScanning
 {
 	class OrphanScanOperation : AbstractOperation
 	{
-		private static Logger logger = LogManager.GetCurrentClassLogger();
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		public override string OperationType { get { return "OrphanScanOperation"; } }
 
@@ -32,24 +31,24 @@ namespace WaveBox.DataModel.FolderScanning
 			sw.Start();
 			CheckFolders();
 			sw.Stop();
-			logger.Info("[ORPHANSCAN] check folders: {0}ms", sw.ElapsedMilliseconds);
+			if (logger.IsInfoEnabled) logger.Info("check folders: " + sw.ElapsedMilliseconds + "ms");
 
 			sw.Restart();
 			CheckSongs();
 			sw.Stop();
-			logger.Info("[ORPHANSCAN] check songs: {0}ms", sw.ElapsedMilliseconds);
+			if (logger.IsInfoEnabled) logger.Info("check songs: " + sw.ElapsedMilliseconds + "ms");
 
 			sw.Restart();
 			CheckArtists();
 			sw.Stop();
-			logger.Info("[ORPHANSCAN] check artists: {0}ms", sw.ElapsedMilliseconds);
+			if (logger.IsInfoEnabled) logger.Info("check artists: " + sw.ElapsedMilliseconds + "ms");
 
 			sw.Restart();
 			CheckAlbums();
 			sw.Stop();
-			logger.Info("[ORPHANSCAN] check albums: {0}ms", sw.ElapsedMilliseconds);
+			if (logger.IsInfoEnabled) logger.Info("check albums: " + sw.ElapsedMilliseconds + "ms");
 
-			logger.Info("[ORPHANSCAN] check songs exists calls total time: {0}ms", (totalExistsTime / 10000)); // Convert ticks to milliseconds, divide by 10,000
+			if (logger.IsInfoEnabled) logger.Info("check songs exists calls total time: " + (totalExistsTime / 10000) + "ms"); // Convert ticks to milliseconds, divide by 10,000
 		}
 
 		private void CheckFolders()
@@ -118,7 +117,7 @@ namespace WaveBox.DataModel.FolderScanning
 					{
 						if (!mediaFolderIds.Contains (mediaFolderId) || !Directory.Exists (path)) 
 						{
-							logger.Info ("[ORPHANSCAN] " + "{0} is orphaned", folderId);
+							logger.Info ("[ORPHANSCAN] " + folderId + " is orphaned");
 							orphanFolderIds.Add (folderId);
 						}
 					}
@@ -141,7 +140,7 @@ namespace WaveBox.DataModel.FolderScanning
 
 					try
 					{
-						logger.Error ("[ORPHANSCAN] " + "Songs for {0} deleted", fid);
+						logger.Error ("[ORPHANSCAN] Songs for " + fid + " deleted");
 
 						IDbCommand q2 = Database.GetDbCommand ("DELETE FROM song WHERE song_folder_id = @folderid", conn);
 						q2.AddNamedParam("@folderid", fid);
@@ -223,7 +222,7 @@ namespace WaveBox.DataModel.FolderScanning
 					q1.AddNamedParam("@songid", id);
 					q1.Prepare();
 					q1.ExecuteNonQueryLogged();
-					logger.Info("[ORPHANSCAN] " + "Song " + id + " deleted");
+					if (logger.IsInfoEnabled) logger.Info("Song " + id + " deleted");
 				}
 				catch (Exception e)
 				{
@@ -281,7 +280,7 @@ namespace WaveBox.DataModel.FolderScanning
 					q1.AddNamedParam("@artistid", id);
 					q1.Prepare();
 					q1.ExecuteNonQueryLogged();
-					logger.Info("[ORPHANSCAN] " + "Artist " + id + " deleted");
+					if (logger.IsInfoEnabled) logger.Info("Artist " + id + " deleted");
 				}
 				catch (Exception e)
 				{
@@ -339,7 +338,7 @@ namespace WaveBox.DataModel.FolderScanning
 					q1.AddNamedParam("@albumid", id);
 					q1.Prepare();
 					q1.ExecuteNonQueryLogged();
-					logger.Info("[ORPHANSCAN] " + "Album " + id + " deleted");
+					if (logger.IsInfoEnabled) logger.Info("Album " + id + " deleted");
 				}
 				catch (Exception e)
 				{

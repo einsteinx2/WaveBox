@@ -6,7 +6,6 @@ using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
 using Newtonsoft.Json;
 using WaveBox.Http;
-using NLog;
 
 namespace WaveBox.ApiHandler
 {

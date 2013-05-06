@@ -11,7 +11,6 @@ using System.Diagnostics;
 using WaveBox.ApiHandler;
 using WaveBox.Transcoding;
 using WaveBox.Http;
-using NLog;
 
 // offered to the public domain for any use with no restriction
 // and also with no warranty of any kind, please enjoy. - David Jeske. 
@@ -23,7 +22,7 @@ namespace WaveBox.Http
 {
 	public class HttpProcessor : IHttpProcessor
 	{
-		private static Logger logger = LogManager.GetCurrentClassLogger();
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		public TcpClient Socket { get; set; }
 		public HttpServer Srv { get; set; }
@@ -45,9 +44,9 @@ namespace WaveBox.Http
 		{
 			HttpHeaders = new Hashtable();
 			Socket = s;
-			//logger.Info("Send timeout: " + s.SendTimeout);
+			//if (logger.IsInfoEnabled) logger.Info("Send timeout: " + s.SendTimeout);
 			//s.SendTimeout = -1;
-			//logger.Info("Send timeout after: " + s.SendTimeout);
+			//if (logger.IsInfoEnabled) logger.Info("Send timeout after: " + s.SendTimeout);
 			Srv = srv;
 		}
 
@@ -105,8 +104,7 @@ namespace WaveBox.Http
 			}
 			catch
 			{
-				logger.Error("[HTTPSERVER(1)] Received malformed URL from client");
-				//logger.Info("[HTTPSERVER(1)] " + e);
+				logger.Error("Received malformed URL from client");
 				WriteErrorHeader();
 			}
 			finally
@@ -130,18 +128,18 @@ namespace WaveBox.Http
 			HttpUrl = tokens[1];
 			HttpProtocolVersionString = tokens[2];
 
-			//logger.Info("starting: " + request);
+			//if (logger.IsInfoEnabled) logger.Info("starting: " + request);
 		}
 
 		public void ReadHeaders() 
 		{
-			//logger.Info("readHeaders()");
+			//if (logger.IsInfoEnabled) logger.Info("readHeaders()");
 			String line;
 			while ((line = streamReadLine(InputStream)) != null)
 			{
 				if (line.Equals("")) 
 				{
-					//logger.Info("got headers");
+					//if (logger.IsInfoEnabled) logger.Info("got headers");
 					return;
 				}
 				
@@ -158,7 +156,7 @@ namespace WaveBox.Http
 				}
 					
 				string value = line.Substring(pos, line.Length - pos);
-				//logger.Info("header: {0}:{1}",name,value);
+				//if (logger.IsInfoEnabled) logger.Info("header: {0}:{1}",name,value);
 				HttpHeaders[name] = value;
 			}
 		}
@@ -170,7 +168,7 @@ namespace WaveBox.Http
 
 			sw.Start();
 			apiHandler.Process();
-			//logger.Info(apiHandler.GetType() + ": {0}ms", sw.ElapsedMilliseconds);
+			//if (logger.IsInfoEnabled) logger.Info(apiHandler.GetType() + ": {0}ms", sw.ElapsedMilliseconds);
 			sw.Stop();
 		}
 
@@ -196,10 +194,10 @@ namespace WaveBox.Http
 				int to_read = content_len;
 				while (to_read > 0) 
 				{  
-					//logger.Info("starting Read, to_read={0}",to_read);
+					//if (logger.IsInfoEnabled) logger.Info("starting Read, to_read={0}",to_read);
 
 					int numread = InputStream.Read(buf, 0, Math.Min(BUF_SIZE, to_read));
-					//logger.Info("read finished, numread={0}", numread);
+					//if (logger.IsInfoEnabled) logger.Info("read finished, numread={0}", numread);
 					if (numread == 0) 
 					{
 						if (to_read == 0) 
@@ -218,14 +216,14 @@ namespace WaveBox.Http
 			}
 
 			string data = HttpUrl + "?" + new StreamReader(ms).ReadToEnd();
-			//logger.Info("[HTTPSERVER] POST request: {0}", data);
+			//if (logger.IsInfoEnabled) logger.Info("[HTTPSERVER] POST request: {0}", data);
 			
 			Stopwatch sw = new Stopwatch();
 			IApiHandler apiHandler = ApiHandlerFactory.CreateApiHandler(data, this);
 
 			sw.Start();
 			apiHandler.Process();
-			//logger.Info(apiHandler.GetType() + ": {0}ms", sw.ElapsedMilliseconds);
+			//if (logger.IsInfoEnabled) logger.Info(apiHandler.GetType() + ": {0}ms", sw.ElapsedMilliseconds);
 			sw.Stop();
 		}
 
@@ -268,7 +266,7 @@ namespace WaveBox.Http
 			outStream.WriteLine("");
 			outStream.Flush();
 			
-			logger.Info("[HTTPSERVER] Success header, contentLength: " + contentLength);
+			if (logger.IsInfoEnabled) logger.Info("Success header, contentLength: " + contentLength);
 		}
 
 		public void WriteText(string text, string mimeType)
@@ -300,8 +298,7 @@ namespace WaveBox.Http
 
 			WriteSuccessHeader(isSendContentLength ? contentLength : -1, mimeType, customHeaders);
 			//OutputStream.Flush();
-			logger.Info("[HTTPSERVER] File header, contentLength: {0}, contentType: {1}, lastMod: {2}", contentLength, mimeType, customHeaders != null && customHeaders.ContainsKey("Last-Modified") ? customHeaders["Last-Modified"] : String.Empty);
-			//logger.Info("[HTTPSERVER] File header, contentLength: {0}, contentType: {1}, status: {2}", contentLength, header.ContentType, header.StatusCode);
+			if (logger.IsInfoEnabled) logger.Info("File header, contentLength: " + contentLength + ", contentType: " + mimeType + ", lastMod: " + (customHeaders != null && customHeaders.ContainsKey("Last-Modified") ? customHeaders["Last-Modified"] : String.Empty));
 
 			// Read/Write in 8 KB chunks
 			const int chunkSize = 8192;
@@ -343,7 +340,7 @@ namespace WaveBox.Http
 					// Log the progress (only for testing)
 					if (sw.ElapsedMilliseconds > 1000)
 					{
-						logger.Info("[SENDFILE]: [ {0} / {1} | {2:F1}% | {3:F1} Mbps ]", bytesWritten, contentLength + startOffset, (Convert.ToDouble(bytesWritten) / Convert.ToDouble(contentLength + startOffset)) * 100, (((double)(sinceLastReport * 8) / 1024) / 1024) / (double)(sw.ElapsedMilliseconds / 1000));
+						if (logger.IsInfoEnabled) logger.Info("[ " + bytesWritten + " / " + (contentLength + startOffset) + " | " + ((Convert.ToDouble(bytesWritten) / Convert.ToDouble(contentLength + startOffset)) * 100) + " | " + (((double)(sinceLastReport * 8) / 1024) / 1024) / (double)(sw.ElapsedMilliseconds / 1000) + " Mbps ]");
 						sinceLastReport = 0;
 						sw.Restart();
 					}
@@ -375,7 +372,7 @@ namespace WaveBox.Http
 						SocketException se = (SocketException)e.InnerException;
 						if (se.SocketErrorCode == System.Net.Sockets.SocketError.ConnectionReset)
 						{
-							logger.Info("[SENDFILE(2)] " + "Connection was forcibly closed by the remote host");
+							if (logger.IsInfoEnabled) logger.Info("Connection was forcibly closed by the remote host");
 						}
 					}
 

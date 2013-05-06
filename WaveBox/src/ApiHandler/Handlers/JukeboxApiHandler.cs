@@ -6,13 +6,12 @@ using WaveBox.DataModel.Model;
 using WaveBox.DataModel.Singletons;
 using WaveBox.Http;
 using Newtonsoft.Json;
-using NLog;
 
 namespace WaveBox.ApiHandler.Handlers
 {
 	class JukeboxApiHandler : IApiHandler
 	{
-		private static Logger logger = LogManager.GetCurrentClassLogger();
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private Jukebox Juke;
 		private IHttpProcessor Processor { get; set; }
@@ -124,7 +123,7 @@ namespace WaveBox.ApiHandler.Handlers
 									}
 									else 
 									{
-										logger.Info("[JUKEBOXAPI] Move: Invalid number of indices");
+										if (logger.IsInfoEnabled) logger.Info("Move: Invalid number of indices");
 										Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("Invalid number of indices for action 'move'", false, false), Settings.JsonFormatting));
 									}
 
@@ -132,7 +131,7 @@ namespace WaveBox.ApiHandler.Handlers
 							}
 							else 
 							{
-								logger.Info("[JUKEBOXAPI] Move: Missing 'index' parameter");
+								if (logger.IsInfoEnabled) logger.Info("Move: Missing 'index' parameter");
 								Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("Missing 'index' parameter for action 'move'", false, false), Settings.JsonFormatting));
 							}
 							break;
@@ -182,7 +181,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 				catch (Exception e)
 				{
-					logger.Error("[JUKEBOXAPI(2)] Error getting songs to add: " + e);
+					logger.Error("Error getting songs to add: ", e);
 					Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("Error getting songs to add", false, false), Settings.JsonFormatting));
 					return false;
 				}
@@ -211,7 +210,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 				catch (Exception e)
 				{
-					logger.Error("[JUKEBOXAPI(3)] Error getting songs to remove: " + e);
+					logger.Error("Error getting songs to remove: ", e);
 				}
 			}
 
@@ -232,7 +231,7 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 			catch (Exception e)
 			{
-				logger.Error("[JUKEBOXAPI(4)] Error moving songs: " + e);
+				logger.Error("Error moving songs: ", e);
 				return false;
 			}
 		}

@@ -11,13 +11,12 @@ using WaveBox.DataModel.Model;
 using System.Runtime.InteropServices;
 using System.Reflection;
 using Newtonsoft.Json;
-using NLog;
 
 namespace WaveBox.DataModel.Singletons
 {
 	static class Database
 	{
-		private static Logger logger = LogManager.GetCurrentClassLogger();
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		public static string databaseFileName = "wavebox.db";
 		public static string DatabaseTemplatePath() { return "res" + Path.DirectorySeparatorChar + databaseFileName; }
@@ -36,7 +35,7 @@ namespace WaveBox.DataModel.Singletons
 			{
 				try
 				{
-					logger.Info("[SETTINGS] " + "Database file doesn't exist; Creating it. (wavebox.db)");
+					if (logger.IsInfoEnabled) logger.Info("Database file doesn't exist; Creating it. (wavebox.db)");
 					
 					// new filestream on the template
 					FileStream dbTemplate = new FileStream(DatabaseTemplatePath(), FileMode.Open);
@@ -55,7 +54,7 @@ namespace WaveBox.DataModel.Singletons
 				} 
 				catch (Exception e)
 				{
-					logger.Info("[SETTINGS(2)] " + e);
+					logger.Error(e);
 				}
 			}
 			
@@ -63,7 +62,7 @@ namespace WaveBox.DataModel.Singletons
 			{
 				try
 				{
-					logger.Info("[SETTINGS] " + "Query log database file doesn't exist; Creating it. (wavebox_querylog.db)");
+					if (logger.IsInfoEnabled) logger.Info("Query log database file doesn't exist; Creating it. (wavebox_querylog.db)");
 					
 					// new filestream on the template
 					FileStream dbTemplate = new FileStream(QuerylogTemplatePath(), FileMode.Open);
@@ -82,7 +81,7 @@ namespace WaveBox.DataModel.Singletons
 				} 
 				catch (Exception e)
 				{
-					logger.Info("[SETTINGS(3)] " + e);
+					logger.Error(e);
 				}
 			}
 		}
@@ -177,7 +176,7 @@ namespace WaveBox.DataModel.Singletons
 					}
 					catch(Exception e)
 					{
-						logger.Info("[DATABASE(1)] " + e);
+						logger.Error(e);
 					}
 					finally
 					{
@@ -204,7 +203,7 @@ namespace WaveBox.DataModel.Singletons
 			}
 			catch (Exception e)
 			{
-				logger.Error("[SONG(1)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -374,7 +373,7 @@ namespace WaveBox.DataModel.Singletons
 							}
 							catch(Exception e)
 							{
-								logger.Info("Error deleting user table in backup: " + e);
+								if (logger.IsInfoEnabled) logger.Info("Error deleting user table in backup: " + e);
 							}
 						}
 						return true;
@@ -383,7 +382,7 @@ namespace WaveBox.DataModel.Singletons
 				}
 				catch (Exception e)
 				{
-					logger.Info("Error backup up database: " + e);
+					if (logger.IsInfoEnabled) logger.Info("Error backup up database: " + e);
 				}
 				finally
 				{
@@ -437,7 +436,7 @@ namespace WaveBox.DataModel.Singletons
 						}
 						catch(Exception e)
 						{
-							logger.Info("Error deleting user table in backup: " + e);
+							if (logger.IsInfoEnabled) logger.Info("Error deleting user table in backup: " + e);
 						}
 						
 						try
@@ -448,7 +447,7 @@ namespace WaveBox.DataModel.Singletons
 						}
 						catch(Exception e)
 						{
-							logger.Info("Error deleting session table in backup: " + e);
+							if (logger.IsInfoEnabled) logger.Info("Error deleting session table in backup: " + e);
 						}
 
 						return true;
@@ -457,7 +456,7 @@ namespace WaveBox.DataModel.Singletons
 				}
 				catch(Exception e)
 				{
-					logger.Info("Error backup up database: " + e);
+					if (logger.IsInfoEnabled) logger.Info("Error backup up database: " + e);
 				}
 				finally
 				{

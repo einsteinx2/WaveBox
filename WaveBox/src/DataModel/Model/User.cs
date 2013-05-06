@@ -6,7 +6,6 @@ using System.Data;
 using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
 using System.Security.Cryptography;
-using NLog;
 
 namespace WaveBox.DataModel.Model
 {
@@ -15,7 +14,7 @@ namespace WaveBox.DataModel.Model
 		// PBKDF2 iterations
 		public const int HashIterations = 2500;
 
-		private static Logger logger = LogManager.GetCurrentClassLogger();
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		public int? UserId { get; set; }
 		public string UserName { get; set; }
@@ -45,7 +44,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[USER(1)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -82,7 +81,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[USER(1)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -112,7 +111,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[USER(2)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -205,7 +204,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[USER(3)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -232,7 +231,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[USER(4)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -269,7 +268,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[USER(5)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -331,7 +330,7 @@ namespace WaveBox.DataModel.Model
 				}
 				catch (Exception e)
 				{
-					logger.Info("[USER(6)] " + e);
+					logger.Error(e);
 					return false;
 				}
 				finally

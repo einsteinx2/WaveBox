@@ -7,13 +7,12 @@ using WaveBox.DataModel.Model;
 using WaveBox.DataModel.Singletons;
 using Newtonsoft.Json;
 using WaveBox.Http;
-using NLog;
 
 namespace WaveBox.ApiHandler.Handlers
 {
 	class ScrobbleApiHandler : IApiHandler
 	{
-		private static Logger logger = LogManager.GetCurrentClassLogger();
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
@@ -64,7 +63,7 @@ namespace WaveBox.ApiHandler.Handlers
 			// If Last.fm is not authenticated, provide an authorization URL
 			if (!lfm.SessionAuthenticated)
 			{
-				logger.Info("[SCROBBLE(1)] You must authenticate before you can scrobble.");
+				if (logger.IsInfoEnabled) logger.Info("You must authenticate before you can scrobble.");
 
 				Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMNotAuthenticated", lfm.AuthUrl)));
 				return;
@@ -160,7 +159,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 				catch (Exception e)
 				{
-					logger.Info("[SCROBBLE(3)] ERROR: " + e);
+					logger.Error(e);
 				}
 			}
 			else
@@ -178,7 +177,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 				catch (Exception e)
 				{
-					logger.Info("[SCROBBLE(4)] ERROR: " + e);
+					logger.Error(e);
 				}
 				return;
 			}
@@ -191,7 +190,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 				catch (Exception e)
 				{
-					logger.Info("[SCROBBLE(5)] ERROR: " + e);
+					logger.Error(e);
 				}
 				return;
 			}

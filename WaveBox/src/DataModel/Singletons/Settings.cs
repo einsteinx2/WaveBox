@@ -6,13 +6,12 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using WaveBox.DataModel.Model;
 using System.IO;
-using NLog;
 
 namespace WaveBox.DataModel.Singletons
 {
 	public class Settings
 	{
-		private static Logger logger = LogManager.GetCurrentClassLogger();
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		public static string settingsFileName = "wavebox.conf";
 		public static string SettingsTemplatePath() { return "res" + Path.DirectorySeparatorChar + settingsFileName; }
@@ -64,7 +63,7 @@ namespace WaveBox.DataModel.Singletons
 			}
 			catch { }
 
-			logger.Info("[SETTINGS] settings changed: " + settingsChanged + " | port: " + settingsModel.Port);
+			if (logger.IsInfoEnabled) logger.Info("settings changed: " + settingsChanged + " | port: " + settingsModel.Port);
 		}
 
 		public static bool WriteSettings(string jsonString)
@@ -171,7 +170,7 @@ namespace WaveBox.DataModel.Singletons
 			{
 				try
 				{
-					logger.Info("[SETTINGS] " + "Setting file doesn't exist; Creating it. (WaveBox.conf)");
+					if (logger.IsInfoEnabled) logger.Info("Setting file doesn't exist; Creating it. (WaveBox.conf)");
 					StreamReader settingsTemplate = new StreamReader(SettingsTemplatePath());
 					StreamWriter settingsOut = new StreamWriter(SettingsPath());
 
@@ -182,7 +181,7 @@ namespace WaveBox.DataModel.Singletons
 				} 
 				catch (Exception e)
 				{
-					logger.Info("[SETTINGS(1)] " + e);
+					logger.Error(e);
 				}
 			}
 
@@ -206,7 +205,7 @@ namespace WaveBox.DataModel.Singletons
 				}
 				else 
 				{
-					logger.Info(String.Format("Media folder does not exist: {0}", mediaFolderString));
+					if (logger.IsInfoEnabled) logger.Info("Media folder does not exist: " + mediaFolderString);
 				}
 			}
 

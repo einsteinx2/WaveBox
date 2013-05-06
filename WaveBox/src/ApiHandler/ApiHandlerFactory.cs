@@ -5,20 +5,19 @@ using System.Text;
 using WaveBox.ApiHandler.Handlers;
 using WaveBox.DataModel.Model;
 using WaveBox.Http;
-using NLog;
 
 namespace WaveBox.ApiHandler
 {
 	class ApiHandlerFactory
 	{		
-		private static Logger logger = LogManager.GetCurrentClassLogger();
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		/// <summary>
 		/// Create an API Handler based upon source URI, or serve web interface if no API call present
 		/// </summary>
 		public static IApiHandler CreateApiHandler(string uri, HttpProcessor processor)
 		{
-			logger.Info("[ApiHandlerFactory] uri: " + uri);
+			if (logger.IsInfoEnabled) logger.Info("uri: " + uri);
 
 			// Turn the input string into a UriWrapper, so we can parse its components with ease
 			UriWrapper uriW = new UriWrapper(uri);

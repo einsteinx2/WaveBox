@@ -9,13 +9,12 @@ using System.IO;
 using TagLib;
 using Newtonsoft.Json;
 using System.Diagnostics;
-using NLog;
 
 namespace WaveBox.DataModel.Model
 {
 	public class Song : MediaItem
 	{
-		private static Logger logger = LogManager.GetCurrentClassLogger();
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		public static readonly string[] ValidExtensions = { ".mp3", ".m4a", ".flac", ".wv", ".mpc", ".ogg", ".wma" };
 
@@ -78,7 +77,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[SONG(1)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -130,7 +129,7 @@ namespace WaveBox.DataModel.Model
 
 			if (FileType == FileType.Unknown)
 			{
-				logger.Info("[SONG] \"" + filePath + "\" Unknown file type: " + file.Properties.Description);
+				if (logger.IsInfoEnabled) logger.Info("\"" + filePath + "\" Unknown file type: " + file.Properties.Description);
 			}
 
 			try
@@ -235,7 +234,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[SONG(2)] " + e);
+				logger.Error(e.ToString());
 			}
 		}
 
@@ -280,7 +279,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[SONG(3)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -315,14 +314,14 @@ namespace WaveBox.DataModel.Model
 				{
 					//sw.Start();
 					allsongs.Add(new Song(reader));
-					//logger.Info("Elapsed: {0}ms", sw.ElapsedMilliseconds);
+					//if (logger.IsInfoEnabled) logger.Info("Elapsed: {0}ms", sw.ElapsedMilliseconds);
 					//sw.Restart();
 				}
 				//	sw.Stop();
 			}
 			catch (Exception e)
 			{
-				logger.Error("[SONG(4)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -362,7 +361,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[SONGSEARCH] ERROR: " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{
@@ -430,7 +429,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[SONG(5)] " + e);
+				logger.Error(e.ToString());
 			}
 			finally
 			{

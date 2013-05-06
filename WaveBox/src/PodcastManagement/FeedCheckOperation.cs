@@ -2,7 +2,6 @@ using System;
 using WaveBox.OperationQueue;
 using WaveBox.PodcastManagement;
 using WaveBox.DataModel.Singletons;
-using NLog;
 
 namespace WaveBox
 {

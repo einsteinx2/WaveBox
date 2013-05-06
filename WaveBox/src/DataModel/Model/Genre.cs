@@ -2,14 +2,13 @@ using System;
 using System.Data;
 using WaveBox.DataModel.Singletons;
 using System.Collections.Generic;
-using NLog;
 using System.Linq;
 
 namespace WaveBox.DataModel.Model
 {
 	public class Genre
 	{
-		private static Logger logger = LogManager.GetCurrentClassLogger();
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		public int? GenreId { get; set; }
 
@@ -42,7 +41,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[COVERART(1)] ERROR: " + e);
+				logger.Error(e);
 			}
 			finally
 			{
@@ -93,7 +92,7 @@ namespace WaveBox.DataModel.Model
 					}
 					catch (Exception e)
 					{
-						logger.Error("[COVERART(1)] ERROR: " + e);
+						logger.Error(e);
 					}
 					finally
 					{
@@ -160,7 +159,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[GENRE(1)] " + e);
+				logger.Error(e);
 			}
 			finally
 			{
@@ -197,7 +196,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[GENRE(2)] ERROR: " + e);
+				logger.Error(e);
 			}
 			finally
 			{
@@ -236,7 +235,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[GENRE(3)] ERROR: " + e);
+				logger.Error(e);
 			}
 			finally
 			{
@@ -274,7 +273,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[GENRE(4)] ERROR: " + e);
+				logger.Error(e);
 			}
 			finally
 			{
@@ -313,7 +312,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[GENRE(5)] ERROR: " + e);
+				logger.Error(e);
 			}
 			finally
 			{
@@ -344,7 +343,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error("[GENRE(7)] ERROR: " + e);
+				logger.Error(e);
 			}
 			finally
 			{

@@ -9,13 +9,12 @@ using Newtonsoft.Json;
 using System.Security.Cryptography;
 using System.Web.Services;
 using System.Net.Sockets;
-using NLog;
 
 namespace WaveBox.DataModel.Singletons
 {
 	public class Lastfm
 	{
-		private static Logger logger = LogManager.GetCurrentClassLogger();
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private static string apiKey = "6aec36725ab20cff28e8525cdf5fbd4a";
 		private static string secret = "cd596009d199d51405a2477d4e65c5d7";
@@ -61,7 +60,7 @@ namespace WaveBox.DataModel.Singletons
 			if (sessionKey == null)
 			{
 				CreateAuthUrl();
-				logger.Info(this.AuthUrl);
+				if (logger.IsInfoEnabled) logger.Info(this.AuthUrl);
 			}
 			else if (sessionKey.Substring(0, 6) == "token:")
 			{
@@ -224,7 +223,7 @@ namespace WaveBox.DataModel.Singletons
 				sessionKey = jsonResponse.session.key.ToString();
 				sessionAuthenticated = true;
 				user.UpdateLastfmSession(sessionKey);
-				logger.Info ("[SCROBBLE] ({0}) Obtain last.fm session key: success", user.UserName);
+				logger.Info ("[SCROBBLE] (" + user.UserName + ") Obtain last.fm session key: success");
 			}
 			else sessionAuthenticated = false;
 		}
@@ -266,7 +265,7 @@ namespace WaveBox.DataModel.Singletons
 			if (requestToken != null)
 			{
 				user.UpdateLastfmSession("token:" + requestToken);
-				logger.Info ("[SCROBBLE] ({0}) Obtain last.fm authentication request token: success", user.UserName);
+				logger.Info ("[SCROBBLE] (" + user.UserName + ") Obtain last.fm authentication request token: success");
 			}
 
 			string url = "http://www.last.fm/api/auth/?" + 
@@ -311,7 +310,7 @@ namespace WaveBox.DataModel.Singletons
 				NetworkStream stream = s.GetStream();
 				stream.Write(headerBytes, 0, headerBytes.Length);
 
-				//logger.Info(req.ToString());
+				//if (logger.IsInfoEnabled) logger.Info(req.ToString());
 
 				byte[] receive = new byte[256];
 				MemoryStream m = new MemoryStream();
@@ -325,14 +324,14 @@ namespace WaveBox.DataModel.Singletons
 				byte[] finalByteArray = m.ToArray();
 				resp = Encoding.UTF8.GetString(finalByteArray, 0, finalByteArray.Length);
 
-				//logger.Info(resp);
+				//if (logger.IsInfoEnabled) logger.Info(resp);
 				stream.Close();
 				s.Close();
 			} 
 
 			catch (Exception e)
 			{
-				logger.Info("[LASTFM(1)] " + e);
+				logger.Error(e);
 			}
 
 			return resp;

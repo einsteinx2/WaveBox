@@ -85,11 +85,11 @@
     <Reference Include="Mono.Zeroconf.Providers.AvahiDBus">
       <HintPath>lib\Mono.Zeroconf.Providers.AvahiDBus.dll</HintPath>
     </Reference>
-    <Reference Include="NLog">
-      <HintPath>lib\NLog.dll</HintPath>
-    </Reference>
     <Reference Include="Mono.Nat">
       <HintPath>lib\Mono.Nat.dll</HintPath>
+    </Reference>
+    <Reference Include="log4net">
+      <HintPath>lib\log4net.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -173,6 +173,7 @@
     <Compile Include="src\Nat.cs" />
     <Compile Include="src\DataModel\Model\Genre.cs" />
     <Compile Include="src\ApiHandler\Handlers\GenresApiHandler.cs" />
+    <Compile Include="src\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="lib\Newtonsoft.Json.dll" />
@@ -239,10 +240,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="lib\Mono.Zeroconf.Providers.AvahiDBus.dll" />
-    <None Include="NLog.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="lib\NLog.dll" />
     <None Include="libbass.x64.so">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -293,6 +290,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="libpng15.15.dylib">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="lib\log4net.dll" />
+    <None Include="lib\System.Data.SQLite.dll" />
+    <None Include="lib\System.Data.SQLite.Linq.dll" />
+    <None Include="log4net.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

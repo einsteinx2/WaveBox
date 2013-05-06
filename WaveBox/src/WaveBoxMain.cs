@@ -15,7 +15,6 @@ using System.ServiceProcess;
 using WaveBox.DataModel.Model;
 using WaveBox.Transcoding;
 using Mono.Zeroconf;
-using NLog;
 using System.Net;
 using System.Net.Sockets;
 
@@ -24,7 +23,7 @@ namespace WaveBox
 	class WaveBoxMain
 	{
 		// Logger
-		private static Logger logger = LogManager.GetCurrentClassLogger();
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		// Nat
 		public Nat Nat;
@@ -82,7 +81,7 @@ namespace WaveBox
 			}
 			catch(Exception e)
 			{
-				logger.Error("[WAVEBOX] exception loading server info" + e);
+				logger.Error("exception loading server info", e);
 			}
 			finally
 			{
@@ -110,7 +109,7 @@ namespace WaveBox
 				}
 				catch (Exception e)
 				{
-					logger.Error("[WAVEBOX] exception saving guid" + e);
+					logger.Error("exception saving guid", e);
 					ServerGuid = null;
 				}
 				finally
@@ -152,7 +151,7 @@ namespace WaveBox
 					"&isSecure=0" + 
 					"&localIp=" + LocalIPAddress().ToString();
 
-				logger.Info("[WAVEBOX] Registering URL: {0}", urlString);
+				if (logger.IsInfoEnabled) logger.Info("Registering URL: " + urlString);
 
 				// Perform registration with registration server
 				WebClient client = new WebClient();
@@ -175,7 +174,7 @@ namespace WaveBox
 		/// </summary>
 		public void Start()
 		{
-			logger.Info("[WAVEBOX] Initializing WaveBox on {0} platform...", WaveBoxService.Platform);
+			if (logger.IsInfoEnabled) logger.Info("Initializing WaveBox on " + WaveBoxService.Platform + " platform...");
 
 			// Initialize ImageMagick
 			ImageMagickInterop.WandGenesis();
@@ -212,7 +211,7 @@ namespace WaveBox
 			User.CreateUser("test", "test");
 
 			// Start file manager, calculate time it takes to run.
-			logger.Info("[WAVEBOX] Scanning media directories...");
+			if (logger.IsInfoEnabled) logger.Info("Scanning media directories...");
 			FileManager.Instance.Setup();
 
 			// Start podcast download queue
@@ -250,7 +249,7 @@ namespace WaveBox
 				}
 				catch (Exception e)
 				{
-					logger.Info(e);
+					logger.Error(e);
 					DisposeZeroConf();
 				}
 			}
@@ -291,11 +290,11 @@ namespace WaveBox
 				// For another sockets exception, just print the message
 				if (e.SocketErrorCode.ToString() == "AddressAlreadyInUse")
 				{
-					logger.Info("[WAVEBOX(1)] ERROR: Socket already in use.  Ensure that WaveBox is not already running.");
+					logger.Error("Socket already in use.  Ensure that WaveBox is not already running.");
 				}
 				else
 				{
-					logger.Info("[WAVEBOX(2)] ERROR: " + e);
+					logger.Error(e);
 				}
 
 				// Quit with error return code
@@ -305,7 +304,7 @@ namespace WaveBox
 			catch (Exception e)
 			{
 				// Print the message, quit.
-				logger.Info("[WAVEBOX(3)] ERROR: " + e);
+				logger.Error(e);
 				Environment.Exit(-1);
 			}
 		}

@@ -8,13 +8,12 @@ using System.Threading;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
-using NLog;
 
 namespace WaveBox.Http
 {
 	public class HttpServer 
 	{
-		private static Logger logger = LogManager.GetCurrentClassLogger();
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		protected int Port { get; set; }
 		private TcpListener Listener { get; set; }
@@ -37,22 +36,22 @@ namespace WaveBox.Http
 			{
 				if (e.SocketErrorCode.ToString() == "AddressAlreadyInUse")
 				{
-					logger.Info("[HTTPSERVER] Socket already in use.  Is WaveBox already running?");
+					logger.Error("Socket already in use.  Is WaveBox already running?");
 				}
 				else
 				{
-					logger.Info("[HTTPSERVER(4)] " + e);
+					logger.Error(e);
 				}
 
 				Environment.Exit(-1);
 			}
 			catch (Exception e)
 			{
-				logger.Error("[HTTPSERVER(5)] " + e);
+				logger.Error(e.ToString());
 				Environment.Exit(-1);
 			}
 
-			logger.Info("[HTTPSERVER] HTTP server started");
+			if (logger.IsInfoEnabled) logger.Info("HTTP server started");
 
 			Listener.BeginAcceptTcpClient(AcceptClientCallback, null);
 		}

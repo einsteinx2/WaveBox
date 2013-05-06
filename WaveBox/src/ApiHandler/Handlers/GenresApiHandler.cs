@@ -1,5 +1,4 @@
 using System;
-using NLog;
 using WaveBox.DataModel.Model;
 using System.Collections.Generic;
 using Newtonsoft.Json;
@@ -9,7 +8,7 @@ namespace WaveBox.ApiHandler.Handlers
 {
 	public class GenresApiHandler : IApiHandler
 	{
-		private static Logger logger = LogManager.GetCurrentClassLogger();
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 		
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
@@ -77,7 +76,7 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 			catch (Exception e)
 			{
-				logger.Error("[FOLDERAPI(1)] ERROR: " + e);
+				logger.Error(e);
 			}
 		}
 		

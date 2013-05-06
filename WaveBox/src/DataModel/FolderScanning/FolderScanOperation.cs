@@ -10,13 +10,12 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using WaveBox.OperationQueue;
 using TagLib;
-using NLog;
 
 namespace WaveBox.DataModel.FolderScanning
 {
 	public class FolderScanOperation : AbstractOperation
 	{
-		private static Logger logger = LogManager.GetCurrentClassLogger();
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		public override string OperationType { get { return String.Format ("FolderScanOperation:{0}", FolderPath); } }
 
@@ -38,15 +37,15 @@ namespace WaveBox.DataModel.FolderScanning
 		{
 			ProcessFolder(FolderPath);
 
-			logger.Info("------------FOLDER SCAN --------------------");
-			logger.Info("folders inserted: " + testNumberOfFoldersInserted);
-			logger.Info("folder object create time: " + testFolderObjCreateTime.ElapsedMilliseconds + "ms");
-			logger.Info("get directories time: " + testGetDirectoriesTime.ElapsedMilliseconds + "ms");
-			logger.Info("media file needs updating time: " + testMediaItemNeedsUpdatingTime.ElapsedMilliseconds + "ms");
-			logger.Info("extension valid check time: " + testIsExtensionValidTime.ElapsedMilliseconds + "ms");
+			if (logger.IsInfoEnabled) logger.Info("------------FOLDER SCAN --------------------");
+			if (logger.IsInfoEnabled) logger.Info("folders inserted: " + testNumberOfFoldersInserted);
+			if (logger.IsInfoEnabled) logger.Info("folder object create time: " + testFolderObjCreateTime.ElapsedMilliseconds + "ms");
+			if (logger.IsInfoEnabled) logger.Info("get directories time: " + testGetDirectoriesTime.ElapsedMilliseconds + "ms");
+			if (logger.IsInfoEnabled) logger.Info("media file needs updating time: " + testMediaItemNeedsUpdatingTime.ElapsedMilliseconds + "ms");
+			if (logger.IsInfoEnabled) logger.Info("extension valid check time: " + testIsExtensionValidTime.ElapsedMilliseconds + "ms");
 			long total = testFolderObjCreateTime.ElapsedMilliseconds + testGetDirectoriesTime.ElapsedMilliseconds + testMediaItemNeedsUpdatingTime.ElapsedMilliseconds + testIsExtensionValidTime.ElapsedMilliseconds;
-			logger.Info("total: " + total + "ms = " + total / 1000 + "s");
-			logger.Info("--------------------------------------------");
+			if (logger.IsInfoEnabled) logger.Info("total: " + total + "ms = " + total / 1000 + "s");
+			if (logger.IsInfoEnabled) logger.Info("--------------------------------------------");
 		}
 
 		public void ProcessFolder(int folderId)
@@ -70,7 +69,7 @@ namespace WaveBox.DataModel.FolderScanning
 					testFolderObjCreateTime.Start();
 					Folder topFolder = new Folder(folderPath);
 					testFolderObjCreateTime.Stop();
-					//logger.Info("scanning " + topFolder.FolderName + "  id: " + topFolder.FolderId);
+					//if (logger.IsInfoEnabled) logger.Info("scanning " + topFolder.FolderName + "  id: " + topFolder.FolderId);
 
 					if (topFolder.FolderId == null)
 					{
@@ -132,7 +131,7 @@ namespace WaveBox.DataModel.FolderScanning
 							}
 							//sw.Start();
 							ProcessFolder(subfolder);
-							//logger.Info("ProcessFolder ({0}) took {1}ms", subfolder, sw.ElapsedMilliseconds);
+							//if (logger.IsInfoEnabled) logger.Info("ProcessFolder ({0}) took {1}ms", subfolder, sw.ElapsedMilliseconds);
 							//sw.Reset();
 						}
 					}
@@ -207,12 +206,12 @@ namespace WaveBox.DataModel.FolderScanning
 					int? itemId = null;
 					bool needsUpdating = MediaItem.FileNeedsUpdating(file, folderId, out isNew, out itemId);
 					testMediaItemNeedsUpdatingTime.Stop();
-					//logger.Info("FileNeedsUpdating: {0} ms", sw.ElapsedMilliseconds);
+					//if (logger.IsInfoEnabled) logger.Info("FileNeedsUpdating: {0} ms", sw.ElapsedMilliseconds);
 					//sw.Reset();
 
 					if (needsUpdating)
 					{
-						logger.Info("[FOLDERSCAN] " + "File needs updating: " + file);
+						if (logger.IsInfoEnabled) logger.Info("File needs updating: " + file);
 						
 						//sw.Start();
 						TagLib.File f = null;
@@ -230,14 +229,14 @@ namespace WaveBox.DataModel.FolderScanning
 						{
 							logger.Error("[FOLDERSCAN(6)] " + "Error processing file " + file + ":	" + e);
 						}
-						//logger.Info("Get tag: {0} ms", sw.ElapsedMilliseconds);
+						//if (logger.IsInfoEnabled) logger.Info("Get tag: {0} ms", sw.ElapsedMilliseconds);
 
 						//sw.Reset();
 
 						if (f == null)
 						{
 							// Must be something not supported by TagLib-Sharp
-							logger.Info("[FOLDERSCAN(5)] " + file + " is not supported by taglib and will not be inserted.");
+							if (logger.IsInfoEnabled) logger.Info(file + " is not supported by taglib and will not be inserted.");
 						}
 						else
 						{
@@ -316,7 +315,7 @@ namespace WaveBox.DataModel.FolderScanning
 						{
 							if(m.ArtId == null)
 							{
-								logger.Info("Updating art id for item {0}. ({1} -> {2})", m.ItemId, m.ArtId == null ? "null" : m.ArtId.ToString(), newArtId);
+								if (logger.IsInfoEnabled) logger.Info("Updating art id for item " + m.ItemId + ". (" + (m.ArtId == null ? "null" : m.ArtId.ToString()) + " -> " + newArtId + ")");
 								Art.UpdateArtItemRelationship(newArtId, m.ItemId, false);
 							}
 						}

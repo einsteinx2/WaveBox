@@ -8,13 +8,12 @@ using System.Xml;
 using WaveBox.DataModel.Model;
 using System.Collections.Generic;
 using System.Threading;
-using NLog;
 
 namespace WaveBox.PodcastManagement
 {
 	public class PodcastEpisode
 	{
-		private static Logger logger = LogManager.GetCurrentClassLogger();
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		public long? EpisodeId { get; set; }
 		public long? PodcastId { get; set; }
@@ -37,11 +36,11 @@ namespace WaveBox.PodcastManagement
 			Author = episode.SelectSingleNode("itunes:author", mgr).InnerText;
 			Subtitle = episode.SelectSingleNode("itunes:subtitle", mgr).InnerText;
 			MediaUrl = episode.SelectSingleNode("enclosure").Attributes["url"].InnerText;
-			//logger.Info(episode.SelectSingleNode("title").InnerText);
-			//logger.Info(episode.SelectSingleNode("itunes:author", mgr).InnerText);
-			//logger.Info(episode.SelectSingleNode("itunes:subtitle", mgr).InnerText);
-			//logger.Info(episode.SelectSingleNode("enclosure").Attributes["url"].InnerText);
-			//logger.Info();
+			//if (logger.IsInfoEnabled) logger.Info(episode.SelectSingleNode("title").InnerText);
+			//if (logger.IsInfoEnabled) logger.Info(episode.SelectSingleNode("itunes:author", mgr).InnerText);
+			//if (logger.IsInfoEnabled) logger.Info(episode.SelectSingleNode("itunes:subtitle", mgr).InnerText);
+			//if (logger.IsInfoEnabled) logger.Info(episode.SelectSingleNode("enclosure").Attributes["url"].InnerText);
+			//if (logger.IsInfoEnabled) logger.Info();
 		}
 
 		public PodcastEpisode(long podcastId)
@@ -63,12 +62,12 @@ namespace WaveBox.PodcastManagement
 				}
 				else
 				{
-					logger.Info("Podcast constructor query returned no results");
+					if (logger.IsInfoEnabled) logger.Info("Podcast constructor query returned no results");
 				}
 			}
 			catch (Exception e)
 			{
-				logger.Info("[PODCASTEPISODE(1)] ERROR: " +  e);
+				logger.Error(e);
 			}
 			finally
 			{
@@ -95,7 +94,7 @@ namespace WaveBox.PodcastManagement
 			}
 			catch (Exception e)
 			{
-				logger.Info("[PODCASTEPISODE(1)] ERROR: " +  e);
+				logger.Error(e);
 			}
 			finally
 			{
@@ -141,7 +140,7 @@ namespace WaveBox.PodcastManagement
 			}
 			catch (Exception e)
 			{
-				logger.Info("[PODCAST (1)] ERROR: " +  e);
+				logger.Error(e);
 			}
 			finally
 			{

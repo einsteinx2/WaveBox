@@ -5,13 +5,12 @@ using System.Text;
 using WaveBox.DataModel.Singletons;
 using WaveBox.Http;
 using Newtonsoft.Json;
-using NLog;
 
 namespace WaveBox.ApiHandler.Handlers
 {
 	class ErrorApiHandler : IApiHandler
 	{
-		private static Logger logger = LogManager.GetCurrentClassLogger();
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
@@ -43,7 +42,7 @@ namespace WaveBox.ApiHandler.Handlers
 		/// </summary>
 		public void Process()
 		{
-			logger.Info("[ERRORAPI(1)]: " + Err);
+			if (logger.IsInfoEnabled) logger.Info(Err);
 
 			Dictionary<string, string> response = new Dictionary<string, string>();
 			response["error"] = Err;

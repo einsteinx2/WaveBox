@@ -9,13 +9,12 @@ using WaveBox.DataModel.Singletons;
 using WaveBox.Transcoding;
 using WaveBox.Http;
 using Newtonsoft.Json;
-using NLog;
 
 namespace WaveBox.ApiHandler.Handlers
 {
 	public class TranscodeHlsApiHandler : IApiHandler
 	{
-		private static Logger logger = LogManager.GetCurrentClassLogger();
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
@@ -34,7 +33,7 @@ namespace WaveBox.ApiHandler.Handlers
 		/// </summary>
 		public void Process()
 		{
-			logger.Info("[TRANSCODEHLSAPI] Starting HLS transcoding sequence");
+			if (logger.IsInfoEnabled) logger.Info("Starting HLS transcoding sequence");
 
 			// Try to get the media item id
 			bool success = false;
@@ -54,7 +53,7 @@ namespace WaveBox.ApiHandler.Handlers
 					if (itemType == ItemType.Song)
 					{
 						item = new Song(id);
-						logger.Info("[TRANSCODEHLSAPI] HLS transcoding for songs not currently supported");
+						if (logger.IsInfoEnabled) logger.Info("HLS transcoding for songs not currently supported");
 
 						// CURRENTLY DO NOT SUPPORT HLS STREAMING FOR SONGS
 						return;
@@ -62,7 +61,7 @@ namespace WaveBox.ApiHandler.Handlers
 					else if (itemType == ItemType.Video)
 					{
 						item = new Video(id);
-						logger.Info("[TRANSCODEHLSAPI] Preparing video stream: " + item.FileName);
+						if (logger.IsInfoEnabled) logger.Info("Preparing video stream: " + item.FileName);
 					}
 
 					// Return an error if none exists
@@ -88,11 +87,11 @@ namespace WaveBox.ApiHandler.Handlers
 					}
 
 					Processor.WriteText(response, "application/x-mpegURL");
-					logger.Info("[TRANSCODEHLSAPI] Successfully HLS transcoded file!");
+					if (logger.IsInfoEnabled) logger.Info("Successfully HLS transcoded file!");
 				}
 				catch (Exception e)
 				{
-					logger.Error("[TRANSCODEHLSAPI] ERROR: " + e);
+					logger.Error(e);
 				}
 			}
 			else

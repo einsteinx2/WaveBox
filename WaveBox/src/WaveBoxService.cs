@@ -7,7 +7,6 @@ using Mono.Unix.Native;
 using System.Runtime.InteropServices;
 using WaveBox.Transcoding;
 using WaveBox.DataModel.Singletons;
-using NLog;
 using System.Text;
 using System.Net;
 using System.Web;
@@ -17,7 +16,7 @@ namespace WaveBox
 	public class WaveBoxService : System.ServiceProcess.ServiceBase
 	{
 		// Loggererererer... er.
-		private static Logger logger = LogManager.GetCurrentClassLogger();
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		// Gather metrics about WaveBox instance
 		// Operating system platform
@@ -34,7 +33,7 @@ namespace WaveBox
 		/// </summary>
 		public WaveBoxService()
 		{
-			logger.Info("[SERVICE] Initializing WaveBoxService");
+			if (logger.IsInfoEnabled) logger.Info("Initializing WaveBoxService");
 			try
 			{
 				// Name the service
@@ -73,7 +72,7 @@ namespace WaveBox
 			// Handle any uncaught exceptions
 			catch (Exception e)
 			{
-				//logger.Error("[SERVICE(1)] {0}", e);
+				//logger.Error(e);
 				WaveBoxService.ReportCrash(e, false);
 			}
 		}
@@ -101,12 +100,12 @@ namespace WaveBox
 		/// </summary>
 		protected void OnStart()
 		{
-			logger.Info("[SERVICE] Starting...");
+			if (logger.IsInfoEnabled) logger.Info("Starting...");
 
 			// Launch the WaveBox thread using the Start() function from WaveBox
 			init = new Thread(new ThreadStart(wavebox.Start));
 			init.Start();
-			logger.Info("[SERVICE] Started!");
+			if (logger.IsInfoEnabled) logger.Info("Started!");
 		}
 
 		/// <summary>
@@ -115,20 +114,20 @@ namespace WaveBox
 		/// </summary>
 		protected override void OnStop()
 		{
-			logger.Info("[SERVICE] Stopping...");
+			if (logger.IsInfoEnabled) logger.Info("Stopping...");
 
 			// Abort main thread, nullify the WaveBox object
 			init.Abort();
 
 			// Shut off ZeroConf
-			logger.Info("[SERVICE] Turning off ZeroConf...");
+			if (logger.IsInfoEnabled) logger.Info("Turning off ZeroConf...");
 			wavebox.DisposeZeroConf();
-			logger.Info("[SERVICE] ZeroConf off");
+			if (logger.IsInfoEnabled) logger.Info("ZeroConf off");
 
 			// Stop any active transcodes
-			logger.Info("[SERVICE] Cancelling any active transcodes...");
+			if (logger.IsInfoEnabled) logger.Info("Cancelling any active transcodes...");
 			TranscodeManager.Instance.CancelAllTranscodes();
-			logger.Info("[SERVICE] All transcodes canceled");
+			if (logger.IsInfoEnabled) logger.Info("All transcodes canceled");
 
 			// Stop the file manager operation queue thread
 			FileManager.Instance.Stop();
@@ -137,7 +136,7 @@ namespace WaveBox
 			wavebox.Stop();
 			wavebox = null;
 
-			logger.Info("[SERVICE] Stopped!");
+			if (logger.IsInfoEnabled) logger.Info("Stopped!");
 
 			// Gracefully terminate
 			Environment.Exit(0);
@@ -148,7 +147,7 @@ namespace WaveBox
 		/// </summary>
 		protected override void OnContinue()
 		{
-			logger.Info("[SERVICE] Continuing");
+			if (logger.IsInfoEnabled) logger.Info("Continuing");
 		}
 
 		/// <summary>
@@ -156,7 +155,7 @@ namespace WaveBox
 		/// </summary>
 		protected override void OnPause()
 		{
-			logger.Info("[SERVICE] Pausing");
+			if (logger.IsInfoEnabled) logger.Info("Pausing");
 		}
 
 		/// <summary>
@@ -164,7 +163,7 @@ namespace WaveBox
 		/// </summary>
 		protected override void OnShutdown()
 		{
-			logger.Info("[SERVICE] Shutting down");
+			if (logger.IsInfoEnabled) logger.Info("Shutting down");
 		}
 		
 		/// <summary>
@@ -180,7 +179,7 @@ namespace WaveBox
 		        case PlatformID.Win32S:
 		        case PlatformID.Win32Windows:
 					// register application kill notifier
-					logger.Info("Registering shutdown hook for Windows...");
+					if (logger.IsInfoEnabled) logger.Info("Registering shutdown hook for Windows...");
 					windowsShutdownHandler += new EventHandler(ShutdownWindows);
 					SetConsoleCtrlHandler(windowsShutdownHandler, true);
 					break;
@@ -334,8 +333,7 @@ namespace WaveBox
 
 		public static void ReportCrash(Exception exception, bool terminateProcess) 
 		{
-			logger.Error("ReportCrash called");
-			logger.Error(exception.ToString());
+			logger.Error("ReportCrash called", exception);
 
 			// Submit to the web service
 			Uri URI = new Uri("http://crash.waveboxapp.com");

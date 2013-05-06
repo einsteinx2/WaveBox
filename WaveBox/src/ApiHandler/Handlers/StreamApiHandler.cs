@@ -9,13 +9,12 @@ using WaveBox.DataModel.Singletons;
 using WaveBox.Http;
 using WaveBox.Transcoding;
 using Newtonsoft.Json;
-using NLog;
 
 namespace WaveBox.ApiHandler.Handlers
 {
 	public class StreamApiHandler : IApiHandler
 	{
-		private static Logger logger = LogManager.GetCurrentClassLogger();
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
@@ -34,7 +33,7 @@ namespace WaveBox.ApiHandler.Handlers
 		/// </summary>
 		public void Process()
 		{
-			logger.Info("[STREAMAPI] Starting file streaming sequence");
+			if (logger.IsInfoEnabled) logger.Info("Starting file streaming sequence");
 
 			// Try to get the media item id
 			bool success = false;
@@ -54,12 +53,12 @@ namespace WaveBox.ApiHandler.Handlers
 					if (itemType == ItemType.Song)
 					{
 						item = new Song(id);
-						logger.Info("[STREAMAPI] Preparing audio stream: " + item.FileName);
+						if (logger.IsInfoEnabled) logger.Info("Preparing audio stream: " + item.FileName);
 					}
 					else if (itemType == ItemType.Video)
 					{
 						item = new Video(id);
-						logger.Info("[STREAMAPI] Preparing video stream: " + item.FileName);
+						if (logger.IsInfoEnabled) logger.Info("Preparing video stream: " + item.FileName);
 					}
 
 					// Return an error if none exists
@@ -81,7 +80,7 @@ namespace WaveBox.ApiHandler.Handlers
 						string range = (string)Processor.HttpHeaders["Range"];
 						string start = range.Split(new char[]{'-', '='})[1];
 
-						logger.Info("[SENDFILE] Connection retried.  Resuming from {0}", start);
+						if (logger.IsInfoEnabled) logger.Info("Connection retried.  Resuming from " + start);
 						startOffset = Convert.ToInt32(start);
 					}
 
@@ -94,11 +93,11 @@ namespace WaveBox.ApiHandler.Handlers
 					Processor.WriteFile(stream, startOffset, length, item.FileType.MimeType(), dict, true);
 					stream.Close();
 					
-					logger.Info("[STREAMAPI] Successfully streamed file!");
+					if (logger.IsInfoEnabled) logger.Info("Successfully streamed file!");
 				}
 				catch (Exception e)
 				{
-					logger.Error("[STREAMAPI] ERROR: " + e);
+					logger.Error(e);
 				}
 			}
 			else

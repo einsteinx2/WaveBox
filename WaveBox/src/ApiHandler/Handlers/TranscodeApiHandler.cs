@@ -9,13 +9,12 @@ using WaveBox.DataModel.Singletons;
 using WaveBox.Http;
 using WaveBox.Transcoding;
 using Newtonsoft.Json;
-using NLog;
 
 namespace WaveBox.ApiHandler.Handlers
 {
 	public class TranscodeApiHandler : IApiHandler
 	{
-		private static Logger logger = LogManager.GetCurrentClassLogger();
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
@@ -35,7 +34,7 @@ namespace WaveBox.ApiHandler.Handlers
 		/// <summary>
 		public void Process()
 		{
-			logger.Info("[TRANSCODEAPI] Starting file transcoding sequence");
+			if (logger.IsInfoEnabled) logger.Info("Starting file transcoding sequence");
 			
 			// Try to get the media item id
 			bool success = false;
@@ -69,7 +68,7 @@ namespace WaveBox.ApiHandler.Handlers
 					if (itemType == ItemType.Song)
 					{
 						item = new Song(id);
-						logger.Info("[TRANSCODEAPI] Preparing audio transcode: " + item.FileName);
+						if (logger.IsInfoEnabled) logger.Info("Preparing audio transcode: " + item.FileName);
 						
 						// Default to MP3 transcoding
 						transType = TranscodeType.MP3;
@@ -77,7 +76,7 @@ namespace WaveBox.ApiHandler.Handlers
 					else if (itemType == ItemType.Video)
 					{
 						item = new Video(id);
-						logger.Info("[TRANSCODEAPI] Preparing video transcode: " + item.FileName);
+						if (logger.IsInfoEnabled) logger.Info("Preparing video transcode: " + item.FileName);
 
 						// Default to h.264 transcoding
 						transType = TranscodeType.X264;
@@ -102,7 +101,7 @@ namespace WaveBox.ApiHandler.Handlers
 					{
 						string range = (string)Processor.HttpHeaders["Range"];
 						string start = range.Split(new char[]{'-', '='})[1];
-						logger.Info("[SENDFILE] Connection retried.  Resuming from {0}", start);
+						if (logger.IsInfoEnabled) logger.Info("Connection retried.  Resuming from " + start);
 
 						if (isDirect)
 						{
@@ -223,18 +222,18 @@ namespace WaveBox.ApiHandler.Handlers
 						{
 							if (Transcoder.IsDirect)
 							{
-								logger.Info("[TRANSCODEAPI] Checking if base stream exists");
+								if (logger.IsInfoEnabled) logger.Info("Checking if base stream exists");
 								if ((object)Transcoder.TranscodeProcess != null && (object)Transcoder.TranscodeProcess.StandardOutput.BaseStream != null)
 								{
 									// The base stream exists, so the transcoding process has started
-									logger.Info("[TRANSCODEAPI] Base stream exists, so start the transfer");
+									if (logger.IsInfoEnabled) logger.Info("Base stream exists, so start the transfer");
 									stream = Transcoder.TranscodeProcess.StandardOutput.BaseStream;
 									break;
 								}
 							}
 							else
 							{
-								logger.Info("[TRANSCODEAPI] Checking if file exists ({0})", Transcoder.OutputPath);
+								if (logger.IsInfoEnabled) logger.Info("Checking if file exists (" + Transcoder.OutputPath + ")");
 								if (File.Exists(Transcoder.OutputPath))
 								{
 									// The file exists, so the transcoding process has started
@@ -253,23 +252,23 @@ namespace WaveBox.ApiHandler.Handlers
 						(Transcoder.IsDirect && (object)stream != null) ||
 						(!Transcoder.IsDirect && File.Exists(Transcoder.OutputPath)))
 					{
-						logger.Info("[TRANSCODEAPI] Sending direct stream");
+						if (logger.IsInfoEnabled) logger.Info("Sending direct stream");
 						string mimeType = (object)Transcoder == null ? item.FileType.MimeType() : Transcoder.MimeType;
 						Processor.Transcoder = Transcoder;
 
 						if (Uri.Parameters.ContainsKey("offsetSeconds"))
 						{
-							logger.Info("ApiHandlerFactory writing file at offsetSeconds " + Uri.Parameters["offsetSeconds"]);
+							if (logger.IsInfoEnabled) logger.Info("ApiHandlerFactory writing file at offsetSeconds " + Uri.Parameters["offsetSeconds"]);
 						}
 
 						// Direct write file
 						Processor.WriteFile(stream, startOffset, length, mimeType, null, estimateContentLength);
 						stream.Close();
-						logger.Info("[TRANSCODEAPI] Successfully sent direct stream");
+						if (logger.IsInfoEnabled) logger.Info("Successfully sent direct stream");
 
 						if (Uri.Parameters.ContainsKey("offsetSeconds"))
 						{
-							logger.Info("ApiHandlerFactory DONE writing file at offsetSeconds " + Uri.Parameters["offsetSeconds"]);
+							if (logger.IsInfoEnabled) logger.Info("ApiHandlerFactory DONE writing file at offsetSeconds " + Uri.Parameters["offsetSeconds"]);
 						}
 					}
 					else
@@ -284,7 +283,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 				catch (Exception e)
 				{
-					logger.Error("[TRANSCODEAPI] ERROR: " + e);
+					logger.Error(e);
 				}
 			}
 			else

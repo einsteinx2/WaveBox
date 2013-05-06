@@ -8,7 +8,6 @@ using WaveBox.DataModel.Model;
 using WaveBox.Http;
 using WaveBox.DataModel.Singletons;
 using TagLib;
-using NLog;
 using System.Runtime.InteropServices;
 
 namespace WaveBox.ApiHandler.Handlers

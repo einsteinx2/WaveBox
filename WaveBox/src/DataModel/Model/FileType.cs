@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NLog;
 
 namespace WaveBox.DataModel.Model
 {
@@ -29,7 +28,7 @@ namespace WaveBox.DataModel.Model
 
 		/*public static FileType FileTypeForTagSharpString(this FileType ft, string formatString)
 		{
-			logger.Info("format string: " + formatString);
+			if (logger.IsInfoEnabled) logger.Info("format string: " + formatString);
 
 			// Lossy codecs
 			if (formatString == "MPEG-4 Audio (mp4a)")
@@ -60,7 +59,7 @@ namespace WaveBox.DataModel.Model
 
 		public static FileType FileTypeForTagLibMimeType(this FileType ft, string mimeType)
 		{
-			//logger.Info("mime type: " + mimeType);
+			//if (logger.IsInfoEnabled) logger.Info("mime type: " + mimeType);
 
 			// Try audio types
 			switch (mimeType)
