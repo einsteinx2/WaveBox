@@ -70,7 +70,22 @@ namespace WaveBox.ApiHandler.Handlers
 				// Parse size if valid
 				if (size != Int32.MaxValue)
 				{
-					if (WaveBoxService.DetectOS() == WaveBoxService.OS.Windows)
+					// Check if ImageMagick loaded
+					bool isImageMagick = false;
+					if (WaveBoxService.DetectOS() != WaveBoxService.OS.Windows)
+					{
+						try
+						{
+							isImageMagick = true;
+							ImageMagickInterop.GetExceptionType();
+						}
+						catch
+						{
+							isImageMagick = false;
+						}
+					}
+
+					if (!isImageMagick || WaveBoxService.DetectOS() == WaveBoxService.OS.Windows)
 					{
 						Console.WriteLine("Using GDI to resize image");
 						// Resize image, put it in memory stream

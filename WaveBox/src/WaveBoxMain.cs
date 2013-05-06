@@ -177,7 +177,14 @@ namespace WaveBox
 			if (logger.IsInfoEnabled) logger.Info("Initializing WaveBox on " + WaveBoxService.Platform + " platform...");
 
 			// Initialize ImageMagick
-			ImageMagickInterop.WandGenesis();
+			try
+			{
+				ImageMagickInterop.WandGenesis();
+			}
+			catch (Exception e)
+			{
+				logger.Error("Error loading ImageMagick DLL:", e);
+			}
 
 			// Create directory for WaveBox's root path, if it doesn't exist
 			string rootDir = RootPath();
@@ -317,7 +324,14 @@ namespace WaveBox
 			httpServer.Stop();
 
 			// Dispose of ImageMagick
-			ImageMagickInterop.WandTerminus();
+			try
+			{
+				ImageMagickInterop.WandTerminus();
+			}
+			catch (Exception e)
+			{
+				logger.Error("Error loading ImageMagick DLL:", e);
+			}
 		}
 
 		/// <summary>
