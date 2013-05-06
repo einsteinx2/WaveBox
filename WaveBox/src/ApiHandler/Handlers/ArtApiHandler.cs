@@ -70,34 +70,30 @@ namespace WaveBox.ApiHandler.Handlers
 				// Parse size if valid
 				if (size != Int32.MaxValue)
 				{
-					// Check if ImageMagick loaded
-					bool isImageMagick = false;
+					bool imageMagickFailed = false;
 					if (WaveBoxService.DetectOS() != WaveBoxService.OS.Windows)
 					{
+						// First try ImageMagick
 						try
 						{
-							isImageMagick = true;
-							ImageMagickInterop.GetExceptionType();
+							Console.WriteLine("Using Magick to resize image");
+							Byte[] data = ResizeImageMagick(stream, size);
+							stream = new MemoryStream(data, false);
 						}
 						catch
 						{
-							isImageMagick = false;
+							imageMagickFailed = true;
 						}
 					}
 
-					if (!isImageMagick || WaveBoxService.DetectOS() == WaveBoxService.OS.Windows)
+					// If ImageMagick dll isn't loaded, or this is Windows,  
+					if (imageMagickFailed || WaveBoxService.DetectOS() == WaveBoxService.OS.Windows)
 					{
 						Console.WriteLine("Using GDI to resize image");
 						// Resize image, put it in memory stream
 						Image resized = ResizeImageGDI(new Bitmap(stream), new Size(size, size));
 						stream = new MemoryStream();
 						resized.Save(stream, System.Drawing.Imaging.ImageFormat.Jpeg);
-					}
-					else 
-					{
-						Console.WriteLine("Using Magick to resize image");
-						Byte[] data = ResizeImageMagick(stream, size);
-						stream = new MemoryStream(data, false);
 					}
 				}
 			}
