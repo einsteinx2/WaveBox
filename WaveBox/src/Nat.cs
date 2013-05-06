@@ -37,18 +37,25 @@ namespace WaveBox
 		
 		private void DeviceFound(object sender, DeviceEventArgs args)
 		{
+			if (logger.IsInfoEnabled) logger.Info("Device Found");
+
 			this.Status = NatStatus.DeviceFound;
 
 			// This is the upnp enabled router
 			INatDevice device = args.Device;
-			
+
 			// Create a mapping to forward external port to local port
-			device.CreatePortMap(new Mapping(Protocol.Tcp, Settings.Port, Settings.Port));
+			try
+			{
+				device.CreatePortMap(new Mapping(Protocol.Tcp, Settings.Port, Settings.Port));
+				this.Status = NatStatus.PortForwardedSuccessfully;
+			}
+			catch (Exception e)
+			{
+				this.Status = NatStatus.PortForwardingFailed;
+				logger.Error("Port mapping failed", e);
+			}
 
-			if (logger.IsInfoEnabled) logger.Info("Device Found");
-
-			this.Status = NatStatus.PortForwardedSuccessfully;
-			
 			/*// Retrieve the details for the port map for external port 3000
 			Mapping m = device.GetSpecificMapping(Protocol.Tcp, 3000);
 			
@@ -74,7 +81,7 @@ namespace WaveBox
 		{
 			this.Status = NatStatus.PortForwardingFailed;
 
-			if (logger.IsInfoEnabled) logger.Info("Unhandled exception: " + args);
+			logger.Error("Unhandled exception: " + args);
 		}
 	}
 }
