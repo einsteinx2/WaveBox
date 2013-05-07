@@ -10,7 +10,7 @@ using WaveBox;
 using System.Diagnostics;
 using WaveBox.ApiHandler;
 using WaveBox.Transcoding;
-using WaveBox.Http;
+using WaveBox.TcpServer.Http;
 
 // offered to the public domain for any use with no restriction
 // and also with no warranty of any kind, please enjoy. - David Jeske. 
@@ -18,7 +18,7 @@ using WaveBox.Http;
 // simple HTTP explanation
 // http://www.jmarshall.com/easy/http/
 
-namespace WaveBox.Http
+namespace WaveBox.TcpServer.Http
 {
 	public class HttpProcessor : IHttpProcessor
 	{

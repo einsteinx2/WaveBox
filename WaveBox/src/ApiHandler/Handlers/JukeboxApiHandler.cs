@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using WaveBox.DataModel.Model;
 using WaveBox.DataModel.Singletons;
-using WaveBox.Http;
+using WaveBox.TcpServer.Http;
 using Newtonsoft.Json;
 
 namespace WaveBox.ApiHandler.Handlers
@@ -238,12 +238,12 @@ namespace WaveBox.ApiHandler.Handlers
 
 		private class JukeboxStatus
 		{
-			[JsonProperty("isPlaying")]
-			public bool IsPlaying
+			[JsonProperty("state")]
+			public string State
 			{
 				get
 				{
-					return Jukebox.Instance.IsPlaying;
+					return Jukebox.Instance.State.ToString();
 				}
 			}
 
