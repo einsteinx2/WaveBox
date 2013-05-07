@@ -44,10 +44,15 @@ namespace WaveBox.ApiHandler.Handlers
 				// Gather data about WaveBox process
 				global::System.Diagnostics.Process proc = global::System.Diagnostics.Process.GetCurrentProcess();
 
+				// Get current UNIX time
+				int unixTime = StatusApiHandlerExtension.UnixTime(DateTime.Now);
+
 				// Get process ID
 				status["pid"] = Convert.ToString(proc.Id);
+				// Get uptime of WaveBox instance
+				status["uptime"] = (unixTime - StatusApiHandlerExtension.UnixTime(WaveBoxService.StartTime)).ToString();
 				// Get last update time in UNIX format for status
-				status["updated"] = StatusApiHandlerExtension.UnixTime(DateTime.Now).ToString();
+				status["updated"] = unixTime.ToString();
 				// Get WaveBox version, currently in the format 'wavebox-builddate-git' (change to true version later,
 				// something like 'wavebox-1.0.0-alpha'
 				status["version"] = "wavebox-" + WaveBoxService.BuildDate.ToString("yyyyMMdd") + "-git";
@@ -175,9 +180,9 @@ namespace WaveBox.ApiHandler.Handlers
 		/// <summary>
 		/// Converts DateTime object to its UNIX timestamp equivalent
 		/// </summary>
-		public static double UnixTime(DateTime dt)
+		public static int UnixTime(DateTime dt)
 		{
-			return (dt - new DateTime(1970, 1, 1).ToLocalTime()).TotalSeconds;
+			return Convert.ToInt32(Math.Round((dt - new DateTime(1970, 1, 1).ToLocalTime()).TotalSeconds));
 		}
 	}
 }
