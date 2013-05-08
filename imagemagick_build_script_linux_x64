@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# For 64 bit we can't use libgomp.a because of an -fPIC error, so must disable openmp until we can figure it out (prob just need to compile it ourselves and include the -fPIC flag)
+# Relevant lines commented out, copied, and changed for clarity
+
+# Defines
+BUILD_DIR=~/ImageMagickBuild
+VERSION=6.8.5-5
+MAGICK_DIR=$BUILD_DIR/ImageMagick-$VERSION
+
+# Create the build directory
+mkdir $BUILD_DIR
+cd $BUILD_DIR
+
+# Download ImageMagick and depedencies
+wget http://www.imagemagick.org/download/ImageMagick.tar.gz
+wget http://www.imagemagick.org/download/delegates/jpegsrc.v9.tar.gz
+wget http://www.imagemagick.org/download/delegates/libpng-1.6.2.tar.gz
+wget http://www.imagemagick.org/download/delegates/tiff-4.0.3.tar.gz
+wget http://zlib.net/zlib-1.2.8.tar.gz
+
+# Untar everything
+tar xzvf ImageMagick.tar.gz
+tar xzvf jpegsrc.v9.tar.gz
+tar xzvf libpng-1.6.2.tar.gz
+tar xzvf tiff-4.0.3.tar.gz
+tar xzvf zlib-1.2.8.tar.gz
+
+# Move the libs into the ImageMagick directory
+mv jpeg-9 $MAGICK_DIR/jpeg
+mv libpng-1.6.2 $MAGICK_DIR/png
+mv tiff-4.0.3 $MAGICK_DIR/tiff
+mv zlib-1.2.8 $MAGICK_DIR/zlib
+
+# Compile everything
+cd $MAGICK_DIR/zlib && env CFLAGS="-fPIC" ./configure --static && make clean && make
+cd $MAGICK_DIR/jpeg && env CFLAGS="-fPIC" ./configure --disable-shared && make clean && make
+cd $MAGICK_DIR/png && env CPPFLAGS="-I../zlib -fPIC" LDFLAGS="-L../zlib" CFLAGS="-fPIC" ./configure --disable-shared && make clean && make
+cd $MAGICK_DIR/tiff && env CPPFLAGS="-fPIC" CFLAGS="-fPIC" ./configure --disable-shared --disable-lzma && make clean && make
+#cd $MAGICK_DIR && ./configure --disable-installed --disable-shared --enable-delegate-build --prefix=/ImageMagick-$VERSION --disable-dependency-tracking --with-x=no --without-perl --with-freetype=no --with-jp2=no --with-tiff=yes --with-magick-plus-plus=no --with-bzlib=no --without-lzma --disable-opencl CFLAGS="-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0" && make clean && make
+cd $MAGICK_DIR && ./configure --disable-installed --disable-shared --enable-delegate-build --prefix=/ImageMagick-$VERSION --disable-dependency-tracking --with-x=no --without-perl --with-freetype=no --with-jp2=no --with-tiff=yes --with-magick-plus-plus=no --with-bzlib=no --without-lzma --disable-opencl --disable-openmp CFLAGS="-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -fPIC" && make clean && make
+
+# Create the shared library from the static libs
+mkdir $BUILD_DIR/sharedbuild
+cd $BUILD_DIR/sharedbuild
+#cp $MAGICK_DIR/magick/.libs/libMagickCore-6.Q16.a $MAGICK_DIR/wand/.libs/libMagickWand-6.Q16.a $MAGICK_DIR/jpeg/.libs/libjpeg.a $MAGICK_DIR/png/.libs/libpng16.a $MAGICK_DIR/tiff/libtiff/.libs/libtiff.a $MAGICK_DIR/tiff/libtiff/.libs/libtiffxx.a `g++ -print-file-name=libgcc.a` `g++ -print-file-name=libstdc++.a` `g++ -print-file-name=libgomp.a` .
+cp $MAGICK_DIR/magick/.libs/libMagickCore-6.Q16.a $MAGICK_DIR/wand/.libs/libMagickWand-6.Q16.a $MAGICK_DIR/jpeg/.libs/libjpeg.a $MAGICK_DIR/png/.libs/libpng16.a $MAGICK_DIR/tiff/libtiff/.libs/libtiff.a $MAGICK_DIR/tiff/libtiff/.libs/libtiffxx.a `g++ -print-file-name=libgcc.a` `g++ -print-file-name=libstdc++.a` .
+ar -x libMagickCore-6.Q16.a
+ar -x libMagickWand-6.Q16.a
+ar -x libjpeg.a
+ar -x libpng16.a
+ar -x libtiff.a
+ar -x libtiffxx.a
+#ar -x libgcc.a
+#ar -x libstdc++.a
+#ar -x libgomp.a
+gcc -shared -lstdc++ *.o -o libMagickWand-6.Q16-Static.x64.so
+mv libMagickWand-6.Q16-Static.x64.so $BUILD_DIR/
