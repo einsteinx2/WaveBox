@@ -4,7 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Data;
 using System.IO;
-using WaveBox.Http;
+using WaveBox.TcpServer;
+using WaveBox.TcpServer.Http;
+using WaveBox.TcpServer.Mpd;
 using System.Threading;
 using Mono.Unix;
 using Mono.Unix.Native;
@@ -37,6 +39,9 @@ namespace WaveBox
 
 		// HTTP server, which serves up the API
 		private HttpServer httpServer;
+
+		// MPD server, which controls the Jukebox
+		//private MpdServer mpdServer;
 
 		/// <summary>
 		/// Detects WaveBox's root directory, for storing per-user configuration
@@ -206,7 +211,12 @@ namespace WaveBox
 			RegisterUrl();
 
 			// Start the HTTP server
-			StartHTTPServer();
+			httpServer = new HttpServer(Settings.Port);
+			StartTcpServer(httpServer);
+
+			// Start the MPD server
+			//mpdServer = new MpdServer(Settings.MpdPort);
+			//StartTcpServer(mpdServer);
 
 			// Start ZeroConf (broken as of 12/6/12)
 			//PublishZeroConf();
@@ -275,39 +285,21 @@ namespace WaveBox
 		}
 
 		/// <summary>
-		/// Initialize the HTTP server thread.
+		/// Initialize TCP server threads
 		/// </summary>
-		private void StartHTTPServer()
+		private void StartTcpServer(AbstractTcpServer server)
 		{
-			// Thread for HTTP server run
-			Thread httpSrv = null;
+			// Thread for server to run
+			Thread t = null;
 
-			// Attempt to start the HTTP server thread
+			// Attempt to start the server thread
 			try
 			{
-				httpServer = new HttpServer(Settings.Port);
-				httpSrv = new Thread(new ThreadStart(httpServer.Listen));
-				httpSrv.IsBackground = true;
-				httpSrv.Start();
+				t = new Thread(new ThreadStart(server.Listen));
+				t.IsBackground = true;
+				t.Start();
 			}
-			// Catch any socket exceptions which occur
-			catch (System.Net.Sockets.SocketException e)
-			{
-				// If the address is in use, WaveBox (or another service) is probably bound to that port; error out
-				// For another sockets exception, just print the message
-				if (e.SocketErrorCode.ToString() == "AddressAlreadyInUse")
-				{
-					logger.Error("Socket already in use.  Ensure that WaveBox is not already running.");
-				}
-				else
-				{
-					logger.Error(e);
-				}
-
-				// Quit with error return code
-				Environment.Exit(-1);
-			}
-			// Catch any generic exception of non-Socket type
+			// Catch any exceptions
 			catch (Exception e)
 			{
 				// Print the message, quit.
@@ -322,6 +314,7 @@ namespace WaveBox
 		public void Stop()
 		{
 			httpServer.Stop();
+			//mpdServer.Stop();
 
 			// Dispose of ImageMagick
 			try
@@ -340,7 +333,8 @@ namespace WaveBox
 		public void Restart()
 		{
 			Stop();
-			StartHTTPServer();
+			StartTcpServer(httpServer);
+			//StartTcpServer(mpdServer);
 		}
 	}
 }

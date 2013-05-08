@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 
-namespace WaveBox.Http
+namespace WaveBox.TcpServer.Http
 {
 	public class HttpHeader
 	{

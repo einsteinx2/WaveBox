@@ -26,6 +26,8 @@ namespace WaveBox.DataModel.Singletons
 
 		public static short Port { get { return settingsModel.Port; } }
 
+		public static short MpdPort { get { return settingsModel.MpdPort; } }
+
 		public static string PodcastFolder { get { return settingsModel.PodcastFolder; } }
 
 		public static int PodcastCheckInterval { get { return settingsModel.PodcastCheckInterval; } }
@@ -78,6 +80,17 @@ namespace WaveBox.DataModel.Singletons
 				if (port != null)
 				{
 					settingsModel.Port = (short)port;
+					settingsChanged = true;
+				}
+			}
+			catch { }
+
+			try
+			{
+				short? mpdPort = json.mpdPort;
+				if (mpdPort != null)
+				{
+					settingsModel.MpdPort = (short)mpdPort;
 					settingsChanged = true;
 				}
 			}
@@ -304,6 +317,9 @@ namespace WaveBox.DataModel.Singletons
 		[JsonProperty("port")]
 		public short Port { get; set; }
 		
+		[JsonProperty("mpdPort")]
+		public short MpdPort { get; set; }
+
 		[JsonProperty("mediaFolders")]
 		public List<string> MediaFolders { get; set; }
 		
