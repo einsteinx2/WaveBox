@@ -246,10 +246,10 @@
     <None Include="libbass.x86.so">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="libsqlite3.x64.so.0">
+    <None Include="libsqlite3.x64.so">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="libsqlite3.x86.so.0">
+    <None Include="libsqlite3.x86.so">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="lib\Mono.Nat.dll" />
