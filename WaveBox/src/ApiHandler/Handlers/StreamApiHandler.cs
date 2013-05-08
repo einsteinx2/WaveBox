@@ -6,7 +6,7 @@ using System.IO;
 using System.Threading;
 using WaveBox.DataModel.Model;
 using WaveBox.DataModel.Singletons;
-using WaveBox.Http;
+using WaveBox.TcpServer.Http;
 using WaveBox.Transcoding;
 using Newtonsoft.Json;
 

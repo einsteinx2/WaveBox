@@ -5,7 +5,7 @@ using System.Text;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using WaveBox.DataModel.Model;
-using WaveBox.Http;
+using WaveBox.TcpServer.Http;
 using WaveBox.DataModel.Singletons;
 using TagLib;
 using System.Runtime.InteropServices;

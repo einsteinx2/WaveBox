@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using WaveBox.ApiHandler.Handlers;
 using WaveBox.DataModel.Model;
-using WaveBox.Http;
+using WaveBox.TcpServer.Http;
 
 namespace WaveBox.ApiHandler
 {
 	class ApiHandlerFactory
-	{		
+	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		/// <summary>

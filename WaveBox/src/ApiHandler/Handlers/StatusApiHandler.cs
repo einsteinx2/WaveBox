@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Linq;
 using System.Text;
-using WaveBox.Http;
+using WaveBox.TcpServer.Http;
 using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
 using WaveBox.Transcoding;

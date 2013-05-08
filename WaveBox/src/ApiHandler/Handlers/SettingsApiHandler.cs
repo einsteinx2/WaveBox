@@ -6,7 +6,7 @@ using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Schema;
-using WaveBox.Http;
+using WaveBox.TcpServer.Http;
 
 namespace WaveBox.ApiHandler
 {
