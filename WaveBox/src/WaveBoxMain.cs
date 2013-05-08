@@ -41,7 +41,7 @@ namespace WaveBox
 		private HttpServer httpServer;
 
 		// MPD server, which controls the Jukebox
-		private MpdServer mpdServer;
+		//private MpdServer mpdServer;
 
 		/// <summary>
 		/// Detects WaveBox's root directory, for storing per-user configuration
@@ -215,8 +215,8 @@ namespace WaveBox
 			StartTcpServer(httpServer);
 
 			// Start the MPD server
-			mpdServer = new MpdServer(Settings.MpdPort);
-			StartTcpServer(mpdServer);
+			//mpdServer = new MpdServer(Settings.MpdPort);
+			//StartTcpServer(mpdServer);
 
 			// Start ZeroConf (broken as of 12/6/12)
 			//PublishZeroConf();
@@ -314,7 +314,7 @@ namespace WaveBox
 		public void Stop()
 		{
 			httpServer.Stop();
-			mpdServer.Stop();
+			//mpdServer.Stop();
 
 			// Dispose of ImageMagick
 			try
@@ -334,7 +334,7 @@ namespace WaveBox
 		{
 			Stop();
 			StartTcpServer(httpServer);
-			StartTcpServer(mpdServer);
+			//StartTcpServer(mpdServer);
 		}
 	}
 }
