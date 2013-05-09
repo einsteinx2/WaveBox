@@ -5,49 +5,77 @@ BUILD_DIR=~/ImageMagickBuild
 VERSION=6.8.5-5
 MAGICK_DIR=$BUILD_DIR/ImageMagick-$VERSION
 
+# Functions
+
+download()
+{
+    wget http://www.imagemagick.org/download/ImageMagick.tar.gz
+    wget http://www.imagemagick.org/download/delegates/jpegsrc.v9.tar.gz
+    wget http://www.imagemagick.org/download/delegates/libpng-1.6.2.tar.gz
+    wget http://www.imagemagick.org/download/delegates/tiff-4.0.3.tar.gz
+    wget http://zlib.net/zlib-1.2.8.tar.gz
+}
+
+extract()
+{
+    tar xzvf ImageMagick.tar.gz
+    tar xzvf jpegsrc.v9.tar.gz
+    tar xzvf libpng-1.6.2.tar.gz
+    tar xzvf tiff-4.0.3.tar.gz
+    tar xzvf zlib-1.2.8.tar.gz
+}
+
+move()
+{
+    mv jpeg-9 $MAGICK_DIR/jpeg
+    mv libpng-1.6.2 $MAGICK_DIR/png
+    mv tiff-4.0.3 $MAGICK_DIR/tiff
+    mv zlib-1.2.8 $MAGICK_DIR/zlib
+}
+
+compile()
+{
+    cd $MAGICK_DIR/zlib && env CFLAGS="-m32" ./configure --static && make clean && make
+    cd $MAGICK_DIR/jpeg && env CFLAGS="-m32" ./configure --disable-shared && make clean && make
+    cd $MAGICK_DIR/png && env CFLAGS="-m32" CPPFLAGS="-I../zlib -m32" LDFLAGS="-L../zlib -m32" ./configure --disable-shared && make clean && make
+    cd $MAGICK_DIR/tiff && env CFLAGS="-m32" CPPFLAGS="-m32" ./configure --disable-shared --disable-lzma && make clean && make
+    cd $MAGICK_DIR && ./configure --disable-installed --disable-shared --enable-delegate-build --prefix=/ImageMagick-$VERSION --disable-dependency-tracking --with-x=no --without-perl --with-freetype=no --with-jp2=no --with-tiff=yes --with-magick-plus-plus=no --with-bzlib=no --without-lzma --without-fontconfig --without-lcms --without-lcms2 --without-x11 --without-xml --without-pango --disable-opencl CFLAGS="-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -m32" CPPFLAGS="-m32" LDFLAGS="-m32" && make clean && make
+}
+
+create_shared()
+{
+    mkdir $BUILD_DIR/sharedbuild
+    cd $BUILD_DIR/sharedbuild
+    cp $MAGICK_DIR/magick/.libs/libMagickCore-6.Q16.a $MAGICK_DIR/wand/.libs/libMagickWand-6.Q16.a $MAGICK_DIR/jpeg/.libs/libjpeg.a $MAGICK_DIR/png/.libs/libpng16.a $MAGICK_DIR/tiff/libtiff/.libs/libtiff.a $MAGICK_DIR/tiff/libtiff/.libs/libtiffxx.a $MAGICK_DIR/zlib/libz.a .
+    ar -x libMagickCore-6.Q16.a
+    ar -x libMagickWand-6.Q16.a
+    ar -x libjpeg.a
+    ar -x libpng16.a
+    ar -x libtiff.a
+    ar -x libtiffxx.a
+    ar -x libz.a
+    g++ -m32 -shared -static-libgcc -static-libstdc++ *.o -o libMagickWand-6.Q16-Static.x86.so
+    mv libMagickWand-6.Q16-Static.x86.so $BUILD_DIR/
+}
+
+# Install the 32bit libraries
+sudo apt-get install gcc-multilib g++-multilib libc6:i386 libc6-dev:i386
+
 # Create the build directory
 mkdir $BUILD_DIR
 cd $BUILD_DIR
 
 # Download ImageMagick and depedencies
-wget http://www.imagemagick.org/download/ImageMagick.tar.gz
-wget http://www.imagemagick.org/download/delegates/jpegsrc.v9.tar.gz
-wget http://www.imagemagick.org/download/delegates/libpng-1.6.2.tar.gz
-wget http://www.imagemagick.org/download/delegates/tiff-4.0.3.tar.gz
-wget http://zlib.net/zlib-1.2.8.tar.gz
+download
 
 # Untar everything
-tar xzvf ImageMagick.tar.gz
-tar xzvf jpegsrc.v9.tar.gz
-tar xzvf libpng-1.6.2.tar.gz
-tar xzvf tiff-4.0.3.tar.gz
-tar xzvf zlib-1.2.8.tar.gz
+extract
 
 # Move the libs into the ImageMagick directory
-mv jpeg-9 $MAGICK_DIR/jpeg
-mv libpng-1.6.2 $MAGICK_DIR/png
-mv tiff-4.0.3 $MAGICK_DIR/tiff
-mv zlib-1.2.8 $MAGICK_DIR/zlib
+move
 
 # Compile everything
-cd $MAGICK_DIR/zlib && ./configure --static && make clean && make
-cd $MAGICK_DIR/jpeg && ./configure --disable-shared && make clean && make
-cd $MAGICK_DIR/png && env CPPFLAGS="-I../zlib" LDFLAGS="-L../zlib" ./configure --disable-shared && make clean && make
-cd $MAGICK_DIR/tiff && ./configure --disable-shared --disable-lzma && make clean && make
-cd $MAGICK_DIR && ./configure --disable-installed --disable-shared --enable-delegate-build --prefix=/ImageMagick-$VERSION --disable-dependency-tracking --with-x=no --without-perl --with-freetype=no --with-jp2=no --with-tiff=yes --with-magick-plus-plus=no --with-bzlib=no --without-lzma --disable-opencl CFLAGS="-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0" && make clean && make
+compile
 
 # Create the shared library from the static libs
-mkdir $BUILD_DIR/sharedbuild
-cd $BUILD_DIR/sharedbuild
-cp $MAGICK_DIR/magick/.libs/libMagickCore-6.Q16.a $MAGICK_DIR/wand/.libs/libMagickWand-6.Q16.a $MAGICK_DIR/jpeg/.libs/libjpeg.a $MAGICK_DIR/png/.libs/libpng16.a $MAGICK_DIR/tiff/libtiff/.libs/libtiff.a $MAGICK_DIR/tiff/libtiff/.libs/libtiffxx.a `g++ -print-file-name=libgcc.a` `g++ -print-file-name=libstdc++.a` `g++ -print-file-name=libgomp.a` .
-ar -x libMagickCore-6.Q16.a
-ar -x libMagickWand-6.Q16.a
-ar -x libjpeg.a
-ar -x libpng16.a
-ar -x libtiff.a
-ar -x libtiffxx.a
-ar -x libgcc.a
-ar -x libstdc++.a
-ar -x libgomp.a
-gcc -shared *.o -o libMagickWand-6.Q16-Static.x86.so
-mv libMagickWand-6.Q16-Static.x86.so $BUILD_DIR/
+create_shared
