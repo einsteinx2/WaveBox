@@ -7,6 +7,13 @@ using Un4seen.Bass;
 
 namespace WaveBox.DataModel.Singletons
 {
+	public enum JukeboxState
+	{
+		Stop,
+		Pause,
+		Play
+	}
+
 	public class Jukebox
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -16,7 +23,15 @@ namespace WaveBox.DataModel.Singletons
 
 		public bool IsInitialized { get; set; }
 
-		public bool IsPlaying { get; set; }
+		public JukeboxState State { get; set; }
+
+		public bool Repeat { get; set; }
+
+		public bool Random { get; set; }
+
+		public bool Single { get; set; }
+
+		public bool Consume { get; set; }
 
 		public int CurrentIndex { get; set; }
 
@@ -47,21 +62,47 @@ namespace WaveBox.DataModel.Singletons
 			return 0.0;
 		}
 
+		public float Volume()
+		{
+			if (IsInitialized && currentStream != null)
+			{
+				return Bass.BASS_GetVolume();
+			}
+
+			return 0.0f;
+		}
+
 		public void Play()
 		{
 			if (currentStream != null)
 			{
 				Bass.BASS_Start();
-				IsPlaying = true;
+				State = JukeboxState.Play;
 			}
 		}
 
 		public void Pause()
 		{
-			if (IsPlaying && currentStream != 0)
+			if (State == JukeboxState.Play && currentStream != 0)
 			{
 				Bass.BASS_Pause();
-				IsPlaying = false;
+				State = JukeboxState.Pause;
+			}
+		}
+
+		// Overload for pause toggle
+		public void Pause(bool toggle)
+		{
+			if (toggle)
+			{
+				if (State == JukeboxState.Pause)
+				{
+					Play();
+				}
+				else
+				{
+					Pause();
+				}
 			}
 		}
 
@@ -70,6 +111,7 @@ namespace WaveBox.DataModel.Singletons
 			if (IsInitialized)
 			{
 				BassFree();
+				State = JukeboxState.Stop;
 			}
 		}
 
@@ -101,22 +143,25 @@ namespace WaveBox.DataModel.Singletons
 
 			if (item != null)
 			{
+				if (logger.IsInfoEnabled) logger.Info("Item not null");
 				if (item.ItemTypeId == (int)ItemType.Song)
 				{
+					if (logger.IsInfoEnabled) logger.Info("Item is song");
 					// set the current index
 					CurrentIndex = index;
 
 					// re-initialize bass
 					BassInit();
+					if (logger.IsInfoEnabled) logger.Info("Re-initializing BASS");
 
 					// create the stream
 					string path = item.File.Name;
 					currentStream = Bass.BASS_StreamCreateFile(path, 0, 0, BASSFlag.BASS_STREAM_PRESCAN);
+
 					if (currentStream == 0)
 					{
 						if (logger.IsInfoEnabled) logger.Info("BASS failed to create stream for " + path);
 					}
-
 					else 
 					{
 						if (logger.IsInfoEnabled) logger.Info("Current stream handle: " + currentStream);
@@ -129,7 +174,7 @@ namespace WaveBox.DataModel.Singletons
 
 						Bass.BASS_ChannelSetSync(currentStream.Value, BASSSync.BASS_SYNC_END, 0, end, System.IntPtr.Zero);
 						Bass.BASS_ChannelPlay(currentStream.Value, true);
-						IsPlaying = true;
+						State = JukeboxState.Play;
 					}
 				}
 				// jukebox mode currently only plays songs, so skip if it's not a song.
@@ -188,11 +233,13 @@ namespace WaveBox.DataModel.Singletons
 			// already initialized.
 			if (IsInitialized)
 			{
+				if (logger.IsInfoEnabled) logger.Info("Freeing BASS");
 				BassFree();
 			}
 
 			// set the buffer to 200ms, which is the minimum.
-			Bass.BASS_SetConfig(BASSConfig.BASS_CONFIG_BUFFER, Bass.BASS_GetConfig(BASSConfig.BASS_CONFIG_UPDATEPERIOD + 200));
+			if (logger.IsInfoEnabled) logger.Info("Setting up BASS");
+			//Bass.BASS_SetConfig(BASSConfig.BASS_CONFIG_BUFFER, Bass.BASS_GetConfig(BASSConfig.BASS_CONFIG_UPDATEPERIOD + 200));
 			if (logger.IsInfoEnabled) logger.Info("BASS buffer size: " + Bass.BASS_GetConfig(BASSConfig.BASS_CONFIG_BUFFER) + "ms");
 
 			// dsp effects for floating point math to avoid clipping
@@ -214,7 +261,7 @@ namespace WaveBox.DataModel.Singletons
 			Bass.BASS_PluginFree(0);
 
 			IsInitialized = false;
-			IsPlaying = false;
+			State = JukeboxState.Stop;
 			currentStream = 0;
 		}
 

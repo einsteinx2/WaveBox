@@ -7,7 +7,7 @@ using System.Threading;
 using WaveBox.DataModel.Model;
 using WaveBox.DataModel.Singletons;
 using WaveBox.Transcoding;
-using WaveBox.Http;
+using WaveBox.TcpServer.Http;
 using Newtonsoft.Json;
 
 namespace WaveBox.ApiHandler.Handlers
