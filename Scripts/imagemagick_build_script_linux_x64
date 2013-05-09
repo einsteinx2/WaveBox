@@ -1,0 +1,107 @@
+#!/bin/bash
+
+# Defines
+BUILD_DIR=~/ImageMagickBuild
+VERSION=6.8.5-5
+MAGICK_DIR=$BUILD_DIR/ImageMagick-$VERSION
+
+# Functions
+
+build_gcc()
+{
+    sudo apt-get install m4
+
+    mkdir gcc
+    cd gcc
+
+    mkdir libs
+
+    # Download dependencies and GCC
+    wget http://www.multiprecision.org/mpc/download/mpc-1.0.1.tar.gz
+    wget http://www.mpfr.org/mpfr-current/mpfr-3.1.2.tar.gz
+    wget ftp://ftp.gnu.org/gnu/gmp/gmp-5.1.1.tar.bz2
+    wget http://gcc.petsads.us/releases/gcc-4.8.0/gcc-4.8.0.tar.bz2
+
+    # Extract them
+    tar xzvf mpc-1.0.1.tar.gz
+    tar xzvf mpfr-3.1.2.tar.gz
+    tar xjvf gmp-5.1.1.tar.bz2
+    tar xjvf gcc-4.8.0.tar.bz2
+
+    # Compile deps
+    cd $BUILD_DIR/gcc/gmp* && ../configure --build=x86_64-linux-gnu --prefix=$BUILD_DIR/gcc/libs; make; make install
+
+    cd $BUILD_DIR/gcc/mpfr*
+    mkdir build && cd build
+    ../configure --build=x86_64-linux-gnu --with-gmp=/home/bbaron/ImageMagickBuild/gmp-5.1.1/build
+}
+
+download()
+{
+    wget http://www.imagemagick.org/download/ImageMagick.tar.gz
+    wget http://www.imagemagick.org/download/delegates/jpegsrc.v9.tar.gz
+    wget http://www.imagemagick.org/download/delegates/libpng-1.6.2.tar.gz
+    wget http://www.imagemagick.org/download/delegates/tiff-4.0.3.tar.gz
+    wget http://zlib.net/zlib-1.2.8.tar.gz
+}
+
+extract()
+{
+    tar xzvf ImageMagick.tar.gz
+    tar xzvf jpegsrc.v9.tar.gz
+    tar xzvf libpng-1.6.2.tar.gz
+    tar xzvf tiff-4.0.3.tar.gz
+    tar xzvf zlib-1.2.8.tar.gz
+}
+
+move()
+{
+    mv jpeg-9 $MAGICK_DIR/jpeg
+    mv libpng-1.6.2 $MAGICK_DIR/png
+    mv tiff-4.0.3 $MAGICK_DIR/tiff
+    mv zlib-1.2.8 $MAGICK_DIR/zlib
+}
+
+compile()
+{
+    cd $MAGICK_DIR/zlib && env CFLAGS="-m64" ./configure --static && make clean && make
+    cd $MAGICK_DIR/jpeg && env CFLAGS="-m64" ./configure --disable-shared && make clean && make
+    cd $MAGICK_DIR/png && env CFLAGS="-m64" CPPFLAGS="-I../zlib -m64" LDFLAGS="-L../zlib -m64" ./configure --disable-shared && make clean && make
+    cd $MAGICK_DIR/tiff && env CFLAGS="-m64" CPPFLAGS="-m64" ./configure --disable-shared --disable-lzma && make clean && make
+    cd $MAGICK_DIR && ./configure --disable-installed --disable-shared --enable-delegate-build --prefix=/ImageMagick-$VERSION --disable-dependency-tracking --with-x=no --without-perl --with-freetype=no --with-jp2=no --with-tiff=yes --with-magick-plus-plus=no --with-bzlib=no --without-lzma --without-fontconfig --without-lcms --without-lcms2 --without-x11 --without-xml --without-pango --disable-opencl CFLAGS="-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -m64" CPPFLAGS="-m64" LDFLAGS="-m64" && make clean && make
+}
+
+create_shared()
+{
+    mkdir $BUILD_DIR/sharedbuild
+    cd $BUILD_DIR/sharedbuild
+    cp $MAGICK_DIR/magick/.libs/libMagickCore-6.Q16.a $MAGICK_DIR/wand/.libs/libMagickWand-6.Q16.a $MAGICK_DIR/jpeg/.libs/libjpeg.a $MAGICK_DIR/png/.libs/libpng16.a $MAGICK_DIR/tiff/libtiff/.libs/libtiff.a $MAGICK_DIR/tiff/libtiff/.libs/libtiffxx.a $MAGICK_DIR/zlib/libz.a .
+    ar -x libMagickCore-6.Q16.a
+    ar -x libMagickWand-6.Q16.a
+    ar -x libjpeg.a
+    ar -x libpng16.a
+    ar -x libtiff.a
+    ar -x libtiffxx.a
+    ar -x libz.a
+    g++ -m64 -shared -static-libgcc -static-libstdc++ *.o -o libMagickWand-6.Q16-Static.x64.so
+    mv libMagickWand-6.Q16-Static.x64.so $BUILD_DIR/
+}
+
+# Create the build directory
+mkdir $BUILD_DIR
+cd $BUILD_DIR
+
+# Download ImageMagick and depedencies
+download
+
+# Untar everything
+extract
+
+# Move the libs into the ImageMagick directory
+move
+
+# Compile everything
+compile
+
+# Create the shared library from the static libs
+create_shared
