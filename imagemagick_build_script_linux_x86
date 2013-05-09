@@ -2,7 +2,7 @@
 
 # Defines
 BUILD_DIR=~/ImageMagickBuild
-VERSION=6.8.5-4
+VERSION=6.8.5-5
 MAGICK_DIR=$BUILD_DIR/ImageMagick-$VERSION
 
 # Create the build directory
