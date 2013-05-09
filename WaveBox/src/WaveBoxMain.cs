@@ -202,6 +202,19 @@ namespace WaveBox
 			Database.DatabaseSetup();
 			Settings.SettingsSetup();
 
+			// Report if automatic crash reporting enabled
+			if (logger.IsInfoEnabled)
+			{
+				if (Settings.CrashReportEnable)
+				{
+					logger.Info("Automatic crash reporting is enabled");
+				}
+				else
+				{
+					logger.Info("Notice: automatic crash reporting is disabled");
+				}
+			}
+
 			// If configured, start NAT routing
 			if (Settings.NatEnable)
 			{
