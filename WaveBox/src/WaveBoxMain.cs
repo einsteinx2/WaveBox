@@ -202,9 +202,12 @@ namespace WaveBox
 			Database.DatabaseSetup();
 			Settings.SettingsSetup();
 
-			// Start NAT routing
-			this.Nat = new Nat();
-			this.Nat.Start();
+			// If configured, start NAT routing
+			if (Settings.NatEnable)
+			{
+				this.Nat = new Nat();
+				this.Nat.Start();
+			}
 
 			// Register server with registration service
 			ServerSetup();
