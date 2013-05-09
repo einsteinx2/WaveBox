@@ -28,6 +28,8 @@ namespace WaveBox.DataModel.Singletons
 
 		public static short MpdPort { get { return settingsModel.MpdPort; } }
 
+		public static bool NatEnable { get { return settingsModel.NatEnable; } }
+
 		public static string PodcastFolder { get { return settingsModel.PodcastFolder; } }
 
 		public static int PodcastCheckInterval { get { return settingsModel.PodcastCheckInterval; } }
@@ -91,6 +93,17 @@ namespace WaveBox.DataModel.Singletons
 				if (mpdPort != null)
 				{
 					settingsModel.MpdPort = (short)mpdPort;
+					settingsChanged = true;
+				}
+			}
+			catch { }
+
+			try
+			{
+				bool? natEnable = json.natEnable;
+				if (natEnable != null)
+				{
+					settingsModel.NatEnable = (bool)natEnable;
 					settingsChanged = true;
 				}
 			}
@@ -319,6 +332,9 @@ namespace WaveBox.DataModel.Singletons
 		
 		[JsonProperty("mpdPort")]
 		public short MpdPort { get; set; }
+
+		[JsonProperty("natEnable")]
+		public bool NatEnable { get; set; }
 
 		[JsonProperty("mediaFolders")]
 		public List<string> MediaFolders { get; set; }
