@@ -134,6 +134,8 @@ namespace WaveBox.ApiHandler
 					user = null;
 				}
 			}
+			// This is breaking the beta UsersApiHandler.  Commented out for now - mdlayher, 5/10/13
+			/*
 			else if (action == "users")
 			{
 				// Must use username and password, but don't create a session
@@ -143,6 +145,7 @@ namespace WaveBox.ApiHandler
 					user = null;
 				}
 			}
+			*/
 			else
 			{
 				// Must use sessionId
@@ -150,6 +153,9 @@ namespace WaveBox.ApiHandler
 				if ((object)username != null)
 				{
 					user = new User(username);
+
+					// Update this user's session
+					user.UpdateSession(sessionId);
 				}
 			}
 
