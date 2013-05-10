@@ -115,9 +115,10 @@ namespace WaveBox.DataModel.Model
 
 			try
 			{
-				Album album = Album.AlbumForName(tag.Album, ArtistId);
+				Album album = Album.AlbumForName(tag.Album, ArtistId, Convert.ToInt32(tag.Year));
 				AlbumId = album.AlbumId;
 				AlbumName = album.AlbumName;
+				ReleaseYear = album.ReleaseYear;
 			}
 			catch
 			{
@@ -157,15 +158,6 @@ namespace WaveBox.DataModel.Model
 			catch
 			{
 				DiscNumber = null;
-			}
-
-			try
-			{
-				ReleaseYear = Convert.ToInt32(tag.Year);
-			}
-			catch
-			{
-				ReleaseYear = null;
 			}
 
 			try
