@@ -37,7 +37,7 @@ namespace WaveBox.DataModel.FolderScanning
 		{
 			ProcessFolder(FolderPath);
 
-			if (logger.IsInfoEnabled) logger.Info("------------FOLDER SCAN --------------------");
+			if (logger.IsInfoEnabled) logger.Info("---------------- FOLDER SCAN ----------------");
 			if (logger.IsInfoEnabled) logger.Info("folders inserted: " + testNumberOfFoldersInserted);
 			if (logger.IsInfoEnabled) logger.Info("folder object create time: " + testFolderObjCreateTime.ElapsedMilliseconds + "ms");
 			if (logger.IsInfoEnabled) logger.Info("get directories time: " + testGetDirectoriesTime.ElapsedMilliseconds + "ms");
@@ -45,7 +45,7 @@ namespace WaveBox.DataModel.FolderScanning
 			if (logger.IsInfoEnabled) logger.Info("extension valid check time: " + testIsExtensionValidTime.ElapsedMilliseconds + "ms");
 			long total = testFolderObjCreateTime.ElapsedMilliseconds + testGetDirectoriesTime.ElapsedMilliseconds + testMediaItemNeedsUpdatingTime.ElapsedMilliseconds + testIsExtensionValidTime.ElapsedMilliseconds;
 			if (logger.IsInfoEnabled) logger.Info("total: " + total + "ms = " + total / 1000 + "s");
-			if (logger.IsInfoEnabled) logger.Info("--------------------------------------------");
+			if (logger.IsInfoEnabled) logger.Info("---------------------------------------------");
 		}
 
 		public void ProcessFolder(int folderId)
