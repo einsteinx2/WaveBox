@@ -184,6 +184,56 @@ namespace WaveBox.DataModel.Model
 			return allVideos;
 		}
 
+		public static int? CountVideos()
+		{
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			int? count = null;
+
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT count(video_id) FROM video", conn);
+				count = Convert.ToInt32(q.ExecuteScalar());
+			}
+			catch (Exception e)
+			{
+				logger.Error(e.ToString());
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			return count;
+		}
+
+		public static long? TotalVideoSize()
+		{
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			long? total = null;
+
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT sum(video_file_size) FROM video", conn);
+				total = Convert.ToInt64(q.ExecuteScalar());
+			}
+			catch (Exception e)
+			{
+				logger.Error(e.ToString());
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			return total;
+		}
+
 		public static List<Video> SearchVideo(string query)
 		{
 			List<Video> result = new List<Video>();
