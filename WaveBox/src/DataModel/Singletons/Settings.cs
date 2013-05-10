@@ -28,6 +28,8 @@ namespace WaveBox.DataModel.Singletons
 
 		public static short MpdPort { get { return settingsModel.MpdPort; } }
 
+		public static bool CrashReportEnable { get { return settingsModel.CrashReportEnable; } }
+
 		public static bool NatEnable { get { return settingsModel.NatEnable; } }
 
 		public static string PodcastFolder { get { return settingsModel.PodcastFolder; } }
@@ -47,6 +49,8 @@ namespace WaveBox.DataModel.Singletons
 
 		private static void ParseSettings()
 		{
+			if (logger.IsInfoEnabled) logger.Info("Reading settings: " + SettingsPath());
+
 			StreamReader reader = new StreamReader(SettingsPath());
 			string configFile = RemoveJsonComments(reader);
 
@@ -67,7 +71,7 @@ namespace WaveBox.DataModel.Singletons
 			}
 			catch { }
 
-			if (logger.IsInfoEnabled) logger.Info("settings changed: " + settingsChanged + " | port: " + settingsModel.Port);
+			if (logger.IsInfoEnabled) logger.Info("settings changed: " + settingsChanged);
 		}
 
 		public static bool WriteSettings(string jsonString)
@@ -83,6 +87,7 @@ namespace WaveBox.DataModel.Singletons
 				{
 					settingsModel.Port = (short)port;
 					settingsChanged = true;
+					if (logger.IsInfoEnabled) logger.Info("Setting 'port': " + settingsModel.Port);
 				}
 			}
 			catch { }
@@ -94,6 +99,19 @@ namespace WaveBox.DataModel.Singletons
 				{
 					settingsModel.MpdPort = (short)mpdPort;
 					settingsChanged = true;
+					if (logger.IsInfoEnabled) logger.Info("Setting 'mpdPort': " + settingsModel.MpdPort);
+				}
+			}
+			catch { }
+
+			try
+			{
+				bool? crashReportEnable = json.crashReportEnable;
+				if (crashReportEnable != null)
+				{
+					settingsModel.CrashReportEnable = (bool)crashReportEnable;
+					settingsChanged = true;
+					if (logger.IsInfoEnabled) logger.Info("Setting 'crashReportEnable': " + settingsModel.CrashReportEnable);
 				}
 			}
 			catch { }
@@ -105,6 +123,7 @@ namespace WaveBox.DataModel.Singletons
 				{
 					settingsModel.NatEnable = (bool)natEnable;
 					settingsChanged = true;
+					if (logger.IsInfoEnabled) logger.Info("Setting 'natEnable': " + settingsModel.NatEnable);
 				}
 			}
 			catch { }
@@ -114,9 +133,11 @@ namespace WaveBox.DataModel.Singletons
 				if (json.mediaFolders != null)
 				{
 					List<string> mediaFoldersTemp = new List<string>();
+					if (logger.IsInfoEnabled) logger.Info("Setting 'mediaFolders':");
 					foreach (string mediaFolderString in json.mediaFolders)
 					{
 						mediaFoldersTemp.Add(mediaFolderString);
+						if (logger.IsInfoEnabled) logger.Info("\t" + mediaFolderString);
 					}
 					settingsModel.MediaFolders = mediaFoldersTemp;
 					mediaFolders = PopulateMediaFolders();
@@ -132,6 +153,7 @@ namespace WaveBox.DataModel.Singletons
 				{
 					settingsModel.PodcastFolder = podcastFolderTemp;
 					settingsChanged = true;
+					if (logger.IsInfoEnabled) logger.Info("Setting 'podcastFolder': " + settingsModel.PodcastFolder);
 				}
 			}
 			catch { }
@@ -143,6 +165,7 @@ namespace WaveBox.DataModel.Singletons
 				{
 					settingsModel.PrettyJson = (bool)prettyJsonTemp;
 					settingsChanged = true;
+					if (logger.IsInfoEnabled) logger.Info("Setting 'prettyJson': " + settingsModel.PrettyJson);
 				}
 			}
 			catch { }
@@ -154,6 +177,7 @@ namespace WaveBox.DataModel.Singletons
 				{
 					settingsModel.PodcastCheckInterval = (int)podcastCheckIntervalTemp;
 					settingsChanged = true;
+					if (logger.IsInfoEnabled) logger.Info("Setting 'podcastCheckInterval': " + settingsModel.PodcastCheckInterval);
 				}
 			}
 			catch { }
@@ -163,9 +187,11 @@ namespace WaveBox.DataModel.Singletons
 				if (json.folderArtNames != null)
 				{
 					List<string> folderArtNamesTemp = new List<string>();
+					if (logger.IsInfoEnabled) logger.Info("Setting 'folderArtNames':");
 					foreach (string artName in json.folderArtNames)
 					{
 						folderArtNamesTemp.Add(artName);
+						if (logger.IsInfoEnabled) logger.Info("\t" + artName);
 					}
 					settingsModel.FolderArtNames = folderArtNamesTemp;
 					settingsChanged = true;
@@ -332,6 +358,9 @@ namespace WaveBox.DataModel.Singletons
 		
 		[JsonProperty("mpdPort")]
 		public short MpdPort { get; set; }
+
+		[JsonProperty("crashReportEnable")]
+		public bool CrashReportEnable { get; set; }
 
 		[JsonProperty("natEnable")]
 		public bool NatEnable { get; set; }

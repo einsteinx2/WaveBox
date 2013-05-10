@@ -338,27 +338,33 @@ namespace WaveBox
 
 		public static void ReportCrash(Exception exception, bool terminateProcess) 
 		{
-			logger.Error("ReportCrash called", exception);
+			logger.Error("WaveBox has crashed!");
 
-			// Submit to the web service
-			Uri URI = new Uri("http://crash.waveboxapp.com");
-			string parameters = "exception=" + HttpUtility.UrlEncode(exception.ToString());
-			
-			using (WebClient wc = new WebClient())
+			// Report crash if enabled
+			if (Settings.CrashReportEnable)
 			{
-				wc.Headers[HttpRequestHeader.ContentType] = "application/x-www-form-urlencoded";
+				logger.Error("ReportCrash called", exception);
 
-				if (terminateProcess)
+				// Submit to the web service
+				Uri URI = new Uri("http://crash.waveboxapp.com");
+				string parameters = "exception=" + HttpUtility.UrlEncode(exception.ToString());
+
+				using (WebClient wc = new WebClient())
 				{
-					// We're about to terminate, so send it synchronously
-					string response = wc.UploadString(URI, parameters);
-					logger.Error("Crash report server response: " + response);
-				}
-				else
-				{
-					// We're stayin' alive, stayin' alive, so send it asynchronously
-					wc.UploadStringCompleted += new UploadStringCompletedEventHandler((sender, e) => logger.Error("Crash report server async response: " + e.Result));
-					wc.UploadStringAsync(URI, parameters);
+					wc.Headers[HttpRequestHeader.ContentType] = "application/x-www-form-urlencoded";
+
+					if (terminateProcess)
+					{
+						// We're about to terminate, so send it synchronously
+						string response = wc.UploadString(URI, parameters);
+						logger.Error("Crash report server response: " + response);
+					}
+					else
+					{
+						// We're stayin' alive, stayin' alive, so send it asynchronously
+						wc.UploadStringCompleted += new UploadStringCompletedEventHandler((sender, e) => logger.Error("Crash report server async response: " + e.Result));
+						wc.UploadStringAsync(URI, parameters);
+					}
 				}
 			}
 
