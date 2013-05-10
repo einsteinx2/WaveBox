@@ -371,6 +371,31 @@ namespace WaveBox.DataModel.Model
 			albums.Sort(CompareAlbumsByName);
 			return albums;
 		}
+
+		public static int? CountAlbums()
+		{
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			int? count = null;
+
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT count(album_id) FROM album", conn);
+				count = Convert.ToInt32(q.ExecuteScalar());
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			return count;
+		}
 		
 		public static List<Album> SearchAlbum(string query)
 		{
