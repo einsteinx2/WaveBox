@@ -101,7 +101,7 @@ namespace WaveBox
 		}
 
 		/// <summary>
-		///	OnStart launches the init thread with the WaveBox Start() function
+		/// OnStart launches the init thread with the WaveBox Start() function
 		/// </summary>
 		protected void OnStart()
 		{
@@ -336,6 +336,11 @@ namespace WaveBox
 			return dt;
 		}
 
+		/// <summary>
+		/// Called whenever WaveBox encounters a fatal error, resulting in a crash.  When configured, this will automatically
+		/// report the exception to WaveBox's crash dump service.  If not configured, the exception will be dumped to the log,
+		/// and the user may choose to report it manually.
+		/// </summary>
 		public static void ReportCrash(Exception exception, bool terminateProcess) 
 		{
 			logger.Error("WaveBox has crashed!");
@@ -366,6 +371,15 @@ namespace WaveBox
 						wc.UploadStringAsync(URI, parameters);
 					}
 				}
+			}
+			else
+			{
+				// If automatic reporting disabled, print the exception so user has the option of sending crash dump manually
+				logger.Error("Automatic crash reporting is disabled, dumping exception...");
+				logger.Error("---------------- CRASH DUMP ----------------");
+				logger.Error(exception.ToString());
+				logger.Error("-------------- END CRASH DUMP --------------");
+				logger.Error("Please report this exception on: https://github.com/einsteinx2/WaveBox/issues");
 			}
 
 			if (terminateProcess)
