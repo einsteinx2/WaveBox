@@ -77,7 +77,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -226,7 +226,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 		}
 
@@ -271,7 +271,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -313,7 +313,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -322,7 +322,57 @@ namespace WaveBox.DataModel.Model
 
 			return allsongs;
 		}
-		
+
+		public static int? CountSongs()
+		{
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			int? count = null;
+
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT count(song_id) FROM song", conn);
+				count = Convert.ToInt32(q.ExecuteScalar());
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			return count;
+		}
+
+		public static long? TotalSongSize()
+		{
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			long? total = null;
+
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT sum(song_file_size) FROM song", conn);
+				total = Convert.ToInt64(q.ExecuteScalar());
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			return total;
+		}
+
 		public static List<Song> SearchSong(string query)
 		{
 			List<Song> result = new List<Song>();
@@ -353,7 +403,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -421,7 +471,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
