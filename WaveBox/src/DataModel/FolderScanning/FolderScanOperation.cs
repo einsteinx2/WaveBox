@@ -17,7 +17,7 @@ namespace WaveBox.DataModel.FolderScanning
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public override string OperationType { get { return String.Format ("FolderScanOperation:{0}", FolderPath); } }
+		public override string OperationType { get { return String.Format ("FolderScanOperation: {0}", FolderPath); } }
 
 		private string folderPath;
 		public string FolderPath { get { return folderPath; } }
@@ -117,7 +117,7 @@ namespace WaveBox.DataModel.FolderScanning
 					testGetDirectoriesTime.Stop();
 					foreach (string subfolder in directories)
 					{
-						if (!(subfolder.Contains(".AppleDouble")))
+						if (!subfolder.Contains(".AppleDouble"))
 						{
 							testFolderObjCreateTime.Start();
 							Folder folder = new Folder(subfolder);
@@ -219,13 +219,13 @@ namespace WaveBox.DataModel.FolderScanning
 						{
 							f = TagLib.File.Create(file);
 						}
-						catch(TagLib.CorruptFileException e)
+						catch (TagLib.CorruptFileException e)
 						{
 							e.ToString();
 							logger.Error("[FOLDERSCAN(5)] " + file + " has a corrupt tag and will not be inserted.");
 							return;
 						}
-						catch(Exception e)
+						catch (Exception e)
 						{
 							logger.Error("[FOLDERSCAN(6)] " + "Error processing file " + file + ":	" + e);
 						}
@@ -281,7 +281,7 @@ namespace WaveBox.DataModel.FolderScanning
 						
 						if ((object)oldArtId == null)
 						{
-							Console.WriteLine("There was no old art id");
+							if (logger.IsInfoEnabled) logger.Info("There was no old art id");
 							// Insert the relationship
 							Art.UpdateArtItemRelationship(newArtId, folder.FolderId, true);
 
@@ -290,7 +290,7 @@ namespace WaveBox.DataModel.FolderScanning
 						}
 						else
 						{
-							Console.WriteLine("There was an old art id");
+							if (logger.IsInfoEnabled) logger.Info("There was an old art id");
 
 							Art oldArt = new Art((int)oldArtId);
 							
@@ -298,7 +298,7 @@ namespace WaveBox.DataModel.FolderScanning
 							if ((object)oldArt.FilePath == null)
 							{
 								// This was embedded tag art, so only update the folder's relationship
-								Console.WriteLine("It was embedded art, {0}, newArtId: {1}, folderId: {2}", Art.UpdateArtItemRelationship(newArtId, folder.FolderId, true), newArtId, folder.FolderId);
+								if (logger.IsInfoEnabled) logger.Info(String.Format("It was embedded art, {0}, newArtId: {1}, folderId: {2}", Art.UpdateArtItemRelationship(newArtId, folder.FolderId, true), newArtId, folder.FolderId));
 							}
 							else
 							{
@@ -311,7 +311,7 @@ namespace WaveBox.DataModel.FolderScanning
 						// Add this art to any media items in this folder which have no art.
 						var items = folder.ListOfMediaItems();
 						
-						foreach(MediaItem m in items)
+						foreach (MediaItem m in items)
 						{
 							if(m.ArtId == null)
 							{
@@ -320,7 +320,7 @@ namespace WaveBox.DataModel.FolderScanning
 							}
 						}
 
-						Console.WriteLine("Art needs updating: {0}", folder.ArtPath);
+						if (logger.IsInfoEnabled) logger.Info("Art needs updating: " + folder.ArtPath);
 					}
 				}
 			}
