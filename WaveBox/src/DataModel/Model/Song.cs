@@ -77,7 +77,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -234,7 +234,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 		}
 
@@ -279,7 +279,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -321,7 +321,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -346,7 +346,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -371,7 +371,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -411,7 +411,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -479,7 +479,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{

@@ -385,7 +385,7 @@ namespace WaveBox.DataModel.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
