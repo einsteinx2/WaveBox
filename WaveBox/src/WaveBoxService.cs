@@ -377,7 +377,7 @@ namespace WaveBox
 				// If automatic reporting disabled, print the exception so user has the option of sending crash dump manually
 				logger.Error("Automatic crash reporting is disabled, dumping exception...");
 				logger.Error("---------------- CRASH DUMP ----------------");
-				logger.Error(exception.ToString());
+				logger.Error(exception);
 				logger.Error("-------------- END CRASH DUMP --------------");
 				logger.Error("Please report this exception on: https://github.com/einsteinx2/WaveBox/issues");
 			}
