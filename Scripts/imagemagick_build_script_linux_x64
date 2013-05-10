@@ -7,35 +7,6 @@ MAGICK_DIR=$BUILD_DIR/ImageMagick-$VERSION
 
 # Functions
 
-build_gcc()
-{
-    sudo apt-get install m4
-
-    mkdir gcc
-    cd gcc
-
-    mkdir libs
-
-    # Download dependencies and GCC
-    wget http://www.multiprecision.org/mpc/download/mpc-1.0.1.tar.gz
-    wget http://www.mpfr.org/mpfr-current/mpfr-3.1.2.tar.gz
-    wget ftp://ftp.gnu.org/gnu/gmp/gmp-5.1.1.tar.bz2
-    wget http://gcc.petsads.us/releases/gcc-4.8.0/gcc-4.8.0.tar.bz2
-
-    # Extract them
-    tar xzvf mpc-1.0.1.tar.gz
-    tar xzvf mpfr-3.1.2.tar.gz
-    tar xjvf gmp-5.1.1.tar.bz2
-    tar xjvf gcc-4.8.0.tar.bz2
-
-    # Compile deps
-    cd $BUILD_DIR/gcc/gmp* && ../configure --build=x86_64-linux-gnu --prefix=$BUILD_DIR/gcc/libs; make; make install
-
-    cd $BUILD_DIR/gcc/mpfr*
-    mkdir build && cd build
-    ../configure --build=x86_64-linux-gnu --with-gmp=/home/bbaron/ImageMagickBuild/gmp-5.1.1/build
-}
-
 download()
 {
     wget http://www.imagemagick.org/download/ImageMagick.tar.gz
@@ -64,11 +35,12 @@ move()
 
 compile()
 {
-    cd $MAGICK_DIR/zlib && env CFLAGS="-m64" ./configure --static && make clean && make
-    cd $MAGICK_DIR/jpeg && env CFLAGS="-m64" ./configure --disable-shared && make clean && make
-    cd $MAGICK_DIR/png && env CFLAGS="-m64" CPPFLAGS="-I../zlib -m64" LDFLAGS="-L../zlib -m64" ./configure --disable-shared && make clean && make
-    cd $MAGICK_DIR/tiff && env CFLAGS="-m64" CPPFLAGS="-m64" ./configure --disable-shared --disable-lzma && make clean && make
-    cd $MAGICK_DIR && ./configure --disable-installed --disable-shared --enable-delegate-build --prefix=/ImageMagick-$VERSION --disable-dependency-tracking --with-x=no --without-perl --with-freetype=no --with-jp2=no --with-tiff=yes --with-magick-plus-plus=no --with-bzlib=no --without-lzma --without-fontconfig --without-lcms --without-lcms2 --without-x11 --without-xml --without-pango --disable-opencl CFLAGS="-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -m64" CPPFLAGS="-m64" LDFLAGS="-m64" && make clean && make
+    cd $MAGICK_DIR/zlib && env CFLAGS="-m64 -fPIC" ./configure --static && make clean && make
+    cd $MAGICK_DIR/jpeg && env CFLAGS="-m64 -fPIC" ./configure --disable-shared && make clean && make
+    cd $MAGICK_DIR/png && env CFLAGS="-m64 -fPIC" CPPFLAGS="-I../zlib -m64 -fPIC" CXXFLAGS="-fPIC" LDFLAGS="-L../zlib -m64 -fPIC" ./configure --disable-shared && make clean && make
+    cd $MAGICK_DIR/tiff && env CFLAGS="-m64 -fPIC" CPPFLAGS="-m64 -fPIC" CXXFLAGS="-fPIC" ./configure --disable-shared --disable-lzma && make clean && make
+    cd $MAGICK_DIR && ./configure --disable-installed --disable-shared --enable-delegate-build --prefix=/ImageMagick-$VERSION --disable-dependency-tracking --with-x=no --without-perl --with-freetype=no --with-jp2=no --with-tiff=yes --with-magick-plus-plus=no --with-bzlib=no --without-lzma --without-fontconfig --without-lcms --without-lcms2 --without-x11 --without-xml --without-pango --disable-opencl CFLAGS="-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -m64 -fPIC" CPPFLAGS="-m64 -fPIC" CXXFLAGS="-fPIC" LDFLAGS="-m64 -fPIC" && make clean && make
+
 }
 
 create_shared()
@@ -76,6 +48,11 @@ create_shared()
     mkdir $BUILD_DIR/sharedbuild
     cd $BUILD_DIR/sharedbuild
     cp $MAGICK_DIR/magick/.libs/libMagickCore-6.Q16.a $MAGICK_DIR/wand/.libs/libMagickWand-6.Q16.a $MAGICK_DIR/jpeg/.libs/libjpeg.a $MAGICK_DIR/png/.libs/libpng16.a $MAGICK_DIR/tiff/libtiff/.libs/libtiff.a $MAGICK_DIR/tiff/libtiff/.libs/libtiffxx.a $MAGICK_DIR/zlib/libz.a .
+    
+    # Download the 64bit gnu c++ libs compiled with -fPIC
+    wget https://dl.dropboxusercontent.com/u/40866/gnu_cpp_64bit_fpic_libs.tar.gz
+    tar xzvf gnu_cpp_64bit_fpic_libs.tar.gz
+
     ar -x libMagickCore-6.Q16.a
     ar -x libMagickWand-6.Q16.a
     ar -x libjpeg.a
@@ -83,7 +60,10 @@ create_shared()
     ar -x libtiff.a
     ar -x libtiffxx.a
     ar -x libz.a
-    g++ -m64 -shared -static-libgcc -static-libstdc++ *.o -o libMagickWand-6.Q16-Static.x64.so
+    ar -x libstdc++.a
+    ar -x libgcc.a
+    ar -x libgomp.a
+    g++ -m64 -shared *.o -o libMagickWand-6.Q16-Static.x64.so
     mv libMagickWand-6.Q16-Static.x64.so $BUILD_DIR/
 }
 
