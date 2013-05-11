@@ -51,7 +51,7 @@ namespace WaveBox.ApiHandler.Handlers
 				listOfFolders = containingFolder.ListOfSubFolders();
 
 				// Recursively add media items from sub-folders
-				if (Uri.Parameters.ContainsKey("recursiveMedia") && this.IsTrue(Uri.Parameters["recursiveMedia"]))
+				if (Uri.Parameters.ContainsKey("recursiveMedia") && Utility.IsTrue(Uri.Parameters["recursiveMedia"]))
 				{
 					listOfSongs = new List<Song>();
 					listOfVideos = new List<Video>();
@@ -79,7 +79,7 @@ namespace WaveBox.ApiHandler.Handlers
 			else
 			{
 				// No id parameter
-				if (Uri.Parameters.ContainsKey("mediaFolders") && this.IsTrue(Uri.Parameters["mediaFolders"]))
+				if (Uri.Parameters.ContainsKey("mediaFolders") && Utility.IsTrue(Uri.Parameters["mediaFolders"]))
 				{
 					// They asked for the media folders
 					listOfFolders = Folder.MediaFolders();

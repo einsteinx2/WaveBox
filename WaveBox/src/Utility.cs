@@ -7,6 +7,65 @@ namespace WaveBox
 	public static class Utility
 	{
 		/// <summary>
+		/// Determine if a string is meant to indicate true, return false if none detected
+		/// </summary>
+		public static bool IsTrue(string boolString)
+		{
+			try
+			{
+				// Null string -> false
+				if (boolString == null)
+				{
+					return false;
+				}
+
+				// Lowercase and trim whitespace
+				boolString = boolString.ToLower();
+				boolString = boolString.Trim();
+
+				if (boolString.Length > 0)
+				{
+					// t or 1 -> true
+					if (boolString[0] == 't' || boolString[0] == '1')
+					{
+						return true;
+					}
+				}
+
+				// Anything else, false
+				return false;
+			}
+			catch
+			{
+				// Exception, false
+				return false;
+			}
+		}
+
+		/// <summary>
+		/// Returns an integer representation of a month string
+		/// </summary>
+		private static int MonthForAbbreviation(string abb)
+		{
+			switch (abb.ToLower())
+			{
+				case "jan": return 1;
+				case "feb": return 2;
+				case "mar": return 3;
+				case "apr": return 4;
+				case "may": return 5;
+				case "jun": return 6;
+				case "jul": return 7;
+				case "aug": return 8;
+				case "sep": return 9;
+				case "oct": return 10;
+				case "nov": return 11;
+				case "dec": return 12;
+				default: return 0;
+			}
+		}
+
+		/// <summary>
 		/// Generates a random string, for use in session creation
 		/// </summary>
 		public static string RandomString(int size)
