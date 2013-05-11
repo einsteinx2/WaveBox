@@ -38,7 +38,7 @@ namespace WaveBox.DataModel.Singletons
 
 		public static int SessionScrubInterval { get { return settingsModel.SessionScrubInterval; } }
 
-		public static int SessionIdle { get { return settingsModel.SessionIdle; } }
+		public static int SessionTimeout { get { return settingsModel.SessionTimeout; } }
 
 		private static List<Folder> mediaFolders;
 		public static List<Folder> MediaFolders { get { return mediaFolders; } }
@@ -200,12 +200,12 @@ namespace WaveBox.DataModel.Singletons
 
 			try
 			{
-				int? sessionIdleTemp = json.sessionIdle;
-				if (sessionIdleTemp != null)
+				int? sessionTimeoutTemp = json.sessionTimeout;
+				if (sessionTimeoutTemp != null)
 				{
-					settingsModel.SessionIdle = (int)sessionIdleTemp;
+					settingsModel.SessionTimeout = (int)sessionTimeoutTemp;
 					settingsChanged = true;
-					if (logger.IsInfoEnabled) logger.Info("Setting 'sessionIdle': " + settingsModel.SessionIdle);
+					if (logger.IsInfoEnabled) logger.Info("Setting 'sessionTimeout': " + settingsModel.SessionTimeout);
 				}
 			}
 			catch { }
@@ -405,8 +405,8 @@ namespace WaveBox.DataModel.Singletons
 		[JsonProperty("sessionScrubInterval")]
 		public int SessionScrubInterval { get; set; }
 
-		[JsonProperty("sessionIdle")]
-		public int SessionIdle { get; set; }
+		[JsonProperty("sessionTimeout")]
+		public int SessionTimeout { get; set; }
 
 		[JsonProperty("prettyJson")]
 		public bool PrettyJson { get; set; }

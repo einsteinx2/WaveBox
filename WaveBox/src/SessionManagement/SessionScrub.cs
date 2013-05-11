@@ -33,8 +33,8 @@ namespace WaveBox.SessionManagement
 			// Purge any sessions which have not been updated in a predefined period of time
 			foreach (Session s in sessions)
 			{
-				// Check current time and last update, purge if the diff is higher than SessionIdle minutes
-				if ((unixTime - Convert.ToInt32(s.UpdateTime)) >= (Settings.SessionIdle * 60))
+				// Check current time and last update, purge if the diff is higher than SessionTimeout minutes
+				if ((unixTime - Convert.ToInt32(s.UpdateTime)) >= (Settings.SessionTimeout * 60))
 				{
 					if (s.DeleteSession())
 					{
