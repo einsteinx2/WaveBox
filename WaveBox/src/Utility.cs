@@ -45,7 +45,7 @@ namespace WaveBox
 		/// <summary>
 		/// Returns an integer representation of a month string
 		/// </summary>
-		private static int MonthForAbbreviation(string abb)
+		public static int MonthForAbbreviation(string abb)
 		{
 			switch (abb.ToLower())
 			{
