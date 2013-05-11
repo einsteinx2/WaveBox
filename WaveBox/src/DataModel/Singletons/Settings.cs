@@ -36,6 +36,10 @@ namespace WaveBox.DataModel.Singletons
 
 		public static int PodcastCheckInterval { get { return settingsModel.PodcastCheckInterval; } }
 
+		public static int SessionScrubInterval { get { return settingsModel.SessionScrubInterval; } }
+
+		public static int SessionIdle { get { return settingsModel.SessionIdle; } }
+
 		private static List<Folder> mediaFolders;
 		public static List<Folder> MediaFolders { get { return mediaFolders; } }
 
@@ -178,6 +182,30 @@ namespace WaveBox.DataModel.Singletons
 					settingsModel.PodcastCheckInterval = (int)podcastCheckIntervalTemp;
 					settingsChanged = true;
 					if (logger.IsInfoEnabled) logger.Info("Setting 'podcastCheckInterval': " + settingsModel.PodcastCheckInterval);
+				}
+			}
+			catch { }
+
+			try
+			{
+				int? sessionScrubIntervalTemp = json.sessionScrubInterval;
+				if (sessionScrubIntervalTemp != null)
+				{
+					settingsModel.SessionScrubInterval = (int)sessionScrubIntervalTemp;
+					settingsChanged = true;
+					if (logger.IsInfoEnabled) logger.Info("Setting 'sessionScrubInterval': " + settingsModel.SessionScrubInterval);
+				}
+			}
+			catch { }
+
+			try
+			{
+				int? sessionIdleTemp = json.sessionIdle;
+				if (sessionIdleTemp != null)
+				{
+					settingsModel.SessionIdle = (int)sessionIdleTemp;
+					settingsChanged = true;
+					if (logger.IsInfoEnabled) logger.Info("Setting 'sessionIdle': " + settingsModel.SessionIdle);
 				}
 			}
 			catch { }
@@ -371,12 +399,18 @@ namespace WaveBox.DataModel.Singletons
 		[JsonProperty("podcastFolder")]
 		public string PodcastFolder { get; set; }
 		
-		[JsonProperty("prettyJson")]
-		public bool PrettyJson { get; set; }
-		
 		[JsonProperty("podcastCheckInterval")]
 		public int PodcastCheckInterval { get; set; }
-		
+
+		[JsonProperty("sessionScrubInterval")]
+		public int SessionScrubInterval { get; set; }
+
+		[JsonProperty("sessionIdle")]
+		public int SessionIdle { get; set; }
+
+		[JsonProperty("prettyJson")]
+		public bool PrettyJson { get; set; }
+
 		[JsonProperty("folderArtNames")]
 		public List<string> FolderArtNames { get; set; }
 	}

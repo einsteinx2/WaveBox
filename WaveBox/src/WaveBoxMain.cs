@@ -1,24 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Data;
-using System.IO;
-using WaveBox.TcpServer;
-using WaveBox.TcpServer.Http;
-using WaveBox.TcpServer.Mpd;
-using System.Threading;
+﻿using Mono.Unix.Native;
 using Mono.Unix;
-using Mono.Unix.Native;
-using WaveBox.DataModel.Singletons;
+using Mono.Zeroconf;
+using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Net.Sockets;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
+using System.Text;
+using System.Threading;
+using System;
 using WaveBox.DataModel.Model;
+using WaveBox.DataModel.Singletons;
+using WaveBox.SessionManagement;
+using WaveBox.TcpServer.Http;
+using WaveBox.TcpServer.Mpd;
+using WaveBox.TcpServer;
 using WaveBox.Transcoding;
-using Mono.Zeroconf;
-using System.Net;
-using System.Net.Sockets;
 
 namespace WaveBox
 {
@@ -250,6 +251,10 @@ namespace WaveBox
 			// Start podcast download queue
 			PodcastManagement.DownloadQueue.FeedChecks.queueOperation(new FeedCheckOperation(0));
 			PodcastManagement.DownloadQueue.FeedChecks.startScanQueue();
+
+			// Start session scrub operation
+			SessionScrub.Queue.queueOperation(new SessionScrubOperation(0));
+			SessionScrub.Queue.startScanQueue();
 
 			// sleep the main thread so we can go about handling api calls and stuff on other threads.
 			//Thread.Sleep(Timeout.Infinite);

@@ -199,6 +199,37 @@ namespace WaveBox.DataModel.Model
 			return outSession;
 		}
 
+		public bool DeleteSession()
+		{
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			// Attempt session deletion
+			bool success = false;
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("DELETE FROM session WHERE ROWID = @rowid", conn);
+				q.AddNamedParam("@rowid", RowId);
+				q.Prepare();
+
+				if (q.ExecuteNonQuery() > 0)
+				{
+					success = true;
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			return success;
+		}
+
 		public static List<Session> AllSessions()
 		{
 			List<Session> allSessions = new List<Session>();
@@ -208,7 +239,7 @@ namespace WaveBox.DataModel.Model
 			try
 			{
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT * FROM session", conn);
+				IDbCommand q = Database.GetDbCommand("SELECT ROWID,* FROM session", conn);
 
 				q.Prepare();
 				reader = q.ExecuteReader();
