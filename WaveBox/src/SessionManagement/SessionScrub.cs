@@ -10,7 +10,7 @@ using WaveBox.OperationQueue;
 namespace WaveBox.SessionManagement
 {
 	/// <summary>
-	/// Scrub all sessions 
+	/// Scrub all sessions which are out of date, using WaveBox settings
 	/// </summary>
 	public static class SessionScrub
 	{
@@ -49,4 +49,3 @@ namespace WaveBox.SessionManagement
 		}
 	}
 }
-

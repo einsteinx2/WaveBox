@@ -35,6 +35,7 @@ namespace WaveBox.DataModel.Model
 		[JsonIgnore]
 		public string SessionId { get; set; }
 
+		[JsonProperty("lastfmSession")]
 		public string LastfmSession { get; set; }
 
 		public static string UserNameForSessionid(string sessionId)

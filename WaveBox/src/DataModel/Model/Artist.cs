@@ -30,7 +30,6 @@ namespace WaveBox.DataModel.Model
 		[JsonProperty("artId")]
 		public int? ArtId { get { return Art.ArtIdForItemId(ArtistId); } }
 
-
 		/// <summary>
 		/// Constructors
 		/// </summary>
