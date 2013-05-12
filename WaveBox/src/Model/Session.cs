@@ -30,10 +30,10 @@ namespace WaveBox.Model
 		public string ClientName { get; set; }
 
 		[JsonProperty("createTime")]
-		public int? CreateTime { get; set; }
+		public long? CreateTime { get; set; }
 
 		[JsonProperty("updateTime")]
-		public int? UpdateTime { get; set; }
+		public long? UpdateTime { get; set; }
 
 		public Session()
 		{
@@ -128,7 +128,7 @@ namespace WaveBox.Model
 			bool success = false;
 
 			// Get current UNIX time
-			int unixTime = Utility.UnixTime(DateTime.Now);
+			long unixTime = DateTime.Now.ToUniversalUnixTimestamp();
 
 			try
 			{
@@ -165,7 +165,7 @@ namespace WaveBox.Model
 			string sessionId = Utility.SHA1(Utility.RandomString(100));
 
 			// Get current UNIX time
-			int unixTime = Utility.UnixTime(DateTime.Now);
+			long unixTime = DateTime.Now.ToUniversalUnixTimestamp();
 
 			// Output session
 			Session outSession = null;

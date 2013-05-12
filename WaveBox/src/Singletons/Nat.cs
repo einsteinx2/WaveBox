@@ -12,7 +12,7 @@ namespace WaveBox.Singletons
 		PortForwardingFailed      = 4
 	}
 
-	public class Nat
+	static class Nat
 	{
 		// Logger
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);

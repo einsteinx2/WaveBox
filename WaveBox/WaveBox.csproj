@@ -154,7 +154,6 @@
     <Compile Include="src\Utility.cs" />
     <Compile Include="src\WaveBoxMain.cs" />
     <Compile Include="src\WaveBoxService.cs" />
-    <Compile Include="src\AutoUpdate\UpdateCheckOperation.cs" />
     <Compile Include="src\FolderScanning\FolderScanOperation.cs" />
     <Compile Include="src\FolderScanning\OrphanScanOperation.cs" />
     <Compile Include="src\Model\Album.cs" />
@@ -185,6 +184,7 @@
     <Compile Include="src\Singletons\DynamicDns.cs" />
     <Compile Include="src\Singletons\Nat.cs" />
     <Compile Include="src\Singletons\ZeroConf.cs" />
+    <Compile Include="src\Singletons\AutoUpdater.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="lib\Newtonsoft.Json.dll" />

@@ -11,6 +11,7 @@ using WaveBox.Singletons;
 using WaveBox.Model;
 using WaveBox.Transcoding;
 using Newtonsoft.Json;
+using System.Runtime.Serialization.Formatters;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -40,20 +41,20 @@ namespace WaveBox.ApiHandler.Handlers
 			try
 			{
 				// Allocate an array of various statistics about the running process
-				IDictionary<string, string> status = new Dictionary<string, string>();
+				IDictionary<string, object> status = new Dictionary<string, object>();
 
 				// Gather data about WaveBox process
 				global::System.Diagnostics.Process proc = global::System.Diagnostics.Process.GetCurrentProcess();
 
 				// Get current UNIX time
-				int unixTime = Utility.UnixTime(DateTime.Now);
+				long unixTime = DateTime.Now.ToUniversalUnixTimestamp();
 
 				// Get process ID
-				status["pid"] = Convert.ToString(proc.Id);
+				status["pid"] = proc.Id;
 				// Get uptime of WaveBox instance
-				status["uptime"] = (unixTime - Utility.UnixTime(WaveBoxService.StartTime)).ToString();
+				status["uptime"] = unixTime - WaveBoxService.StartTime.ToUniversalUnixTimestamp();
 				// Get last update time in UNIX format for status
-				status["updated"] = unixTime.ToString();
+				status["updated"] = unixTime;
 				// Get hostname of machine
 				status["hostname"] = System.Environment.MachineName;
 				// Get WaveBox version, currently in the format 'wavebox-builddate-git' (change to true version later,
@@ -64,29 +65,33 @@ namespace WaveBox.ApiHandler.Handlers
 				// Get host platform
 				status["platform"] = WaveBoxService.Platform;
 				// Get current CPU usage
-				status["cpu"] = StatusApiHandlerExtension.GetCPUUsage();
+				status["cpuPercent"] = CpuUsage();
 				// Get current memory usage in MB
-				status["memory"] = Convert.ToString((((double)proc.WorkingSet64 / 1024) / 1024) + "MB");
+				status["memoryMb"] = (float)proc.WorkingSet64 / 1024f / 1024f;
 				// Get peak memory usage in MB
-				status["peakMemory"] = Convert.ToString((((double)proc.PeakWorkingSet64 / 1024) / 1024) + "MB");
+				status["peakMemoryMb"] = (float)proc.PeakWorkingSet64 / 1024f / 1024f;
 				// Get list of media types WaveBox can index and serve
-				status["mediaTypes"] = StatusApiHandlerExtension.GetMediaTypes();
+				status["mediaTypes"] = MediaTypes();
 				// Get list of transcoders available
-				status["transcoders"] = StatusApiHandlerExtension.GetTranscoders();
+				status["transcoders"] = Transcoders();
 				// Get count of artists
-				status["artistCount"] = Artist.CountArtists().ToString();
+				status["artistCount"] = Artist.CountArtists();
 				// Get count of albums
-				status["albumCount"] = Album.CountAlbums().ToString();
+				status["albumCount"] = Album.CountAlbums();
 				// Get count of songs
-				status["songCount"] = Song.CountSongs().ToString();
+				status["songCount"] = Song.CountSongs();
 				// Get count of videos
-				status["videoCount"] = Video.CountVideos().ToString();
+				status["videoCount"] = Video.CountVideos();
 				// Get total file size of songs (bytes)
-				status["songFileSize"] = Song.TotalSongSize().ToString();
+				status["songFileSize"] = Song.TotalSongSize();
 				// Get total file size of videos (bytes)
-				status["videoFileSize"] = Video.TotalVideoSize().ToString();
+				status["videoFileSize"] = Video.TotalVideoSize();
 				// Get last query log ID
-				status["lastQueryLogId"] = Database.LastQueryLogId().ToString();
+				status["lastQueryLogId"] = Database.LastQueryLogId();
+				// Get whether an update is available or not
+				status["isUpdateAvailable"] = AutoUpdater.IsUpdateAvailable;
+				// Get the list of updates for display to the user
+				status["updateList"] = AutoUpdater.Updates;
 
 				string json = JsonConvert.SerializeObject(new StatusResponse(null, status), Settings.JsonFormatting);
 				Processor.WriteJson(json);
@@ -97,30 +102,11 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 		}
 
-		private class StatusResponse
-		{
-			[JsonProperty("error")]
-			public string Error { get; set; }
-
-			[JsonProperty("status")]
-			public IDictionary<string, string> Status { get; set; }
-
-			public StatusResponse(string error, IDictionary<string, string> status)
-			{
-				Error = error;
-				Status = status;
-			}
-		}
-	}
-
-	// Utility code to aid in collection of system metrics
-	class StatusApiHandlerExtension
-	{
 		// Borrowed from http://stackoverflow.com/questions/278071/how-to-get-the-cpu-usage-in-c
 		/// <summary>
 		/// Returns a string containing the CPU usage of WaveBox at this instant in time
 		/// </summary>
-		public static string GetCPUUsage()
+		private float CpuUsage()
 		{
 			PerformanceCounter cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
 			cpuCounter.NextValue();
@@ -133,13 +119,13 @@ namespace WaveBox.ApiHandler.Handlers
 				usage = 0.0f;
 			}
 
-			return usage + "%";
+			return usage;
 		}
 
 		/// <summary>
 		/// Grabs a list of valid file types for media files from the enumerator in Wavebox.Model.FileType
 		/// </summary>
-		public static string GetMediaTypes()
+		private string MediaTypes()
 		{
 			var fileTypes = Enum.GetValues(typeof(FileType));
 			Array.Sort(fileTypes);
@@ -169,7 +155,7 @@ namespace WaveBox.ApiHandler.Handlers
 		/// <summary>
 		/// Grabs a list of valid transcoder types from the enumerator in Wavebox.Transcoding.TranscoderType
 		/// </summary>
-		public static string GetTranscoders()
+		private string Transcoders()
 		{
 			var transcoders = Enum.GetValues(typeof(TranscodeType));
 			int i = 1;
@@ -190,6 +176,21 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 
 			return trans;
+		}
+
+		private class StatusResponse
+		{
+			[JsonProperty("error")]
+			public string Error { get; set; }
+
+			[JsonProperty("status")]
+			public IDictionary<string, object> Status { get; set; }
+
+			public StatusResponse(string error, IDictionary<string, object> status)
+			{
+				Error = error;
+				Status = status;
+			}
 		}
 	}
 }

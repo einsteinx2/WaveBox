@@ -9,7 +9,7 @@ using System.IO;
 
 namespace WaveBox.Singletons
 {
-	public class Settings
+	static class Settings
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 

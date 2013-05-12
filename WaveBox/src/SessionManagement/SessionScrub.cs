@@ -28,7 +28,7 @@ namespace WaveBox.SessionManagement
 			var sessions = Session.AllSessions();
 
 			// Grab the current UNIX time
-			int unixTime = Utility.UnixTime(DateTime.Now);
+			long unixTime = DateTime.Now.ToUniversalUnixTimestamp();
 
 			// Purge any sessions which have not been updated in a predefined period of time
 			foreach (Session s in sessions)

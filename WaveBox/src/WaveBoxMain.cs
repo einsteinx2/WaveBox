@@ -187,8 +187,8 @@ namespace WaveBox
 			SessionScrub.Queue.queueOperation(new SessionScrubOperation(0));
 			SessionScrub.Queue.startQueue();
 
-			// sleep the main thread so we can go about handling api calls and stuff on other threads.
-			//Thread.Sleep(Timeout.Infinite);
+			// Start checking for updates
+			AutoUpdater.Start();
 
 			return;
 		}

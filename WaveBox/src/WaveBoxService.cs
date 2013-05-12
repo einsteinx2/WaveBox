@@ -65,6 +65,8 @@ namespace WaveBox
 				// Build date detection
 				BuildDate = GetBuildDate();
 
+				if (logger.IsInfoEnabled) logger.Info("BuildDate timestamp: " + BuildDate.ToUniversalUnixTimestamp());
+
 				// Get start up time
 				StartTime = DateTime.Now;
 

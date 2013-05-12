@@ -3,7 +3,7 @@ using Mono.Zeroconf;
 
 namespace WaveBox.Singletons
 {
-	public class ZeroConf
+	static class ZeroConf
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 

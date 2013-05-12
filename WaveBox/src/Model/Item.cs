@@ -122,17 +122,6 @@ namespace WaveBox
 			// Return unknown, if we didn't return yet
 			return ItemType.Unknown;
 		}
-
-		// Should find a better place to put these
-		public static long ToUniversalUnixTimestamp(this DateTime dateTime)
-		{
-			return (long)(dateTime.ToUniversalTime() - new DateTime (1970, 1, 1).ToUniversalTime()).TotalSeconds;
-		}
-		
-		public static long ToLocalUnixTimestamp(this DateTime dateTime)
-		{
-			return (long)(dateTime.ToLocalTime() - new DateTime (1970, 1, 1).ToLocalTime()).TotalSeconds;
-		}
 	}
 }
 
