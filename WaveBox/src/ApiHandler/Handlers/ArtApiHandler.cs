@@ -14,6 +14,8 @@ namespace WaveBox.ApiHandler.Handlers
 {
 	class ArtApiHandler : IApiHandler
 	{
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 
@@ -76,7 +78,7 @@ namespace WaveBox.ApiHandler.Handlers
 						// First try ImageMagick
 						try
 						{
-							Console.WriteLine("Using Magick to resize image");
+							logger.Info("Using Magick to resize image");
 							Byte[] data = ResizeImageMagick(stream, size);
 							stream = new MemoryStream(data, false);
 						}
@@ -89,7 +91,7 @@ namespace WaveBox.ApiHandler.Handlers
 					// If ImageMagick dll isn't loaded, or this is Windows,  
 					if (imageMagickFailed || WaveBoxService.DetectOS() == WaveBoxService.OS.Windows)
 					{
-						Console.WriteLine("Using GDI to resize image");
+						logger.Info("Using GDI to resize image");
 						// Resize image, put it in memory stream
 						Image resized = ResizeImageGDI(new Bitmap(stream), new Size(size, size));
 						stream = new MemoryStream();
@@ -99,12 +101,12 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 
 			// Write file to HTTP response
-            var dict = new Dictionary<string, string>();
-            Processor.WriteFile(stream, 0, stream.Length, HttpHeader.MimeTypeForExtension(".jpg"), dict, true);
-            stream.Close();
+			var dict = new Dictionary<string, string>();
+			Processor.WriteFile(stream, 0, stream.Length, HttpHeader.MimeTypeForExtension(".jpg"), dict, true);
+			stream.Close();
 
-            // Close the file so we don't get sharing violations on future accesses
-            stream.Close();
+			// Close the file so we don't get sharing violations on future accesses
+			stream.Close();
 		}
 
 
@@ -121,7 +123,7 @@ namespace WaveBox.ApiHandler.Handlers
 			int sourceWidth = (int)ImageMagickInterop.GetWidth(wand);
 			int sourceHeight = (int)ImageMagickInterop.GetHeight(wand);
 
-			Console.WriteLine("sourceWidth: {0}, sourceHeight: {1}, stream length: {2}, success: {3}, wand: {4}", sourceWidth, sourceHeight, stream.Length, success, wand);
+			logger.Info(String.Format("sourceWidth: {0}, sourceHeight: {1}, stream length: {2}, success: {3}, wand: {4}", sourceWidth, sourceHeight, stream.Length, success, wand));
 			
 			float nPercent = 0;
 			float nPercentW = 0;
@@ -142,12 +144,12 @@ namespace WaveBox.ApiHandler.Handlers
 			int destWidth = (int)(sourceWidth * nPercent);
 			int destHeight = (int)(sourceHeight * nPercent);
 
-			Console.WriteLine("destWidth: {0}, destHeight: {1}", destWidth, destHeight);
+			logger.Info(String.Format("destWidth: {0}, destHeight: {1}", destWidth, destHeight));
 
 			ImageMagickInterop.ResizeImage(wand, (IntPtr)destWidth, (IntPtr)destHeight, ImageMagickInterop.Filter.Lanczos, 1.0);
 			byte[] newData = ImageMagickInterop.GetImageBlob(wand);
 
-			Console.WriteLine("new wand size: width = {0}, height = {1}; newData len = {2}", ImageMagickInterop.GetWidth(wand), ImageMagickInterop.GetHeight(wand), newData.Length);
+			logger.Info(String.Format("new wand size: width = {0}, height = {1}; newData len = {2}", ImageMagickInterop.GetWidth(wand), ImageMagickInterop.GetHeight(wand), newData.Length));
 
 			// cleanup
 			ImageMagickInterop.DestroyWand(wand);

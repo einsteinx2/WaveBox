@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 namespace WaveBox.ApiHandler.Handlers
 {
 	public class SearchApiHandler : IApiHandler
-	{		
+	{
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 		private User User { get; set; }
@@ -52,19 +52,15 @@ namespace WaveBox.ApiHandler.Handlers
 							// Return results, populating lists depending on parameters specified
 							switch (type)
 							{
-								case "artist":
 								case "artists":
 									artists = Artist.SearchArtist(query);
 									break;
-								case "album":
 								case "albums":
 									albums = Album.SearchAlbum(query);
 									break;
-								case "song":
 								case "songs":
 									songs = Song.SearchSong(query);
 									break;
-								case "video":
 								case "videos":
 									videos = Video.SearchVideo(query);
 									break;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Data;
+using Newtonsoft.Json;
 using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
 using System.Security.Cryptography;
@@ -16,11 +17,25 @@ namespace WaveBox.DataModel.Model
 
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+		[JsonProperty("userId")]
 		public int? UserId { get; set; }
+
+		[JsonProperty("userName")]
 		public string UserName { get; set; }
+
+		[JsonProperty("sessions")]
+		public List<Session> Sessions { get; set; }
+
+		[JsonIgnore]
 		public string PasswordHash { get; set; }
+
+		[JsonIgnore]
 		public string PasswordSalt { get; set; }
+
+		[JsonIgnore]
 		public string SessionId { get; set; }
+
+		[JsonProperty("lastfmSession")]
 		public string LastfmSession { get; set; }
 
 		public static string UserNameForSessionid(string sessionId)
@@ -57,6 +72,11 @@ namespace WaveBox.DataModel.Model
 		public User()
 		{
 
+		}
+
+		public User(IDataReader reader)
+		{
+			SetPropertiesFromQueryReader(reader);
 		}
 
 		public User(int userId)
@@ -125,6 +145,7 @@ namespace WaveBox.DataModel.Model
 			UserName = reader.GetString(reader.GetOrdinal("user_name"));
 			PasswordHash = reader.GetString(reader.GetOrdinal("user_password"));
 			PasswordSalt = reader.GetString(reader.GetOrdinal("user_salt"));
+			Sessions = this.ListOfSessions();
 
 			if (reader.GetValue(reader.GetOrdinal("user_lastfm_session")) != DBNull.Value)
 			{
@@ -136,15 +157,86 @@ namespace WaveBox.DataModel.Model
 			}
 		}
 
-		private static string Sha1(string sumthis)
+		public bool UpdateSession(string sessionId)
 		{
-			if (sumthis == "" || sumthis == null)
+			// Update user's session based on its session ID
+			Session s = new Session(sessionId);
+
+			if (s != null)
 			{
-				return "";
+				return s.UpdateSession();
 			}
 
-			SHA1CryptoServiceProvider provider = new SHA1CryptoServiceProvider();
-			return BitConverter.ToString(provider.ComputeHash(Encoding.ASCII.GetBytes(sumthis))).Replace("-", "");
+			return false;
+		}
+
+		public List<Session> ListOfSessions()
+		{
+			List<Session> sessions = new List<Session>();
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT ROWID,* FROM session WHERE user_id = @userid", conn);
+				q.AddNamedParam("@userid", UserId);
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				while (reader.Read())
+				{
+					sessions.Add(new Session(reader));
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			return sessions;
+		}
+
+		public static List<User> AllUsers()
+		{
+			List<User> users = new List<User>();
+
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT * FROM user", conn);
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				while (reader.Read())
+				{
+					users.Add(new User(reader));
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			users.Sort(User.CompareUsersByName);
+
+			return users;
+		}
+
+		public static int CompareUsersByName(User x, User y)
+		{
+			return StringComparer.OrdinalIgnoreCase.Compare(x.UserName, y.UserName);
 		}
 
 		// Compute password hash using PBKDF2
@@ -303,54 +395,18 @@ namespace WaveBox.DataModel.Model
 
 		public bool CreateSession(string password, string clientName)
 		{
+			// On successful authentication, create session!
 			if (Authenticate(password))
 			{
-				// Generate a random string to seed the SHA1 hash, rather than using 
-				// something like the current system time which would make it easier to 
-				// guess or brute force session ids
-				string randomString = RandomString(100);
-				SessionId = Sha1(randomString);
-
-				IDbConnection conn = null;
-				IDataReader reader = null;
-				try
+				Session s = Session.CreateSession(Convert.ToInt32(UserId), clientName);
+				if (s != null)
 				{
-					conn = Database.GetDbConnection();
-					IDbCommand q = Database.GetDbCommand("INSERT INTO session (session_id, user_id, client_name) VALUES (@sessionid, @userid, @clientname)", conn);
-					q.AddNamedParam("@sessionid", SessionId);
-					q.AddNamedParam("@userid", UserId);
-					q.AddNamedParam("@clientname", clientName);
-					q.Prepare();
-					
-					int affected = q.ExecuteNonQuery();
-					if (affected > 0)
-					{
-						return true;
-					}
-				}
-				catch (Exception e)
-				{
-					logger.Error(e);
-					return false;
-				}
-				finally
-				{
-					Database.Close(conn, reader);
+					SessionId = s.SessionId;
+					return true;
 				}
 			}
-			return false;
-		}
 
-		private readonly Random rng = new Random();
-		private const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789!@#$%^&*()";
-		private string RandomString(int size)
-		{
-		    char[] buffer = new char[size];
-		    for (int i = 0; i < size; i++)
-		    {
-		        buffer[i] = chars[rng.Next(chars.Length)];
-		    }
-		    return new string(buffer);
+			return false;
 		}
 	}
 }

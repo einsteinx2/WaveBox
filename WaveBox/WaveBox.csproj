@@ -139,6 +139,7 @@
     <Compile Include="src\DataModel\Model\ItemType.cs" />
     <Compile Include="src\DataModel\Model\MediaItem.cs" />
     <Compile Include="src\DataModel\Model\Playlist.cs" />
+    <Compile Include="src\DataModel\Model\Session.cs" />
     <Compile Include="src\DataModel\Model\Song.cs" />
     <Compile Include="src\DataModel\Model\Stat.cs" />
     <Compile Include="src\DataModel\Model\User.cs" />
@@ -153,6 +154,8 @@
     <Compile Include="src\PodcastManagement\FeedCheckOperation.cs" />
     <Compile Include="src\PodcastManagement\Podcast.cs" />
     <Compile Include="src\PodcastManagement\PodcastEpisode.cs" />
+    <Compile Include="src\SessionManagement\SessionScrub.cs" />
+    <Compile Include="src\SessionManagement\SessionScrubOperation.cs" />
     <Compile Include="src\TcpServer\AbstractTcpServer.cs" />
     <Compile Include="src\TcpServer\HttpServer\HttpHeader.cs" />
     <Compile Include="src\TcpServer\HttpServer\HttpProcessor.cs" />
@@ -172,6 +175,7 @@
     <Compile Include="src\Transcoding\ITranscoderDelegate.cs" />
     <Compile Include="src\Transcoding\TranscodeManager.cs" />
     <Compile Include="src\Transcoding\VideoTranscoder.cs" />
+    <Compile Include="src\Utility.cs" />
     <Compile Include="src\WaveBoxMain.cs" />
     <Compile Include="src\WaveBoxService.cs" />
     <Compile Include="src\DataModel\AutoUpdate\UpdateCheckOperation.cs" />

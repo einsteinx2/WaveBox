@@ -328,13 +328,17 @@ namespace WaveBox.DataModel.Model
 			IDbConnection conn = null;
 			IDataReader reader = null;
 
-			int? count = null;
+			int? count = 0;
 
 			try
 			{
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT count(song_id) FROM song", conn);
-				count = Convert.ToInt32(q.ExecuteScalar());
+				object result = q.ExecuteScalar();
+				if (result != DBNull.Value)
+				{
+					count = Convert.ToInt32(result);
+				}
 			}
 			catch (Exception e)
 			{
@@ -353,13 +357,17 @@ namespace WaveBox.DataModel.Model
 			IDbConnection conn = null;
 			IDataReader reader = null;
 
-			long? total = null;
+			long? total = 0;
 
 			try
 			{
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT sum(song_file_size) FROM song", conn);
-				total = Convert.ToInt64(q.ExecuteScalar());
+				object result = q.ExecuteScalar();
+				if (result != DBNull.Value)
+				{
+					total = Convert.ToInt64(result);
+				}
 			}
 			catch (Exception e)
 			{

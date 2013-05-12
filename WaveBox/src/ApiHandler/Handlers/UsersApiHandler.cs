@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
 using Newtonsoft.Json;
@@ -28,9 +29,32 @@ namespace WaveBox.ApiHandler.Handlers
 		/// </summary>
 		public void Process()
 		{
+			// Return list of users to be passed as JSON
+			List<User> listOfUsers = new List<User>();
+
+			// Try to get a user ID
+			bool success = false;
+			int id = 0;
+			if (Uri.Parameters.ContainsKey("id"))
+			{
+				success = Int32.TryParse(Uri.Parameters["id"], out id);
+			}
+
+			// On valid key, return a specific user, and their attributes
+			if (success)
+			{
+				User user = new User(id);
+				listOfUsers.Add(user);
+			}
+			else
+			{
+				// On invalid key, return all users
+				listOfUsers = User.AllUsers();
+			}
+
 			try
 			{
-				string json = JsonConvert.SerializeObject(new UsersResponse("UsersApiHandler not yet implemented"), Settings.JsonFormatting);
+				string json = JsonConvert.SerializeObject(new UsersResponse(null, listOfUsers), Settings.JsonFormatting);
 				Processor.WriteJson(json);
 			}
 			catch (Exception e)
@@ -44,9 +68,13 @@ namespace WaveBox.ApiHandler.Handlers
 			[JsonProperty("error")]
 			public string Error { get; set; }
 
-			public UsersResponse(string error)
+			[JsonProperty("users")]
+			public List<User> Users { get; set; }
+
+			public UsersResponse(string error, List<User> users)
 			{
 				Error = error;
+				Users = users;
 			}
 		}
 	}
