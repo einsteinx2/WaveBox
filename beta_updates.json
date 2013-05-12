@@ -1,12 +1,12 @@
 [
     {
-        "buildTime": 1368369111,
-        "displayVersion": "alpha",
-        "changeLog": "- Updated some stuff"
+        "BuildTime": 1368369111,
+        "DisplayVersion": "alpha",
+        "ChangeLog": "- Updated some stuff"
     },
     {
-        "buildTime": 1000000000,
-        "displayVersion": "alpha old",
-        "changeLog": "- Some old update stuff"
+        "BuildTime": 1000000000,
+        "DisplayVersion": "alpha old",
+        "ChangeLog": "- Some old update stuff"
     }
 ]
