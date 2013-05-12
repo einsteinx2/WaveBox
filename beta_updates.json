@@ -1,14 +1,12 @@
-{
-    "updateList": [
-        {
-            "buildTime": 1368369111,
-            "displayVersion": "alpha",
-            "changeLog": "- Updated some stuff"
-        },
-        {
-            "buildTime": 1000000000,
-            "displayVersion": "alpha old",
-            "changeLog": "- Some old update stuff"
-        }
-    ]
-}
+[
+    {
+        "buildTime": 1368369111,
+        "displayVersion": "alpha",
+        "changeLog": "- Updated some stuff"
+    },
+    {
+        "buildTime": 1000000000,
+        "displayVersion": "alpha old",
+        "changeLog": "- Some old update stuff"
+    }
+]
