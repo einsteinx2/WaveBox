@@ -53,13 +53,21 @@ namespace WaveBox.ApiHandler.Handlers
 
 				Genre genre = new Genre(id);
 
-				switch(type)
+				switch (type)
 				{
-					case "folders": listOfFolders = genre.ListOfFolders(); break;
-					case "albums": listOfAlbums = genre.ListOfAlbums(); break;
-					case "songs": listOfSongs = genre.ListOfSongs(); break;
+					case "folders":
+						listOfFolders = genre.ListOfFolders();
+						break;
+					case "albums":
+						listOfAlbums = genre.ListOfAlbums();
+						break;
+					case "songs":
+						listOfSongs = genre.ListOfSongs();
+						break;
 					case "artists":
-					default: listOfArtists = genre.ListOfArtists(); break;
+					default:
+						listOfArtists = genre.ListOfArtists();
+						break;
 				}
 			}
 			else
@@ -115,4 +123,3 @@ namespace WaveBox.ApiHandler.Handlers
 		}
 	}
 }
-

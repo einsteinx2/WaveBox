@@ -94,7 +94,9 @@ INSERT INTO "file_type" VALUES(2147483647,'Unknown');
 CREATE TABLE "session" (
 "session_id" TEXT UNIQUE NOT NULL,
 "user_id" INTEGER NOT NULL,
-"client_name" TEXT
+"client_name" TEXT,
+"create_time" INTEGER NOT NULL,
+"update_time" INTEGER NOT NULL
 );
 CREATE TABLE "album" (
 "album_id" INTEGER UNIQUE NOT NULL,

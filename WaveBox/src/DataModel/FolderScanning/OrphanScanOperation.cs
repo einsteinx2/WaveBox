@@ -28,7 +28,6 @@ namespace WaveBox.DataModel.FolderScanning
 		{
 			Stopwatch sw = new Stopwatch();
 
-
 			if (logger.IsInfoEnabled) logger.Info("---------------- ORPHAN SCAN ----------------");
 			sw.Start();
 			CheckFolders();
@@ -49,6 +48,11 @@ namespace WaveBox.DataModel.FolderScanning
 			CheckAlbums();
 			sw.Stop();
 			if (logger.IsInfoEnabled) logger.Info("check albums: " + sw.ElapsedMilliseconds + "ms");
+
+			sw.Restart();
+			CheckGenres();
+			sw.Stop();
+			if (logger.IsInfoEnabled) logger.Info("check genres: " + sw.ElapsedMilliseconds + "ms");
 
 			if (logger.IsInfoEnabled) logger.Info("check songs exists calls total time: " + (totalExistsTime / 10000) + "ms"); // Convert ticks to milliseconds, divide by 10,000
 			if (logger.IsInfoEnabled) logger.Info("---------------------------------------------");
@@ -342,6 +346,64 @@ namespace WaveBox.DataModel.FolderScanning
 					q1.Prepare();
 					q1.ExecuteNonQueryLogged();
 					if (logger.IsInfoEnabled) logger.Info("Album " + id + " deleted");
+				}
+				catch (Exception e)
+				{
+					logger.Error("[ORPHANSCAN(7)] " + e);
+				}
+				finally
+				{
+					Database.Close(conn, reader);
+				}
+			}
+		}
+
+		private void CheckGenres()
+		{
+			if (isRestart)
+			{
+				return;
+			}
+
+			IDbConnection conn = null;
+			IDataReader reader = null;
+			ArrayList orphanGenreIds = new ArrayList();
+
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT genre.genre_id " +
+													 "FROM genre " +
+													 "LEFT JOIN song ON genre.genre_id = song.song_genre_id " +
+													 "WHERE song.song_genre_id IS NULL", conn);
+
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				while (reader.Read())
+				{
+					orphanGenreIds.Add(reader.GetInt32(0));
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error("[ORPHANSCAN(8)] " + e);
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			foreach (int id in orphanGenreIds)
+			{
+				try
+				{
+					conn = Database.GetDbConnection();
+					IDbCommand q1 = Database.GetDbCommand("DELETE FROM genre WHERE genre_id = @genreid", conn);
+					q1.AddNamedParam("@genreid", id);
+					q1.Prepare();
+					q1.ExecuteNonQueryLogged();
+					if (logger.IsInfoEnabled) logger.Info("Genre " + id + " deleted");
 				}
 				catch (Exception e)
 				{
