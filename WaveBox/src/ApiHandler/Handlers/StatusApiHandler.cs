@@ -54,6 +54,8 @@ namespace WaveBox.ApiHandler.Handlers
 				status["uptime"] = (unixTime - Utility.UnixTime(WaveBoxService.StartTime)).ToString();
 				// Get last update time in UNIX format for status
 				status["updated"] = unixTime.ToString();
+				// Get hostname of machine
+				status["hostname"] = System.Environment.MachineName;
 				// Get WaveBox version, currently in the format 'wavebox-builddate-git' (change to true version later,
 				// something like 'wavebox-1.0.0-alpha'
 				status["version"] = "wavebox-" + WaveBoxService.BuildDate.ToString("yyyyMMdd") + "-git";
