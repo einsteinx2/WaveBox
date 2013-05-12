@@ -125,7 +125,6 @@
     <Compile Include="src\ApiHandler\IApiHandler.cs" />
     <Compile Include="src\ApiHandler\UriWrapper.cs" />
     <Compile Include="src\AssemblyInfo.cs" />
-    <Compile Include="src\DataModel\FolderScanning\AbstractOperation.cs" />
     <Compile Include="src\DataModel\FolderScanning\FolderScanOperation.cs" />
     <Compile Include="src\DataModel\FolderScanning\OrphanScanOperation.cs" />
     <Compile Include="src\DataModel\Model\Album.cs" />
@@ -150,9 +149,6 @@
     <Compile Include="src\DataModel\Singletons\Lastfm.cs" />
     <Compile Include="src\DataModel\Singletons\Settings.cs" />
     <Compile Include="src\ImageMagickInterop.cs" />
-    <Compile Include="src\Nat.cs" />
-    <Compile Include="src\OperationQueue\DelayedOperationQueue.cs" />
-    <Compile Include="src\OperationQueue\IDelayedOperation.cs" />
     <Compile Include="src\PodcastManagement\DownloadQueue.cs" />
     <Compile Include="src\PodcastManagement\FeedCheckOperation.cs" />
     <Compile Include="src\PodcastManagement\Podcast.cs" />
@@ -178,6 +174,12 @@
     <Compile Include="src\Transcoding\VideoTranscoder.cs" />
     <Compile Include="src\WaveBoxMain.cs" />
     <Compile Include="src\WaveBoxService.cs" />
+    <Compile Include="src\DataModel\AutoUpdate\UpdateCheckOperation.cs" />
+    <Compile Include="src\DataModel\OperationQueue\DelayedOperationQueue.cs" />
+    <Compile Include="src\DataModel\OperationQueue\IDelayedOperation.cs" />
+    <Compile Include="src\DataModel\OperationQueue\AbstractOperation.cs" />
+    <Compile Include="src\DataModel\Singletons\DynamicDns.cs" />
+    <Compile Include="src\DataModel\Singletons\Nat.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="lib\Newtonsoft.Json.dll" />
@@ -293,5 +295,6 @@
     <Folder Include="src\Transcoding\" />
     <Folder Include="src\PodcastManagement\" />
     <Folder Include="lib_native\" />
+    <Folder Include="src\DataModel\AutoUpdate\" />
   </ItemGroup>
 </Project>

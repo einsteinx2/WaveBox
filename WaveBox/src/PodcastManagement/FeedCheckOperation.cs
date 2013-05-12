@@ -1,5 +1,5 @@
 using System;
-using WaveBox.OperationQueue;
+using WaveBox.DataModel.OperationQueue;
 using WaveBox.PodcastManagement;
 using WaveBox.DataModel.Singletons;
 

@@ -8,7 +8,7 @@ using WaveBox.DataModel.Model;
 using System.Data;
 using System.IO;
 using System.Diagnostics;
-using WaveBox.OperationQueue;
+using WaveBox.DataModel.OperationQueue;
 
 namespace WaveBox.DataModel.FolderScanning
 {

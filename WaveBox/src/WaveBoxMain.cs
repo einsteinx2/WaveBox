@@ -27,9 +27,6 @@ namespace WaveBox
 		// Logger
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		// Nat
-		public Nat Nat;
-
 		// ZeroConf
 		public RegisterService ZeroConfService { get; set; }
 
@@ -125,55 +122,6 @@ namespace WaveBox
 		}
 
 		/// <summary>
-		/// Return the IP address of the local adapter which WaveBox is running on
-		/// </summary>
-		private static IPAddress LocalIPAddress()
-		{
-			// If the network isn't available, IP will be null
-			if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
-			{
-				return null;
-			}
-			
-			// Return host's IP address
-			IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
-			
-			return host.AddressList.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork);
-		}
-
-		/// <summary>
-		/// Register URL registers this instance of WaveBox with the URL forwarding service
-		/// </summary>
-		public void RegisterUrl()
-		{
-			if ((object)ServerUrl != null)
-			{
-				// Compose the registration request URL
-				string urlString = "http://register.wavebox.es" + 
-					"?host=" + Uri.EscapeUriString(ServerUrl) + 
-					"&serverId=" + Uri.EscapeUriString(ServerGuid) + 
-					"&port=" + Settings.Port + 
-					"&isSecure=0" + 
-					"&localIp=" + LocalIPAddress().ToString();
-
-				if (logger.IsInfoEnabled) logger.Info("Registering URL: " + urlString);
-
-				// Perform registration with registration server
-				WebClient client = new WebClient();
-				client.DownloadDataCompleted += new DownloadDataCompletedEventHandler(RegisterUrlCompleted);
-				client.DownloadDataAsync(new Uri(urlString));
-			}
-		}
-
-		/// <summary>
-		/// Handler for determining success and failure of server registration
-		/// </summary>
-		private static void RegisterUrlCompleted(object sender, DownloadDataCompletedEventArgs e)
-		{
-			// Do nothing for now, check for success and handle failures later
-		}
-
-		/// <summary>
 		/// The main program for WaveBox.  Launches the HTTP server, initializes settings, creates default user,
 		/// begins file scan, and then sleeps forever while other threads handle the work.
 		/// </summary>
@@ -205,13 +153,12 @@ namespace WaveBox
 			// If configured, start NAT routing
 			if (Settings.NatEnable)
 			{
-				this.Nat = new Nat();
-				this.Nat.Start();
+				Nat.Start();
 			}
 
 			// Register server with registration service
 			ServerSetup();
-			RegisterUrl();
+			DynamicDns.RegisterUrl(ServerUrl, ServerGuid);
 
 			// Start the HTTP server
 			httpServer = new HttpServer(Settings.Port);
@@ -236,7 +183,7 @@ namespace WaveBox
 
 			// Start podcast download queue
 			PodcastManagement.DownloadQueue.FeedChecks.queueOperation(new FeedCheckOperation(0));
-			PodcastManagement.DownloadQueue.FeedChecks.startScanQueue();
+			PodcastManagement.DownloadQueue.FeedChecks.startQueue();
 
 			// sleep the main thread so we can go about handling api calls and stuff on other threads.
 			//Thread.Sleep(Timeout.Infinite);
@@ -318,6 +265,9 @@ namespace WaveBox
 		{
 			httpServer.Stop();
 			//mpdServer.Stop();
+
+			// Disable any Nat routes
+			Nat.Stop();
 
 			// Dispose of ImageMagick
 			try

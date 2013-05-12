@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.IO;
 using System.Diagnostics;
-using WaveBox.OperationQueue;
+using WaveBox.DataModel.OperationQueue;
 
 namespace WaveBox.PodcastManagement
 {

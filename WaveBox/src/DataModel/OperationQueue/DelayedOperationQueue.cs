@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Diagnostics;
 
-namespace WaveBox.OperationQueue
+namespace WaveBox.DataModel.OperationQueue
 {
 	public class DelayedOperationQueue
 	{
@@ -21,7 +21,7 @@ namespace WaveBox.OperationQueue
 		private bool queueShouldLoop = true;
 		private Queue<IDelayedOperation> operationQueue = new Queue<IDelayedOperation>();
 
-		public void startScanQueue()
+		public void startQueue()
 		{
 			queueThread = new Thread(delegate() 
 			{
@@ -57,7 +57,7 @@ namespace WaveBox.OperationQueue
 			queueThread.Start();
 		}
 
-		public void stopScanQueue()
+		public void stopQueue()
 		{
 			queueShouldLoop = false; // Break the loop
 			queueThread.Abort(); // Abort the thread

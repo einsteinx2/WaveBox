@@ -1,8 +1,7 @@
 using System;
 using Mono.Nat;
-using WaveBox.DataModel.Singletons;
 
-namespace WaveBox
+namespace WaveBox.DataModel.Singletons
 {
 	public enum NatStatus
 	{
@@ -18,11 +17,13 @@ namespace WaveBox
 		// Logger
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public NatStatus Status { get; set; }
+		public static NatStatus Status { get; set; }
 
-		public void Start()
+		private static INatDevice Device { get; set; }
+
+		public static void Start()
 		{
-			this.Status = NatStatus.WaitingForDevice;
+			Nat.Status = NatStatus.WaitingForDevice;
 
 			if (logger.IsInfoEnabled) logger.Info("Starting NAT process");
 
@@ -34,25 +35,34 @@ namespace WaveBox
 			// Start searching for upnp enabled routers
 			NatUtility.StartDiscovery();
 		}
+
+		public static void Stop()
+		{
+			if ((object)Device != null && Status == NatStatus.PortForwardedSuccessfully) 
+			{
+				Device.DeletePortMap(new Mapping(Protocol.Tcp, Settings.Port, Settings.Port));
+				Status = NatStatus.NotInitialized;
+			}
+		}
 		
-		private void DeviceFound(object sender, DeviceEventArgs args)
+		private static void DeviceFound(object sender, DeviceEventArgs args)
 		{
 			if (logger.IsInfoEnabled) logger.Info("Device Found");
 
-			this.Status = NatStatus.DeviceFound;
+			Nat.Status = NatStatus.DeviceFound;
 
 			// This is the upnp enabled router
-			INatDevice device = args.Device;
+			Device = args.Device;
 
 			// Create a mapping to forward external port to local port
 			try
 			{
-				device.CreatePortMap(new Mapping(Protocol.Tcp, Settings.Port, Settings.Port));
-				this.Status = NatStatus.PortForwardedSuccessfully;
+				Device.CreatePortMap(new Mapping(Protocol.Tcp, Settings.Port, Settings.Port));
+				Nat.Status = NatStatus.PortForwardedSuccessfully;
 			}
 			catch (Exception e)
 			{
-				this.Status = NatStatus.PortForwardingFailed;
+				Nat.Status = NatStatus.PortForwardingFailed;
 				logger.Error("Port mapping failed", e);
 			}
 
@@ -67,9 +77,9 @@ namespace WaveBox
 			IPAddress externalIP = device.GetExternalIP();*/
 		}
 		
-		private void DeviceLost(object sender, DeviceEventArgs args)
+		private static void DeviceLost(object sender, DeviceEventArgs args)
 		{
-			this.Status = NatStatus.PortForwardingFailed;
+			Nat.Status = NatStatus.PortForwardingFailed;
 
 			INatDevice device = args.Device;
 			
@@ -77,9 +87,9 @@ namespace WaveBox
 			if (logger.IsInfoEnabled) logger.Info("Type: " + device.GetType().Name);
 		}
 
-		private void UnhandledException(object sender, UnhandledExceptionEventArgs args)
+		private static void UnhandledException(object sender, UnhandledExceptionEventArgs args)
 		{
-			this.Status = NatStatus.PortForwardingFailed;
+			Nat.Status = NatStatus.PortForwardingFailed;
 
 			logger.Error("Unhandled exception: " + args);
 		}

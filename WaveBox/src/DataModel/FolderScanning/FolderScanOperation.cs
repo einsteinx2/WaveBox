@@ -8,7 +8,7 @@ using System.IO;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Diagnostics;
-using WaveBox.OperationQueue;
+using WaveBox.DataModel.OperationQueue;
 using TagLib;
 
 namespace WaveBox.DataModel.FolderScanning

@@ -6,7 +6,7 @@ using WaveBox.DataModel.Singletons;
 using WaveBox.DataModel.Model;
 using WaveBox.DataModel.FolderScanning;
 using System.IO;
-using WaveBox.OperationQueue;
+using WaveBox.DataModel.OperationQueue;
 
 namespace WaveBox.DataModel.Singletons
 {
@@ -33,7 +33,7 @@ namespace WaveBox.DataModel.Singletons
 			// Grab list of media folders, initialize the scan queue
 			mediaFolders = Settings.MediaFolders;
 			scanQueue = new DelayedOperationQueue();
-			scanQueue.startScanQueue();
+			scanQueue.startQueue();
 			scanQueue.queueOperation(new FolderScanning.OrphanScanOperation(0));
 
 			// Iterate the list of folders
@@ -117,7 +117,7 @@ namespace WaveBox.DataModel.Singletons
 
 		public void Stop()
 		{
-			scanQueue.stopScanQueue();
+			scanQueue.stopQueue();
 		}
 
 		/// <summary>
