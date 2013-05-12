@@ -5,7 +5,7 @@ using System.IO;
 using System.Diagnostics;
 using WaveBox.DataModel.Model;
 using WaveBox.DataModel.Singletons;
-using WaveBox.OperationQueue;
+using WaveBox.DataModel.OperationQueue;
 
 namespace WaveBox.SessionManagement
 {

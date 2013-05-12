@@ -1,6 +1,6 @@
 using System;
 using WaveBox.DataModel.Singletons;
-using WaveBox.OperationQueue;
+using WaveBox.DataModel.OperationQueue;
 using WaveBox.SessionManagement;
 
 namespace WaveBox
