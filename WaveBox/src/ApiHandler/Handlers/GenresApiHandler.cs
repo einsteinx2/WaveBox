@@ -1,8 +1,8 @@
 using System;
-using WaveBox.DataModel.Model;
+using WaveBox.Model;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using WaveBox.DataModel.Singletons;
+using WaveBox.Singletons;
 
 namespace WaveBox.ApiHandler.Handlers
 {

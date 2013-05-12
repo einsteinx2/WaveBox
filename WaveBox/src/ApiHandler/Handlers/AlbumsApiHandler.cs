@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using WaveBox.DataModel.Singletons;
+using WaveBox.Singletons;
 using WaveBox.ApiHandler;
-using WaveBox.DataModel.Model;
+using WaveBox.Model;
 using Newtonsoft.Json;
 using WaveBox.TcpServer.Http;
 

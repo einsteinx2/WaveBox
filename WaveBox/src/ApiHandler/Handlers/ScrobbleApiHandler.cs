@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using WaveBox.ApiHandler;
-using WaveBox.DataModel.Model;
-using WaveBox.DataModel.Singletons;
+using WaveBox.Model;
+using WaveBox.Singletons;
 using Newtonsoft.Json;
 using WaveBox.TcpServer.Http;
 

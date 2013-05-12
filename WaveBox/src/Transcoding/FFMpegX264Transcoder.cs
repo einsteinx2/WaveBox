@@ -1,5 +1,5 @@
 using System;
-using WaveBox.DataModel.Model;
+using WaveBox.Model;
 
 namespace WaveBox.Transcoding
 {

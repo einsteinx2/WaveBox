@@ -7,8 +7,8 @@ using System.Linq;
 using System.Text;
 using WaveBox;
 using WaveBox.TcpServer.Http;
-using WaveBox.DataModel.Singletons;
-using WaveBox.DataModel.Model;
+using WaveBox.Singletons;
+using WaveBox.Model;
 using WaveBox.Transcoding;
 using Newtonsoft.Json;
 
@@ -137,7 +137,7 @@ namespace WaveBox.ApiHandler.Handlers
 		}
 
 		/// <summary>
-		/// Grabs a list of valid file types for media files from the enumerator in Wavebox.DataModel.Model.FileType
+		/// Grabs a list of valid file types for media files from the enumerator in Wavebox.Model.FileType
 		/// </summary>
 		public static string GetMediaTypes()
 		{

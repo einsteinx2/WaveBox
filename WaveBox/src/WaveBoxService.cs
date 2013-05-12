@@ -6,7 +6,7 @@ using Mono.Unix;
 using Mono.Unix.Native;
 using System.Runtime.InteropServices;
 using WaveBox.Transcoding;
-using WaveBox.DataModel.Singletons;
+using WaveBox.Singletons;
 using System.Text;
 using System.Net;
 using System.Web;

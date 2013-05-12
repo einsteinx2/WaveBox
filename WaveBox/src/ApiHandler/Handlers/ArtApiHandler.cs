@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using WaveBox.DataModel.Model;
+using WaveBox.Model;
 using WaveBox.TcpServer.Http;
-using WaveBox.DataModel.Singletons;
+using WaveBox.Singletons;
 using TagLib;
 using System.Runtime.InteropServices;
 

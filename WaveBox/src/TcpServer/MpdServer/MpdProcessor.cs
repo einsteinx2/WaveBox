@@ -7,8 +7,8 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Diagnostics;
-using WaveBox.DataModel.Model;
-using WaveBox.DataModel.Singletons;
+using WaveBox.Model;
+using WaveBox.Singletons;
 
 namespace WaveBox.TcpServer.Mpd
 {

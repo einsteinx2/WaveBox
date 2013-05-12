@@ -5,8 +5,8 @@ using System.Text;
 using Newtonsoft.Json;
 using System.Data;
 using System.IO;
-using WaveBox.DataModel.Singletons;
-using WaveBox.DataModel.Model;
+using WaveBox.Singletons;
+using WaveBox.Model;
 using WaveBox.TcpServer.Http;
 
 namespace WaveBox.ApiHandler.Handlers

@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using System.Threading;
-using WaveBox.DataModel.Model;
+using WaveBox.Model;
 using System.Diagnostics;
 
 namespace WaveBox.Transcoding

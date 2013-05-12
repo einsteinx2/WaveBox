@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using WaveBox.ApiHandler.Handlers;
-using WaveBox.DataModel.Model;
+using WaveBox.Model;
 using WaveBox.TcpServer.Http;
 
 namespace WaveBox.ApiHandler

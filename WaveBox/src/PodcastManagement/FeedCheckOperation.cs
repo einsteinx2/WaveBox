@@ -1,7 +1,7 @@
 using System;
-using WaveBox.DataModel.OperationQueue;
+using WaveBox.OperationQueue;
 using WaveBox.PodcastManagement;
-using WaveBox.DataModel.Singletons;
+using WaveBox.Singletons;
 
 namespace WaveBox
 {

@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
-using WaveBox.DataModel.Singletons;
-using WaveBox.DataModel.Model;
+using WaveBox.Singletons;
+using WaveBox.Model;
 using System.Data;
 using System.Collections.Concurrent;
 

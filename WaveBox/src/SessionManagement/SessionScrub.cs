@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Net;
 using System.IO;
 using System.Diagnostics;
-using WaveBox.DataModel.Model;
-using WaveBox.DataModel.Singletons;
-using WaveBox.DataModel.OperationQueue;
+using WaveBox.Model;
+using WaveBox.Singletons;
+using WaveBox.OperationQueue;
 
 namespace WaveBox.SessionManagement
 {
