@@ -225,7 +225,7 @@ namespace WaveBox.DataModel.Model
 			return artIds;
 		}
 
-		private static bool InsertAlbum(string albumName, int? artistId)
+		private static bool InsertAlbum(string albumName, int? artistId, int? releaseYear)
 		{
 			int? itemId = Item.GenerateItemId(ItemType.Album);
 			if (itemId == null)
@@ -238,10 +238,11 @@ namespace WaveBox.DataModel.Model
 			try
 			{
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("INSERT OR IGNORE INTO album (album_id, album_name, artist_id) VALUES (@albumid, @albumname, @artistid)", conn);
+				IDbCommand q = Database.GetDbCommand("INSERT OR IGNORE INTO album (album_id, album_name, artist_id, album_release_year) VALUES (@albumid, @albumname, @artistid, @albumreleaseyear)", conn);
 				q.AddNamedParam("@albumid", itemId);
 				q.AddNamedParam("@albumname", albumName);
 				q.AddNamedParam("@artistid", artistId);
+				q.AddNamedParam("@albumreleaseyear", releaseYear);
 				q.Prepare();
 
 				success = (q.ExecuteNonQueryLogged() > 0);
@@ -263,6 +264,7 @@ namespace WaveBox.DataModel.Model
             ArtistId = reader.GetInt32OrNull(reader.GetOrdinal("artist_id"));
 			AlbumId = reader.GetInt32OrNull(reader.GetOrdinal("album_id"));
 			AlbumName = reader.GetStringOrNull(reader.GetOrdinal("album_name"));
+			ReleaseYear = reader.GetInt32OrNull(reader.GetOrdinal("album_release_year"));
 		}
 
 		public Artist Artist()
@@ -312,7 +314,7 @@ namespace WaveBox.DataModel.Model
 			return songs;
 		}
 
-		public static Album AlbumForName(string albumName, int? artistId)
+		public static Album AlbumForName(string albumName, int? artistId, int? releaseYear = null)
 		{
 			if (albumName == "" || albumName == null || artistId == null)
 			{
@@ -324,9 +326,9 @@ namespace WaveBox.DataModel.Model
 			if (a.AlbumId == null)
 			{
 				a = null;
-				if (InsertAlbum(albumName, artistId))
+				if (InsertAlbum(albumName, artistId, releaseYear))
 				{
-					a = AlbumForName(albumName, artistId);
+					a = AlbumForName(albumName, artistId, releaseYear);
 				}
 				else
 				{
@@ -369,12 +371,37 @@ namespace WaveBox.DataModel.Model
 			albums.Sort(CompareAlbumsByName);
 			return albums;
 		}
+
+		public static int? CountAlbums()
+		{
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			int? count = null;
+
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT count(album_id) FROM album", conn);
+				count = Convert.ToInt32(q.ExecuteScalar());
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			return count;
+		}
 		
 		public static List<Album> SearchAlbum(string query)
 		{
 			List<Album> result = new List<Album>();
 
-			if(query == null)
+			if (query == null)
 			{
 				return result;
 			}
@@ -392,13 +419,13 @@ namespace WaveBox.DataModel.Model
 
 				Album a;
 
-				while(reader.Read())
+				while (reader.Read())
 				{
 					a = new Album(reader);
 					result.Add(a);
 				}
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				logger.Error(e);
 			}

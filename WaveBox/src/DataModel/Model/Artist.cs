@@ -308,6 +308,31 @@ namespace WaveBox.DataModel.Model
 			return artists;
 		}
 
+		public static int? CountArtists()
+		{
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			int? count = null;
+
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT count(artist_id) FROM artist", conn);
+				count = Convert.ToInt32(q.ExecuteScalar());
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			return count;
+		}
+
 		public static List<Artist> SearchArtist(string query)
 		{
 			List<Artist> result = new List<Artist>();

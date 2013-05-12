@@ -101,7 +101,7 @@ namespace WaveBox
 		}
 
 		/// <summary>
-		///	OnStart launches the init thread with the WaveBox Start() function
+		/// OnStart launches the init thread with the WaveBox Start() function
 		/// </summary>
 		protected void OnStart()
 		{
@@ -336,30 +336,50 @@ namespace WaveBox
 			return dt;
 		}
 
+		/// <summary>
+		/// Called whenever WaveBox encounters a fatal error, resulting in a crash.  When configured, this will automatically
+		/// report the exception to WaveBox's crash dump service.  If not configured, the exception will be dumped to the log,
+		/// and the user may choose to report it manually.
+		/// </summary>
 		public static void ReportCrash(Exception exception, bool terminateProcess) 
 		{
-			logger.Error("ReportCrash called", exception);
+			logger.Error("WaveBox has crashed!");
 
-			// Submit to the web service
-			Uri URI = new Uri("http://crash.waveboxapp.com");
-			string parameters = "exception=" + HttpUtility.UrlEncode(exception.ToString());
-			
-			using (WebClient wc = new WebClient())
+			// Report crash if enabled
+			if (Settings.CrashReportEnable)
 			{
-				wc.Headers[HttpRequestHeader.ContentType] = "application/x-www-form-urlencoded";
+				logger.Error("ReportCrash called", exception);
 
-				if (terminateProcess)
+				// Submit to the web service
+				Uri URI = new Uri("http://crash.waveboxapp.com");
+				string parameters = "exception=" + HttpUtility.UrlEncode(exception.ToString());
+
+				using (WebClient wc = new WebClient())
 				{
-					// We're about to terminate, so send it synchronously
-					string response = wc.UploadString(URI, parameters);
-					logger.Error("Crash report server response: " + response);
+					wc.Headers[HttpRequestHeader.ContentType] = "application/x-www-form-urlencoded";
+
+					if (terminateProcess)
+					{
+						// We're about to terminate, so send it synchronously
+						string response = wc.UploadString(URI, parameters);
+						logger.Error("Crash report server response: " + response);
+					}
+					else
+					{
+						// We're stayin' alive, stayin' alive, so send it asynchronously
+						wc.UploadStringCompleted += new UploadStringCompletedEventHandler((sender, e) => logger.Error("Crash report server async response: " + e.Result));
+						wc.UploadStringAsync(URI, parameters);
+					}
 				}
-				else
-				{
-					// We're stayin' alive, stayin' alive, so send it asynchronously
-					wc.UploadStringCompleted += new UploadStringCompletedEventHandler((sender, e) => logger.Error("Crash report server async response: " + e.Result));
-					wc.UploadStringAsync(URI, parameters);
-				}
+			}
+			else
+			{
+				// If automatic reporting disabled, print the exception so user has the option of sending crash dump manually
+				logger.Error("Automatic crash reporting is disabled, dumping exception...");
+				logger.Error("---------------- CRASH DUMP ----------------");
+				logger.Error(exception);
+				logger.Error("-------------- END CRASH DUMP --------------");
+				logger.Error("Please report this exception on: https://github.com/einsteinx2/WaveBox/issues");
 			}
 
 			if (terminateProcess)

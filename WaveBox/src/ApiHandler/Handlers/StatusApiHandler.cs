@@ -70,6 +70,18 @@ namespace WaveBox.ApiHandler.Handlers
 				status["mediaTypes"] = StatusApiHandlerExtension.GetMediaTypes();
 				// Get list of transcoders available
 				status["transcoders"] = StatusApiHandlerExtension.GetTranscoders();
+				// Get count of artists
+				status["artistCount"] = Artist.CountArtists().ToString();
+				// Get count of albums
+				status["albumCount"] = Album.CountAlbums().ToString();
+				// Get count of songs
+				status["songCount"] = Song.CountSongs().ToString();
+				// Get count of videos
+				status["videoCount"] = Video.CountVideos().ToString();
+				// Get total file size of songs (bytes)
+				status["songFileSize"] = Song.TotalSongSize().ToString();
+				// Get total file size of videos (bytes)
+				status["videoFileSize"] = Video.TotalVideoSize().ToString();
 				// Get last query log ID
 				status["lastQueryLogId"] = Database.LastQueryLogId().ToString();
 

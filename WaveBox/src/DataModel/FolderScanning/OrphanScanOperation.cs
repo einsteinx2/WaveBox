@@ -28,6 +28,8 @@ namespace WaveBox.DataModel.FolderScanning
 		{
 			Stopwatch sw = new Stopwatch();
 
+
+			if (logger.IsInfoEnabled) logger.Info("---------------- ORPHAN SCAN ----------------");
 			sw.Start();
 			CheckFolders();
 			sw.Stop();
@@ -49,6 +51,7 @@ namespace WaveBox.DataModel.FolderScanning
 			if (logger.IsInfoEnabled) logger.Info("check albums: " + sw.ElapsedMilliseconds + "ms");
 
 			if (logger.IsInfoEnabled) logger.Info("check songs exists calls total time: " + (totalExistsTime / 10000) + "ms"); // Convert ticks to milliseconds, divide by 10,000
+			if (logger.IsInfoEnabled) logger.Info("---------------------------------------------");
 		}
 
 		private void CheckFolders()
