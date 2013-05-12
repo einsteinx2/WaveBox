@@ -180,6 +180,7 @@
     <Compile Include="src\DataModel\OperationQueue\AbstractOperation.cs" />
     <Compile Include="src\DataModel\Singletons\DynamicDns.cs" />
     <Compile Include="src\DataModel\Singletons\Nat.cs" />
+    <Compile Include="src\DataModel\Singletons\ZeroConf.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="lib\Newtonsoft.Json.dll" />

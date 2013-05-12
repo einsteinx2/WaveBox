@@ -27,9 +27,6 @@ namespace WaveBox
 		// Logger
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		// ZeroConf
-		public RegisterService ZeroConfService { get; set; }
-
 		// Server GUID and URL, for publishing
 		public string ServerGuid { get; set; }
 		public string ServerUrl { get; set; }
@@ -150,19 +147,6 @@ namespace WaveBox
 			Database.DatabaseSetup();
 			Settings.SettingsSetup();
 
-			// Report if automatic crash reporting enabled
-			if (logger.IsInfoEnabled)
-			{
-				if (Settings.CrashReportEnable)
-				{
-					logger.Info("Automatic crash reporting is enabled");
-				}
-				else
-				{
-					logger.Info("Notice: automatic crash reporting is disabled");
-				}
-			}
-
 			// If configured, start NAT routing
 			if (Settings.NatEnable)
 			{
@@ -181,8 +165,8 @@ namespace WaveBox
 			//mpdServer = new MpdServer(Settings.MpdPort);
 			//StartTcpServer(mpdServer);
 
-			// Start ZeroConf (broken as of 12/6/12)
-			//PublishZeroConf();
+			// Start ZeroConf
+			ZeroConf.PublishZeroConf(ServerUrl, Settings.Port);
 
 			// Start transcode manager
 			TranscodeManager.Instance.Setup();
@@ -202,49 +186,6 @@ namespace WaveBox
 			//Thread.Sleep(Timeout.Infinite);
 
 			return;
-		}
-
-		/// <summary>
-		/// Publish ZeroConf, so that WaveBox may advertise itself using mDNS to capable devices
-		/// </summary>
-		public void PublishZeroConf()
-		{
-			if ((object)ZeroConfService == null)
-			{
-				try
-				{
-					ZeroConfService = new RegisterService();
-					ZeroConfService.Name = System.Environment.MachineName;
-					//ZeroConfService.Name = "WaveBox on " + System.Environment.MachineName;
-					//ZeroConfService.Name = "WaveBox";
-					ZeroConfService.RegType = "_wavebox._tcp";
-					ZeroConfService.ReplyDomain = "local.";
-					ZeroConfService.Port = (short)Settings.Port;
-					
-					TxtRecord record = new TxtRecord();
-					record.Add("URL", "http://something.wavebox.es");
-					ZeroConfService.TxtRecord = record;
-					
-					ZeroConfService.Register();
-				}
-				catch (Exception e)
-				{
-					logger.Error(e);
-					DisposeZeroConf();
-				}
-			}
-		}
-
-		/// <summary>
-		/// Dispose of ZeroConf publisher
-		/// </summary>
-		public void DisposeZeroConf()
-		{
-			if ((object)ZeroConfService != null)
-			{
-				ZeroConfService.Dispose();
-				ZeroConfService = null;
-			}
 		}
 
 		/// <summary>

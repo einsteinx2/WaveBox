@@ -126,7 +126,7 @@ namespace WaveBox
 
 			// Shut off ZeroConf
 			if (logger.IsInfoEnabled) logger.Info("Turning off ZeroConf...");
-			wavebox.DisposeZeroConf();
+			ZeroConf.DisposeZeroConf();
 			if (logger.IsInfoEnabled) logger.Info("ZeroConf off");
 
 			// Stop any active transcodes
