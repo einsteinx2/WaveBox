@@ -55,7 +55,6 @@ namespace WaveBox.ApiHandler.Handlers
 			Art art = new Art(artId);
 			Stream stream = art.Stream;
 
-
 			// If the stream could not be produced, return error
 			if ((object)stream == null)
 			{

@@ -67,6 +67,20 @@ namespace WaveBox
 		}
 
 		/// <summary>
+		/// Generates a MD5 sum of a given string
+		/// <summary>
+		public static string MD5(this string sumthis)
+		{
+			if (sumthis == "" || sumthis == null)
+			{
+				return "";
+			}
+
+			MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider();
+			return BitConverter.ToString(md5.ComputeHash(System.Text.Encoding.ASCII.GetBytes(sumthis)), 0);
+		}
+
+		/// <summary>
 		/// Returns an integer representation of a month string
 		/// </summary>
 		public static int MonthForAbbreviation(this string abb)

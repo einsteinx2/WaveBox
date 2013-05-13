@@ -131,12 +131,6 @@ namespace WaveBox.Model
 			}
 		}
 
-		public string Md5OfString(string input)
-		{
-			MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider();
-			return BitConverter.ToString(md5.ComputeHash(System.Text.Encoding.ASCII.GetBytes(input)), 0);
-		}
-
 		// what is the synchronized keyword in java?
 		public string CalculateHash()
 		{
@@ -167,7 +161,7 @@ namespace WaveBox.Model
 				Database.Close(conn, reader);
 			}
 
-			return Md5OfString(itemIds);
+			return itemIds.MD5();
 		}
 
 
@@ -178,7 +172,7 @@ namespace WaveBox.Model
 			PlaylistCount = playlistCount + itemsAdded;
 
 			// update last update time
-			LastUpdateTime = ((DateTime.Now.Ticks / 10) - (new DateTime(1970, 1, 1).Ticks / 10));	// correct?
+			LastUpdateTime = DateTime.Now.ToUniversalUnixTimestamp() - (new DateTime(1970, 1, 1).ToUniversalUnixTimestamp());
 
 			// update playlist duration
 			int? playlistDuration = PlaylistDuration;
@@ -207,7 +201,7 @@ namespace WaveBox.Model
 					PlaylistId = itemId;
 					PlaylistCount = 0;
 					PlaylistDuration = 0;
-					LastUpdateTime = ((DateTime.Now.Ticks / 10) - (new DateTime(1970, 1, 1).Ticks / 10));
+					LastUpdateTime = DateTime.Now.ToUniversalUnixTimestamp() - (new DateTime(1970, 1, 1).ToUniversalUnixTimestamp());
 					q = Database.GetDbCommand("INSERT INTO playlist (playlist_id, playlist_name, playlist_count, playlist_duration, md5_hash, last_update) " +
 											"VALUES (@playlistid, @playlistname, @playlistcount, @playlistduration, @md5, @lastupdate)", conn);
 					//q = Database.GetDbCommand("INSERT INTO playlist VALUES (@playlistid, @playlistname, @playlistcount, @playlistduration, @md5, @lastupdate)");
