@@ -106,7 +106,7 @@ namespace WaveBox.Singletons
 			}
 			catch (Exception e)
 			{
-				logger.Error("Exception trying to check for updates", e);
+				logger.Error("Exception trying to check for updates : ", e);
 			}
 		}
 	}

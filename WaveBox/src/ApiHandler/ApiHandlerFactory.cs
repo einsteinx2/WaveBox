@@ -77,6 +77,8 @@ namespace WaveBox.ApiHandler
 							return new DatabaseApiHandler(uriW, processor, user);
 						case "folders":
 							return new FoldersApiHandler(uriW, processor, user);
+						case "genres":
+							return new GenresApiHandler(uriW, processor, user);
 						case "jukebox":
 							return new JukeboxApiHandler(uriW, processor, user);
 						case "login":
@@ -105,8 +107,6 @@ namespace WaveBox.ApiHandler
 							return new UsersApiHandler(uriW, processor, user);
 						case "videos":
 							return new VideosApiHandler(uriW, processor, user);
-						case "genres":
-							return new GenresApiHandler(uriW, processor, user);
 						default:
 							return new ErrorApiHandler(uriW, processor);
 					}
@@ -134,7 +134,8 @@ namespace WaveBox.ApiHandler
 					user = null;
 				}
 			}
-			// This is breaking the beta UsersApiHandler.  Commented out for now - mdlayher, 5/10/13
+			// For the time being, our users API call does not require an individual username or password,
+			// so this check will break it.  Leaving this disabled until further work is done. - mdlayher, 5/13/13
 			/*
 			else if (action == "users")
 			{

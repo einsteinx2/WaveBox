@@ -72,7 +72,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -103,7 +103,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -127,11 +127,10 @@ namespace WaveBox.Model
 
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 		}
 
-		// what is the synchronized keyword in java?
 		public string CalculateHash()
 		{
 			IDbConnection conn = null;
@@ -154,7 +153,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -163,7 +162,6 @@ namespace WaveBox.Model
 
 			return itemIds.MD5();
 		}
-
 
 		public void UpdateProperties(int itemsAdded, int durationAdded)
 		{
@@ -237,7 +235,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -270,7 +268,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -318,7 +316,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -361,7 +359,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -424,7 +422,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -553,7 +551,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -584,7 +582,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -633,7 +631,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{

@@ -21,7 +21,7 @@ namespace WaveBox.Singletons
 
 			webSocketServer = new WebSocketServer();
 			webSocketServer.Setup(new RootConfig(), new ServerConfig
-			                      {
+			{
 				Port = (Settings.WsPort),
 				Ip = "Any",
 				MaxConnectionNumber = 100,

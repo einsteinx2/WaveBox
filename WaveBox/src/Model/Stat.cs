@@ -32,7 +32,7 @@ namespace WaveBox.Model
 			{
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("INSERT INTO stat (time_stamp, item_id, stat_type) " +
-				                                     "VALUES (@timestamp, @itemid, @stattype)", conn);
+													 "VALUES (@timestamp, @itemid, @stattype)", conn);
 				q.AddNamedParam("@timestamp", timeStamp);
 				q.AddNamedParam("@itemid", itemId);
 				q.AddNamedParam("@stattype", (int)statType);

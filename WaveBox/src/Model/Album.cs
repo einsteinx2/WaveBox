@@ -99,11 +99,6 @@ namespace WaveBox.Model
 				if (reader.Read())
 				{
 					SetPropertiesFromQueryReader(reader);
-					//if (logger.IsInfoEnabled) logger.Info("Album constructor, reader.Read = true, AlbumId = " + AlbumId);
-				}
-				else
-				{
-					//if (logger.IsInfoEnabled) logger.Info("Album constructor, reader.Read = false, AlbumId = " + AlbumId);
 				}
 			}
 			catch (Exception e)
@@ -168,8 +163,8 @@ namespace WaveBox.Model
 			{
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT art_item.art_id FROM song " +
-				                                     "LEFT JOIN art_item ON song_id = art_item.item_id " +
-				                                     "WHERE song.song_album_id = @albumid AND art_item.art_id IS NOT NULL GROUP BY art_item.art_id", conn);
+													 "LEFT JOIN art_item ON song_id = art_item.item_id " +
+													 "WHERE song.song_album_id = @albumid AND art_item.art_id IS NOT NULL GROUP BY art_item.art_id", conn);
 				q.AddNamedParam("@albumid", AlbumId);
 				q.Prepare();
 				reader = q.ExecuteReader();
@@ -202,8 +197,8 @@ namespace WaveBox.Model
 			{
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT art_item.art_id FROM song " +
-				                                     "LEFT JOIN art_item ON song_folder_id = art_item.item_id " +
-				                                     "WHERE song.song_album_id = @albumid AND art_item.art_id IS NOT NULL GROUP BY art_item.art_id", conn);
+													 "LEFT JOIN art_item ON song_folder_id = art_item.item_id " +
+													 "WHERE song.song_album_id = @albumid AND art_item.art_id IS NOT NULL GROUP BY art_item.art_id", conn);
 				q.AddNamedParam("@albumid", AlbumId);
 				q.Prepare();
 				reader = q.ExecuteReader();
@@ -229,7 +224,9 @@ namespace WaveBox.Model
 		{
 			int? itemId = Item.GenerateItemId(ItemType.Album);
 			if (itemId == null)
+			{
 				return false;
+			}
 
 			bool success = false;
 
@@ -260,8 +257,8 @@ namespace WaveBox.Model
 		}
 
 		private void SetPropertiesFromQueryReader(IDataReader reader)
-        {
-            ArtistId = reader.GetInt32OrNull(reader.GetOrdinal("artist_id"));
+		{
+			ArtistId = reader.GetInt32OrNull(reader.GetOrdinal("artist_id"));
 			AlbumId = reader.GetInt32OrNull(reader.GetOrdinal("album_id"));
 			AlbumName = reader.GetStringOrNull(reader.GetOrdinal("album_name"));
 			ReleaseYear = reader.GetInt32OrNull(reader.GetOrdinal("album_release_year"));
@@ -288,10 +285,10 @@ namespace WaveBox.Model
 			{
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT song.*, artist.artist_name, album.album_name, genre.genre_name FROM song " +
-				                                     "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
-				                                     "LEFT JOIN album ON song_album_id = album.album_id " +
-				                                     "LEFT JOIN genre ON song_genre_id = genre.genre_id " +
-				                                     "WHERE song_album_id = @albumid", conn);
+													 "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
+													 "LEFT JOIN album ON song_album_id = album.album_id " +
+													 "LEFT JOIN genre ON song_genre_id = genre.genre_id " +
+													 "WHERE song_album_id = @albumid", conn);
 				q.AddNamedParam("@albumid", AlbumId);
 				q.Prepare();
 				reader = q.ExecuteReader();
