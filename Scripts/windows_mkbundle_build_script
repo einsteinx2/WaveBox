@@ -1,0 +1,19 @@
+#!/bin/sh
+
+echo "Build info found here: http://blog.shilbert.com/2012/06/using-mono-to-avoid-depending-on-net-framework/"
+echo "Make sure to install the required cygwin packages and the Mono framework"
+
+# Cleanup
+echo "Cleaning up old files\n"
+rm -rf WaveBox_Windows_32bit.zip WaveBoxBinary WaveBoxLauncher WaveBox.app
+
+# First set some environment variables so everything works
+export MONO=/cygdrive/c/progra~2/Mono-2.10.9
+export PATH=$PATH:$MONO/bin
+export PKG_CONFIG_PATH=$MONO/lib/pkgconfig
+export CC="i686-pc-mingw32-gcc -U _WIN32"
+
+# Create the binary
+echo "Building the binary\n"
+mkbundle --deps -o WaveBoxService.exe WaveBox.exe Bass.Net.dll log4net.dll Mono.Nat.dll Mono.Zeroconf.dll Newtonsoft.Json.dll System.Data.SQLite.dll taglib-sharp.dll   
+cp /cygdrive/c/progra~2/Mono-2.10.9/bin/mono-2.0.dll .
