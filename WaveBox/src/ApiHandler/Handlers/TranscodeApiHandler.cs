@@ -176,7 +176,7 @@ namespace WaveBox.ApiHandler.Handlers
 							width = UInt32.TryParse(Uri.Parameters["width"], out widthTemp) ? (uint?)widthTemp : null;
 						}
 
-						uint? height;
+						uint? height = 0;
 						if (Uri.Parameters.ContainsKey("height"))
 						{
 							uint heightTemp;

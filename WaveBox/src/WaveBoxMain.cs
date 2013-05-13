@@ -162,6 +162,9 @@ namespace WaveBox
 			httpServer = new HttpServer(Settings.Port);
 			StartTcpServer(httpServer);
 
+			// Start the Web Socket server for real time device state syncing
+			DeviceSyncer.Start();
+
 			// Start the MPD server
 			//mpdServer = new MpdServer(Settings.MpdPort);
 			//StartTcpServer(mpdServer);
@@ -224,6 +227,8 @@ namespace WaveBox
 		{
 			httpServer.Stop();
 			//mpdServer.Stop();
+
+			DeviceSyncer.Stop();
 
 			// Disable any Nat routes
 			Nat.Stop();

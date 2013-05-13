@@ -148,7 +148,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 			// Scrobble all plays
 			string result = lfm.Scrobble(scrobbles, scrobbleType);
-			dynamic resp;
+			dynamic resp = null;
 
 			// If result is not null, store deserialize and store it
 			if (result != null)

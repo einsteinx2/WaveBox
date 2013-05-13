@@ -26,6 +26,8 @@ namespace WaveBox.Singletons
 
 		public static short Port { get { return settingsModel.Port; } }
 
+		public static short WsPort { get { return settingsModel.WsPort; } }
+
 		public static short MpdPort { get { return settingsModel.MpdPort; } }
 
 		public static bool CrashReportEnable { get { return settingsModel.CrashReportEnable; } }
@@ -92,6 +94,18 @@ namespace WaveBox.Singletons
 					settingsModel.Port = (short)port;
 					settingsChanged = true;
 					if (logger.IsInfoEnabled) logger.Info("Setting 'port': " + settingsModel.Port);
+				}
+			}
+			catch { }
+
+			try
+			{
+				short? wsPort = json.wsPort;
+				if (wsPort != null)
+				{
+					settingsModel.WsPort = (short)wsPort;
+					settingsChanged = true;
+					if (logger.IsInfoEnabled) logger.Info("Setting 'port': " + settingsModel.WsPort);
 				}
 			}
 			catch { }
@@ -383,6 +397,9 @@ namespace WaveBox.Singletons
 	{
 		[JsonProperty("port")]
 		public short Port { get; set; }
+
+		[JsonProperty("wsPort")]
+		public short WsPort { get; set; }
 		
 		[JsonProperty("mpdPort")]
 		public short MpdPort { get; set; }
