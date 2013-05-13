@@ -1,0 +1,1 @@
+CreateObject("Wscript.Shell").Run "WaveBoxLauncher.bat", 0, True
