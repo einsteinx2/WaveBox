@@ -105,7 +105,7 @@ namespace WaveBox.Singletons
 				{
 					settingsModel.WsPort = (short)wsPort;
 					settingsChanged = true;
-					if (logger.IsInfoEnabled) logger.Info("Setting 'port': " + settingsModel.WsPort);
+					if (logger.IsInfoEnabled) logger.Info("Setting 'wsPort': " + settingsModel.WsPort);
 				}
 			}
 			catch { }
@@ -264,7 +264,7 @@ namespace WaveBox.Singletons
 			{
 				try
 				{
-					if (logger.IsInfoEnabled) logger.Info("Setting file doesn't exist; Creating it. (WaveBox.conf)");
+					if (logger.IsInfoEnabled) logger.Info("Setting file doesn't exist; Creating it : " + settingsFileName);
 					StreamReader settingsTemplate = new StreamReader(SettingsTemplatePath());
 					StreamWriter settingsOut = new StreamWriter(SettingsPath());
 

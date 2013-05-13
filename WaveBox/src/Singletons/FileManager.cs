@@ -74,7 +74,7 @@ namespace WaveBox.Singletons
 							}
 							catch (UnauthorizedAccessException e)
 							{                    
-								logger.Error(e);
+								logger.Error("Access denied: " + e);
 								continue;
 							}
 							catch (System.IO.DirectoryNotFoundException e)
@@ -90,7 +90,7 @@ namespace WaveBox.Singletons
 								watch.Changed += new FileSystemEventHandler(OnChanged);
 								watch.Created += new FileSystemEventHandler(OnCreated);
 								watch.Deleted += new FileSystemEventHandler(OnDeleted);
-								watch.Renamed += new RenamedEventHandler(OnRenamed);								
+								watch.Renamed += new RenamedEventHandler(OnRenamed);
 								watch.EnableRaisingEvents = true;
 
 								if (logger.IsInfoEnabled) logger.Info("File system watcher added for: " + subDirectory);

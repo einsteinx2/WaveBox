@@ -35,7 +35,7 @@ namespace WaveBox.Singletons
 			{
 				try
 				{
-					if (logger.IsInfoEnabled) logger.Info("Database file doesn't exist; Creating it. (wavebox.db)");
+					if (logger.IsInfoEnabled) logger.Info("Database file doesn't exist; Creating it : " + databaseFileName);
 					
 					// new filestream on the template
 					FileStream dbTemplate = new FileStream(DatabaseTemplatePath(), FileMode.Open);
@@ -62,7 +62,7 @@ namespace WaveBox.Singletons
 			{
 				try
 				{
-					if (logger.IsInfoEnabled) logger.Info("Query log database file doesn't exist; Creating it. (wavebox_querylog.db)");
+					if (logger.IsInfoEnabled) logger.Info("Query log database file doesn't exist; Creating it : " + querylogFileName);
 					
 					// new filestream on the template
 					FileStream dbTemplate = new FileStream(QuerylogTemplatePath(), FileMode.Open);
@@ -203,7 +203,7 @@ namespace WaveBox.Singletons
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -298,7 +298,7 @@ namespace WaveBox.Singletons
 
 		[DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
 		internal static extern IntPtr sqlite3_backup_init(IntPtr destDb, byte[] destname, IntPtr srcDB, byte[] srcname);
-																											
+
 		[DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
 		internal static extern int sqlite3_backup_step(IntPtr backup, int pages);
 
@@ -310,7 +310,7 @@ namespace WaveBox.Singletons
 
 		[DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
 		internal static extern int sqlite3_sleep(int milliseconds);
-																											
+
 		[DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
 		internal static extern int sqlite3_backup_finish(IntPtr backup);
 
@@ -371,9 +371,9 @@ namespace WaveBox.Singletons
 								q.Prepare();
 								q.ExecuteNonQuery();
 							}
-							catch(Exception e)
+							catch (Exception e)
 							{
-								if (logger.IsInfoEnabled) logger.Info("Error deleting user table in backup: " + e);
+								logger.Error("Error deleting user table in backup: " + e);
 							}
 						}
 						return true;
@@ -382,7 +382,7 @@ namespace WaveBox.Singletons
 				}
 				catch (Exception e)
 				{
-					if (logger.IsInfoEnabled) logger.Info("Error backup up database: " + e);
+					logger.Error("Error backup up database: " + e);
 				}
 				finally
 				{

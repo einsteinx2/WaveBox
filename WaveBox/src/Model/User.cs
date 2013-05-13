@@ -37,38 +37,7 @@ namespace WaveBox.Model
 
 		[JsonProperty("lastfmSession")]
 		public string LastfmSession { get; set; }
-
-		public static string UserNameForSessionid(string sessionId)
-		{
-			string userName = null;
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
-			try
-			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT user.user_name FROM session JOIN user USING (user_id) WHERE session_id = @sessionid", conn);
-				q.AddNamedParam("@sessionid", sessionId);
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
-				{
-					userName = reader.GetString(0);
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e.ToString());
-			}
-			finally
-			{
-				Database.Close(conn, reader);
-			}
-
-			return userName;
-		}
-		
+	
 		public User()
 		{
 
@@ -101,7 +70,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -131,7 +100,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -155,6 +124,37 @@ namespace WaveBox.Model
 			{
 				LastfmSession = null;
 			}
+		}
+
+		public static string UserNameForSessionid(string sessionId)
+		{
+			string userName = null;
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT user.user_name FROM session JOIN user USING (user_id) WHERE session_id = @sessionid", conn);
+				q.AddNamedParam("@sessionid", sessionId);
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				if (reader.Read())
+				{
+					userName = reader.GetString(0);
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			return userName;
 		}
 
 		public bool UpdateSession(string sessionId)
@@ -296,7 +296,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -323,7 +323,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -360,7 +360,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{

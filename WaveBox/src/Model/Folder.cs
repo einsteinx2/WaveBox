@@ -58,8 +58,7 @@ namespace WaveBox.Model
 			{
 				conn = Database.GetDbConnection();
 
-				IDbCommand q = Database.GetDbCommand("SELECT * FROM folder " + 
-				                                     "WHERE folder_id = @folderid LIMIT 1", conn);
+				IDbCommand q = Database.GetDbCommand("SELECT * FROM folder WHERE folder_id = @folderid LIMIT 1", conn);
 
 				q.AddNamedParam("@folderid", folderId);
 				q.Prepare();
@@ -72,7 +71,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -128,7 +127,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -175,7 +174,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -186,7 +185,9 @@ namespace WaveBox.Model
 		public Folder(IDataReader reader)
 		{
 			if ((object)reader == null)
+			{
 				return;
+			}
 
 			SetPropertiesFromQueryReader(reader);
 		}
@@ -204,7 +205,9 @@ namespace WaveBox.Model
 		private void SetPropertiesFromQueryReader(IDataReader reader)
 		{
 			if ((object)reader == null)
+			{
 				return;
+			}
 			
 			FolderId = reader.GetInt32(reader.GetOrdinal("folder_id"));
 			FolderName = reader.GetString(reader.GetOrdinal("folder_name"));
@@ -252,7 +255,7 @@ namespace WaveBox.Model
 				IDbCommand q = Database.GetDbCommand("SELECT song.*, artist.artist_name, album.album_name, genre.genre_name FROM song " +
 													 "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
 													 "LEFT JOIN album ON song_album_id = album.album_id " +
-				                                     "LEFT JOIN genre ON song_genre_id = genre.genre_id " +
+													 "LEFT JOIN genre ON song_genre_id = genre.genre_id " +
 													 "WHERE song_folder_id = @folderid", conn);
 				
 				q.AddNamedParam("@folderid", FolderId);
@@ -266,7 +269,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -303,7 +306,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -338,7 +341,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -390,7 +393,6 @@ namespace WaveBox.Model
 				{
 					// Use this one
 					artPath = path;
-					//if (logger.IsInfoEnabled) logger.Info("Found standard art for folder " + FolderName + " - file name: " + fileName);
 				}
 			}
 
@@ -398,15 +400,6 @@ namespace WaveBox.Model
 			{
 				// Check for any images
 				Folder.ContainsImages(FolderPath, out artPath);
-
-				/*if ((object)artPath == null)
-				{
-					if (logger.IsInfoEnabled) logger.Info("folder " + FolderName + " contains no images");
-				}
-				else
-				{
-					if (logger.IsInfoEnabled) logger.Info("Found non-standard art for folder " + FolderName + " - path: " + artPath);
-				}*/
 			}
 
 			return artPath;
@@ -468,7 +461,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -507,7 +500,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -540,7 +533,7 @@ namespace WaveBox.Model
 				} 
 				catch (Exception e) 
 				{
-					logger.Info ("[FOLDER(8)] " + e);
+					logger.Info ("Failed reading list of media folders : " + e);
 				} 
 				finally
 				{

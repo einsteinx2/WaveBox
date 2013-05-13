@@ -21,7 +21,9 @@ namespace WaveBox.Singletons
 		public static void PublishZeroConf(string serverUrl, short port)
 		{
 			if ((object)serverUrl == null)
+			{
 				return;
+			}
 
 			// If we're already registered, dispose of it and create a new one
 			if ((object)ZeroConfService != null)
