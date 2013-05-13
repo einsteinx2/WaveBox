@@ -110,7 +110,7 @@ namespace WaveBox.Model
 			Duration = Convert.ToInt32(file.Properties.Duration.TotalSeconds);
 			Bitrate = file.Properties.AudioBitrate;
 			FileSize = fsFile.Length;
-			LastModified = Convert.ToInt64(fsFile.LastWriteTime.Ticks);
+			LastModified = fsFile.LastWriteTime.ToUniversalUnixTimestamp();
 			FileName = fsFile.Name;
 
 			// Generate an art id from the embedded art, if it exists
@@ -285,7 +285,7 @@ namespace WaveBox.Model
 		public static bool VideoNeedsUpdating(string filePath, int? folderId, out bool isNew, out int? songId)
 		{
 			string fileName = Path.GetFileName(filePath);
-			long lastModified = Convert.ToInt64(System.IO.File.GetLastWriteTime(filePath).Ticks);
+			long lastModified = System.IO.File.GetLastWriteTime(filePath).ToUniversalUnixTimestamp();
 			bool needsUpdating = true;
 			isNew = true;
 			songId = null;

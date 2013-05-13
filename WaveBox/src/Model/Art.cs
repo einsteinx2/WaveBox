@@ -90,7 +90,7 @@ namespace WaveBox.Model
 			// compute the hash of the file stream
 			Md5Hash = CalcMd5Hash(fs);
 			FileSize = fs.Length;
-			LastModified = Convert.ToInt64(System.IO.File.GetLastWriteTime(fs.Name).Ticks);
+			LastModified = System.IO.File.GetLastWriteTime(fs.Name).ToUniversalUnixTimestamp();
 			ArtId = Art.ArtIdForMd5(Md5Hash);
 			FilePath = filePath;
 
@@ -109,7 +109,7 @@ namespace WaveBox.Model
 				byte[] data = file.Tag.Pictures[0].Data.Data;
 				Md5Hash = CalcMd5Hash(data);
 				FileSize = data.Length;
-				LastModified = Convert.ToInt64(System.IO.File.GetLastWriteTime(file.Name).Ticks);
+				LastModified = System.IO.File.GetLastWriteTime(file.Name).ToUniversalUnixTimestamp();
 
 				ArtId = Art.ArtIdForMd5(Md5Hash);
 				if (ArtId == null)
@@ -290,7 +290,7 @@ namespace WaveBox.Model
 			// We don't need to instantiate another folder to know what the folder id is.  This should be known when the method is called.
 
 			//Stopwatch sw = new Stopwatch();
-			long lastModified = Convert.ToInt64(System.IO.File.GetLastWriteTime(filePath).Ticks);
+			long lastModified = System.IO.File.GetLastWriteTime(filePath).ToUniversalUnixTimestamp();
 			bool needsUpdating = true;
 
 			IDbConnection conn = null;

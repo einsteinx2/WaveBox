@@ -180,6 +180,11 @@ namespace WaveBox.FolderScanning
 			{
 				logger.Error("\t" + "[FOLDERSCAN(3)] \"" + folderPath + "\" : " + e);
 			}
+			catch (UnauthorizedAccessException e)
+			{
+				logger.Error("\t" + "[FOLDERSCAN(9)] \"" + folderPath + "\" : Access denied.");
+				logger.Debug("\t" + e);
+			}
 			catch (Exception e)
 			{
 				logger.Error("\t" + "[FOLDERSCAN(4)] \"" + folderPath + "\" : Error checking to see if the file was a directory: " + e);

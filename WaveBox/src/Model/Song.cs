@@ -178,7 +178,8 @@ namespace WaveBox.Model
 			Duration = Convert.ToInt32(file.Properties.Duration.TotalSeconds);
 			Bitrate = file.Properties.AudioBitrate;
 			FileSize = fsFile.Length;
-			LastModified = Convert.ToInt64(fsFile.LastWriteTime.Ticks);
+			LastModified = fsFile.LastWriteTime.ToUniversalUnixTimestamp();
+
 			FileName = fsFile.Name;
 
 			// Generate an art id from the embedded art, if it exists
@@ -231,7 +232,7 @@ namespace WaveBox.Model
 		}
 
 		public override void InsertMediaItem()
-		{			
+		{
 			IDbConnection conn = null;
 			IDataReader reader = null;
 			try
@@ -441,7 +442,7 @@ namespace WaveBox.Model
 			// We don't need to instantiate another folder to know what the folder id is.  This should be known when the method is called.
 			//Stopwatch sw = new Stopwatch();
 			string fileName = Path.GetFileName(filePath);
-			long lastModified = Convert.ToInt64(System.IO.File.GetLastWriteTime(filePath).Ticks);
+			long lastModified = System.IO.File.GetLastWriteTime(filePath).ToUniversalUnixTimestamp();
 			bool needsUpdating = true;
 			isNew = true;
 			songId = null;

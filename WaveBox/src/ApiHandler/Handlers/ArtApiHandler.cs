@@ -55,7 +55,6 @@ namespace WaveBox.ApiHandler.Handlers
 			Art art = new Art(artId);
 			Stream stream = art.Stream;
 
-
 			// If the stream could not be produced, return error
 			if ((object)stream == null)
 			{
@@ -102,6 +101,16 @@ namespace WaveBox.ApiHandler.Handlers
 
 			// Write file to HTTP response
 			var dict = new Dictionary<string, string>();
+
+			// Add last modified, if it isn't null, and it isn't a crazy huge value (current filesystem bug)
+			if (art.LastModified != null)
+			{
+				// Int32.MaxValue - maximum value of 32-bit UNIX timestamp
+				if (art.LastModified <= Int32.MaxValue)
+				{
+					dict["Last-Modified"] = HttpProcessor.DateTimeToLastMod(Convert.ToInt64(art.LastModified).ToDateTimeFromUnixTimestamp());
+				}
+			}
 			Processor.WriteFile(stream, 0, stream.Length, HttpHeader.MimeTypeForExtension(".jpg"), dict, true);
 			stream.Close();
 
