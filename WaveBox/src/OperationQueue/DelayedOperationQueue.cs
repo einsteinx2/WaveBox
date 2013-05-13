@@ -37,7 +37,6 @@ namespace WaveBox.OperationQueue
 							}
 							catch
 							{
-								//if (logger.IsInfoEnabled) logger.Info("Queue is empty: ", e);
 								currentOperation = null;
 							}
 
@@ -90,7 +89,7 @@ namespace WaveBox.OperationQueue
 				else
 				{
 					operationQueue.Enqueue(op);
-					if (logger.IsInfoEnabled) logger.Info("New " + op.OperationType + "!");
+					if (logger.IsInfoEnabled) logger.Info("Queuing new " + op.OperationType + "!");
 				}
 			}
 		}

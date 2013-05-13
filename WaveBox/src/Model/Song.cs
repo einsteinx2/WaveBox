@@ -61,10 +61,10 @@ namespace WaveBox.Model
 			{
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT song.*, artist.artist_name, album.album_name, genre.genre_name FROM song " +
-				                                     "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
-				                                     "LEFT JOIN album ON song_album_id = album.album_id " +
-				                                     "LEFT JOIN genre ON song_genre_id = genre.genre_id " +
-				                                     "WHERE song_id = @songid", conn);
+													 "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
+													 "LEFT JOIN album ON song_album_id = album.album_id " +
+													 "LEFT JOIN genre ON song_genre_id = genre.genre_id " +
+													 "WHERE song_id = @songid", conn);
 				q.AddNamedParam("@songid", songId);
 
 				q.Prepare();
@@ -294,23 +294,18 @@ namespace WaveBox.Model
 			{
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT song.*, artist.artist_name, album.album_name, genre.genre_name FROM song " +
-				                                     "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
-				                                     "LEFT JOIN album ON song_album_id = album.album_id " +
-				                                     "LEFT JOIN genre ON song_genre_id = genre.genre_id"
-				                                     , conn);
+													 "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
+													 "LEFT JOIN album ON song_album_id = album.album_id " +
+													 "LEFT JOIN genre ON song_genre_id = genre.genre_id"
+													 , conn);
 
 				q.Prepare();
 				reader = q.ExecuteReader();
 
-				//	Stopwatch sw = new Stopwatch();
 				while (reader.Read())
 				{
-					//sw.Start();
 					allsongs.Add(new Song(reader));
-					//if (logger.IsInfoEnabled) logger.Info("Elapsed: {0}ms", sw.ElapsedMilliseconds);
-					//sw.Restart();
 				}
-				//	sw.Stop();
 			}
 			catch (Exception e)
 			{

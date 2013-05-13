@@ -36,7 +36,9 @@ namespace WaveBox.Model
 			get 
 			{
 				if ((object)Width == null || (object)Height == null || Height == 0)
+				{
 					return null;
+				}
 
 				return (float)Width / (float)Height;
 			}
@@ -59,8 +61,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT * FROM video " +
-				                                     "WHERE video_id = @videoid", conn);
+				IDbCommand q = Database.GetDbCommand("SELECT * FROM video WHERE video_id = @videoid", conn);
 				q.AddNamedParam("@videoid", videoId);
 				
 				q.Prepare();
@@ -162,15 +163,10 @@ namespace WaveBox.Model
 				q.Prepare();
 				reader = q.ExecuteReader();
 				
-				//Stopwatch sw = new Stopwatch();
 				while (reader.Read())
 				{
-					//sw.Start();
 					allVideos.Add(new Video(reader));
-					//if (logger.IsInfoEnabled) logger.Info("Elapsed: {0}ms", sw.ElapsedMilliseconds);
-					//sw.Restart();
 				}
-				//sw.Stop();
 			}
 			catch (Exception e)
 			{
@@ -297,7 +293,7 @@ namespace WaveBox.Model
 			{
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT video_id, video_last_modified, video_file_size " +
-				                                     "FROM video WHERE video_folder_id = @folderid AND video_file_name = @filename", conn);
+													 "FROM video WHERE video_folder_id = @folderid AND video_file_name = @filename", conn);
 				q.AddNamedParam("@folderid", folderId);
 				q.AddNamedParam("@filename", fileName);
 
@@ -337,8 +333,8 @@ namespace WaveBox.Model
 				// insert the song into the database
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("REPLACE INTO video (video_id, video_folder_id, video_duration, video_bitrate, video_file_size, video_last_modified, video_file_name, video_width, video_height, video_file_type_id) " + 
-				                                     "VALUES (@videoid, @folderid, @duration, @bitrate, @filesize, @lastmod, @filename, @width, @height, @filetype)"
-				                                     , conn);
+													 "VALUES (@videoid, @folderid, @duration, @bitrate, @filesize, @lastmod, @filename, @width, @height, @filetype)"
+													 , conn);
 
 				q.AddNamedParam("@videoid", ItemId);
 				q.AddNamedParam("@folderid", FolderId);

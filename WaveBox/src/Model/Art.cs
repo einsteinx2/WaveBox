@@ -74,7 +74,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -154,7 +154,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -318,7 +318,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -353,7 +353,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -393,7 +393,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -431,7 +431,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -457,8 +457,7 @@ namespace WaveBox.Model
 				conn = Database.GetDbConnection();
 				string command = replace ? "REPLACE" : "INSERT OR IGNORE";
 				IDbCommand q = Database.GetDbCommand(command + " INTO art_item (art_id, item_id) " + 
-													 "VALUES (@artid, @itemid)"
-													 , conn);
+													 "VALUES (@artid, @itemid)", conn);
 
 				q.AddNamedParam("@artid", artId);
 				q.AddNamedParam("@itemid", itemId);
@@ -471,7 +470,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -495,8 +494,7 @@ namespace WaveBox.Model
 			{
 				// insert the song into the database
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("DELETE FROM art_item WHERE item_id = @itemid"
-													 , conn);
+				IDbCommand q = Database.GetDbCommand("DELETE FROM art_item WHERE item_id = @itemid" , conn);
 
 				q.AddNamedParam("@itemid", itemId);
 				q.Prepare();
@@ -508,7 +506,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -532,8 +530,7 @@ namespace WaveBox.Model
 			{
 				// insert the song into the database
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("UPDATE art_item SET art_id = @newartid WHERE art_id = @oldartid"
-													 , conn);
+				IDbCommand q = Database.GetDbCommand("UPDATE art_item SET art_id = @newartid WHERE art_id = @oldartid", conn);
 
 				q.AddNamedParam("@newartid", newArtId);
 				q.AddNamedParam("@oldartid", oldArtId);
@@ -546,7 +543,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -585,7 +582,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -624,7 +621,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{
@@ -706,7 +703,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e.ToString());
+				logger.Error(e);
 			}
 			finally
 			{

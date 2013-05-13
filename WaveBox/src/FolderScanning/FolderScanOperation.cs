@@ -170,24 +170,23 @@ namespace WaveBox.FolderScanning
 			}
 			catch (FileNotFoundException e)
 			{
-				logger.Error("\t" + "[FOLDERSCAN(1)] \"" + folderPath + "\" : Directory does not exist. " + e);
+				logger.Error("\"" + folderPath + "\" : Directory does not exist. " + e);
 			}
 			catch (DirectoryNotFoundException e)
 			{
-				logger.Error("\t" + "[FOLDERSCAN(2)] \"" + folderPath + "\" : Directory does not exist. " + e);
+				logger.Error("\"" + folderPath + "\" : Directory does not exist. " + e);
 			}
 			catch (IOException e)
 			{
-				logger.Error("\t" + "[FOLDERSCAN(3)] \"" + folderPath + "\" : " + e);
+				logger.Error("\"" + folderPath + "\" : " + e);
 			}
 			catch (UnauthorizedAccessException e)
 			{
-				logger.Error("\t" + "[FOLDERSCAN(9)] \"" + folderPath + "\" : Access denied.");
-				logger.Debug("\t" + e);
+				logger.Error("\"" + folderPath + "\" : Access denied. " + e);
 			}
 			catch (Exception e)
 			{
-				logger.Error("\t" + "[FOLDERSCAN(4)] \"" + folderPath + "\" : Error checking to see if the file was a directory: " + e);
+				logger.Error("\"" + folderPath + "\" : Error checking to see if the file was a directory: " + e);
 			}
 		}
 
@@ -204,21 +203,16 @@ namespace WaveBox.FolderScanning
 
 				if (type == ItemType.Song || type == ItemType.Video)
 				{
-					//Stopwatch sw = new Stopwatch();
-					//sw.Start();
 					testMediaItemNeedsUpdatingTime.Start();
 					bool isNew = true;
 					int? itemId = null;
 					bool needsUpdating = MediaItem.FileNeedsUpdating(file, folderId, out isNew, out itemId);
 					testMediaItemNeedsUpdatingTime.Stop();
-					//if (logger.IsInfoEnabled) logger.Info("FileNeedsUpdating: {0} ms", sw.ElapsedMilliseconds);
-					//sw.Reset();
 
 					if (needsUpdating)
 					{
 						if (logger.IsInfoEnabled) logger.Info("File needs updating: " + file);
 						
-						//sw.Start();
 						TagLib.File f = null;
 						try
 						{
@@ -226,17 +220,13 @@ namespace WaveBox.FolderScanning
 						}
 						catch (TagLib.CorruptFileException e)
 						{
-							e.ToString();
-							logger.Error("[FOLDERSCAN(5)] " + file + " has a corrupt tag and will not be inserted.");
+							logger.Error(file + " has a corrupt tag and will not be inserted. " + e);
 							return;
 						}
 						catch (Exception e)
 						{
-							logger.Error("[FOLDERSCAN(6)] " + "Error processing file " + file + ":	" + e);
+							logger.Error("Error processing file " + file + ":	" + e);
 						}
-						//if (logger.IsInfoEnabled) logger.Info("Get tag: {0} ms", sw.ElapsedMilliseconds);
-
-						//sw.Reset();
 
 						if (f == null)
 						{
@@ -331,19 +321,23 @@ namespace WaveBox.FolderScanning
 			}
 			catch (FileNotFoundException e)
 			{
-				logger.Error("\t" + "[FOLDERSCAN(5)] \"" + file + "\" : Directory does not exist. " + e);
+				logger.Error("\"" + file + "\" : File does not exist. " + e);
 			}
 			catch (DirectoryNotFoundException e)
 			{
-				logger.Error("\t" + "[FOLDERSCAN(6)] \"" + file + "\" : Directory does not exist. " + e);
+				logger.Error("\"" + file + "\" : Directory does not exist. " + e);
 			}
 			catch (IOException e)
 			{
-				logger.Error("\t" + "[FOLDERSCAN(7)] \"" + file + "\" : " + e);
+				logger.Error("\"" + file + "\" : IO error. " + e);
+			}
+			catch (UnauthorizedAccessException e)
+			{
+				logger.Error("\"" + file + "\" : Access denied. " + e);
 			}
 			catch (Exception e)
 			{
-				logger.Error("\t" + "[FOLDERSCAN(8)] \"" + file + "\" : " + e);
+				logger.Error("\"" + file + "\" : " + e);
 			}
 		}
 	}

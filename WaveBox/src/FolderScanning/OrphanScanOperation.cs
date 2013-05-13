@@ -76,11 +76,11 @@ namespace WaveBox.FolderScanning
 
 			try 
 			{
-				conn = Database.GetDbConnection ();
+				conn = Database.GetDbConnection();
 
-				IDbCommand q = Database.GetDbCommand ("SELECT * FROM folder", conn);
-				q.Prepare ();
-				reader = q.ExecuteReader ();
+				IDbCommand q = Database.GetDbCommand("SELECT * FROM folder", conn);
+				q.Prepare();
+				reader = q.ExecuteReader();
 
 				while (reader.Read()) 
 				{
@@ -89,31 +89,31 @@ namespace WaveBox.FolderScanning
 					int? folderId, mediaFolderId;
 
 					// get ordinals
-					int pathOrdinal = reader.GetOrdinal ("folder_path");
-					int folderIdOrdinal = reader.GetOrdinal ("folder_id");
-					int mediaFolderIdOrdinal = reader.GetOrdinal ("folder_media_folder_id");
+					int pathOrdinal = reader.GetOrdinal("folder_path");
+					int folderIdOrdinal = reader.GetOrdinal("folder_id");
+					int mediaFolderIdOrdinal = reader.GetOrdinal("folder_media_folder_id");
 
-					if (reader.GetValue (pathOrdinal) != DBNull.Value) 
+					if (reader.GetValue(pathOrdinal) != DBNull.Value) 
 					{
-						path = reader.GetString (reader.GetOrdinal ("folder_path"));
+						path = reader.GetString(reader.GetOrdinal("folder_path"));
 					} 
 					else
 					{
 						path = "";
 					}
 
-					if (reader.GetValue (folderIdOrdinal) != DBNull.Value)
+					if (reader.GetValue(folderIdOrdinal) != DBNull.Value)
 					{
-						folderId = reader.GetInt32 (reader.GetOrdinal ("folder_id"));
+						folderId = reader.GetInt32(reader.GetOrdinal("folder_id"));
 					} 
 					else 
 					{
 						folderId = null;
 					}
 
-					if (reader.GetValue (mediaFolderIdOrdinal) != DBNull.Value) 
+					if (reader.GetValue(mediaFolderIdOrdinal) != DBNull.Value) 
 					{
-						mediaFolderId = reader.GetInt32 (reader.GetOrdinal ("folder_media_folder_id"));
+						mediaFolderId = reader.GetInt32(reader.GetOrdinal("folder_media_folder_id"));
 					} 
 					else
 					{
@@ -122,10 +122,10 @@ namespace WaveBox.FolderScanning
 
 					if (mediaFolderId != null)
 					{
-						if (!mediaFolderIds.Contains (mediaFolderId) || !Directory.Exists (path)) 
+						if (!mediaFolderIds.Contains(mediaFolderId) || !Directory.Exists(path)) 
 						{
-							logger.Info ("[ORPHANSCAN] " + folderId + " is orphaned");
-							orphanFolderIds.Add (folderId);
+							logger.Info(folderId + " is orphaned");
+							orphanFolderIds.Add(folderId);
 						}
 					}
 				}
@@ -134,37 +134,34 @@ namespace WaveBox.FolderScanning
 				{
 					try 
 					{
-						IDbCommand q1 = Database.GetDbCommand ("DELETE FROM folder WHERE folder_id = @folderid", conn);
+						IDbCommand q1 = Database.GetDbCommand("DELETE FROM folder WHERE folder_id = @folderid", conn);
 						q1.AddNamedParam("@folderid", fid);
 
-						q1.Prepare ();
+						q1.Prepare();
 						q1.ExecuteNonQueryLogged();
 					} 
 					catch (Exception e) 
 					{
-						logger.Error ("[ORPHANSCAN(1)] " + e.ToString ());
+						logger.Error("Failed to delete orphan " + fid + " : " + e);
 					}
 
 					try
 					{
-						logger.Error ("[ORPHANSCAN] Songs for " + fid + " deleted");
-
-						IDbCommand q2 = Database.GetDbCommand ("DELETE FROM song WHERE song_folder_id = @folderid", conn);
+						IDbCommand q2 = Database.GetDbCommand("DELETE FROM song WHERE song_folder_id = @folderid", conn);
 						q2.AddNamedParam("@folderid", fid);
 
-						q2.Prepare ();
+						q2.Prepare();
 						q2.ExecuteNonQueryLogged();
 					} 
 					catch (Exception e) 
 					{
-						logger.Error ("[ORPHANSCAN(2)] " + e.ToString ());
+						logger.Error("Failed to delete songs for orphan " + fid + " : " + e);
 					}
-
 				}
 			}
-			catch (Exception e) 
+			catch (Exception e)
 			{
-				logger.Error ("[ORPHANSCAN(3)] " + e.ToString ());
+				logger.Error("Failed to delete orphan items : " + e);
 			}
 			finally
 			{
@@ -213,7 +210,7 @@ namespace WaveBox.FolderScanning
 			}
 			catch (Exception e)
 			{
-				logger.Error("[ORPHANSCAN(4)] " + e);
+				logger.Error("Failed checking for orphan songs " + e);
 			}
 			finally
 			{
@@ -233,7 +230,7 @@ namespace WaveBox.FolderScanning
 				}
 				catch (Exception e)
 				{
-					logger.Error("[ORPHANSCAN(5)] " + e);
+					logger.Error("Failed deleting orphan songs : " + e);
 				}
 				finally
 				{
@@ -271,7 +268,7 @@ namespace WaveBox.FolderScanning
 			}
 			catch (Exception e)
 			{
-				logger.Error("[ORPHANSCAN(4)] " + e);
+				logger.Error("Failed checking for orphan artists : " + e);
 			}
 			finally
 			{
@@ -291,7 +288,7 @@ namespace WaveBox.FolderScanning
 				}
 				catch (Exception e)
 				{
-					logger.Error("[ORPHANSCAN(6)] " + e);
+					logger.Error("Failed deleting orphan artists" + e);
 				}
 				finally
 				{
@@ -309,7 +306,7 @@ namespace WaveBox.FolderScanning
 
 			IDbConnection conn = null;
 			IDataReader reader = null;
-			ArrayList orphanArtistIds = new ArrayList();
+			ArrayList orphanAlbumIds = new ArrayList();
 
 			try
 			{
@@ -324,19 +321,19 @@ namespace WaveBox.FolderScanning
 
 				while (reader.Read())
 				{
-					orphanArtistIds.Add(reader.GetInt32(0));
+					orphanAlbumIds.Add(reader.GetInt32(0));
 				}
 			}
 			catch (Exception e)
 			{
-				logger.Error("[ORPHANSCAN(4)] " + e);
+				logger.Error("Failed checking for orphan albums" + e);
 			}
 			finally
 			{
 				Database.Close(conn, reader);
 			}
 
-			foreach (int id in orphanArtistIds)
+			foreach (int id in orphanAlbumIds)
 			{
 				try
 				{
@@ -349,7 +346,7 @@ namespace WaveBox.FolderScanning
 				}
 				catch (Exception e)
 				{
-					logger.Error("[ORPHANSCAN(7)] " + e);
+					logger.Error("Failed deleting orphan albums " + e);
 				}
 				finally
 				{
@@ -387,7 +384,7 @@ namespace WaveBox.FolderScanning
 			}
 			catch (Exception e)
 			{
-				logger.Error("[ORPHANSCAN(8)] " + e);
+				logger.Error("Failed checking for orphan genres : " + e);
 			}
 			finally
 			{
@@ -407,7 +404,7 @@ namespace WaveBox.FolderScanning
 				}
 				catch (Exception e)
 				{
-					logger.Error("[ORPHANSCAN(7)] " + e);
+					logger.Error("Failed deleting orphan genres : " + e);
 				}
 				finally
 				{

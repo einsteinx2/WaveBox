@@ -143,10 +143,8 @@ namespace WaveBox.Singletons
 
 			if (item != null)
 			{
-				if (logger.IsInfoEnabled) logger.Info("Item not null");
 				if (item.ItemTypeId == (int)ItemType.Song)
 				{
-					if (logger.IsInfoEnabled) logger.Info("Item is song");
 					// set the current index
 					CurrentIndex = index;
 
@@ -167,10 +165,10 @@ namespace WaveBox.Singletons
 						if (logger.IsInfoEnabled) logger.Info("Current stream handle: " + currentStream);
 
 						SYNCPROC end = new SYNCPROC(delegate (int handle, int channel, int data, IntPtr user)
-							{
-								// when the stream ends, go to the next stream in the playlist.
-								Next();
-							});
+						{
+							// when the stream ends, go to the next stream in the playlist.
+							Next();
+						});
 
 						Bass.BASS_ChannelSetSync(currentStream.Value, BASSSync.BASS_SYNC_END, 0, end, System.IntPtr.Zero);
 						Bass.BASS_ChannelPlay(currentStream.Value, true);
