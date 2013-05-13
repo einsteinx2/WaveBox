@@ -26,8 +26,6 @@ namespace WaveBox
 			return new string(buffer);
 		}
 
-
-
 		/*
 		 * Class Extensions
 		 */
@@ -69,6 +67,20 @@ namespace WaveBox
 		}
 
 		/// <summary>
+		/// Generates a MD5 sum of a given string
+		/// <summary>
+		public static string MD5(this string sumthis)
+		{
+			if (sumthis == "" || sumthis == null)
+			{
+				return "";
+			}
+
+			MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider();
+			return BitConverter.ToString(md5.ComputeHash(System.Text.Encoding.ASCII.GetBytes(sumthis)), 0);
+		}
+
+		/// <summary>
 		/// Returns an integer representation of a month string
 		/// </summary>
 		public static int MonthForAbbreviation(this string abb)
@@ -105,12 +117,25 @@ namespace WaveBox
 			return BitConverter.ToString(provider.ComputeHash(Encoding.ASCII.GetBytes(sumthis))).Replace("-", "");
 		}
 
-		// Should find a better place to put these
+		/// <summary>
+		/// Creates universal DateTime object from an input UNIX timestamp
+		/// </summary>
+		public static DateTime ToDateTimeFromUnixTimestamp(this long unixTime)
+		{
+			return new DateTime(1970, 1, 1).AddSeconds(unixTime).ToUniversalTime();
+		}
+
+		/// <summary>
+		/// Creates a GMT UNIX timestamp from a DateTime object
+		/// </summary>
 		public static long ToUniversalUnixTimestamp(this DateTime dateTime)
 		{
 			return (long)(dateTime.ToUniversalTime() - new DateTime (1970, 1, 1).ToUniversalTime()).TotalSeconds;
 		}
 
+		/// <summary>
+		/// Creates a local UNIX timestamp from a DateTime object
+		/// </summary>
 		public static long ToLocalUnixTimestamp(this DateTime dateTime)
 		{
 			return (long)(dateTime.ToLocalTime() - new DateTime (1970, 1, 1).ToLocalTime()).TotalSeconds;

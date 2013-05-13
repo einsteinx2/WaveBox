@@ -201,9 +201,9 @@ namespace WaveBox.FolderScanning
 					filename = reader.GetString(reader.GetOrdinal("song_file_name"));
 					path = reader.GetString(reader.GetOrdinal("folder_path")) + Path.DirectorySeparatorChar + filename;
 
-					long timestamp = DateTime.Now.Ticks;
+					long timestamp = DateTime.Now.ToUniversalUnixTimestamp();
 					bool exists = File.Exists(path);
-					totalExistsTime += DateTime.Now.Ticks - timestamp;
+					totalExistsTime += DateTime.Now.ToUniversalUnixTimestamp() - timestamp;
 
 					if (!exists)
 					{
