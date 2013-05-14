@@ -86,6 +86,10 @@ namespace WaveBox.ApiHandler.Handlers
 				status["songFileSize"] = Song.TotalSongSize();
 				// Get total file size of videos (bytes)
 				status["videoFileSize"] = Video.TotalVideoSize();
+				// Get total song duration
+				status["songDuration"] = Song.TotalSongDuration();
+				// Get total video duration
+				status["videoDuration"] = Video.TotalVideoDuration();
 				// Get last query log ID
 				status["lastQueryLogId"] = Database.LastQueryLogId();
 				// Get whether an update is available or not
