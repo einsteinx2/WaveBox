@@ -51,6 +51,16 @@ namespace WaveBox.ApiHandler.Handlers
 						field = HttpUtility.UrlDecode(Uri.Parameters["f"]);
 					}
 
+					// Check for exact match parameter
+					bool exact = false;
+					if (Uri.Parameters.ContainsKey("exact"))
+					{
+						if (Uri.Parameters["exact"].IsTrue())
+						{
+							exact = true;
+						}
+					}
+
 					// If a query type is provided...
 					if (Uri.Parameters.ContainsKey("t"))
 					{
@@ -61,22 +71,22 @@ namespace WaveBox.ApiHandler.Handlers
 							switch (type)
 							{
 								case "artists":
-									artists = Artist.SearchArtists(field, query, false);
+									artists = Artist.SearchArtists(field, query, exact);
 									break;
 								case "albums":
-									albums = Album.SearchAlbums(field, query, false);
+									albums = Album.SearchAlbums(field, query, exact);
 									break;
 								case "songs":
-									songs = Song.SearchSongs(field, query, false);
+									songs = Song.SearchSongs(field, query, exact);
 									break;
 								case "videos":
-									videos = Video.SearchVideos(field, query, false);
+									videos = Video.SearchVideos(field, query, exact);
 									break;
 								default:
-									artists = Artist.SearchArtists(field, query, false);
-									albums = Album.SearchAlbums(field, query, false);
-									songs = Song.SearchSongs(field, query, false);
-									videos = Video.SearchVideos(field, query, false);
+									artists = Artist.SearchArtists(field, query, exact);
+									albums = Album.SearchAlbums(field, query, exact);
+									songs = Song.SearchSongs(field, query, exact);
+									videos = Video.SearchVideos(field, query, exact);
 									break;
 							}
 						}
@@ -84,10 +94,10 @@ namespace WaveBox.ApiHandler.Handlers
 					else
 					{
 						// For no type, provide all types of data
-						artists = Artist.SearchArtists(field, query, false);
-						albums = Album.SearchAlbums(field, query, false);
-						songs = Song.SearchSongs(field, query, false);
-						videos = Video.SearchVideos(field, query, false);
+						artists = Artist.SearchArtists(field, query, exact);
+						albums = Album.SearchAlbums(field, query, exact);
+						songs = Song.SearchSongs(field, query, exact);
+						videos = Video.SearchVideos(field, query, exact);
 					}
 
 					// On no results, return a 'harmless' error stating no results
