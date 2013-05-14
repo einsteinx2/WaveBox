@@ -377,6 +377,35 @@ namespace WaveBox.Model
 			return total;
 		}
 
+		public static long? TotalSongDuration()
+		{
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			long? total = 0;
+
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT sum(song_duration) FROM song", conn);
+				object result = q.ExecuteScalar();
+				if (result != DBNull.Value)
+				{
+					total = Convert.ToInt64(result);
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			return total;
+		}
+
 		public static List<Song> SearchSong(string query)
 		{
 			List<Song> result = new List<Song>();

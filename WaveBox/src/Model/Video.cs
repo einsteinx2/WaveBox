@@ -238,6 +238,35 @@ namespace WaveBox.Model
 			return total;
 		}
 
+		public static long? TotalVideoDuration()
+		{
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			long? total = 0;
+
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT sum(video_duration) FROM video", conn);
+				object result = q.ExecuteScalar();
+				if (result != DBNull.Value)
+				{
+					total = Convert.ToInt64(result);
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			return total;
+		}
+
 		public static List<Video> SearchVideo(string query)
 		{
 			List<Video> result = new List<Video>();
