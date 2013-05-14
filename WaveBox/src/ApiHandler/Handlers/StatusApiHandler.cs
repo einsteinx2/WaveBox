@@ -74,28 +74,36 @@ namespace WaveBox.ApiHandler.Handlers
 				status["mediaTypes"] = MediaTypes();
 				// Get list of transcoders available
 				status["transcoders"] = Transcoders();
-				// Get count of artists
-				status["artistCount"] = Artist.CountArtists();
-				// Get count of albums
-				status["albumCount"] = Album.CountAlbums();
-				// Get count of songs
-				status["songCount"] = Song.CountSongs();
-				// Get count of videos
-				status["videoCount"] = Video.CountVideos();
-				// Get total file size of songs (bytes)
-				status["songFileSize"] = Song.TotalSongSize();
-				// Get total file size of videos (bytes)
-				status["videoFileSize"] = Video.TotalVideoSize();
-				// Get total song duration
-				status["songDuration"] = Song.TotalSongDuration();
-				// Get total video duration
-				status["videoDuration"] = Video.TotalVideoDuration();
 				// Get last query log ID
 				status["lastQueryLogId"] = Database.LastQueryLogId();
 				// Get whether an update is available or not
 				status["isUpdateAvailable"] = AutoUpdater.IsUpdateAvailable;
 				// Get the list of updates for display to the user
 				status["updateList"] = AutoUpdater.Updates;
+
+				// Call for extended status, which uses some database intensive calls
+				if (Uri.Parameters.ContainsKey("extended"))
+				{
+					if (Uri.Parameters["extended"].IsTrue())
+					{
+						// Get count of artists
+						status["artistCount"] = Artist.CountArtists();
+						// Get count of albums
+						status["albumCount"] = Album.CountAlbums();
+						// Get count of songs
+						status["songCount"] = Song.CountSongs();
+						// Get count of videos
+						status["videoCount"] = Video.CountVideos();
+						// Get total file size of songs (bytes)
+						status["songFileSize"] = Song.TotalSongSize();
+						// Get total file size of videos (bytes)
+						status["videoFileSize"] = Video.TotalVideoSize();
+						// Get total song duration
+						status["songDuration"] = Song.TotalSongDuration();
+						// Get total video duration
+						status["videoDuration"] = Video.TotalVideoDuration();
+					}
+				}
 
 				string json = JsonConvert.SerializeObject(new StatusResponse(null, status), Settings.JsonFormatting);
 				Processor.WriteJson(json);
