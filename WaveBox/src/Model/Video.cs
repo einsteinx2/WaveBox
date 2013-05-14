@@ -267,13 +267,27 @@ namespace WaveBox.Model
 			return total;
 		}
 
-		public static List<Video> SearchVideo(string query)
+		public static List<Video> SearchVideos(string field, string query, bool exact = true)
 		{
-			List<Video> result = new List<Video>();
+			List<Video> results = new List<Video>();
 
 			if (query == null)
 			{
-				return result;
+				return results;
+			}
+
+			// Set default field, if none provided
+			if (field == null)
+			{
+				field = "video_file_name";
+			}
+
+			// Check to ensure a valid query field was set
+			if (!new string[] {"video_id", "video_folder_id", "video_duration", "video_bitrate", "video_file_size",
+				"video_last_modified", "video_file_name", "video_width", "video_height", "video_file_type_id",
+				"video_genere_id"}.Contains(field))
+			{
+				return results;
 			}
 
 			IDbConnection conn = null;
@@ -282,20 +296,30 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT * FROM video WHERE video_file_name LIKE @videofilename", conn);
-				q.AddNamedParam("@videofilename", "%" + query + "%");
+				IDbCommand q = null;
+
+				// Search for exact match
+				if (exact)
+				{
+					q = Database.GetDbCommand("SELECT * FROM video WHERE " + field + " = @query", conn);
+					q.AddNamedParam("@query", query);
+				}
+				// Search for fuzzy match (containing query)
+				else
+				{
+					q = Database.GetDbCommand("SELECT * FROM video WHERE " + field + " LIKE @query", conn);
+					q.AddNamedParam("@query", "%" + query + "%");
+				}
+
 				q.Prepare();
 				reader = q.ExecuteReader();
 
-				Video v;
-
-				while(reader.Read())
+				while (reader.Read())
 				{
-					v = new Video(reader);
-					result.Add(v);
+					results.Add(new Video(reader));
 				}
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				logger.Error(e);
 			}
@@ -304,7 +328,7 @@ namespace WaveBox.Model
 				Database.Close(conn, reader);
 			}
 
-			return result;
+			return results;
 		}
 
 		public static bool VideoNeedsUpdating(string filePath, int? folderId, out bool isNew, out int? songId)

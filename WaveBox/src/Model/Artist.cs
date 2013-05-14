@@ -332,13 +332,25 @@ namespace WaveBox.Model
 			return count;
 		}
 
-		public static List<Artist> SearchArtist(string query)
+		public static List<Artist> SearchArtists(string field, string query, bool exact = true)
 		{
-			List<Artist> result = new List<Artist>();
+			List<Artist> results = new List<Artist>();
 
 			if (query == null)
 			{
-				return result;
+				return results;
+			}
+
+			// Set default field, if none provided
+			if (field == null)
+			{
+				field = "artist_name";
+			}
+
+			// Check to ensure a valid query field was set
+			if (!new string[] {"artist_id", "artist_name"}.Contains(field))
+			{
+				return results;
 			}
 
 			IDbConnection conn = null;
@@ -347,20 +359,30 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT * FROM artist WHERE artist_name LIKE @artistname", conn);
-				q.AddNamedParam("@artistname", "%" + query + "%");
+				IDbCommand q = null;
+
+				// Search for exact match
+				if (exact)
+				{
+					q = Database.GetDbCommand("SELECT * FROM artist WHERE " + field + " = @query", conn);
+					q.AddNamedParam("@query", query);
+				}
+				// Search for fuzzy match (containing query)
+				else
+				{
+					q = Database.GetDbCommand("SELECT * FROM artist WHERE " + field + " LIKE @query", conn);
+					q.AddNamedParam("@query", "%" + query + "%");
+				}
+
 				q.Prepare();
 				reader = q.ExecuteReader();
 
-				Artist a;
-
 				while (reader.Read())
 				{
-					a = new Artist(reader);
-					result.Add(a);
+					results.Add(new Artist(reader));
 				}
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				logger.Error(e);
 			}
@@ -369,7 +391,7 @@ namespace WaveBox.Model
 				Database.Close(conn, reader);
 			}
 
-			return result;
+			return results;
 		}
 		
 		public static int CompareArtistsByName(Artist x, Artist y)

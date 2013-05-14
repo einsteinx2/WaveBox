@@ -394,13 +394,25 @@ namespace WaveBox.Model
 			return count;
 		}
 		
-		public static List<Album> SearchAlbum(string query)
+		public static List<Album> SearchAlbums(string field, string query, bool exact = true)
 		{
-			List<Album> result = new List<Album>();
+			List<Album> results = new List<Album>();
 
 			if (query == null)
 			{
-				return result;
+				return results;
+			}
+
+			// Set default field, if none provided
+			if (field == null)
+			{
+				field = "album_name";
+			}
+
+			// Check to ensure a valid query field was set
+			if (!new string[] {"album_id", "album_name", "artist_id", "album_release_year"}.Contains(field))
+			{
+				return results;
 			}
 
 			IDbConnection conn = null;
@@ -409,17 +421,27 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT * FROM album WHERE album_name LIKE @albumname", conn);
-				q.AddNamedParam("@albumname", "%" + query + "%");
+				IDbCommand q = null;
+
+				// Search for exact match
+				if (exact)
+				{
+					q = Database.GetDbCommand("SELECT * FROM album WHERE " + field + " = @query", conn);
+					q.AddNamedParam("@query", query);
+				}
+				// Search for fuzzy match (containing query)
+				else
+				{
+					q = Database.GetDbCommand("SELECT * FROM album WHERE " + field + " LIKE @query", conn);
+					q.AddNamedParam("@query", "%" + query + "%");
+				}
+
 				q.Prepare();
 				reader = q.ExecuteReader();
 
-				Album a;
-
 				while (reader.Read())
 				{
-					a = new Album(reader);
-					result.Add(a);
+					results.Add(new Album(reader));
 				}
 			}
 			catch (Exception e)
@@ -431,7 +453,7 @@ namespace WaveBox.Model
 				Database.Close(conn, reader);
 			}
 
-			return result;
+			return results;
 		}
 
 		public static List<Album> RandomAlbums()

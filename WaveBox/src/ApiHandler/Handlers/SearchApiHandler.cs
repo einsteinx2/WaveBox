@@ -43,6 +43,14 @@ namespace WaveBox.ApiHandler.Handlers
 				// Ensure query is not blank
 				if (query.Length > 0)
 				{
+					// Check for query field
+					string field = null;
+					if (Uri.Parameters.ContainsKey("f"))
+					{
+						// Use input field for query
+						field = HttpUtility.UrlDecode(Uri.Parameters["f"]);
+					}
+
 					// If a query type is provided...
 					if (Uri.Parameters.ContainsKey("t"))
 					{
@@ -53,22 +61,22 @@ namespace WaveBox.ApiHandler.Handlers
 							switch (type)
 							{
 								case "artists":
-									artists = Artist.SearchArtist(query);
+									artists = Artist.SearchArtists(field, query, false);
 									break;
 								case "albums":
-									albums = Album.SearchAlbum(query);
+									albums = Album.SearchAlbums(field, query, false);
 									break;
 								case "songs":
-									songs = Song.SearchSong(query);
+									songs = Song.SearchSongs(field, query, false);
 									break;
 								case "videos":
-									videos = Video.SearchVideo(query);
+									videos = Video.SearchVideos(field, query, false);
 									break;
 								default:
-									artists = Artist.SearchArtist(query);
-									albums = Album.SearchAlbum(query);
-									songs = Song.SearchSong(query);
-									videos = Video.SearchVideo(query);
+									artists = Artist.SearchArtists(field, query, false);
+									albums = Album.SearchAlbums(field, query, false);
+									songs = Song.SearchSongs(field, query, false);
+									videos = Video.SearchVideos(field, query, false);
 									break;
 							}
 						}
@@ -76,17 +84,17 @@ namespace WaveBox.ApiHandler.Handlers
 					else
 					{
 						// For no type, provide all types of data
-						artists = Artist.SearchArtist(query);
-						albums = Album.SearchAlbum(query);
-						songs = Song.SearchSong(query);
-						videos = Video.SearchVideo(query);
+						artists = Artist.SearchArtists(field, query, false);
+						albums = Album.SearchAlbums(field, query, false);
+						songs = Song.SearchSongs(field, query, false);
+						videos = Video.SearchVideos(field, query, false);
 					}
 
 					// On no results, return a 'harmless' error stating no results
 					string error = null;
 					if ((artists.Count == 0) && (albums.Count == 0) && (songs.Count == 0) && (videos.Count == 0))
 					{
-						error = "No search results found for query '" + query + "'";
+						error = "No search results found for query '" + query + "' on field '" + field + "'";
 					}
 
 					// Return all results
@@ -136,4 +144,3 @@ namespace WaveBox.ApiHandler.Handlers
 		}
 	}
 }
-
