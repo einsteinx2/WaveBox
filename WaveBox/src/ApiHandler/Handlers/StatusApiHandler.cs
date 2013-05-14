@@ -60,6 +60,9 @@ namespace WaveBox.ApiHandler.Handlers
 				// Get current UNIX time
 				long unixTime = DateTime.Now.ToUniversalUnixTimestamp();
 
+				// Get current query log ID
+				long queryLogId = Database.LastQueryLogId();
+
 				// Get process ID
 				status["pid"] = proc.Id;
 				// Get uptime of WaveBox instance
@@ -86,7 +89,7 @@ namespace WaveBox.ApiHandler.Handlers
 				// Get list of transcoders available
 				status["transcoders"] = Transcoders();
 				// Get last query log ID
-				status["lastQueryLogId"] = Database.LastQueryLogId();
+				status["lastQueryLogId"] = queryLogId;
 				// Get whether an update is available or not
 				status["isUpdateAvailable"] = AutoUpdater.IsUpdateAvailable;
 				// Get the list of updates for display to the user
@@ -98,10 +101,10 @@ namespace WaveBox.ApiHandler.Handlers
 					if (Uri.Parameters["extended"].IsTrue())
 					{
 						// Check if any destructive queries have been performed since the last cache
-						if ((statusCache.LastQueryId == null) || (Database.LastQueryLogId() > statusCache.LastQueryId))
+						if ((statusCache.LastQueryId == null) || (queryLogId > statusCache.LastQueryId))
 						{
 							// Update to the latest query log ID
-							statusCache.LastQueryId = Database.LastQueryLogId();
+							statusCache.LastQueryId = queryLogId;
 
 							logger.Info("Gathering extended status metrics from database");
 
