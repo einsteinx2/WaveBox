@@ -100,11 +100,8 @@ namespace WaveBox.ApiHandler.Handlers
 						// Check if any destructive queries have been performed since the last cache
 						if ((statusCache.LastQueryId == null) || (Database.LastQueryLogId() > statusCache.LastQueryId))
 						{
-							// Initialize cache if needed
-							if (statusCache.LastQueryId == null)
-							{
-								statusCache.LastQueryId = Database.LastQueryLogId();
-							}
+							// Update to the latest query log ID
+							statusCache.LastQueryId = Database.LastQueryLogId();
 
 							logger.Info("Gathering extended status metrics from database");
 
