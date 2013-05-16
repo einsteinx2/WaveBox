@@ -1,0 +1,67 @@
+<html>
+<head>
+<script src="http://code.jquery.com/jquery-1.8.2.min.js" type="text/javascript"></script>
+<script src="jquery.signalR-1.1.0.min.js" type="text/javascript"></script>
+<script type="text/javascript" src="http://localhost:7001/signalr/hubs"></script>
+
+<script type="text/javascript">
+
+    $(function () {
+
+        // Reference to our SignalR hub
+        var hub = $.connection.deviceSyncHub;
+
+        /*
+         * Client side functions for the server to call
+         */
+
+        hub.client.currentState = function(songs, currentIndex, isPlaying, isShuffle, isRepeat) {
+            $("#content").append("current state:  songs = " + songs + " currentIndex = " + currentIndex + " isPlaying = " + isPlaying + " isShuffle = " + isShuffle + " isRepeat = " + isRepeat + "<br>");
+        };
+
+        hub.client.playQueueChanged = function(songs) {
+
+        };
+
+        hub.client.togglePlayback = function() {
+
+        };
+
+        hub.client.skipToIndex = function() {
+
+        };
+
+        hub.client.toggleShuffle = function() {
+
+        };
+
+        hub.client.toggleRepeat = function() {
+
+        };
+
+
+        /*
+         * Create the connection and connect
+         */
+        
+        // Must set the URL here since we're connecting from a different URL/port
+        $.connection.hub.url = 'http://localhost:7001/signalr';
+
+        // Start the conneciton and immediately identify after connecting
+        $.connection.hub.start().done(function() {
+
+            // Let the server know our session id so it can associate that with our SignalR connection id
+            hub.server.identify("test");
+
+            // Example of calling a server side method, pretty slick huh?
+            hub.server.playQueueChanged([1, 2, 3, 4]);
+        });
+    });
+
+</script>
+</head>
+
+<body>
+    <div id="content"></div>
+</body>
+</html>
