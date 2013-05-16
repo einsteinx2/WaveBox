@@ -20,6 +20,8 @@ using WaveBox.TcpServer.Http;
 using WaveBox.TcpServer.Mpd;
 using WaveBox.TcpServer;
 using WaveBox.Transcoding;
+using WaveBox.DeviceSync;
+using Microsoft.Owin.Hosting;
 
 namespace WaveBox
 {
@@ -162,8 +164,8 @@ namespace WaveBox
 			httpServer = new HttpServer(Settings.Port);
 			StartTcpServer(httpServer);
 
-			// Start the Web Socket server for real time device state syncing
-			DeviceSyncer.Start();
+			// Start the SignalR server for real time device state syncing
+			WebApplication.Start<DeviceSyncStartup>("http://localhost:" + Settings.WsPort + "/");
 
 			// Start the MPD server
 			//mpdServer = new MpdServer(Settings.MpdPort);
@@ -227,8 +229,6 @@ namespace WaveBox
 		{
 			httpServer.Stop();
 			//mpdServer.Stop();
-
-			DeviceSyncer.Stop();
 
 			// Disable any Nat routes
 			Nat.Stop();

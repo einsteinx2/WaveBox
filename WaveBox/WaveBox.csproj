@@ -92,17 +92,23 @@
     <Reference Include="log4net">
       <HintPath>lib\log4net.dll</HintPath>
     </Reference>
-    <Reference Include="SuperSocket.Common">
-      <HintPath>lib\SuperSocket.Common.dll</HintPath>
+    <Reference Include="Microsoft.AspNet.SignalR.Core">
+      <HintPath>lib\Microsoft.AspNet.SignalR.Core.dll</HintPath>
     </Reference>
-    <Reference Include="SuperSocket.SocketBase">
-      <HintPath>lib\SuperSocket.SocketBase.dll</HintPath>
+    <Reference Include="Microsoft.AspNet.SignalR.Owin">
+      <HintPath>lib\Microsoft.AspNet.SignalR.Owin.dll</HintPath>
     </Reference>
-    <Reference Include="SuperSocket.SocketEngine">
-      <HintPath>lib\SuperSocket.SocketEngine.dll</HintPath>
+    <Reference Include="Microsoft.Owin.Host.HttpListener">
+      <HintPath>lib\Microsoft.Owin.Host.HttpListener.dll</HintPath>
     </Reference>
-    <Reference Include="SuperWebSocket">
-      <HintPath>lib\SuperWebSocket.dll</HintPath>
+    <Reference Include="Microsoft.Owin.Hosting">
+      <HintPath>lib\Microsoft.Owin.Hosting.dll</HintPath>
+    </Reference>
+    <Reference Include="Owin">
+      <HintPath>lib\Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Diagnostics">
+      <HintPath>lib\Microsoft.Owin.Diagnostics.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -200,7 +206,9 @@
     <Compile Include="src\Singletons\Nat.cs" />
     <Compile Include="src\Singletons\ZeroConf.cs" />
     <Compile Include="src\Singletons\AutoUpdater.cs" />
-    <Compile Include="src\Singletons\DeviceSyncer.cs" />
+    <Compile Include="src\DeviceSync\DeviceSyncStartup.cs" />
+    <Compile Include="src\DeviceSync\DeviceSyncHub.cs" />
+    <Compile Include="src\DeviceSync\RawConnection.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="lib\Newtonsoft.Json.dll" />
@@ -302,10 +310,12 @@
     <None Include="System.Data.SQLite.dll.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="lib\SuperSocket.Common.dll" />
-    <None Include="lib\SuperSocket.SocketBase.dll" />
-    <None Include="lib\SuperSocket.SocketEngine.dll" />
-    <None Include="lib\SuperWebSocket.dll" />
+    <None Include="lib\Microsoft.AspNet.SignalR.Owin.dll" />
+    <None Include="lib\Microsoft.AspNet.SignalR.Core.dll" />
+    <None Include="lib\Microsoft.Owin.Hosting.dll" />
+    <None Include="lib\Microsoft.Owin.Host.HttpListener.dll" />
+    <None Include="lib\Owin.dll" />
+    <None Include="lib\Microsoft.Owin.Diagnostics.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -315,5 +325,6 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <ItemGroup />
   <ItemGroup />
 </Project>
