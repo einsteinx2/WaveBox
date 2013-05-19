@@ -453,13 +453,27 @@ namespace WaveBox.Model
 			return total;
 		}
 
-		public static List<Song> SearchSong(string query)
+		public static List<Song> SearchSongs(string field, string query, bool exact = true)
 		{
-			List<Song> result = new List<Song>();
+			List<Song> results = new List<Song>();
 
 			if (query == null)
 			{
-				return result;
+				return results;
+			}
+
+			// Set default field, if none provided
+			if (field == null)
+			{
+				field = "song_name";
+			}
+
+			// Check to ensure a valid query field was set
+			if (!new string[] {"song_id", "song_folder_id", "song_artist_id", "song_album_id", "song_file_type_id",
+				"song_name", "song_track_num", "song_disc_num", "song_duration", "song_bitrate", "song_file_size",
+				"song_last_modified", "song_file_name", "song_release_year", "song_genre_id"}.Contains(field))
+			{
+				return results;
 			}
 
 			IDbConnection conn = null;
@@ -468,17 +482,27 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT * FROM Song WHERE Song_name LIKE @songname", conn);
-				q.AddNamedParam("@songname", "%" + query + "%");
+				IDbCommand q = null;
+
+				// Search for exact match
+				if (exact)
+				{
+					q = Database.GetDbCommand("SELECT * FROM song WHERE " + field + " = @query", conn);
+					q.AddNamedParam("@query", query);
+				}
+				// Search for fuzzy match (containing query)
+				else
+				{
+					q = Database.GetDbCommand("SELECT * FROM song WHERE " + field + " LIKE @query", conn);
+					q.AddNamedParam("@query", "%" + query + "%");
+				}
+
 				q.Prepare();
 				reader = q.ExecuteReader();
 
-				Song s;
-
 				while (reader.Read())
 				{
-					s = new Song(reader);
-					result.Add(s);
+					results.Add(new Song(reader));
 				}
 			}
 			catch (Exception e)
@@ -490,7 +514,7 @@ namespace WaveBox.Model
 				Database.Close(conn, reader);
 			}
 
-			return result;
+			return results;
 		}
 
 		public static int CompareSongsByDiscAndTrack(Song x, Song y)
