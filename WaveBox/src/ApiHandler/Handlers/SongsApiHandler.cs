@@ -31,7 +31,7 @@ namespace WaveBox.ApiHandler.Handlers
 		public void Process()
 		{
 			// Return list of songs
-			List<Song> listOfSongs = new List<Song>();
+			IList<Song> listOfSongs = new List<Song>();
 
 			// Fetch song ID from parameters
 			bool success = false;
@@ -70,9 +70,9 @@ namespace WaveBox.ApiHandler.Handlers
 			public string Error { get; set; }
 			
 			[JsonProperty("songs")]
-			public List<Song> Songs { get; set; }
+			public IList<Song> Songs { get; set; }
 			
-			public SongsResponse(string error, List<Song> songs)
+			public SongsResponse(string error, IList<Song> songs)
 			{
 				Error = error;
 				Songs = songs;

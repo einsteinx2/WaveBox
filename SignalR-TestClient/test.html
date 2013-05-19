@@ -15,30 +15,42 @@
          * Client side functions for the server to call
          */
 
-        hub.client.currentState = function(songs, currentIndex, isPlaying, isShuffle, isRepeat) {
-            $("#content").append("current state:  songs = " + songs + " currentIndex = " + currentIndex + " isPlaying = " + isPlaying + " isShuffle = " + isShuffle + " isRepeat = " + isRepeat + "<br>");
+        hub.client.identify = function() {
+            // Let the server know our session id so it can associate that with our SignalR connection id
+            hub.server.identify("sessionId", "clientName");
+        }
+
+        hub.client.currentState = function(songs, currentIndex, progress, isPlaying, isShuffle, isRepeat) {
+            $("#content").append("current state:  songs = " + JSON.stringify(songs) + " currentIndex = " + currentIndex + " isPlaying = " + isPlaying + " isShuffle = " + isShuffle + " isRepeat = " + isRepeat + "<br>");
+        };
+
+        hub.client.progressUpdate = function(progress) {
+            $("#content").append("progressUpdate: " + progress + "<br>");
+        };
+
+        hub.client.takeOverPlayback = function(clientName) {
+            $("#content").append("takeOverPlayback: " + clientName + "<br>");
         };
 
         hub.client.playQueueChanged = function(songs) {
-
+            $("#content").append("playQueueChanged: " + JSON.stringify(songs) + "<br>");
         };
 
         hub.client.togglePlayback = function() {
-
+            $("#content").append("togglePlayback<br>");
         };
 
         hub.client.skipToIndex = function() {
-
+            $("#content").append("skipToIndex<br>");
         };
 
         hub.client.toggleShuffle = function() {
-
+            $("#content").append("toggleShuffle<br>");
         };
 
         hub.client.toggleRepeat = function() {
-
+            $("#content").append("toggleRepeat<br>");
         };
-
 
         /*
          * Create the connection and connect
@@ -48,14 +60,7 @@
         $.connection.hub.url = 'http://localhost:7001/signalr';
 
         // Start the conneciton and immediately identify after connecting
-        $.connection.hub.start().done(function() {
-
-            // Let the server know our session id so it can associate that with our SignalR connection id
-            hub.server.identify("test");
-
-            // Example of calling a server side method, pretty slick huh?
-            hub.server.playQueueChanged([1, 2, 3, 4]);
-        });
+        $.connection.hub.start();
     });
 
 </script>

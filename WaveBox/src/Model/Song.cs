@@ -284,7 +284,54 @@ namespace WaveBox.Model
 			Art.UpdateArtItemRelationship(ArtId, FolderId, false); // Only update a folder art relationship if it has no folder art
 		}
 
-		public static List<Song> AllSongs()
+		public static IList<Song> SongsForIds(IList<int> songIds)
+		{
+			List<Song> allsongs = new List<Song>();
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			try
+			{
+				StringBuilder sb = new StringBuilder("SELECT song.*, artist.artist_name, album.album_name, genre.genre_name FROM song " +
+				                                     "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
+				                                     "LEFT JOIN album ON song_album_id = album.album_id " +
+				                                     "LEFT JOIN genre ON song_genre_id = genre.genre_id " + 
+				                                     "WHERE");
+
+				for (int i = 0; i < songIds.Count; i++)
+				{
+					if (i > 0)
+					{
+						sb.Append(" OR");
+					}
+					sb.Append(" song_id = ");
+					sb.Append(songIds[i]);
+				}
+
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand(sb.ToString(), conn);
+
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				while (reader.Read())
+				{
+					allsongs.Add(new Song(reader));
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			return allsongs;
+		}
+
+		public static IList<Song> AllSongs()
 		{
 			List<Song> allsongs = new List<Song>();
 			IDbConnection conn = null;

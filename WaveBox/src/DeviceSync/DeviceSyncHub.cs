@@ -2,13 +2,89 @@ using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System.Linq;
 using WaveBox.Model;
+using System.Collections;
+using System;
 
 namespace WaveBox.DeviceSync
 {
 	public class DeviceSyncHub : Hub
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+		private static IDictionary<string, Group> groups = new Dictionary<string, Group>();
+
+		/*
+		 * Private Methods
+		 */
+
+		private Group AddConnection(Connection conn)
+		{
+			lock (groups)
+			{
+				Group group = null;
+				string key = conn.SessionId;
+				if (groups.ContainsKey(key))
+				{
+					// Add the connection to the group
+					group = groups[key];
+					conn.MyGroup = group;
+					group.Connections.Add(conn);
+				}
+				else
+				{
+					// Create a new group and insert it
+					group = new Group(key);
+					conn.MyGroup = group;
+					group.Connections.Add(conn);
+					groups[key] = group;
+				}
+
+				return group;
+			}
+		}
+
+		private Group RemoveConnection(Connection conn)
+		{
+			lock (groups)
+			{
+				string key = conn.SessionId;
+				if (groups.ContainsKey(key))
+				{
+					Group group = groups[key];
+					group.Connections.Remove(conn);
+
+					if (group.Connections.Count == 0)
+					{
+						groups.Remove(key);
+					}
+
+					return group;
+				}
+
+				return null;
+			}
+		}
+
+		private Connection ConnectionForId(string connectionId)
+		{
+			lock (groups)
+			{
+				IList<Connection> matchedConnection = (from grp in groups.Values 
+				                       		  		   from conn in grp.Connections
+				                  	          		   where conn.ConnectionId == connectionId
+				                 	          		   select conn).ToList();
+
+				if (matchedConnection.Count > 0)
+				{
+					return matchedConnection[0];
+				}
+
+				return null;
+			}
+		}
 
 		/*
 		 * Connection callbacks
@@ -18,7 +94,16 @@ namespace WaveBox.DeviceSync
 		{
 			logger.Info("OnConnected called, Context.ConnectionId: " + Context.ConnectionId);
 
-			return base.OnConnected();
+			// Ask the client to identify itself, so we can create the session id - connection id association
+			return Clients.Caller.identify();
+		}
+
+		public override Task OnReconnected()
+		{
+			logger.Info("OnReconnected called, Context.ConnectionId: " + Context.ConnectionId);
+
+			// Ask the client to identify itself, so we can recreate the session id - connection id association
+			return Clients.Caller.identify();
 		}
 
 		public override Task OnDisconnected()
@@ -26,19 +111,14 @@ namespace WaveBox.DeviceSync
 			logger.Info("OnDisconnected called, Context.ConnectionId: " + Context.ConnectionId);
 
 			// Remove the session id - connection id association
-
-			return base.OnDisconnected();
-		}
-
-		public override Task OnReconnected()
-		{
-			logger.Info("OnReconnected called, Context.ConnectionId: " + Context.ConnectionId);
-
-			// Update the client on the current play queue and playback state
-
-			Clients.Caller.currentState(new List<Song>(), 5, true, false, true);
-
-			return base.OnReconnected();
+			return Task.Factory.StartNew(() => 
+			{
+				Connection conn = ConnectionForId(Context.ConnectionId);
+				if (!ReferenceEquals(conn, null))
+				{
+					RemoveConnection(conn);
+				}
+			});
 		}
 
 		/*
@@ -46,38 +126,90 @@ namespace WaveBox.DeviceSync
 		 */
 
 		// Client calls this upon connecting to associate the session id with the connection id
-		public void Identify(string sessionId)
+		public Task Identify(string sessionId, string clientName)
 		{
-			logger.Info("sessionId: " + sessionId);
+			logger.Info("Identify: " + sessionId + ", " + clientName);
 
-			// Create the session id - connection id association
+			return Task.Factory.StartNew(() => 
+			{
+				// Add to the SignalR group
+				Groups.Add(Context.ConnectionId, sessionId);
 
-			// Update the client on the current state
-			Clients.Caller.currentState(new List<Song>(), 5, true, false, true);
-		}
+				// Save in our dictionary for tracking
+				Group group = AddConnection(new Connection(Context.ConnectionId, sessionId, clientName));
 
-		// Client calls this to inform the other clients and the server than it's play queue has changed
-		public void PlayQueueChanged(List<int> songIds)
-		{
-			logger.Info("song ids count: " + songIds.Count + " item 0: " + songIds[0]);
+				// Tell the client the current group state
+				var songIds = group.SongIds.Count > 0 ? Song.SongsForIds(group.SongIds) : new List<Song>();
+				var progress = group.Progress + (float)(new DateTime().ToUniversalUnixTimestamp() - group.ProgressTimestamp);
+				Clients.Caller.currentState(songIds, group.CurrentIndex, progress, group.IsShuffle, group.IsRepeat);
+			});
 		}
 
 		// Client calls this to inform the other clients that it is taking over playback and to pause the other clients
-		public void TakeOverPlayback()
+		public Task TakeOverPlayback()
 		{
+			logger.Info("TakeOverPlayback");
 
+			return Task.Factory.StartNew(() => 
+			{
+				Connection conn = ConnectionForId(Context.ConnectionId);
+				if (!ReferenceEquals(conn, null))
+				{
+					conn.MyGroup.ActiveConnection = conn;
+
+					Clients.OthersInGroup(conn.SessionId).takeOverPlayback(conn.ClientName);
+				}
+			});
+		}
+
+		// Client calls this to inform the other clients and the server than it's play queue has changed
+		public Task PlayQueueChanged(List<int> songIds)
+		{
+			logger.Info("PlayQueueChanged: " + string.Join(",", songIds.Select(i => i.ToString()).ToArray()));
+
+			return Task.Factory.StartNew(() => 
+			{
+				Connection conn = ConnectionForId(Context.ConnectionId);
+				if (!ReferenceEquals(conn, null))
+				{
+					var songs = songIds.Count > 0 ? Song.SongsForIds(songIds) : new List<Song>();
+					conn.MyGroup.SongIds = songIds;
+					Clients.OthersInGroup(conn.SessionId).playQueueChanged(songs);
+				}
+			});
 		}
 
 		// Client calls this to inform the other clients that it has switched songs
-		public void PlayQueueIndexChanged(int currentIndex)
+		public Task PlayQueueIndexChanged(int currentIndex)
 		{
+			logger.Info("PlayQueueIndexChanged: " + currentIndex);
 
+			return Task.Factory.StartNew(() => 
+			{
+				Connection conn = ConnectionForId(Context.ConnectionId);
+				if (!ReferenceEquals(conn, null))
+				{
+					Clients.OthersInGroup(conn.SessionId).playQueueChanged(currentIndex);
+				}
+			});
 		}
 
 		// Client calls this periodically to ensure that the player progress is properly synced
-		public void ProgressUpdate(float progress)
+		public Task ProgressUpdate(float progress)
 		{
+			logger.Info("ProgressUpdate: " + progress);
 
+			return Task.Factory.StartNew(() => 
+			{
+				Connection conn = ConnectionForId(Context.ConnectionId);
+				if (!ReferenceEquals(conn, null))
+				{
+					conn.MyGroup.Progress = progress;
+					conn.MyGroup.ProgressTimestamp = new DateTime().ToUniversalUnixTimestamp();
+
+					Clients.OthersInGroup(conn.SessionId).progressUpdate(progress);
+				}
+			});
 		}
 
 		/*
@@ -85,28 +217,132 @@ namespace WaveBox.DeviceSync
 		 */
 
 		// Client calls this to toggle playback on the currently playing device
-		public void RemoteTogglePlayback()
+		public Task RemoteTogglePlayback()
 		{
+			logger.Info("RemoteTogglePlayback");
 
+			return Task.Factory.StartNew(() => 
+			{
+				Connection conn = ConnectionForId(Context.ConnectionId);
+				if (!ReferenceEquals(conn, null))
+				{
+					Connection activeConnection = conn.MyGroup.ActiveConnection;
+					if (!ReferenceEquals(activeConnection, null))
+					{
+						Clients.Client(activeConnection.ConnectionId).togglePlayback();
+					}
+				}
+			});
 		}
 
 		// Client calls this to change the play queue index on the currently playing device,
 		// this is used in place of next/prev methods
-		public void RemoteSkipToIndex(int index)
+		public Task RemoteSkipToIndex(int index)
 		{
+			logger.Info("RemoteSkipToIndex: " + index);
 
+			return Task.Factory.StartNew(() => 
+			{
+				Connection conn = ConnectionForId(Context.ConnectionId);
+				if (conn != null)
+				{
+					Connection activeConnection = conn.MyGroup.ActiveConnection;
+					if (!ReferenceEquals(activeConnection, null))
+					{
+						Clients.Client(activeConnection.ConnectionId).skipToIndex(index);
+					}
+				}
+			});
 		}
 
 		// Client calls this to toggle shuffle mode on the currently playing device
-		public void RemoteToggleShuffle()
+		public Task RemoteToggleShuffle()
 		{
+			logger.Info("RemoteToggleShuffle");
 
+			return Task.Factory.StartNew(() => 
+		    {
+				Connection conn = ConnectionForId(Context.ConnectionId);
+				if (conn != null)
+				{
+					Connection activeConnection = conn.MyGroup.ActiveConnection;
+					if (!ReferenceEquals(activeConnection, null))
+					{
+						Clients.Client(activeConnection.ConnectionId).toggleShuffle();
+					}
+				}
+			});
 		}
 
 		// Client calls this to toggle repeat mode on the currently playing device
-		public void RemoteToggleRepeat()
+		public Task RemoteToggleRepeat()
 		{
+			logger.Info("RemoteToggleRepeat");
 
+			return Task.Factory.StartNew(() => 
+			{
+				Connection conn = ConnectionForId(Context.ConnectionId);
+				if (conn != null)
+				{
+					Connection activeConnection = conn.MyGroup.ActiveConnection;
+					if (!ReferenceEquals(activeConnection, null))
+					{
+						Clients.Client(activeConnection.ConnectionId).toggleRepeat();
+					}
+				}
+			});
+		}
+
+		private class Connection
+		{
+			public string ConnectionId { get; set; }
+
+			public string SessionId { get; set; }
+
+			public string ClientName { get; set; }
+
+			public Group MyGroup { get; set; }
+
+			public Connection(string connectionId, string sessionId, string clientName)
+			{
+				ConnectionId = connectionId;
+				SessionId = sessionId;
+				ClientName = clientName;
+			}
+		}
+
+		private class Group
+		{
+			public string SessionId { get; set; }
+
+			public Connection ActiveConnection { get; set; }
+
+			public IList<Connection> Connections { get; set; }
+
+			public IList<int> SongIds { get; set; }
+
+			public int CurrentIndex { get; set; }
+
+			public bool IsPlaying { get; set; }
+
+			public bool IsShuffle { get; set; }
+
+			public bool IsRepeat { get; set; }
+
+			public float Progress { get; set; }
+
+			public long ProgressTimestamp { get; set; }
+
+			public Group()
+			{
+				Connections = new List<Connection>();
+				SongIds = new List<int>();
+			}
+
+			public Group(string sessionId) : this()
+			{
+				SessionId = sessionId;
+			}
 		}
 	}
 }
