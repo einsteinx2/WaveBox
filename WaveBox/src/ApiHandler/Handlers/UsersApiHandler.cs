@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using WaveBox.Singletons;
+using WaveBox.Static;
 using WaveBox.Model;
 using Newtonsoft.Json;
 

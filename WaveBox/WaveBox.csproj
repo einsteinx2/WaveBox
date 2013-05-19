@@ -197,18 +197,19 @@
     <Compile Include="src\OperationQueue\DelayedOperationQueue.cs" />
     <Compile Include="src\OperationQueue\IDelayedOperation.cs" />
     <Compile Include="src\OperationQueue\AbstractOperation.cs" />
-    <Compile Include="src\Singletons\Database.cs" />
-    <Compile Include="src\Singletons\FileManager.cs" />
-    <Compile Include="src\Singletons\Jukebox.cs" />
-    <Compile Include="src\Singletons\Lastfm.cs" />
-    <Compile Include="src\Singletons\Settings.cs" />
-    <Compile Include="src\Singletons\DynamicDns.cs" />
-    <Compile Include="src\Singletons\Nat.cs" />
-    <Compile Include="src\Singletons\ZeroConf.cs" />
-    <Compile Include="src\Singletons\AutoUpdater.cs" />
     <Compile Include="src\DeviceSync\DeviceSyncStartup.cs" />
     <Compile Include="src\DeviceSync\DeviceSyncHub.cs" />
     <Compile Include="src\DeviceSync\RawConnection.cs" />
+    <Compile Include="src\Static\Database.cs" />
+    <Compile Include="src\Static\FileManager.cs" />
+    <Compile Include="src\Static\Jukebox.cs" />
+    <Compile Include="src\Static\Settings.cs" />
+    <Compile Include="src\Static\DynamicDns.cs" />
+    <Compile Include="src\Static\Nat.cs" />
+    <Compile Include="src\Static\ZeroConf.cs" />
+    <Compile Include="src\Static\AutoUpdater.cs" />
+    <Compile Include="src\Model\Lastfm.cs" />
+    <Compile Include="src\Static\UserManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="lib\Newtonsoft.Json.dll" />

@@ -1,7 +1,7 @@
 using System;
 using Mono.Zeroconf;
 
-namespace WaveBox.Singletons
+namespace WaveBox.Static
 {
 	static class ZeroConf
 	{

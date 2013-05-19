@@ -14,7 +14,7 @@ using System.Text;
 using System.Threading;
 using System;
 using WaveBox.Model;
-using WaveBox.Singletons;
+using WaveBox.Static;
 using WaveBox.SessionManagement;
 using WaveBox.TcpServer.Http;
 using WaveBox.TcpServer.Mpd;
@@ -178,11 +178,14 @@ namespace WaveBox
 			TranscodeManager.Instance.Setup();
 
 			// Temporary: create test user
-			User.CreateUser("test", "test");
+			User.CreateUser("test", "test", null);
+
+			// Start the UserManager
+			UserManager.Setup();
 
 			// Start file manager, calculate time it takes to run.
 			if (logger.IsInfoEnabled) logger.Info("Scanning media directories...");
-			FileManager.Instance.Setup();
+			FileManager.Setup();
 
 			// Start podcast download queue
 			PodcastManagement.DownloadQueue.FeedChecks.queueOperation(new FeedCheckOperation(0));

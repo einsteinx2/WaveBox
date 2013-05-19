@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Web;
-using WaveBox.Singletons;
+using WaveBox.Static;
 using WaveBox.Model;
 using Newtonsoft.Json;
 

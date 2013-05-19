@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Data;
 using System.Data.SqlTypes;
-using WaveBox.Singletons;
+using WaveBox.Static;
 using WaveBox.Model;
 using Newtonsoft.Json;
 using System.IO;

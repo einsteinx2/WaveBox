@@ -5,7 +5,7 @@ using System.Text;
 using WaveBox.Model;
 using Un4seen.Bass;
 
-namespace WaveBox.Singletons
+namespace WaveBox.Static
 {
 	public enum JukeboxState
 	{
@@ -14,33 +14,30 @@ namespace WaveBox.Singletons
 		Play
 	}
 
-	public class Jukebox
+	public static class Jukebox
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		private static readonly Jukebox instance = new Jukebox();
-		public static Jukebox Instance { get { return instance; } }
+		public static bool IsInitialized { get; set; }
 
-		public bool IsInitialized { get; set; }
+		public static JukeboxState State { get; set; }
 
-		public JukeboxState State { get; set; }
+		public static bool Repeat { get; set; }
 
-		public bool Repeat { get; set; }
+		public static bool Random { get; set; }
 
-		public bool Random { get; set; }
+		public static bool Single { get; set; }
 
-		public bool Single { get; set; }
+		public static bool Consume { get; set; }
 
-		public bool Consume { get; set; }
-
-		public int CurrentIndex { get; set; }
+		public static int CurrentIndex { get; set; }
 
 		private const string PLAYLIST_NAME = "jukeboxQPbjnbh2JPU5NGxhXiiQ";
 		private static Playlist playlist;
 
-		private int? currentStream;
+		private static int? currentStream;
 
-		private Jukebox()
+		static Jukebox()
 		{
 			playlist = new Playlist(PLAYLIST_NAME);
 			if (playlist.PlaylistId == null)
@@ -50,7 +47,7 @@ namespace WaveBox.Singletons
 			}
 		}
 
-		public double Progress()
+		public static double Progress()
 		{
 			if (IsInitialized && currentStream != null)
 			{
@@ -62,7 +59,7 @@ namespace WaveBox.Singletons
 			return 0.0;
 		}
 
-		public float Volume()
+		public static float Volume()
 		{
 			if (IsInitialized && currentStream != null)
 			{
@@ -72,7 +69,7 @@ namespace WaveBox.Singletons
 			return 0.0f;
 		}
 
-		public void Play()
+		public static void Play()
 		{
 			if (currentStream != null)
 			{
@@ -81,7 +78,7 @@ namespace WaveBox.Singletons
 			}
 		}
 
-		public void Pause()
+		public static void Pause()
 		{
 			if (State == JukeboxState.Play && currentStream != 0)
 			{
@@ -91,7 +88,7 @@ namespace WaveBox.Singletons
 		}
 
 		// Overload for pause toggle
-		public void Pause(bool toggle)
+		public static void Pause(bool toggle)
 		{
 			if (toggle)
 			{
@@ -106,7 +103,7 @@ namespace WaveBox.Singletons
 			}
 		}
 
-		public void Stop()
+		public static void Stop()
 		{
 			if (IsInitialized)
 			{
@@ -115,13 +112,13 @@ namespace WaveBox.Singletons
 			}
 		}
 
-		public void Prev()
+		public static void Prev()
 		{
 			CurrentIndex = CurrentIndex - 1 < 0 ? 0 : CurrentIndex - 1;
 			PlaySongAtIndex(CurrentIndex);
 		}
 
-		public void Next()
+		public static void Next()
 		{
 			CurrentIndex = CurrentIndex + 1;
 
@@ -136,7 +133,7 @@ namespace WaveBox.Singletons
 			}
 		}
 
-		public void PlaySongAtIndex(int index)
+		public static void PlaySongAtIndex(int index)
 		{
 			IMediaItem item = playlist.MediaItemAtIndex(index);
 			if (logger.IsInfoEnabled) logger.Info("Playing song: " + item.FileName);
@@ -183,49 +180,49 @@ namespace WaveBox.Singletons
 			}
 		}
 
-		public List<IMediaItem> ListOfSongs()
+		public static List<IMediaItem> ListOfSongs()
 		{
 			return playlist.ListOfMediaItems();
 		}
 
-		public void RemoveSongAtIndex(int index)
+		public static void RemoveSongAtIndex(int index)
 		{
 			playlist.RemoveMediaItemAtIndex(index);
 		}
 
-		public void RemoveSongsAtIndexes(List<int> indices)
+		public static void RemoveSongsAtIndexes(List<int> indices)
 		{
 			playlist.RemoveMediaItemAtIndexes(indices);
 		}
 
-		public void MoveSong(int fromIndex, int toIndex)
+		public static void MoveSong(int fromIndex, int toIndex)
 		{
 			playlist.MoveMediaItem(fromIndex, toIndex);
 		}
 
-		public void AddSong(Song song)
+		public static void AddSong(Song song)
 		{
 			playlist.AddMediaItem(song, true);
 		}
 
-		public void AddSongs(List<Song> songs)
+		public static void AddSongs(List<Song> songs)
 		{
 			List<IMediaItem> mediaItems = new List<IMediaItem>();
 			mediaItems.AddRange(songs);
 			playlist.AddMediaItems(mediaItems);
 		}
 
-		public void InsertSong(Song song, int index)
+		public static void InsertSong(Song song, int index)
 		{
 			playlist.InsertMediaItem(song, index);
 		}
 
-		public void ClearPlaylist()
+		public static void ClearPlaylist()
 		{
 			playlist.ClearPlaylist();
 		}
 
-		private void BassInit()
+		private static void BassInit()
 		{
 			// if we are initializing, we want to make sure that we're not
 			// already initialized.
@@ -253,7 +250,7 @@ namespace WaveBox.Singletons
 			
 		}
 
-		private void BassFree()
+		private static void BassFree()
 		{
 			Bass.BASS_Free();
 			Bass.BASS_PluginFree(0);
@@ -263,7 +260,7 @@ namespace WaveBox.Singletons
 			currentStream = 0;
 		}
 
-		private string BassErrorCodeToString(int code)
+		private static string BassErrorCodeToString(int code)
 		{
 			return "";
 		}

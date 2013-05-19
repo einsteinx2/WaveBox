@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
-using WaveBox.Singletons;
+using WaveBox.Static;
 using WaveBox.Model;
 using WaveBox.TcpServer.Http;
 

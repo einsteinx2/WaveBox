@@ -3,9 +3,9 @@ using System.Net;
 using System.Linq;
 using System.Net.Sockets;
 
-namespace WaveBox.Singletons
+namespace WaveBox.Static
 {
-	static class DynamicDns
+	public static class DynamicDns
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 

@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Diagnostics;
 using WaveBox.Model;
-using WaveBox.Singletons;
+using WaveBox.Static;
 
 namespace WaveBox.TcpServer.Mpd
 {

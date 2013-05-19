@@ -1,7 +1,7 @@
 using System;
 using Mono.Nat;
 
-namespace WaveBox.Singletons
+namespace WaveBox.Static
 {
 	public enum NatStatus
 	{
@@ -12,7 +12,7 @@ namespace WaveBox.Singletons
 		PortForwardingFailed      = 4
 	}
 
-	static class Nat
+	public static class Nat
 	{
 		// Logger
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);

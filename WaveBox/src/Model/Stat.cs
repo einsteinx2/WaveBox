@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Data;
 using WaveBox.Model;
-using WaveBox.Singletons;
+using WaveBox.Static;
 using System.IO;
 using TagLib;
 using Newtonsoft.Json;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using WaveBox.Model;
-using WaveBox.Singletons;
+using WaveBox.Static;
 using WaveBox.TcpServer.Http;
 using Newtonsoft.Json;
 
@@ -13,7 +13,6 @@ namespace WaveBox.ApiHandler.Handlers
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		private Jukebox Juke;
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 
@@ -22,7 +21,6 @@ namespace WaveBox.ApiHandler.Handlers
 		/// </summary>
 		public JukeboxApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
 		{
-			Juke = Jukebox.Instance;
 			Processor = processor;
 			Uri = uri;
 		}
@@ -56,29 +54,29 @@ namespace WaveBox.ApiHandler.Handlers
 							
 							if (indexString == null)
 							{
-								Juke.Play();
+								Jukebox.Play();
 							}
 							else
 							{
-								Juke.PlaySongAtIndex(index);
+								Jukebox.PlaySongAtIndex(index);
 							}
 
 							Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, false, true), Settings.JsonFormatting));
 							break;
 						case "pause":
-							Juke.Pause();
+							Jukebox.Pause();
 							Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, false, true), Settings.JsonFormatting));
 							break;
 						case "stop":
-							Juke.Stop();
+							Jukebox.Stop();
 							Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, false, true), Settings.JsonFormatting));
 							break;
 						case "prev":
-							Juke.Prev();
+							Jukebox.Prev();
 							Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, false, true), Settings.JsonFormatting));
 							break;
 						case "next":
-							Juke.Next();
+							Jukebox.Next();
 							Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, false, true), Settings.JsonFormatting));
 							break;
 						case "status":
@@ -136,7 +134,7 @@ namespace WaveBox.ApiHandler.Handlers
 							}
 							break;
 						case "clear":
-							Juke.ClearPlaylist();
+							Jukebox.ClearPlaylist();
 							Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, false, false), Settings.JsonFormatting));
 							break;
 						default:
@@ -186,7 +184,7 @@ namespace WaveBox.ApiHandler.Handlers
 					return false;
 				}
 			}
-			Juke.AddSongs(songs);
+			Jukebox.AddSongs(songs);
 
 			if (!allSongsAddedSuccessfully)
 			{
@@ -214,7 +212,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 			}
 
-			Juke.RemoveSongsAtIndexes(indices);
+			Jukebox.RemoveSongsAtIndexes(indices);
 		}
 
 		/// <summary>
@@ -226,7 +224,7 @@ namespace WaveBox.ApiHandler.Handlers
 			{
 				int fromI = int.Parse(from);
 				int toI = int.Parse(to);
-				Juke.MoveSong(fromI, toI);
+				Jukebox.MoveSong(fromI, toI);
 				return true;
 			}
 			catch (Exception e)
@@ -243,7 +241,7 @@ namespace WaveBox.ApiHandler.Handlers
 			{
 				get
 				{
-					return Jukebox.Instance.State.ToString();
+					return Jukebox.State.ToString();
 				}
 			}
 
@@ -252,7 +250,7 @@ namespace WaveBox.ApiHandler.Handlers
 			{
 				get
 				{
-					return Jukebox.Instance.CurrentIndex;
+					return Jukebox.CurrentIndex;
 				}
 			}
 
@@ -261,7 +259,7 @@ namespace WaveBox.ApiHandler.Handlers
 			{
 				get
 				{
-					return Jukebox.Instance.Progress();
+					return Jukebox.Progress();
 				}
 			}
 		}
@@ -296,7 +294,7 @@ namespace WaveBox.ApiHandler.Handlers
 				{ 
 					if (includePlaylist)
 					{
-						return Jukebox.Instance.ListOfSongs();
+						return Jukebox.ListOfSongs();
 					}
 					else
 					{

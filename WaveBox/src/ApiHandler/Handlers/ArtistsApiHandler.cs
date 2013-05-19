@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using WaveBox.Singletons;
+using WaveBox.Static;
 using WaveBox.Model;
 using Newtonsoft.Json;
 using WaveBox.TcpServer.Http;

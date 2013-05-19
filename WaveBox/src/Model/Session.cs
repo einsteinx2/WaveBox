@@ -5,7 +5,7 @@ using System.Text;
 using System.Data;
 using WaveBox;
 using WaveBox.Model;
-using WaveBox.Singletons;
+using WaveBox.Static;
 using System.IO;
 using TagLib;
 using Newtonsoft.Json;
@@ -284,6 +284,37 @@ namespace WaveBox.Model
 			}
 
 			return count;
+		}
+
+		public static bool DeleteSessionsForUserId(int userId)
+		{
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			// Attempt session deletion
+			bool success = false;
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("DELETE FROM session WHERE user_id = @userid", conn);
+				q.AddNamedParam("@userid", userId);
+				q.Prepare();
+
+				if (q.ExecuteNonQuery() > 0)
+				{
+					success = true;
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			return success;
 		}
 	}
 }

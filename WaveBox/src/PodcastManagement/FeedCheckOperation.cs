@@ -1,7 +1,7 @@
 using System;
 using WaveBox.OperationQueue;
 using WaveBox.PodcastManagement;
-using WaveBox.Singletons;
+using WaveBox.Static;
 
 namespace WaveBox
 {

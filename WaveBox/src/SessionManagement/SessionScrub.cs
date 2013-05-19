@@ -4,7 +4,7 @@ using System.Net;
 using System.IO;
 using System.Diagnostics;
 using WaveBox.Model;
-using WaveBox.Singletons;
+using WaveBox.Static;
 using WaveBox.OperationQueue;
 
 namespace WaveBox.SessionManagement

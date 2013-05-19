@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using WaveBox.Singletons;
+using WaveBox.Static;
 using WaveBox.Model;
 using System.Data;
 using System.IO;
@@ -20,7 +20,7 @@ namespace WaveBox.FolderScanning
 
 		long totalExistsTime = 0;
 
-		public OrphanScanOperation(int secondsDelay) : base(secondsDelay)
+		public OrphanScanOperation(int delayMilliSeconds) : base(delayMilliSeconds)
 		{
 		}
 

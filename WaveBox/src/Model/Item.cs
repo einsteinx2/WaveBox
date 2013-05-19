@@ -7,7 +7,7 @@ using System.Threading;
 using System.Data.SQLite;
 using System.IO;
 using WaveBox.Model;
-using WaveBox.Singletons;
+using WaveBox.Static;
 
 namespace WaveBox
 {

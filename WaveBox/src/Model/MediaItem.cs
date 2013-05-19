@@ -5,7 +5,7 @@ using System.Text;
 using System.IO;
 using System.Data;
 using WaveBox.Model;
-using WaveBox.Singletons;
+using WaveBox.Static;
 using System.Diagnostics;
 using Newtonsoft.Json;
 

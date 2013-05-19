@@ -35,7 +35,7 @@ namespace WaveBox.OperationQueue
 		private void ResetRunDateTime()
 		{
 			RunDateTime = DateTime.UtcNow;
-			RunDateTime.AddMilliseconds(delayMillis);
+			RunDateTime = RunDateTime.AddMilliseconds(delayMillis);
 		}
 
 		public void Run()

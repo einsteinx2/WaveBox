@@ -1,5 +1,5 @@
 using System;
-using WaveBox.Singletons;
+using WaveBox.Static;
 using WaveBox.OperationQueue;
 using WaveBox.SessionManagement;
 

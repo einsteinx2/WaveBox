@@ -12,9 +12,9 @@ using System.Runtime.InteropServices;
 using System.Reflection;
 using Newtonsoft.Json;
 
-namespace WaveBox.Singletons
+namespace WaveBox.Static
 {
-	static class Database
+	public static class Database
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 

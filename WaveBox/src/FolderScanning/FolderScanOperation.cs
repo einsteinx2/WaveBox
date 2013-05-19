@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using WaveBox.Model;
-using WaveBox.Singletons;
+using WaveBox.Static;
 using System.IO;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -28,7 +28,7 @@ namespace WaveBox.FolderScanning
 		Stopwatch testMediaItemNeedsUpdatingTime = new Stopwatch();
 		Stopwatch testIsExtensionValidTime = new Stopwatch();
 
-		public FolderScanOperation(string path, int secondsDelay) : base(secondsDelay)
+		public FolderScanOperation(string path, int delayMilliSeconds) : base(delayMilliSeconds)
 		{
 			folderPath = path;
 		}

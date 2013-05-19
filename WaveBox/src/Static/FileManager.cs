@@ -2,33 +2,27 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using WaveBox.Singletons;
+using WaveBox.Static;
 using WaveBox.Model;
 using WaveBox.FolderScanning;
 using System.IO;
 using WaveBox.OperationQueue;
 
-namespace WaveBox.Singletons
+namespace WaveBox.Static
 {
-	class FileManager
+	public static class FileManager
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		// Our list of media folders and the scanning queue which uses them
-		private List<Folder> mediaFolders;
-		private DelayedOperationQueue scanQueue;
-		//private List<FileSystemWatcher> watcherList;
-
-		// FileManager singleton
-		private FileManager() { }
-		private static readonly FileManager instance = new FileManager();
-		public static FileManager Instance { get { return instance; } }
+		private static List<Folder> mediaFolders;
+		private static DelayedOperationQueue scanQueue;
 
 		/// <summary>
 		/// Setup() grabs the list of media folders from Settings, checks if they exist, and then begins to scan
 		/// them for media fields
 		/// </summary>
-		public void Setup()
+		public static void Setup()
 		{
 			// Grab list of media folders, initialize the scan queue
 			mediaFolders = Settings.MediaFolders;
@@ -115,7 +109,7 @@ namespace WaveBox.Singletons
 			GC.Collect();
 		}
 
-		public void Stop()
+		public static void Stop()
 		{
 			scanQueue.stopQueue();
 		}
@@ -123,7 +117,7 @@ namespace WaveBox.Singletons
 		/// <summary>
 		/// OnChanged() is currently a stub.
 		/// </summary>
-		private void OnChanged(object source, FileSystemEventArgs e)
+		private static void OnChanged(object source, FileSystemEventArgs e)
 		{
 			// Specify what is done when a file is changed, created, or deleted.
 			//if (logger.IsInfoEnabled) logger.Info("File: " + e.FullPath + " " + e.ChangeType);
@@ -133,7 +127,7 @@ namespace WaveBox.Singletons
 		/// OnCreated() handles when an item is created in the watch folders, and forces a re-scan of the specific
 		/// folder in which the file was created.
 		/// </summary>
-		private void OnCreated(object source, FileSystemEventArgs e)
+		private static void OnCreated(object source, FileSystemEventArgs e)
 		{
 			if (logger.IsInfoEnabled) logger.Info("File created: " + e.FullPath);
 
@@ -161,7 +155,7 @@ namespace WaveBox.Singletons
 		/// <summary>
 		/// OnDeleted() handles when an object is deleted from a watch folder, starting an orphan scan on the database
 		/// </summary>
-		private void OnDeleted(object source, FileSystemEventArgs e)
+		private static void OnDeleted(object source, FileSystemEventArgs e)
 		{
 			// if a file got deleted, we need to remove the orphan from the db
 			scanQueue.queueOperation(new OrphanScanOperation(DelayedOperationQueue.DEFAULT_DELAY));
@@ -171,7 +165,7 @@ namespace WaveBox.Singletons
 		/// OnRenamed() handles when an object is renamed in a watch folder, purging the old object and adding the
 		/// new one.
 		/// </summary>
-		private void OnRenamed(object source, RenamedEventArgs e)
+		private static void OnRenamed(object source, RenamedEventArgs e)
 		{
 			// if a file is renamed, its db entry is probably orphaned.  remove the orphan and
 			// add the renamed file as a new entry

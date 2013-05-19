@@ -6,7 +6,7 @@ using Mono.Unix;
 using Mono.Unix.Native;
 using System.Runtime.InteropServices;
 using WaveBox.Transcoding;
-using WaveBox.Singletons;
+using WaveBox.Static;
 using System.Text;
 using System.Net;
 using System.Web;
@@ -137,7 +137,7 @@ namespace WaveBox
 			if (logger.IsInfoEnabled) logger.Info("All transcodes canceled");
 
 			// Stop the file manager operation queue thread
-			FileManager.Instance.Stop();
+			FileManager.Stop();
 
 			// Stop the server
 			wavebox.Stop();

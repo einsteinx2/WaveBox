@@ -130,7 +130,7 @@ namespace WaveBox
 		/// </summary>
 		public static long ToUniversalUnixTimestamp(this DateTime dateTime)
 		{
-			return (long)(dateTime.ToUniversalTime() - new DateTime (1970, 1, 1).ToUniversalTime()).TotalSeconds;
+			return (long)(dateTime.ToLocalTime() - new DateTime(1970, 1, 1).ToLocalTime()).TotalSeconds;
 		}
 
 		/// <summary>
@@ -138,7 +138,7 @@ namespace WaveBox
 		/// </summary>
 		public static long ToLocalUnixTimestamp(this DateTime dateTime)
 		{
-			return (long)(dateTime.ToLocalTime() - new DateTime (1970, 1, 1).ToLocalTime()).TotalSeconds;
+			return (long)(dateTime.ToUniversalTime() - new DateTime(1970, 1, 1).ToUniversalTime()).TotalSeconds;
 		}
 	}
 }

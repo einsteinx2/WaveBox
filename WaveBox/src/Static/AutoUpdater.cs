@@ -5,9 +5,9 @@ using System.Net;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace WaveBox.Singletons
+namespace WaveBox.Static
 {
-	static class AutoUpdater
+	public static class AutoUpdater
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 

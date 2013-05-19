@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using WaveBox;
 using WaveBox.TcpServer.Http;
-using WaveBox.Singletons;
+using WaveBox.Static;
 using WaveBox.Model;
 using WaveBox.Transcoding;
 using Newtonsoft.Json;

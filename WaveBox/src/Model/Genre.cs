@@ -1,6 +1,6 @@
 using System;
 using System.Data;
-using WaveBox.Singletons;
+using WaveBox.Static;
 using System.Collections.Generic;
 using System.Linq;
 

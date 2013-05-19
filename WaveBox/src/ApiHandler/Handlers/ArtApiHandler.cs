@@ -6,7 +6,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using WaveBox.Model;
 using WaveBox.TcpServer.Http;
-using WaveBox.Singletons;
+using WaveBox.Static;
 using TagLib;
 using System.Runtime.InteropServices;
 

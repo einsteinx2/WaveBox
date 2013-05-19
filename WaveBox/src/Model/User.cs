@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Data;
 using Newtonsoft.Json;
-using WaveBox.Singletons;
+using WaveBox.Static;
 using WaveBox.Model;
 using System.Security.Cryptography;
 
@@ -37,6 +37,12 @@ namespace WaveBox.Model
 
 		[JsonProperty("lastfmSession")]
 		public string LastfmSession { get; set; }
+
+		[JsonProperty("createTime")]
+		public long? CreateTime { get; set; }
+
+		[JsonProperty("deleteTime")]
+		public long? DeleteTime { get; set; }
 	
 		public User()
 		{
@@ -124,6 +130,9 @@ namespace WaveBox.Model
 			{
 				LastfmSession = null;
 			}
+
+			CreateTime = reader.GetInt64(reader.GetOrdinal("create_time"));
+			DeleteTime = reader.GetInt64OrNull(reader.GetOrdinal("delete_time"));
 		}
 
 		public static string UserNameForSessionid(string sessionId)
@@ -212,6 +221,40 @@ namespace WaveBox.Model
 			{
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT * FROM user", conn);
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				while (reader.Read())
+				{
+					users.Add(new User(reader));
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			users.Sort(User.CompareUsersByName);
+
+			return users;
+		}
+
+		public static List<User> ExpiredUsers()
+		{
+			List<User> users = new List<User>();
+
+			IDbConnection conn = null;
+			IDataReader reader = null;
+
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT * FROM user WHERE delete_time <= @deletetime", conn);
+				q.AddNamedParam("@deletetime", DateTime.Now.ToUniversalUnixTimestamp());
 				q.Prepare();
 				reader = q.ExecuteReader();
 
@@ -333,7 +376,7 @@ namespace WaveBox.Model
 			LastfmSession = sessionKey;
 		}
 
-		public static User CreateUser(string userName, string password)
+		public static User CreateUser(string userName, string password, long? deleteTime)
 		{
 			int? itemId = Item.GenerateItemId(ItemType.User);
 			if (itemId == null)
@@ -349,11 +392,13 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("INSERT OR IGNORE INTO user (user_id, user_name, user_password, user_salt) VALUES (@userid, @username, @userhash, @usersalt)", conn);
+				IDbCommand q = Database.GetDbCommand("INSERT OR IGNORE INTO user (user_id, user_name, user_password, user_salt, create_time, delete_time) VALUES (@userid, @username, @userhash, @usersalt, @createtime, @deletetime)", conn);
 				q.AddNamedParam("@userid", itemId);
 				q.AddNamedParam("@username", userName);
 				q.AddNamedParam("@userhash", hash);
 				q.AddNamedParam("@usersalt", salt);
+				q.AddNamedParam("@createtime", DateTime.Now.ToUniversalUnixTimestamp());
+				q.AddNamedParam("@deletetime", deleteTime);
 				q.Prepare();
 
 				q.ExecuteNonQuery();
@@ -368,6 +413,18 @@ namespace WaveBox.Model
 			}
 
 			return new User(userName);
+		}
+
+		public static User CreateTestUser(long? durationSeconds)
+		{
+			// Create a new user with random username and password, that lasts for the specified duration
+			if (ReferenceEquals(durationSeconds, null))
+			{
+				// If no duration specified, use 24 hours
+				durationSeconds = 60 * 60 * 24;
+			}
+
+			return CreateUser(Utility.RandomString(16), Utility.RandomString(16), DateTime.Now.ToUniversalUnixTimestamp() + durationSeconds);
 		}
 
 		// Verify password, using timing attack resistant approach
@@ -407,6 +464,36 @@ namespace WaveBox.Model
 			}
 
 			return false;
+		}
+
+		public void Delete()
+		{
+			if (ReferenceEquals(UserId, null))
+				return;
+
+			// Delete the user
+			IDbConnection conn = null;
+			IDataReader reader = null;
+			try
+			{
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("DELETE FROM user WHERE user_id = @userid", conn);
+				q.AddNamedParam("@userid", UserId);
+				q.Prepare();
+
+				q.ExecuteNonQuery();
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			// Delete associated sessions
+			Session.DeleteSessionsForUserId((int)UserId);
 		}
 	}
 }

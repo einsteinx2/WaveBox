@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Data;
-using WaveBox.Singletons;
+using WaveBox.Static;
 using Newtonsoft.Json;
 
 namespace WaveBox.Model

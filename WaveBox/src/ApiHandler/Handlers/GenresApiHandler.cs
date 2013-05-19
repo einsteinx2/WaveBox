@@ -2,7 +2,7 @@ using System;
 using WaveBox.Model;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using WaveBox.Singletons;
+using WaveBox.Static;
 
 namespace WaveBox.ApiHandler.Handlers
 {

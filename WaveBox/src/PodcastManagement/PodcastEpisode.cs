@@ -1,7 +1,7 @@
 using System;
 using System.Data;
 using System.IO;
-using WaveBox.Singletons;
+using WaveBox.Static;
 using System.Net;
 using System.Web;
 using System.Xml;

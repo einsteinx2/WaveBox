@@ -5,7 +5,7 @@ using System.Text;
 using System.IO;
 using System.Data;
 using System.Data.SqlTypes;
-using WaveBox.Singletons;
+using WaveBox.Static;
 using WaveBox.Model;
 using System.Security.Cryptography;
 using TagLib;

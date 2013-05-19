@@ -5,7 +5,7 @@ using System.Text;
 using Newtonsoft.Json;
 using System.Data;
 using System.IO;
-using WaveBox.Singletons;
+using WaveBox.Static;
 using WaveBox.Model;
 using WaveBox.TcpServer.Http;
 
