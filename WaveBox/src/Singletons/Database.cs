@@ -340,11 +340,6 @@ namespace WaveBox.Singletons
 				return null;
 			}
 		}
-
-		/*public static bool BackupLive()
-		{
-			return BackupLive((SQLiteConnection)GetDbConnection(), (SQLiteConnection)GetBackupDbConnection());
-		}*/
 			   
 		public static bool Backup(SQLiteConnection source, SQLiteConnection destination)
 		{
@@ -392,80 +387,6 @@ namespace WaveBox.Singletons
 				return false;
 			}
 		}
-
-		// SQLITE_OK = 0
-		// SQLITE_BUSY = 5
-		// SQLITE_LOCKED = 6
-		/*public static bool BackupLive(SQLiteConnection source, SQLiteConnection destination)
-		{
-			lock(dbBackupLock)
-			{
-				try
-				{
-					IntPtr sourceHandle = GetConnectionHandle(source);
-					IntPtr destinationHandle = GetConnectionHandle(destination);
-					
-					IntPtr backupHandle = sqlite3_backup_init(destinationHandle, SQLiteConvert.ToUTF8("main"), sourceHandle, SQLiteConvert.ToUTF8("main"));
-					if (backupHandle != IntPtr.Zero)
-					{
-						// Each iteration of this loop copies 5 database pages from database
-						// pDb to the backup database. If the return value of backup_step()
-						// indicates that there are still further pages to copy, sleep for
-						// 250 ms before repeating. 
-						int rc = 0;
-						do
-						{
-							rc = sqlite3_backup_step(backupHandle, 10);
-							//xProgress(sqlite3_backup_remaining(backupHandle), sqlite3_backup_pagecount(backupHandle));
-							if (rc == 0 || rc == 5 || rc == 6)
-							{
-								sqlite3_sleep(50);
-							}
-						}
-						while(rc == 0 || rc == 5 || rc == 6);
-						
-						// Release resources allocated by backup_init().
-						rc = sqlite3_backup_finish(backupHandle);
-
-						// Delete the user and session tables
-						try
-						{
-							IDbCommand q = Database.GetDbCommand("DROP TABLE IF EXISTS user", destination);
-							q.Prepare();
-							q.ExecuteNonQuery();
-						}
-						catch(Exception e)
-						{
-							if (logger.IsInfoEnabled) logger.Info("Error deleting user table in backup: " + e);
-						}
-						
-						try
-						{
-							IDbCommand q = Database.GetDbCommand("DROP TABLE IF EXISTS session", destination);
-							q.Prepare();
-							q.ExecuteNonQuery();
-						}
-						catch(Exception e)
-						{
-							if (logger.IsInfoEnabled) logger.Info("Error deleting session table in backup: " + e);
-						}
-
-						return true;
-					}
-					return false;
-				}
-				catch(Exception e)
-				{
-					if (logger.IsInfoEnabled) logger.Info("Error backup up database: " + e);
-				}
-				finally
-				{
-					Database.Close(source, null);
-					Database.Close(destination, null);
-				}
-				return false;
-			}
-		}*/
 
 		private static IntPtr GetConnectionHandle(SQLiteConnection source)
 		{

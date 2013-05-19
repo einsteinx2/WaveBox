@@ -111,7 +111,6 @@ namespace WaveBox.FolderScanning
 					}
 					*/
 
-					//Stopwatch sw = new Stopwatch();
 					testGetDirectoriesTime.Start();
 					string[] directories = Directory.GetDirectories(folderPath);
 					testGetDirectoriesTime.Stop();
@@ -129,38 +128,10 @@ namespace WaveBox.FolderScanning
 								testNumberOfFoldersInserted++;
 								folder.InsertFolder(false);
 							}
-							//sw.Start();
+
 							ProcessFolder(subfolder);
-							//if (logger.IsInfoEnabled) logger.Info("ProcessFolder ({0}) took {1}ms", subfolder, sw.ElapsedMilliseconds);
-							//sw.Reset();
 						}
 					}
-					/*
-					sw.Stop();
-
-					sw.Start();
-					foreach (string currentFile in Directory.GetFiles(folderPath))
-					{
-						ProcessFile(currentFile, topFolder.FolderId);
-					}
-
-					sw.Stop();
-
-					Parallel.ForEach(Directory.GetDirectories(topFile.FullName), currentFile =>
-						{
-							if (!(currentFile.Contains(".AppleDouble")))
-							{
-								Folder folder = new Folder(currentFile);
-
-								 // if the folder isn't already in the database, add it.
-								if (folder.FolderId == 0)
-								{
-									folder.addToDatabase(false);
-								}
-								processFolder(currentFile);
-							}
-						});
-					*/
 
 					Parallel.ForEach(Directory.GetFiles(folderPath), currentFile =>
 						{
@@ -277,6 +248,7 @@ namespace WaveBox.FolderScanning
 						if ((object)oldArtId == null)
 						{
 							if (logger.IsInfoEnabled) logger.Info("There was no old art id");
+
 							// Insert the relationship
 							Art.UpdateArtItemRelationship(newArtId, folder.FolderId, true);
 

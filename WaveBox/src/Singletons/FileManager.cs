@@ -180,21 +180,6 @@ namespace WaveBox.Singletons
 			// To easily accomplish the above, we just call OnDeleted() and OnCreated(), to reduce redundancy
 			OnDeleted(source, e);
 			OnCreated(source, e);
-
-			/*
-			scanQueue.queueOperation(new OrphanScanOperation(DelayedOperationQueue.DEFAULT_DELAY));
-
-			if (File.Exists(e.FullPath))
-			{
-				string dir = new FileInfo(e.FullPath).DirectoryName;
-				scanQueue.queueOperation(new FolderScanOperation(dir, DelayedOperationQueue.DEFAULT_DELAY));
-			}
-
-			if (Directory.Exists(e.FullPath))
-			{
-				scanQueue.queueOperation(new FolderScanOperation(e.FullPath, DelayedOperationQueue.DEFAULT_DELAY));
-			}
-			*/
 		}
 	}
 }
