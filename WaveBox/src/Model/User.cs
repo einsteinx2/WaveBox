@@ -23,6 +23,10 @@ namespace WaveBox.Model
 		[JsonProperty("userName")]
 		public string UserName { get; set; }
 
+		// This is only used after test account creation
+		[JsonProperty("password")]
+		public string Password { get; set; }
+
 		[JsonProperty("sessions")]
 		public List<Session> Sessions { get; set; }
 
@@ -424,7 +428,11 @@ namespace WaveBox.Model
 				durationSeconds = 60 * 60 * 24;
 			}
 
-			return CreateUser(Utility.RandomString(16), Utility.RandomString(16), DateTime.Now.ToUniversalUnixTimestamp() + durationSeconds);
+			string pass = Utility.RandomString(16);
+
+			User testUser = CreateUser(Utility.RandomString(16), pass, DateTime.Now.ToUniversalUnixTimestamp() + durationSeconds);
+			testUser.Password = pass;
+			return testUser;
 		}
 
 		// Verify password, using timing attack resistant approach

@@ -170,7 +170,6 @@
     <Compile Include="src\Transcoding\ITranscoderDelegate.cs" />
     <Compile Include="src\Transcoding\TranscodeManager.cs" />
     <Compile Include="src\Transcoding\VideoTranscoder.cs" />
-    <Compile Include="src\Utility.cs" />
     <Compile Include="src\WaveBoxMain.cs" />
     <Compile Include="src\WaveBoxService.cs">
       <SubType>Component</SubType>
@@ -210,6 +209,7 @@
     <Compile Include="src\Static\AutoUpdater.cs" />
     <Compile Include="src\Model\Lastfm.cs" />
     <Compile Include="src\Static\UserManager.cs" />
+    <Compile Include="src\Static\Utility.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="lib\Newtonsoft.Json.dll" />

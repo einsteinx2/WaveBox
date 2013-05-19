@@ -32,34 +32,75 @@ namespace WaveBox.ApiHandler.Handlers
 			// Return list of users to be passed as JSON
 			List<User> listOfUsers = new List<User>();
 
-			// Try to get a user ID
-			bool success = false;
-			int id = 0;
-			if (Uri.Parameters.ContainsKey("id"))
+			// See if we need to make a test user
+			if (Uri.Parameters.ContainsKey("testUser") && Uri.Parameters["testUser"].IsTrue())
 			{
-				success = Int32.TryParse(Uri.Parameters["id"], out id);
-			}
+				bool success = false;
+				int durationSeconds = 0;
+				if (Uri.Parameters.ContainsKey("durationSeconds"))
+				{
+					success = Int32.TryParse(Uri.Parameters["durationSeconds"], out durationSeconds);
+				}
 
-			// On valid key, return a specific user, and their attributes
-			if (success)
-			{
-				User user = new User(id);
-				listOfUsers.Add(user);
+				// Create a test user and reply with the account info
+				User testUser = User.CreateTestUser(success ? (int?)durationSeconds : null);
+				if (!ReferenceEquals(testUser, null))
+				{
+					listOfUsers.Add(testUser);
+					try
+					{
+						string json = JsonConvert.SerializeObject(new UsersResponse(null, listOfUsers), Settings.JsonFormatting);
+						Processor.WriteJson(json);
+					}
+					catch (Exception e)
+					{
+						logger.Error(e);
+					}
+				}
+				else
+				{
+					try
+					{
+						string json = JsonConvert.SerializeObject(new UsersResponse("Couldn't create user", listOfUsers), Settings.JsonFormatting);
+						Processor.WriteJson(json);
+					}
+					catch (Exception e)
+					{
+						logger.Error(e);
+					}
+				}
 			}
 			else
 			{
-				// On invalid key, return all users
-				listOfUsers = User.AllUsers();
-			}
+				// Try to get a user ID
+				bool success = false;
+				int id = 0;
+				if (Uri.Parameters.ContainsKey("id"))
+				{
+					success = Int32.TryParse(Uri.Parameters["id"], out id);
+				}
 
-			try
-			{
-				string json = JsonConvert.SerializeObject(new UsersResponse(null, listOfUsers), Settings.JsonFormatting);
-				Processor.WriteJson(json);
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
+				// On valid key, return a specific user, and their attributes
+				if (success)
+				{
+					User user = new User(id);
+					listOfUsers.Add(user);
+				}
+				else
+				{
+					// On invalid key, return all users
+					listOfUsers = User.AllUsers();
+				}
+
+				try
+				{
+					string json = JsonConvert.SerializeObject(new UsersResponse(null, listOfUsers), Settings.JsonFormatting);
+					Processor.WriteJson(json);
+				}
+				catch (Exception e)
+				{
+					logger.Error(e);
+				}
 			}
 		}
 

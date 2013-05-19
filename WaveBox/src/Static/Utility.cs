@@ -2,7 +2,7 @@ using System;
 using System.Text;
 using System.Security.Cryptography;
 
-namespace WaveBox
+namespace WaveBox.Static
 {
 	public static class Utility
 	{
@@ -13,9 +13,9 @@ namespace WaveBox
 		/// <summary>
 		/// Generates a random string, for use in session creation
 		/// </summary>
+		static private Random rng = new Random();
 		public static string RandomString(int size)
 		{
-			Random rng = new Random();
 			const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789!@#$%^&*()";
 
 			char[] buffer = new char[size];
