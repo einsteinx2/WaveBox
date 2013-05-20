@@ -83,7 +83,6 @@
     <Compile Include="src\OperationQueue\DelayedOperationQueue.cs" />
     <Compile Include="src\OperationQueue\IDelayedOperation.cs" />
     <Compile Include="src\OperationQueue\AbstractOperation.cs" />
-    <Compile Include="src\Transcoding\ITranscoder.cs" />
     <Compile Include="src\Static\Settings.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -96,7 +95,6 @@
   -->
   <ItemGroup>
     <Folder Include="src\" />
-    <Folder Include="src\Transcoding\" />
     <Folder Include="lib\" />
     <Folder Include="lib_native\" />
   </ItemGroup>
