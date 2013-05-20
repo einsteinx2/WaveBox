@@ -10,7 +10,7 @@ using System.Security.Cryptography;
 using System.Web.Services;
 using System.Net.Sockets;
 
-namespace WaveBox.Model
+namespace WaveBox
 {
 	public class Lastfm
 	{

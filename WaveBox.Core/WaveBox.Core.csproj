@@ -76,7 +76,6 @@
     <Compile Include="src\Model\Stat.cs" />
     <Compile Include="src\Model\User.cs" />
     <Compile Include="src\Model\Video.cs" />
-    <Compile Include="src\Model\Lastfm.cs" />
     <Compile Include="src\Static\Database.cs" />
     <Compile Include="src\Static\UserManager.cs" />
     <Compile Include="src\Static\Utility.cs" />

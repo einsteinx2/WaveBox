@@ -179,6 +179,7 @@
     <Compile Include="src\Static\FileManager.cs" />
     <Compile Include="src\Static\DynamicDns.cs" />
     <Compile Include="src\Transcoding\ITranscoder.cs" />
+    <Compile Include="src\Lastfm.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
