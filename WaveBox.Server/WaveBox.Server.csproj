@@ -174,6 +174,10 @@
     <Compile Include="src\TcpServer\MpdServer\MpdProcessor.cs" />
     <Compile Include="src\TcpServer\MpdServer\MpdServer.cs" />
     <Compile Include="src\Static\ZeroConf.cs" />
+    <Compile Include="src\FolderScanning\FolderScanOperation.cs" />
+    <Compile Include="src\FolderScanning\OrphanScanOperation.cs" />
+    <Compile Include="src\Static\FileManager.cs" />
+    <Compile Include="src\Static\DynamicDns.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">

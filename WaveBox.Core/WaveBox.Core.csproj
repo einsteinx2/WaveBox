@@ -78,17 +78,13 @@
     <Compile Include="src\Model\Video.cs" />
     <Compile Include="src\Model\Lastfm.cs" />
     <Compile Include="src\Static\Database.cs" />
-    <Compile Include="src\Static\FileManager.cs" />
-    <Compile Include="src\Static\Settings.cs" />
-    <Compile Include="src\Static\DynamicDns.cs" />
     <Compile Include="src\Static\UserManager.cs" />
     <Compile Include="src\Static\Utility.cs" />
     <Compile Include="src\OperationQueue\DelayedOperationQueue.cs" />
     <Compile Include="src\OperationQueue\IDelayedOperation.cs" />
     <Compile Include="src\OperationQueue\AbstractOperation.cs" />
-    <Compile Include="src\FolderScanning\FolderScanOperation.cs" />
-    <Compile Include="src\FolderScanning\OrphanScanOperation.cs" />
     <Compile Include="src\Transcoding\ITranscoder.cs" />
+    <Compile Include="src\Static\Settings.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
