@@ -41,24 +41,6 @@ namespace WaveBox
 		//private MpdServer mpdServer;
 
 		/// <summary>
-		/// Detects WaveBox's root directory, for storing per-user configuration
-		/// </summary>
-		public static string RootPath()
-		{
-			switch (WaveBoxService.DetectOS())
-			{
-				case WaveBoxService.OS.Windows:
-					return Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + "\\WaveBox\\";
-				case WaveBoxService.OS.MacOSX:
-					return Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "/Library/Application Support/WaveBox/";
-				case WaveBoxService.OS.Unix:
-					return Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "/.wavebox/";
-				default:
-					return "";
-			}
-		}
-
-		/// <summary>
 		/// ServerSetup is used to generate a GUID which can be associated with the URL forwarding service, to 
 		/// uniquely map an instance of WaveBox
 		/// </summary>
@@ -140,7 +122,7 @@ namespace WaveBox
 			}
 
 			// Create directory for WaveBox's root path, if it doesn't exist
-			string rootDir = RootPath();
+			string rootDir = Utility.RootPath();
 			if (!Directory.Exists(rootDir))
 			{
 				Directory.CreateDirectory(rootDir);

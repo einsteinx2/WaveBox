@@ -20,14 +20,14 @@ namespace WaveBox.Static
 
 		public static string databaseFileName = "wavebox.db";
 		public static string DatabaseTemplatePath() { return "res" + Path.DirectorySeparatorChar + databaseFileName; }
-		public static string DatabasePath() { return WaveBoxMain.RootPath() + databaseFileName; }
+		public static string DatabasePath() { return Utility.RootPath() + databaseFileName; }
 
 		public static string querylogFileName = "wavebox_querylog.db";
 		public static string QuerylogTemplatePath() { return "res" + Path.DirectorySeparatorChar + querylogFileName; }
-		public static string QuerylogPath() { return WaveBoxMain.RootPath() + querylogFileName; }
+		public static string QuerylogPath() { return Utility.RootPath() + querylogFileName; }
 		
 		public static string BackupFileName(long queryId) { return "wavebox_backup_" + queryId + ".db"; }
-		public static string BackupPath(long queryId) { return WaveBoxMain.RootPath() + BackupFileName(queryId); }
+		public static string BackupPath(long queryId) { return Utility.RootPath() + BackupFileName(queryId); }
 
 		public static void DatabaseSetup()
 		{

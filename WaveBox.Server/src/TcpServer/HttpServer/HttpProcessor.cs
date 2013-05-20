@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading;
 using WaveBox;
 using System.Diagnostics;
-using WaveBox.ApiHandler;
 using WaveBox.Transcoding;
 using WaveBox.TcpServer.Http;
 
@@ -17,6 +16,7 @@ using WaveBox.TcpServer.Http;
 
 // simple HTTP explanation
 // http://www.jmarshall.com/easy/http/
+using WaveBox.ApiHandler;
 
 namespace WaveBox.TcpServer.Http
 {

@@ -39,9 +39,13 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <ProjectReference Include="..\WaveBox\WaveBox.csproj">
+    <ProjectReference Include="..\WaveBox.Server\WaveBox.Server.csproj">
       <Project>{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}</Project>
-      <Name>WaveBox</Name>
+      <Name>WaveBox.Server</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\WaveBox.Core\WaveBox.Core.csproj">
+      <Project>{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}</Project>
+      <Name>WaveBox.Core</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

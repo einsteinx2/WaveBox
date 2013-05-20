@@ -1,27 +1,61 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaveBox", "WaveBox\WaveBox.csproj", "{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}"
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaveBoxTest", "WaveBoxText\WaveBoxTest.csproj", "{B1947779-CC0E-4B53-BB33-6DA4DB2943DE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaveBoxText", "WaveBoxText\WaveBoxText.csproj", "{B1947779-CC0E-4B53-BB33-6DA4DB2943DE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaveBox.Server", "WaveBox.Server\WaveBox.Server.csproj", "{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaveBox.Core", "WaveBox.Core\WaveBox.Core.csproj", "{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
 		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}.Debug|Any CPU.Build.0 = Debug|x86
+		{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}.Debug|Mixed Platforms.Build.0 = Debug|x86
 		{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}.Debug|x86.ActiveCfg = Debug|x86
 		{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}.Debug|x86.Build.0 = Debug|x86
+		{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}.Release|Any CPU.ActiveCfg = Release|x86
+		{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}.Release|Any CPU.Build.0 = Release|x86
+		{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}.Release|Mixed Platforms.Build.0 = Release|x86
 		{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}.Release|x86.ActiveCfg = Release|x86
 		{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}.Release|x86.Build.0 = Release|x86
+		{B1947779-CC0E-4B53-BB33-6DA4DB2943DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1947779-CC0E-4B53-BB33-6DA4DB2943DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1947779-CC0E-4B53-BB33-6DA4DB2943DE}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{B1947779-CC0E-4B53-BB33-6DA4DB2943DE}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{B1947779-CC0E-4B53-BB33-6DA4DB2943DE}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{B1947779-CC0E-4B53-BB33-6DA4DB2943DE}.Debug|x86.Build.0 = Debug|Any CPU
+		{B1947779-CC0E-4B53-BB33-6DA4DB2943DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1947779-CC0E-4B53-BB33-6DA4DB2943DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1947779-CC0E-4B53-BB33-6DA4DB2943DE}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{B1947779-CC0E-4B53-BB33-6DA4DB2943DE}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{B1947779-CC0E-4B53-BB33-6DA4DB2943DE}.Release|x86.ActiveCfg = Release|Any CPU
 		{B1947779-CC0E-4B53-BB33-6DA4DB2943DE}.Release|x86.Build.0 = Release|Any CPU
+		{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}.Debug|x86.Build.0 = Debug|Any CPU
+		{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}.Release|x86.ActiveCfg = Release|Any CPU
+		{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = WaveBox\WaveBox.csproj
+		StartupItem = WaveBox.Server\WaveBox.Server.csproj
 		Policies = $0
 		$0.DotNetNamingPolicy = $1
 		$1.DirectoryNamespaceAssociation = None
@@ -37,11 +71,6 @@ Global
 		$3.EventAddBraceStyle = DoNotChange
 		$3.EventRemoveBraceStyle = DoNotChange
 		$3.StatementBraceStyle = NextLine
-		$3.IfElseBraceForcement = AddBraces
-		$3.ForBraceForcement = AddBraces
-		$3.WhileBraceForcement = AddBraces
-		$3.UsingBraceForcement = AddBraces
-		$3.FixedBraceForcement = AddBraces
 		$3.ElseNewLinePlacement = NewLine
 		$3.ElseIfNewLinePlacement = SameLine
 		$3.CatchNewLinePlacement = NewLine

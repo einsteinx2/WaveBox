@@ -15,7 +15,7 @@ namespace WaveBox.Static
 
 		public static string settingsFileName = "wavebox.conf";
 		public static string SettingsTemplatePath() { return "res" + Path.DirectorySeparatorChar + settingsFileName; }
-		public static string SettingsPath() { return WaveBoxMain.RootPath() + settingsFileName; }
+		public static string SettingsPath() { return Utility.RootPath() + settingsFileName; }
 
 		public static double Version { get { return 1.0; } }
 

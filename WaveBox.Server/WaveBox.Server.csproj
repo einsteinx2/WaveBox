@@ -66,17 +66,8 @@
     <Reference Include="Bass.Net">
       <HintPath>lib\Bass.Net.dll</HintPath>
     </Reference>
-    <Reference Include="System.Data.SQLite.Linq">
-      <HintPath>lib\System.Data.SQLite.Linq.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Data.SQLite">
-      <HintPath>lib\System.Data.SQLite.dll</HintPath>
-    </Reference>
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Services" />
-    <Reference Include="taglib-sharp">
-      <HintPath>lib\taglib-sharp.dll</HintPath>
-    </Reference>
     <Reference Include="Mono.Zeroconf.Providers.Bonjour">
       <HintPath>lib\Mono.Zeroconf.Providers.Bonjour.dll</HintPath>
     </Reference>
@@ -109,6 +100,9 @@
     </Reference>
     <Reference Include="Microsoft.Owin.Diagnostics">
       <HintPath>lib\Microsoft.Owin.Diagnostics.dll</HintPath>
+    </Reference>
+    <Reference Include="taglib-sharp">
+      <HintPath>lib\taglib-sharp.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -151,6 +145,26 @@
     <Compile Include="src\PodcastManagement\PodcastEpisode.cs" />
     <Compile Include="src\SessionManagement\SessionScrub.cs" />
     <Compile Include="src\SessionManagement\SessionScrubOperation.cs" />
+    <Compile Include="src\Transcoding\AbstractTranscoder.cs" />
+    <Compile Include="src\Transcoding\FFMpegAACTranscoder.cs" />
+    <Compile Include="src\Transcoding\FFMpegMP3Transcoder.cs" />
+    <Compile Include="src\Transcoding\FFMpegMpegtsTranscoder.cs" />
+    <Compile Include="src\Transcoding\FFMpegOGGTranscoder.cs" />
+    <Compile Include="src\Transcoding\FFMpegOpusTranscoder.cs" />
+    <Compile Include="src\Transcoding\FFMpegX264Transcoder.cs" />
+    <Compile Include="src\Transcoding\ITranscoderDelegate.cs" />
+    <Compile Include="src\Transcoding\TranscodeManager.cs" />
+    <Compile Include="src\Transcoding\VideoTranscoder.cs" />
+    <Compile Include="src\WaveBoxMain.cs" />
+    <Compile Include="src\WaveBoxService.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="src\DeviceSync\DeviceSyncStartup.cs" />
+    <Compile Include="src\DeviceSync\DeviceSyncHub.cs" />
+    <Compile Include="src\DeviceSync\RawConnection.cs" />
+    <Compile Include="src\Static\AutoUpdater.cs" />
+    <Compile Include="src\Static\Jukebox.cs" />
+    <Compile Include="src\Static\Nat.cs" />
     <Compile Include="src\TcpServer\AbstractTcpServer.cs" />
     <Compile Include="src\TcpServer\HttpServer\HttpHeader.cs" />
     <Compile Include="src\TcpServer\HttpServer\HttpProcessor.cs" />
@@ -159,61 +173,7 @@
     <Compile Include="src\TcpServer\MpdServer\MpdEnum.cs" />
     <Compile Include="src\TcpServer\MpdServer\MpdProcessor.cs" />
     <Compile Include="src\TcpServer\MpdServer\MpdServer.cs" />
-    <Compile Include="src\Transcoding\AbstractTranscoder.cs" />
-    <Compile Include="src\Transcoding\FFMpegAACTranscoder.cs" />
-    <Compile Include="src\Transcoding\FFMpegMP3Transcoder.cs" />
-    <Compile Include="src\Transcoding\FFMpegMpegtsTranscoder.cs" />
-    <Compile Include="src\Transcoding\FFMpegOGGTranscoder.cs" />
-    <Compile Include="src\Transcoding\FFMpegOpusTranscoder.cs" />
-    <Compile Include="src\Transcoding\FFMpegX264Transcoder.cs" />
-    <Compile Include="src\Transcoding\ITranscoder.cs" />
-    <Compile Include="src\Transcoding\ITranscoderDelegate.cs" />
-    <Compile Include="src\Transcoding\TranscodeManager.cs" />
-    <Compile Include="src\Transcoding\VideoTranscoder.cs" />
-    <Compile Include="src\WaveBoxMain.cs" />
-    <Compile Include="src\WaveBoxService.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="src\FolderScanning\FolderScanOperation.cs" />
-    <Compile Include="src\FolderScanning\OrphanScanOperation.cs" />
-    <Compile Include="src\Model\Album.cs" />
-    <Compile Include="src\Model\Art.cs" />
-    <Compile Include="src\Model\Artist.cs" />
-    <Compile Include="src\Model\FileType.cs" />
-    <Compile Include="src\Model\Folder.cs" />
-    <Compile Include="src\Model\Genre.cs" />
-    <Compile Include="src\Model\IItem.cs" />
-    <Compile Include="src\Model\IMediaItem.cs" />
-    <Compile Include="src\Model\Item.cs" />
-    <Compile Include="src\Model\ItemType.cs" />
-    <Compile Include="src\Model\MediaItem.cs" />
-    <Compile Include="src\Model\Playlist.cs" />
-    <Compile Include="src\Model\Session.cs" />
-    <Compile Include="src\Model\Song.cs" />
-    <Compile Include="src\Model\Stat.cs" />
-    <Compile Include="src\Model\User.cs" />
-    <Compile Include="src\Model\Video.cs" />
-    <Compile Include="src\OperationQueue\DelayedOperationQueue.cs" />
-    <Compile Include="src\OperationQueue\IDelayedOperation.cs" />
-    <Compile Include="src\OperationQueue\AbstractOperation.cs" />
-    <Compile Include="src\DeviceSync\DeviceSyncStartup.cs" />
-    <Compile Include="src\DeviceSync\DeviceSyncHub.cs" />
-    <Compile Include="src\DeviceSync\RawConnection.cs" />
-    <Compile Include="src\Static\Database.cs" />
-    <Compile Include="src\Static\FileManager.cs" />
-    <Compile Include="src\Static\Jukebox.cs" />
-    <Compile Include="src\Static\Settings.cs" />
-    <Compile Include="src\Static\DynamicDns.cs" />
-    <Compile Include="src\Static\Nat.cs" />
     <Compile Include="src\Static\ZeroConf.cs" />
-    <Compile Include="src\Static\AutoUpdater.cs" />
-    <Compile Include="src\Model\Lastfm.cs" />
-    <Compile Include="src\Static\UserManager.cs" />
-    <Compile Include="src\Static\Utility.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="lib\Newtonsoft.Json.dll" />
-    <Content Include="lib\taglib-sharp.dll" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
@@ -265,9 +225,6 @@
     </None>
     <None Include="lib\Mono.Zeroconf.Providers.AvahiDBus.dll" />
     <None Include="lib\Mono.Nat.dll" />
-    <None Include="lib\log4net.dll" />
-    <None Include="lib\System.Data.SQLite.dll" />
-    <None Include="lib\System.Data.SQLite.Linq.dll" />
     <None Include="log4net.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -317,6 +274,9 @@
     <None Include="lib\Microsoft.Owin.Host.HttpListener.dll" />
     <None Include="lib\Owin.dll" />
     <None Include="lib\Microsoft.Owin.Diagnostics.dll" />
+    <None Include="lib\log4net.dll" />
+    <None Include="lib\Newtonsoft.Json.dll" />
+    <None Include="lib\taglib-sharp.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -328,4 +288,13 @@
   -->
   <ItemGroup />
   <ItemGroup />
+  <ItemGroup>
+    <Folder Include="src\Static\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WaveBox.Core\WaveBox.Core.csproj">
+      <Project>{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}</Project>
+      <Name>WaveBox.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
 </Project>

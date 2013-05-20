@@ -50,7 +50,7 @@ namespace WaveBox.Static
 					watch.IncludeSubdirectories = true;
 					watch.EnableRaisingEvents = true;
 
-					if (WaveBoxService.DetectOS() == WaveBoxService.OS.MacOSX)
+					if (Utility.DetectOS() == Utility.OS.MacOSX)
 					{
 						// On OS X, there is a bug that requires us to explicitly set
 						// watchers for all subdirectories. The IncludeSubdirectories

@@ -51,7 +51,7 @@ namespace WaveBox.ApiHandler.Handlers
 					try
 					{
 						// Read in entire database file
-						Stream stream = new FileStream(WaveBoxMain.RootPath() + databaseFileName, FileMode.Open, FileAccess.Read);
+						Stream stream = new FileStream(Utility.RootPath() + databaseFileName, FileMode.Open, FileAccess.Read);
 						long length = stream.Length;
 						int startOffset = 0;
 					

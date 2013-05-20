@@ -72,7 +72,7 @@ namespace WaveBox.ApiHandler.Handlers
 				if (size != Int32.MaxValue)
 				{
 					bool imageMagickFailed = false;
-					if (WaveBoxService.DetectOS() != WaveBoxService.OS.Windows)
+					if (Utility.DetectOS() != Utility.OS.Windows)
 					{
 						// First try ImageMagick
 						try
@@ -88,7 +88,7 @@ namespace WaveBox.ApiHandler.Handlers
 					}
 
 					// If ImageMagick dll isn't loaded, or this is Windows,  
-					if (imageMagickFailed || WaveBoxService.DetectOS() == WaveBoxService.OS.Windows)
+					if (imageMagickFailed || Utility.DetectOS() == Utility.OS.Windows)
 					{
 						logger.Info("Using GDI to resize image");
 						// Resize image, put it in memory stream

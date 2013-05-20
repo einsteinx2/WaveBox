@@ -1,6 +1,6 @@
 using System;
 using NUnit.Framework;
-using WaveBox.DataModel.Model;
+using WaveBox.Model;
 
 namespace WaveBoxText
 {

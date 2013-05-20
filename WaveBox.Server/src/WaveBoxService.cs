@@ -46,15 +46,15 @@ namespace WaveBox
 
 				// Gather some metrics about this instance of WaveBox
 				// Operating system detection
-				switch (DetectOS())
+				switch (Utility.DetectOS())
 				{
-					case OS.Windows:
+					case Utility.OS.Windows:
 						Platform = "Windows";
 						break;
-					case OS.MacOSX:
+					case Utility.OS.MacOSX:
 						Platform = "Mac OS X";
 						break;
-					case OS.Unix:
+					case Utility.OS.Unix:
 						Platform = "UNIX/Linux";
 						break;
 					default:
@@ -63,7 +63,7 @@ namespace WaveBox
 				}
 
 				// Build date detection
-				BuildDate = GetBuildDate();
+				BuildDate = Utility.GetBuildDate();
 
 				if (logger.IsInfoEnabled) logger.Info("BuildDate timestamp: " + BuildDate.ToUniversalUnixTimestamp());
 
@@ -80,7 +80,7 @@ namespace WaveBox
 			catch (Exception e)
 			{
 				//logger.Error(e);
-				WaveBoxService.ReportCrash(e, false);
+				Utility.ReportCrash(e, false);
 			}
 		}
 
@@ -239,160 +239,6 @@ namespace WaveBox
 
 			// Trigger common shutdown function once unblocked
 			this.OnStop();
-		}
-
-		// Adapted from here: http://mono.1490590.n4.nabble.com/Howto-detect-os-td1549244.html
-		[DllImport("libc")] 
-		static extern int uname(IntPtr buf); 
-		public enum OS {Windows, MacOSX, Unix, unknown};
-
-		/// <summary>
-		/// DetectOS uses a couple different tricks to detect if we are running on Windows, Mac OSX, or Unix.
-		/// </summary>
-		public static OS DetectOS()
-		{ 
-			// Detect Windows via directory separator character
-			if (System.IO.Path.DirectorySeparatorChar == '\\')
-			{
-				return OS.Windows;
-			} 
-			// Detect MacOSX using a uname hack
-			else if (IsMacOSX())
-			{
-				return OS.MacOSX;
-			}
-			// Detect Unix via OS platform
-			else if (System.Environment.OSVersion.Platform == PlatformID.Unix)
-			{
-				return OS.Unix;
-			}
-			
-			// If no matching cases, OS is unknown
-			return OS.unknown; 
-		}
-
-		/// <summary>
-		/// IsMacOSX uses a uname hack to determine if the operating system is MacOSX
-		/// </summary>
-		private static bool IsMacOSX()
-		{ 
-			IntPtr buf = IntPtr.Zero; 
-			try
-			{ 
-				buf = Marshal.AllocHGlobal(8192); 
-				// This is a hacktastic way of getting sysname from uname() 
-				if (uname(buf) == 0)
-				{ 
-					string os = Marshal.PtrToStringAnsi(buf); 
-					if (os == "Darwin")
-					{
-						return true;
-					} 
-				} 
-			}
-			catch
-			{ 
-			}
-			finally
-			{ 
-				if (buf != IntPtr.Zero)
-				{ 
-					Marshal.FreeHGlobal(buf);
-				} 
-			} 
-			return false; 
-		}
-		
-		// Borrowed from: http://stackoverflow.com/questions/1600962/displaying-the-build-date
-		/// <summary>
-		/// Returns a DateTime object containing the date on which WaveBox was compiled (good for nightly build names,
-		/// as well as information on reporting issues which may occur later on.
-		/// </summary>
-		public static DateTime GetBuildDate()
-		{
-			// Read the PE header to get build date
-			string filePath = System.Reflection.Assembly.GetCallingAssembly().Location;
-			const int c_PeHeaderOffset = 60;
-			const int c_LinkerTimestampOffset = 8;
-			byte[] b = new byte[2048];
-			System.IO.Stream s = null;
-
-			try
-			{
-				s = new System.IO.FileStream(filePath, System.IO.FileMode.Open, System.IO.FileAccess.Read);
-				s.Read(b, 0, 2048);
-			}
-			finally
-			{
-				if (s != null)
-				{
-					s.Close();
-				}
-			}
-
-			int i = System.BitConverter.ToInt32(b, c_PeHeaderOffset);
-			int secondsSince1970 = System.BitConverter.ToInt32(b, i + c_LinkerTimestampOffset);
-			DateTime dt = new DateTime(1970, 1, 1, 0, 0, 0);
-			dt = dt.AddSeconds(secondsSince1970);
-			dt = dt.AddHours(TimeZone.CurrentTimeZone.GetUtcOffset(dt).Hours);
-			return dt;
-		}
-
-		/// <summary>
-		/// Called whenever WaveBox encounters a fatal error, resulting in a crash.  When configured, this will automatically
-		/// report the exception to WaveBox's crash dump service.  If not configured, the exception will be dumped to the log,
-		/// and the user may choose to report it manually.
-		/// </summary>
-		public static void ReportCrash(Exception exception, bool terminateProcess) 
-		{
-			logger.Error("WaveBox has crashed!");
-
-			// Report crash if enabled
-			if (Settings.CrashReportEnable)
-			{
-				logger.Error("ReportCrash called", exception);
-
-				// Submit to the web service
-				Uri URI = new Uri("http://crash.waveboxapp.com");
-				string parameters = "exception=" + HttpUtility.UrlEncode(exception.ToString());
-
-				using (WebClient wc = new WebClient())
-				{
-					wc.Headers[HttpRequestHeader.ContentType] = "application/x-www-form-urlencoded";
-
-					if (terminateProcess)
-					{
-						// We're about to terminate, so send it synchronously
-						string response = wc.UploadString(URI, parameters);
-						logger.Error("Crash report server response: " + response);
-					}
-					else
-					{
-						// We're stayin' alive, stayin' alive, so send it asynchronously
-						wc.UploadStringCompleted += new UploadStringCompletedEventHandler((sender, e) => logger.Error("Crash report server async response: " + e.Result));
-						wc.UploadStringAsync(URI, parameters);
-					}
-				}
-			}
-			else
-			{
-				// If automatic reporting disabled, print the exception so user has the option of sending crash dump manually
-				logger.Error("Automatic crash reporting is disabled, dumping exception...");
-				logger.Error("---------------- CRASH DUMP ----------------");
-				logger.Error(exception);
-				logger.Error("-------------- END CRASH DUMP --------------");
-				logger.Error("Please report this exception on: https://github.com/einsteinx2/WaveBox/issues");
-			}
-
-			if (terminateProcess)
-			{
-				System.Environment.FailFast("Unhandled exception caught, bailing as we're now in an unknown state.");
-			}
-		}
-
-		private static void ReportCrashAsyncCallback(object sender, UploadStringCompletedEventArgs e)
-		{
-			logger.Error("Crash report server async response: " + e.Result);
 		}
 	}
 }

@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>WaveBox.Core.Model</RootNamespace>
+    <AssemblyName>WaveBox.Core.Model</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProductVersion>10.0.0</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="taglib-sharp">
+      <HintPath>lib\taglib-sharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>lib\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="log4net">
+      <HintPath>lib\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.SQLite.Linq">
+      <HintPath>lib\System.Data.SQLite.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.SQLite">
+      <HintPath>lib\System.Data.SQLite.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="src\Model\Album.cs" />
+    <Compile Include="src\Model\Art.cs" />
+    <Compile Include="src\Model\Artist.cs" />
+    <Compile Include="src\Model\FileType.cs" />
+    <Compile Include="src\Model\Folder.cs" />
+    <Compile Include="src\Model\Genre.cs" />
+    <Compile Include="src\Model\IItem.cs" />
+    <Compile Include="src\Model\IMediaItem.cs" />
+    <Compile Include="src\Model\Item.cs" />
+    <Compile Include="src\Model\ItemType.cs" />
+    <Compile Include="src\Model\MediaItem.cs" />
+    <Compile Include="src\Model\Playlist.cs" />
+    <Compile Include="src\Model\Session.cs" />
+    <Compile Include="src\Model\Song.cs" />
+    <Compile Include="src\Model\Stat.cs" />
+    <Compile Include="src\Model\User.cs" />
+    <Compile Include="src\Model\Video.cs" />
+    <Compile Include="src\Model\Lastfm.cs" />
+    <Compile Include="src\Static\Database.cs" />
+    <Compile Include="src\Static\FileManager.cs" />
+    <Compile Include="src\Static\Settings.cs" />
+    <Compile Include="src\Static\DynamicDns.cs" />
+    <Compile Include="src\Static\UserManager.cs" />
+    <Compile Include="src\Static\Utility.cs" />
+    <Compile Include="src\OperationQueue\DelayedOperationQueue.cs" />
+    <Compile Include="src\OperationQueue\IDelayedOperation.cs" />
+    <Compile Include="src\OperationQueue\AbstractOperation.cs" />
+    <Compile Include="src\FolderScanning\FolderScanOperation.cs" />
+    <Compile Include="src\FolderScanning\OrphanScanOperation.cs" />
+    <Compile Include="src\Transcoding\ITranscoder.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <ItemGroup>
+    <Folder Include="src\" />
+    <Folder Include="src\Transcoding\" />
+    <Folder Include="lib\" />
+    <Folder Include="lib_native\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="lib\taglib-sharp.dll" />
+    <Content Include="lib\Newtonsoft.Json.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="lib\log4net.dll" />
+    <None Include="lib\System.Data.SQLite.dll" />
+    <None Include="lib\System.Data.SQLite.Linq.dll" />
+  </ItemGroup>
+</Project>
