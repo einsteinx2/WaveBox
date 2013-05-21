@@ -24,6 +24,9 @@ namespace WaveBox.Model
 		[JsonProperty("artistId")]
 		public int? ArtistId { get; set; }
 
+		[JsonProperty("artistName")]
+		public string ArtistName { get; set; }
+
 		[JsonProperty("albumId")]
 		public int? AlbumId { get; set; }
 
@@ -262,6 +265,9 @@ namespace WaveBox.Model
 			AlbumId = reader.GetInt32OrNull(reader.GetOrdinal("album_id"));
 			AlbumName = reader.GetStringOrNull(reader.GetOrdinal("album_name"));
 			ReleaseYear = reader.GetInt32OrNull(reader.GetOrdinal("album_release_year"));
+
+			// Add artistName from Id
+			ArtistName = this.Artist().ArtistName;
 		}
 
 		public Artist Artist()
