@@ -35,20 +35,20 @@ namespace WaveBox.ApiHandler.Handlers
 			List<Video> videos = new List<Video>();
 
 			// If a query is provided...
-			if (Uri.Parameters.ContainsKey("q"))
+			if (Uri.Parameters.ContainsKey("query"))
 			{
 				// URL decode to strip any URL-encoded characters
-				string query = HttpUtility.UrlDecode(Uri.Parameters["q"]);
+				string query = HttpUtility.UrlDecode(Uri.Parameters["query"]);
 
 				// Ensure query is not blank
 				if (query.Length > 0)
 				{
 					// Check for query field
 					string field = null;
-					if (Uri.Parameters.ContainsKey("f"))
+					if (Uri.Parameters.ContainsKey("field"))
 					{
 						// Use input field for query
-						field = HttpUtility.UrlDecode(Uri.Parameters["f"]);
+						field = HttpUtility.UrlDecode(Uri.Parameters["field"]);
 					}
 
 					// Check for exact match parameter
@@ -62,10 +62,10 @@ namespace WaveBox.ApiHandler.Handlers
 					}
 
 					// If a query type is provided...
-					if (Uri.Parameters.ContainsKey("t"))
+					if (Uri.Parameters.ContainsKey("type"))
 					{
 						// Iterate all comma-separated values in query type
-						foreach (string type in Uri.Parameters["t"].Split(','))
+						foreach (string type in Uri.Parameters["type"].Split(','))
 						{
 							// Return results, populating lists depending on parameters specified
 							switch (type)
