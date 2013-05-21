@@ -70,6 +70,61 @@ namespace WaveBox.ApiHandler.Handlers
 					}
 				}
 			}
+			// See if we need to manage users
+			else if (Uri.Parameters.ContainsKey("action"))
+			{
+				// killSession - remove a session by rowId
+				if (Uri.Parameters["action"] == "killSession")
+				{
+					// Try to pull rowId from parameters for session management
+					int rowId = 0;
+					if (!Uri.Parameters.ContainsKey("rowId"))
+					{
+						try
+						{
+							string json = JsonConvert.SerializeObject(new UsersResponse("Missing parameter 'rowId' for action 'killSession'", null), Settings.JsonFormatting);
+							Processor.WriteJson(json);
+						}
+						catch (Exception e)
+						{
+							logger.Error(e);
+						}
+					}
+
+					// Try to parse rowId integer
+					if (!Int32.TryParse(Uri.Parameters["rowId"], out rowId))
+					{
+						try
+						{
+							string json = JsonConvert.SerializeObject(new UsersResponse("invalid integer for 'rowId' for action 'killSession'", null), Settings.JsonFormatting);
+							Processor.WriteJson(json);
+						}
+						catch (Exception e)
+						{
+							logger.Error(e);
+						}
+					}
+
+					// After all checks pass, delete this session, return user associated with it
+					var session = new Session(rowId);
+					if (session != null)
+					{
+						session.DeleteSession();
+						listOfUsers.Add(new User(Convert.ToInt32(session.UserId)));
+					}
+
+					try
+					{
+						string json = JsonConvert.SerializeObject(new UsersResponse(null, listOfUsers), Settings.JsonFormatting);
+						Processor.WriteJson(json);
+					}
+					catch (Exception e)
+					{
+						logger.Error(e);
+					}
+				}
+			}
+			// Else, list user information
 			else
 			{
 				// Try to get a user ID
