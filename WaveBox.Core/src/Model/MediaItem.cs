@@ -55,7 +55,7 @@ namespace WaveBox.Model
 		public int? ArtId { get { return Art.ArtIdForItemId(ItemId); } }
 
 		[JsonIgnore]
-		public string FilePath { get { return new Folder(FolderId).FolderPath + Path.DirectorySeparatorChar + FileName; } }
+		public string FilePath { get { return new Folder.Factory().CreateFolder((int)FolderId).FolderPath + Path.DirectorySeparatorChar + FileName; } }
 
 		[JsonIgnore]
 		public FileStream File { get { return new FileStream(FilePath, FileMode.Open, FileAccess.Read); } }

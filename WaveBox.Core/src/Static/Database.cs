@@ -11,6 +11,9 @@ using WaveBox.Model;
 using System.Runtime.InteropServices;
 using System.Reflection;
 using Newtonsoft.Json;
+using SQLite;
+using Cirrious.MvvmCross.Plugins.Sqlite;
+//using Cirrious.MvvmCross.Platform;
 
 namespace WaveBox.Static
 {
@@ -28,6 +31,14 @@ namespace WaveBox.Static
 		
 		public static string BackupFileName(long queryId) { return "wavebox_backup_" + queryId + ".db"; }
 		public static string BackupPath(long queryId) { return Utility.RootPath() + BackupFileName(queryId); }
+
+		//public static SQLiteConnectionFactory connFactory;
+
+		static Database()
+		{
+			//Cirrious.MvvmCross.Plugins.Sqlite.PluginLoader.Instance.EnsureLoaded();
+			//connFactory = MvxServiceProvider.Instance.GetService<ISQLiteConnectionFactory>();
+		}
 
 		public static void DatabaseSetup()
 		{
@@ -86,6 +97,21 @@ namespace WaveBox.Static
 			}
 		}
 
+		public static ISQLiteConnection GetSqliteConnection()
+		{
+			return new SQLite.SQLiteConnection(DatabasePath());
+			//return connFactory.Create(DatabasePath() + ";Version=3;Pooling=True;Max Pool Size=100;synchronous=OFF;");
+		}
+
+		public static ISQLiteConnection GetQueryLogSqliteConnection()
+		{
+			return new SQLite.SQLiteConnection(QuerylogPath());
+			//return connFactory.Create(DatabasePath() + ";Version=3;Pooling=True;Max Pool Size=100;synchronous=OFF;");
+		}
+
+
+
+
 		public static IDbConnection GetDbConnection()
 		{
 			return GetDbConnection(DatabasePath());
@@ -109,7 +135,7 @@ namespace WaveBox.Static
 			}
 
 			string connString = "Data Source=" + dbName + ";Version=3;Pooling=True;Max Pool Size=100;synchronous=OFF;";
-			IDbConnection conn = new SQLiteConnection(connString);
+			IDbConnection conn = new System.Data.SQLite.SQLiteConnection(connString);
 			
 			while (conn.State == System.Data.ConnectionState.Closed)
 			{
@@ -121,7 +147,7 @@ namespace WaveBox.Static
 
 		public static IDbCommand GetDbCommand(string queryString, IDbConnection connection)
 		{
-			return new SQLiteCommand(queryString, (SQLiteConnection)connection);
+			return new System.Data.SQLite.SQLiteCommand(queryString, (System.Data.SQLite.SQLiteConnection)connection);
 		}
 
 		public static void Close(IDbConnection connection, IDataReader reader)
@@ -134,6 +160,85 @@ namespace WaveBox.Static
 			if ((object)connection != null)
 			{
 				connection.Close();
+			}
+		}
+
+		public static int InsertLogged(this ISQLiteConnection conn, object obj)
+		{
+			lock (dbBackupLock)
+			{
+				int result = conn.Insert(obj);
+
+				if (result > 0)
+				{
+					/*var map = conn.GetMapping(obj.GetType());
+
+					var cols = map.InsertColumns;
+					var vals = new object[cols.Length];
+					for (var i = 0; i < vals.Length; i++)
+					{
+						vals[i] = cols[i].GetValue(obj);
+					}
+
+					var insertCmd = map.GetInsertCommand(conn, "");
+
+					Console.WriteLine("CommandText: " + insertCmd.CommandText);
+					Console.WriteLine("Parameters: " + string.Join(",", vals));*/
+
+
+
+					// Only log successful queries
+					/*var map = conn.GetMapping(obj.GetType());
+
+					var cols = map.InsertColumns;
+					var vals = new object[cols.Length];
+					for (var i = 0; i < vals.Length; i++)
+					{
+						vals[i] = cols[i].GetValue(obj);
+					}
+
+					PreparedSqlLiteInsertCommand insertCmd = map.GetInsertCommand(this, extra);
+					Console.WriteLine("CommandText: " + insertCmd.CommandText);*/
+
+
+					/*IDataParameterCollection parameters = command.Parameters;
+					List<object> values = new List<object>();
+
+					// Format the query for saving
+					string query = command.CommandText;
+					foreach (IDbDataParameter dbParam in parameters)
+					{
+						// Replace parameter names with ?'s
+						query = query.Replace(dbParam.ParameterName, "?");
+
+						// Add the values to the array
+						values.Add(dbParam.Value);
+					}
+
+					// Log the query
+					IDbConnection conn = null;
+					try
+					{
+						conn = Database.GetQueryLogDbConnection();
+						IDbCommand q = Database.GetDbCommand("INSERT INTO query_log (query_string, values_string) " +
+						                                     "VALUES (@querystring, @valuesstring)", conn);
+						q.AddNamedParam("@querystring", query);
+						q.AddNamedParam("@valuesstring", JsonConvert.SerializeObject(values, Formatting.None));
+
+						q.Prepare();
+						q.ExecuteNonQuery();
+					}
+					catch(Exception e)
+					{
+						logger.Error(e);
+					}
+					finally
+					{
+						Database.Close(conn, null);
+					}*/
+				}
+
+				return result;
 			}
 		}
 
@@ -329,7 +434,7 @@ namespace WaveBox.Static
 				}
 
 				// If not, do the backup then return it
-				bool success = Backup((SQLiteConnection)GetDbConnection(), (SQLiteConnection)GetBackupDbConnection(lastQueryId));
+				bool success = Backup((System.Data.SQLite.SQLiteConnection)GetDbConnection(), (System.Data.SQLite.SQLiteConnection)GetBackupDbConnection(lastQueryId));
 				if (success)
 				{
 					return fileName;
@@ -341,7 +446,7 @@ namespace WaveBox.Static
 			}
 		}
 			   
-		public static bool Backup(SQLiteConnection source, SQLiteConnection destination)
+		public static bool Backup(System.Data.SQLite.SQLiteConnection source, System.Data.SQLite.SQLiteConnection destination)
 		{
 			lock (dbBackupLock)
 			{
@@ -388,7 +493,7 @@ namespace WaveBox.Static
 			}
 		}
 
-		private static IntPtr GetConnectionHandle(SQLiteConnection source)
+		private static IntPtr GetConnectionHandle(System.Data.SQLite.SQLiteConnection source)
 		{
 			object sqlLite3 = GetPrivateFieldValue(source, "_sql");
 			object connectionHandle = GetPrivateFieldValue(sqlLite3, "_sql");

@@ -1,21 +1,22 @@
+
 PRAGMA foreign_keys=OFF;
 BEGIN TRANSACTION;
 CREATE TABLE item_type (
 item_type_id INTEGER PRIMARY KEY ASC AUTOINCREMENT,
 item_type TEXT UNIQUE
 );
-INSERT INTO "item_type" VALUES(2,'album');
 INSERT INTO "item_type" VALUES(1,'artist');
-INSERT INTO "item_type" VALUES(11,'bookmark');
-INSERT INTO "item_type" VALUES(12,'bookmark_item');
+INSERT INTO "item_type" VALUES(2,'album');
+INSERT INTO "item_type" VALUES(3,'song');
 INSERT INTO "item_type" VALUES(4,'folder');
 INSERT INTO "item_type" VALUES(5,'playlist');
 INSERT INTO "item_type" VALUES(6,'playlist_item');
 INSERT INTO "item_type" VALUES(7,'podcast');
 INSERT INTO "item_type" VALUES(8,'podcast_episode');
-INSERT INTO "item_type" VALUES(3,'song');
 INSERT INTO "item_type" VALUES(9,'user');
 INSERT INTO "item_type" VALUES(10,'video');
+INSERT INTO "item_type" VALUES(11,'bookmark');
+INSERT INTO "item_type" VALUES(12,'bookmark_item');
 CREATE TABLE "bookmark" (
 "bookmark_id" INTEGER UNIQUE NOT NULL,
 "bookmark_name" TEXT
@@ -119,13 +120,6 @@ CREATE TABLE "art" (
 "art_file_size" INTEGER,
 "art_file_path" TEXT
 );
-CREATE TABLE "user" (
-"user_id" INTEGER UNIQUE NOT NULL,
-"user_name" TEXT UNIQUE NOT NULL,
-"user_password" TEXT NOT NULL,
-"user_salt" TEXT NOT NULL,
-"user_lastfm_session" TEXT
-);
 CREATE TABLE "stat" (
 "stat_id" INTEGER PRIMARY KEY NOT NULL,
 "time_stamp" INTEGER NOT NULL,
@@ -169,6 +163,15 @@ CREATE TABLE "video" (
     "video_height" INTEGER,
     "video_file_type_id" INTEGER,
     "video_genre_id" INTEGER
+);
+CREATE TABLE "user" (
+"user_id" INTEGER UNIQUE NOT NULL,
+"user_name" TEXT UNIQUE NOT NULL,
+"user_password" TEXT NOT NULL,
+"user_salt" TEXT NOT NULL,
+"user_lastfm_session" TEXT,
+"create_time" INTEGER NOT NULL,
+"delete_time" INTEGER
 );
 DELETE FROM sqlite_sequence;
 INSERT INTO "sqlite_sequence" VALUES('item_type',12);

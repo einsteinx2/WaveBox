@@ -290,7 +290,7 @@ namespace WaveBox.Static
 			{
 				if (Directory.Exists(mediaFolderString))
 				{
-					Folder mediaFolder = new Folder(mediaFolderString, true);
+					Folder mediaFolder = new Folder.Factory().CreateFolder(mediaFolderString, true);
 					if (mediaFolder.FolderId == null)
 					{
 						mediaFolder.InsertFolder(true);

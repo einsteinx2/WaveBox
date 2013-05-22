@@ -8,6 +8,7 @@ using WaveBox.Static;
 using WaveBox.Model;
 using Newtonsoft.Json;
 using System.IO;
+using Cirrious.MvvmCross.Plugins.Sqlite;
 
 namespace WaveBox.Model
 {
@@ -15,13 +16,13 @@ namespace WaveBox.Model
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		[JsonIgnore]
+		[JsonIgnore, Ignore]
 		public int? ItemId { get { return FolderId; } set { FolderId = ItemId; } }
 
-		[JsonIgnore]
+		[JsonIgnore, Ignore]
 		public ItemType ItemType { get { return ItemType.Folder; } }
 
-		[JsonIgnore]
+		[JsonIgnore, Ignore]
 		public int ItemTypeId { get { return (int)ItemType; } }
 
 		[JsonProperty("folderId")]
@@ -39,147 +40,19 @@ namespace WaveBox.Model
 		[JsonProperty("folderPath")]
 		public string FolderPath { get; set; }
 
-		[JsonProperty("artId")]
+		[JsonProperty("artId"), Ignore]
 		public int? ArtId { get { return Art.ArtIdForItemId(FolderId); } }
 
-		[JsonIgnore]
+		[JsonIgnore, Ignore]
 		public string ArtPath { get { return FindArtPath(); } }
 
 		/// <summary>
 		/// Constructors
 		/// </summary>
 
-		public Folder(int? folderId)
+		public Folder()
 		{
-			IDbConnection conn = null;
-			IDataReader reader = null;
 
-			try
-			{
-				conn = Database.GetDbConnection();
-
-				IDbCommand q = Database.GetDbCommand("SELECT * FROM folder WHERE folder_id = @folderid LIMIT 1", conn);
-
-				q.AddNamedParam("@folderid", folderId);
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
-				{
-					SetPropertiesFromQueryReader(reader);
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Database.Close(conn, reader);
-			}
-		}
-
-		public Folder(string path)
-		{
-			IDbConnection conn = null;
-			IDbCommand q = null;
-			IDataReader reader = null;
-
-			if (path == null || path == "")
-			{
-				return;
-			}
-
-			FolderPath = path;
-			FolderName = Path.GetFileName(path);
-
-			foreach (Folder mf in MediaFolders())
-			{
-				if (path.Contains(mf.FolderPath))
-				{
-					MediaFolderId = mf.FolderId;
-				}
-			}
-
-			try
-			{
-				conn = Database.GetDbConnection();
-				if (IsMediaFolder() || Settings.MediaFolders == null)
-				{
-					q = Database.GetDbCommand("SELECT folder_id FROM folder WHERE folder_name = @foldername AND parent_folder_id IS NULL", conn);
-					q.AddNamedParam("@foldername", FolderName);
-				}
-				else
-				{
-					ParentFolderId = GetParentFolderId(FolderPath);
-					q = Database.GetDbCommand("SELECT folder_id FROM folder WHERE folder_name = @foldername AND parent_folder_id = @parentfolderid", conn);
-					q.AddNamedParam("@foldername", FolderName);
-					q.AddNamedParam("@parentfolderid", ParentFolderId);
-				}
-
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
-				{
-					FolderId = reader.GetInt32(0);
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Database.Close(conn, reader);
-			}
-		}
-		
-
-		public Folder(string path, bool mediafolder)
-		{
-			FolderPath = path;
-			FolderName = Path.GetFileName(path);
-			ParentFolderId = null;
-			MediaFolderId = null;
-			FolderId = null;
-
-			IDbCommand q = null;
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
-			if (path == null || path == "")
-			{
-				return;
-			}
-
-			try
-			{
-				conn = Database.GetDbConnection();
-				q = Database.GetDbCommand("SELECT * FROM folder WHERE folder_path = \"" + path + "\" AND folder_media_folder_id IS NULL", conn);
-				//q = Database.GetDbCommand("SELECT * FROM folder WHERE folder_path = @folderpath AND folder_media_folder_id = 0", conn);
-				//q.AddNamedParam("@folderpath", path);
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				while (reader.Read())
-				{
-					if (path.Equals(reader.GetString(reader.GetOrdinal("folder_path"))))
-					{
-						SetPropertiesFromQueryReader(reader);
-					}
-				}
-				reader.Close();
-				conn.Close();
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Database.Close(conn, reader);
-			}
 		}
 
 		public Folder(IDataReader reader)
@@ -194,7 +67,7 @@ namespace WaveBox.Model
 
 		public Folder ParentFolder()
 		{
-			return new Folder(ParentFolderId);
+			return new Folder.Factory().CreateFolder((int)ParentFolderId);
 		}
 
 		public void Scan()
@@ -202,32 +75,32 @@ namespace WaveBox.Model
 			// TO DO: scanning!  yay!
 		}
 
-		private void SetPropertiesFromQueryReader(IDataReader reader)
+		public void SetPropertiesFromQueryReader(IDataReader reader)
 		{
 			if ((object)reader == null)
 			{
 				return;
 			}
 			
-			FolderId = reader.GetInt32(reader.GetOrdinal("folder_id"));
-			FolderName = reader.GetString(reader.GetOrdinal("folder_name"));
-			FolderPath = reader.GetString(reader.GetOrdinal("folder_path"));
-			if (reader.GetValue(reader.GetOrdinal("parent_folder_id")) == DBNull.Value)
+			FolderId = reader.GetInt32(reader.GetOrdinal("FolderId"));
+			FolderName = reader.GetString(reader.GetOrdinal("FolderName"));
+			FolderPath = reader.GetString(reader.GetOrdinal("FolderPath"));
+			if (reader.GetValue(reader.GetOrdinal("ParentFolderId")) == DBNull.Value)
 			{
 				ParentFolderId = null;
 			}
 			else 
 			{
-				ParentFolderId = reader.GetInt32(reader.GetOrdinal("parent_folder_id"));
+				ParentFolderId = reader.GetInt32(reader.GetOrdinal("ParentFolderId"));
 			}
 			
-			if (reader.GetValue(reader.GetOrdinal("folder_media_folder_id")) == DBNull.Value)
+			if (reader.GetValue(reader.GetOrdinal("MediaFolderId")) == DBNull.Value)
 			{
 				MediaFolderId = null;
 			}
 			else 
 			{
-				MediaFolderId = reader.GetInt32(reader.GetOrdinal("parent_folder_id"));
+				MediaFolderId = reader.GetInt32(reader.GetOrdinal("ParentFolderId"));
 			}
 		}
 
@@ -320,24 +193,13 @@ namespace WaveBox.Model
 
 		public List<Folder> ListOfSubFolders()
 		{
-			List<Folder> folders = new List<Folder>();
-
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT folder_id FROM folder WHERE parent_folder_id = @folderid", conn);
-				q.AddNamedParam("@folderid", FolderId);
-
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				while (reader.Read())
-				{
-					folders.Add(new Folder(reader.GetInt32(0)));
-				}
+				conn = Database.GetSqliteConnection();
+				List<Folder> folders = conn.Query<Folder>("SELECT FolderId FROM folder WHERE ParentFolderId = ?", FolderId);
+				folders.Sort(CompareFolderByName);
+				return folders;
 			}
 			catch (Exception e)
 			{
@@ -345,14 +207,13 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
-
-			folders.Sort(CompareFolderByName);
-			return folders;
+			
+			return new List<Folder>();
 		}
 
-		private bool IsMediaFolder()
+		public bool IsMediaFolder()
 		{
 			Folder mFolder = MediaFolder();
 
@@ -425,39 +286,19 @@ namespace WaveBox.Model
 			{
 				return;
 			}
-
-			IDbConnection conn = null;
-			IDataReader reader = null;
-			int affected;
+			
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("INSERT INTO folder (folder_id, folder_name, folder_path, parent_folder_id, folder_media_folder_id) " +
-													 "VALUES (@folderid, @foldername, @folderpath, @parentfolderid, @mediafolderid)", conn);
-				q.AddNamedParam("@folderid", itemId);
-				q.AddNamedParam("@foldername", FolderName);
-				q.AddNamedParam("@folderpath", FolderPath);
+				conn = Database.GetSqliteConnection();
 
-				if (isMediaFolder == true)
+				FolderId = itemId;
+				if (!isMediaFolder)
 				{
-					q.AddNamedParam("@parentfolderid", DBNull.Value);
-				}
-				else
-				{
-					q.AddNamedParam("@parentfolderid", GetParentFolderId(FolderPath));
+					ParentFolderId = GetParentFolderId(FolderPath);
 				}
 
-				q.AddNamedParam("@mediafolderid", MediaFolderId);
-				
-				q.Prepare();
-				affected = q.ExecuteNonQueryLogged();
-
-				if (affected > 0)
-				{
-					// get the id of the previous insert.  weird.
-					FolderId = itemId;
-					//FolderId = Convert.ToInt32(((SqlDecimal)q.ExecuteScalar()).ToString());
-				}
+				conn.InsertLogged(this);
 			}
 			catch (Exception e)
 			{
@@ -465,37 +306,32 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 		}
 
-		private int? GetParentFolderId(string path)
+		public int? GetParentFolderId(string path)
 		{
 			string parentFolderPath = Directory.GetParent(path).FullName;
 
-			IDbConnection conn = null;
-			IDataReader reader = null;
 			int? pFolderId = null;
 
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT folder_id FROM folder WHERE folder_path = @folderpath", conn);
-				q.AddNamedParam("@folderpath", parentFolderPath);
+				conn = Database.GetSqliteConnection();
+				int id = conn.ExecuteScalar<int>("SELECT FolderId FROM folder WHERE FolderPath = ?", new object[] { parentFolderPath });
 
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
+				if (id == 0)
 				{
-					pFolderId = reader.GetInt32(reader.GetOrdinal("folder_id"));
+					if (logger.IsInfoEnabled) logger.Info("No db result for parent folder.  Constructing parent folder object.");
+					Folder f = new Folder.Factory().CreateFolder(parentFolderPath);
+					f.InsertFolder(false);
+					pFolderId = f.FolderId;
 				}
 				else
 				{
-					if (logger.IsInfoEnabled) logger.Info("No db result for parent folder.  Constructing parent folder object.");
-					Folder f = new Folder(parentFolderPath);
-					f.InsertFolder(false);
-					pFolderId = f.FolderId;
+					pFolderId = id;
 				}
 			}
 			catch (Exception e)
@@ -504,7 +340,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
 			return pFolderId;
@@ -512,24 +348,13 @@ namespace WaveBox.Model
 
 		public static List<Folder> MediaFolders()
 		{
-			List<Folder> folders = new List<Folder>();
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
 			if (Settings.MediaFolders == null) 
 			{
+				ISQLiteConnection conn = null;
 				try 
 				{
-					conn = Database.GetDbConnection();
-					IDbCommand q = Database.GetDbCommand ("SELECT * FROM folder WHERE parent_folder_id IS NULL", conn);
-					//q.Parameters.AddWithValue("@nullvalue", DBNull.Value);
-					q.Prepare();
-					reader = q.ExecuteReader();
-
-					while (reader.Read())
-					{
-						folders.Add (new Folder(reader.GetInt32(reader.GetOrdinal("folder_id"))));
-					}
+					conn = Database.GetSqliteConnection();
+					return conn.Query<Folder>("SELECT * FROM folder WHERE ParentFolderId IS NULL");
 				} 
 				catch (Exception e) 
 				{
@@ -537,7 +362,7 @@ namespace WaveBox.Model
 				} 
 				finally
 				{
-					Database.Close(conn, reader);
+					conn.Close();
 				}
 			} 
 			else
@@ -545,7 +370,7 @@ namespace WaveBox.Model
 				return Settings.MediaFolders;
 			}
 
-			return folders;
+			return new List<Folder>();
 		}
 
 		public static List<Folder> TopLevelFolders()
@@ -564,6 +389,127 @@ namespace WaveBox.Model
 		public static int CompareFolderByName(Folder x, Folder y)
 		{
 			return StringComparer.OrdinalIgnoreCase.Compare(x.FolderName, y.FolderName);
+		}
+
+		/*
+		 * Factory class
+		 */
+
+		public class Factory
+		{
+			private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+			public Folder CreateFolder(int folderId)
+			{
+				ISQLiteConnection conn = null;
+				try
+				{
+					conn = Database.GetSqliteConnection();
+
+					List<Folder> folder = conn.Query<Folder>("SELECT * FROM folder WHERE FolderId = ? LIMIT 1", new object[] { folderId });
+					if (folder.Count > 0)
+					{
+						return folder[0];
+					}
+				}
+				catch (Exception e)
+				{
+					logger.Error(e);
+				}
+				finally
+				{
+					conn.Close();
+				}
+
+				return null;
+			}
+
+			public Folder CreateFolder(string path)
+			{
+				Folder folder = new Folder();
+
+				if (path == null || path == "")
+				{
+					return folder;
+				}
+
+				folder.FolderPath = path;
+				folder.FolderName = Path.GetFileName(path);
+
+				foreach (Folder mf in Folder.MediaFolders())
+				{
+					if (path.Contains(mf.FolderPath))
+					{
+						folder.MediaFolderId = mf.FolderId;
+					}
+				}
+
+				ISQLiteConnection conn = null;
+				try
+				{
+					conn = Database.GetSqliteConnection();
+					if (folder.IsMediaFolder() || Settings.MediaFolders == null)
+					{
+						int folderId = conn.ExecuteScalar<int>("SELECT FolderId FROM folder WHERE FolderName = ? AND ParentFolderId IS NULL", new object[] { folder.FolderName });
+						folder.FolderId = folderId == 0 ? (int?)null : folderId;
+					}
+					else
+					{
+						folder.ParentFolderId = folder.GetParentFolderId(folder.FolderPath);
+
+						int folderId = conn.ExecuteScalar<int>("SELECT FolderId FROM folder WHERE FolderName = ? AND ParentFolderId = ?", new object[] { folder.FolderName, folder.ParentFolderId });
+						folder.FolderId = folderId == 0 ? (int?)null : folderId;
+					}
+				}
+				catch (Exception e)
+				{
+					logger.Error(e);
+				}
+				finally
+				{
+					conn.Close();
+				}
+
+				return folder;
+			}
+
+			public Folder CreateFolder(string path, bool mediafolder)
+			{
+				if (path == null || path == "")
+				{
+					// No path so just return a folder
+					return new Folder();
+				}
+
+				ISQLiteConnection conn = null;
+				try
+				{
+					conn = Database.GetSqliteConnection();
+					IList<Folder> result = conn.Query<Folder>("SELECT * FROM folder WHERE FolderPath = ? AND MediaFolderId IS NULL", new object[] { path });
+
+					foreach (Folder f in result)
+					{
+						if (path.Equals(f.FolderPath))
+						{
+							return f;
+						}
+					}
+				}
+				catch (Exception e)
+				{
+					logger.Error(e);
+				}
+				finally
+				{
+					conn.Close();
+				}
+
+				// If not in database, return a folder object with the specified parameters
+				Folder folder = new Folder();
+				folder.FolderPath = path;
+				folder.FolderName = Path.GetFileName(path);
+				return folder;
+			}
 		}
 	}
 }

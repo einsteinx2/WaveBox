@@ -11,7 +11,7 @@ namespace WaveBoxText
 		[Test]
 		public void CompareFolderByName()
 		{
-			int result = Folder.CompareFolderByName(new Folder(1), new Folder(1));
+			int result = Folder.CompareFolderByName(new Folder.Factory().CreateFolder(1), new Folder.Factory().CreateFolder(1));
 			Assert.AreEqual(0, result);
 		}
 	}

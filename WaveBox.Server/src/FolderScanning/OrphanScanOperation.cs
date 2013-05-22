@@ -89,13 +89,13 @@ namespace WaveBox.FolderScanning
 					int? folderId, mediaFolderId;
 
 					// get ordinals
-					int pathOrdinal = reader.GetOrdinal("folder_path");
-					int folderIdOrdinal = reader.GetOrdinal("folder_id");
-					int mediaFolderIdOrdinal = reader.GetOrdinal("folder_media_folder_id");
+					int pathOrdinal = reader.GetOrdinal("FolderPath");
+					int folderIdOrdinal = reader.GetOrdinal("FolderId");
+					int mediaFolderIdOrdinal = reader.GetOrdinal("MediaFolderId");
 
 					if (reader.GetValue(pathOrdinal) != DBNull.Value) 
 					{
-						path = reader.GetString(reader.GetOrdinal("folder_path"));
+						path = reader.GetString(reader.GetOrdinal("FolderPath"));
 					} 
 					else
 					{
@@ -104,7 +104,7 @@ namespace WaveBox.FolderScanning
 
 					if (reader.GetValue(folderIdOrdinal) != DBNull.Value)
 					{
-						folderId = reader.GetInt32(reader.GetOrdinal("folder_id"));
+						folderId = reader.GetInt32(reader.GetOrdinal("FolderId"));
 					} 
 					else 
 					{
@@ -113,7 +113,7 @@ namespace WaveBox.FolderScanning
 
 					if (reader.GetValue(mediaFolderIdOrdinal) != DBNull.Value) 
 					{
-						mediaFolderId = reader.GetInt32(reader.GetOrdinal("folder_media_folder_id"));
+						mediaFolderId = reader.GetInt32(reader.GetOrdinal("MediaFolderId"));
 					} 
 					else
 					{
@@ -134,7 +134,7 @@ namespace WaveBox.FolderScanning
 				{
 					try 
 					{
-						IDbCommand q1 = Database.GetDbCommand("DELETE FROM folder WHERE folder_id = @folderid", conn);
+						IDbCommand q1 = Database.GetDbCommand("DELETE FROM folder WHERE FolderId = @folderid", conn);
 						q1.AddNamedParam("@folderid", fid);
 
 						q1.Prepare();
@@ -185,9 +185,9 @@ namespace WaveBox.FolderScanning
 			try
 			{
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT song.song_id, song.song_file_name, folder.folder_path " +
+				IDbCommand q = Database.GetDbCommand("SELECT song.song_id, song.song_file_name, folder.FolderPath " +
 					"FROM song " + 
-					"LEFT JOIN folder ON song.song_folder_id = folder.folder_id", conn);
+					"LEFT JOIN folder ON song.song_folder_id = folder.FolderId", conn);
 
 				q.Prepare();
 				reader = q.ExecuteReader();
@@ -196,7 +196,7 @@ namespace WaveBox.FolderScanning
 				{
 					songid = reader.GetInt32(reader.GetOrdinal("song_id"));
 					filename = reader.GetString(reader.GetOrdinal("song_file_name"));
-					path = reader.GetString(reader.GetOrdinal("folder_path")) + Path.DirectorySeparatorChar + filename;
+					path = reader.GetString(reader.GetOrdinal("FolderPath")) + Path.DirectorySeparatorChar + filename;
 
 					long timestamp = DateTime.Now.ToUniversalUnixTimestamp();
 					bool exists = File.Exists(path);

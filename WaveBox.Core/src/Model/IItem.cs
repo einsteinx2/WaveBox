@@ -1,18 +1,19 @@
 using System;
 using System.IO;
 using Newtonsoft.Json;
+using Cirrious.MvvmCross.Plugins.Sqlite;
 
 namespace WaveBox.Model
 {
 	public interface IItem
 	{
-		[JsonIgnore]
+		[JsonIgnore, Ignore]
 		ItemType ItemType { get; }
 		
-		[JsonProperty("itemTypeId")]
+		[JsonProperty("itemTypeId"), Ignore]
 		int ItemTypeId { get; }
 		
-		[JsonProperty("itemId")]
+		[JsonProperty("itemId"), Ignore]
 		int? ItemId { get; set; }
 	}
 }

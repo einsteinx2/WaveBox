@@ -220,7 +220,7 @@ namespace WaveBox.Model
 
 		private Stream StreamForFolder(int folderId)
 		{
-			Folder folder = new Folder(folderId);
+			Folder folder = new Folder.Factory().CreateFolder(folderId);
 			Stream stream = null;
 
 			string artPath = folder.ArtPath;

@@ -301,8 +301,8 @@ namespace WaveBox.Model
 				IDbCommand q = Database.GetDbCommand("SELECT folder.* " +
 													 "FROM genre " + 
 													 "LEFT JOIN song ON song.song_genre_id = genre.genre_id " +
-													 "LEFT JOIN folder ON song.song_folder_id = folder.folder_id " +
-													 "WHERE genre_id = @genreid GROUP BY folder.folder_id", conn);
+													 "LEFT JOIN folder ON song.song_folder_id = folder.FolderId " +
+													 "WHERE genre_id = @genreid GROUP BY folder.FolderId", conn);
 				
 				q.AddNamedParam("@genreid", GenreId);
 				

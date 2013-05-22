@@ -50,7 +50,7 @@ namespace WaveBox.FolderScanning
 
 		public void ProcessFolder(int folderId)
 		{
-			Folder folder = new Folder(folderId);
+			Folder folder = new Folder.Factory().CreateFolder(folderId);
 			ProcessFolder(folder.FolderPath);
 		}
 
@@ -67,7 +67,7 @@ namespace WaveBox.FolderScanning
 				if (Directory.Exists(folderPath))
 				{
 					testFolderObjCreateTime.Start();
-					Folder topFolder = new Folder(folderPath);
+					Folder topFolder = new Folder.Factory().CreateFolder(folderPath);
 					testFolderObjCreateTime.Stop();
 					//if (logger.IsInfoEnabled) logger.Info("scanning " + topFolder.FolderName + "  id: " + topFolder.FolderId);
 
@@ -119,7 +119,7 @@ namespace WaveBox.FolderScanning
 						if (!subfolder.Contains(".AppleDouble"))
 						{
 							testFolderObjCreateTime.Start();
-							Folder folder = new Folder(subfolder);
+							Folder folder = new Folder.Factory().CreateFolder(subfolder);
 							testFolderObjCreateTime.Stop();
 
 							// if the folder isn't already in the database, add it.
@@ -239,7 +239,7 @@ namespace WaveBox.FolderScanning
 				{
 					if (Art.FileNeedsUpdating(file, folderId))
 					{
-						var folder = new Folder(folderId);
+						var folder = new Folder.Factory().CreateFolder((int)folderId);
 
 						// Find the old art id, if it exists
 						int? oldArtId = folder.ArtId;
