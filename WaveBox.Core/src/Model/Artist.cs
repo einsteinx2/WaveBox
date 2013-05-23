@@ -217,10 +217,10 @@ namespace WaveBox.Model
 			{
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT song.*, artist.artist_name, album.album_name, genre.genre_name FROM song " + 
-													 "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
-													 "LEFT JOIN album ON song_album_id = album.album_id " +
-													 "LEFT JOIN genre ON song_genre_id = genre.genre_id " +
-													 "WHERE song_artist_id = @artistid", conn);
+													 "LEFT JOIN artist ON song.ArtistId = artist.artist_id " +
+													 "LEFT JOIN album ON song.AlbumId = album.album_id " +
+													 "LEFT JOIN genre ON song.GenreId = genre.genre_id " +
+													 "WHERE song.ArtistId = @artistid", conn);
 				q.AddNamedParam("@artistid", ArtistId);
 
 				q.Prepare();

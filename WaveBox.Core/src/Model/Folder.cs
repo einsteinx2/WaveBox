@@ -16,13 +16,13 @@ namespace WaveBox.Model
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		[JsonIgnore, Ignore]
+		[JsonIgnore, IgnoreRead, IgnoreWrite]
 		public int? ItemId { get { return FolderId; } set { FolderId = ItemId; } }
 
-		[JsonIgnore, Ignore]
+		[JsonIgnore, IgnoreRead, IgnoreWrite]
 		public ItemType ItemType { get { return ItemType.Folder; } }
 
-		[JsonIgnore, Ignore]
+		[JsonIgnore, IgnoreRead, IgnoreWrite]
 		public int ItemTypeId { get { return (int)ItemType; } }
 
 		[JsonProperty("folderId")]
@@ -40,10 +40,10 @@ namespace WaveBox.Model
 		[JsonProperty("folderPath")]
 		public string FolderPath { get; set; }
 
-		[JsonProperty("artId"), Ignore]
+		[JsonProperty("artId"), IgnoreRead, IgnoreWrite]
 		public int? ArtId { get { return Art.ArtIdForItemId(FolderId); } }
 
-		[JsonIgnore, Ignore]
+		[JsonIgnore, IgnoreRead, IgnoreWrite]
 		public string ArtPath { get { return FindArtPath(); } }
 
 		/// <summary>
@@ -126,10 +126,10 @@ namespace WaveBox.Model
 			{
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT song.*, artist.artist_name, album.album_name, genre.genre_name FROM song " +
-													 "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
-													 "LEFT JOIN album ON song_album_id = album.album_id " +
-													 "LEFT JOIN genre ON song_genre_id = genre.genre_id " +
-													 "WHERE song_folder_id = @folderid", conn);
+													 "LEFT JOIN artist ON song.ArtistId = artist.artist_id " +
+													 "LEFT JOIN album ON song.AlbumId = album.album_id " +
+													 "LEFT JOIN genre ON song.GenreId = genre.genre_id " +
+													 "WHERE song.FolderId = @folderid", conn);
 				
 				q.AddNamedParam("@folderid", FolderId);
 				q.Prepare();

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Newtonsoft.Json;
+using Cirrious.MvvmCross.Plugins.Sqlite;
 
 namespace WaveBox.Model
 {
@@ -9,7 +10,7 @@ namespace WaveBox.Model
 		[JsonProperty("folderId")]
 		int? FolderId { get; set; }
 		
-		[JsonProperty("fileType")]
+		[JsonProperty("fileType"), IgnoreRead, IgnoreWrite]
 		FileType FileType { get; set; }
 		
 		[JsonProperty("duration")]
@@ -39,7 +40,7 @@ namespace WaveBox.Model
 		[JsonIgnore]
 		string FilePath { get; }
 		
-		[JsonIgnore]
+		[JsonIgnore, IgnoreRead, IgnoreWrite]
 		FileStream File { get; }
 
 		void AddToPlaylist(Playlist thePlaylist, int index);

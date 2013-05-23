@@ -211,12 +211,12 @@ namespace WaveBox.FolderScanning
 								// It's a song!  Do yo thang.
 								if (isNew)
 								{
-									new Song(file, folderId, f).InsertMediaItem();
+									new Song.Factory().CreateSong(file, folderId, f).InsertMediaItem();
 								}
 								else if (itemId != null)
 								{
-									var oldSong = new Song((int)itemId);
-									var newSong = new Song(file, folderId, f);
+									var oldSong = new Song.Factory().CreateSong((int)itemId);
+									var newSong = new Song.Factory().CreateSong(file, folderId, f);
 									newSong.ItemId = oldSong.ItemId;
 									newSong.InsertMediaItem();
 								}

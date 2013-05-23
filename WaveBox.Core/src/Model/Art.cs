@@ -194,7 +194,7 @@ namespace WaveBox.Model
 
 		private Stream StreamForSong(int songId)
 		{
-			Song song = new Song(songId);
+			Song song = new Song.Factory().CreateSong(songId);
 			Stream stream = null;
 
 			// Open the image from the tag

@@ -304,7 +304,7 @@ namespace WaveBox.Model
 					switch (it)
 					{
 						case ItemType.Song:
-							item = new Song(itemid);
+							item = new Song.Factory().CreateSong(itemid);
 							break;
 						case ItemType.Video:
 							// nothing for now
@@ -347,7 +347,7 @@ namespace WaveBox.Model
 					switch (reader.GetInt32(reader.GetOrdinal("item_type_id")))
 					{
 						case (int)ItemType.Song:
-							items.Add(new Song(itemid));
+						items.Add(new Song.Factory().CreateSong(itemid));
 							break;
 						case (int)ItemType.Video:
 							// nothing for now

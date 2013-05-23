@@ -116,13 +116,13 @@ namespace SQLite
 
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public int InsertLogged(object obj)
+		public int InsertLogged(object obj, InsertType insertType = InsertType.Insert)
 		{
 			int affectedRows = Insert(obj);
 
 			if (affectedRows > 0)
 			{
-				var map = this.GetMapping(obj.GetType());
+				var map = this.GetMapping(obj.GetType(), TableMappingType.Write);
 
 				var cols = map.InsertColumns;
 				var vals = new object[cols.Length];
@@ -131,7 +131,7 @@ namespace SQLite
 					vals[i] = cols[i].GetValue(obj);
 				}
 
-				var insertCmd = map.GetInsertCommand(this, "");
+				var insertCmd = map.GetInsertCommand(this, "", insertType);
 				
 				// Log the query
 				ISQLiteConnection conn = null;
@@ -328,7 +328,7 @@ namespace SQLite
         /// The mapping represents the schema of the columns of the database and contains 
         /// methods to set and get properties of objects.
         /// </returns>
-        public TableMapping GetMapping(Type type)
+		public TableMapping GetMapping(Type type, TableMappingType mappingType)
         {
             if (_mappings == null)
             {
@@ -337,15 +337,15 @@ namespace SQLite
             TableMapping map;
             if (!_mappings.TryGetValue(type.FullName, out map))
             {
-                map = new TableMapping(type);
+				map = new TableMapping(type, mappingType);
                 _mappings[type.FullName] = map;
             }
             return map;
         }
 
-        ITableMapping ISQLiteConnection.GetMapping(Type type)
+		ITableMapping ISQLiteConnection.GetMapping(Type type, TableMappingType mappingType)
         {
-            return (ITableMapping)GetMapping(type);
+			return (ITableMapping)GetMapping(type, mappingType);
         }
 
         /// <summary>
@@ -355,9 +355,9 @@ namespace SQLite
         /// The mapping represents the schema of the columns of the database and contains 
         /// methods to set and get properties of objects.
         /// </returns>
-        public TableMapping GetMapping<T>()
+		public TableMapping GetMapping<T>(TableMappingType mappingType)
         {
-            return GetMapping(typeof (T));
+            return GetMapping(typeof (T), mappingType);
         }
 
         private struct IndexedColumn
@@ -379,7 +379,7 @@ namespace SQLite
         /// </summary>
         public int DropTable<T>()
         {
-            var map = GetMapping(typeof (T));
+			var map = GetMapping(typeof (T), TableMappingType.Write);
 
             var query = string.Format("drop table if exists \"{0}\"", map.TableName);
 
@@ -419,7 +419,7 @@ namespace SQLite
             TableMapping map;
             if (!_tables.TryGetValue(ty.FullName, out map))
             {
-                map = GetMapping(ty);
+				map = GetMapping(ty, TableMappingType.Write);
                 _tables.Add(ty.FullName, map);
             }
             var query = "create table if not exists \"" + map.TableName + "\"(\n";
@@ -770,7 +770,7 @@ namespace SQLite
         /// </returns>
         public T Get<T>(object pk) where T : new()
         {
-            var map = GetMapping(typeof (T));
+			var map = GetMapping(typeof (T), TableMappingType.Read);
             return Query<T>(map.GetByPrimaryKeySql, pk).First();
         }
 
@@ -804,7 +804,7 @@ namespace SQLite
         /// </returns>
         public T Find<T>(object pk) where T : new()
         {
-            var map = GetMapping(typeof (T));
+			var map = GetMapping(typeof (T), TableMappingType.Read);
             return Query<T>(map.GetByPrimaryKeySql, pk).FirstOrDefault();
         }
 
@@ -1093,7 +1093,7 @@ namespace SQLite
         /// <returns>
         /// The number of rows added to the table.
         /// </returns>
-        public int InsertAll(System.Collections.IEnumerable objects, bool beginTransaction = true)
+		public int InsertAll(System.Collections.IEnumerable objects, bool beginTransaction = true, InsertType insertType = InsertType.Insert)
         {
             if (beginTransaction)
             {
@@ -1102,7 +1102,7 @@ namespace SQLite
             var c = 0;
             foreach (var r in objects)
             {
-                c += Insert(r);
+                c += Insert(r, insertType);
             }
             if (beginTransaction)
             {
@@ -1121,27 +1121,27 @@ namespace SQLite
         /// <returns>
         /// The number of rows added to the table.
         /// </returns>
-        public int Insert(object obj)
+		public int Insert(object obj, InsertType insertType = InsertType.Insert)
         {
             if (obj == null)
             {
                 return 0;
             }
-            return Insert(obj, "", obj.GetType());
+            return Insert(obj, "", obj.GetType(), insertType);
         }
 
-        public int Insert(object obj, Type objType)
+		public int Insert(object obj, Type objType, InsertType insertType = InsertType.Insert)
         {
-            return Insert(obj, "", objType);
+            return Insert(obj, "", objType, insertType);
         }
 
-        public int Insert(object obj, string extra)
+		public int Insert(object obj, string extra, InsertType insertType = InsertType.Insert)
         {
             if (obj == null)
             {
                 return 0;
             }
-            return Insert(obj, extra, obj.GetType());
+            return Insert(obj, extra, obj.GetType(), insertType);
         }
 
         /// <summary>
@@ -1160,14 +1160,14 @@ namespace SQLite
         /// <returns>
         /// The number of rows added to the table.
         /// </returns>
-        public virtual int Insert(object obj, string extra, Type objType)
+        public virtual int Insert(object obj, string extra, Type objType, InsertType insertType = InsertType.Insert)
         {
             if (obj == null || objType == null)
             {
                 return 0;
             }
 
-            var map = GetMapping(objType);
+			var map = GetMapping(objType, TableMappingType.Write);
 
             var cols = map.InsertColumns;
             var vals = new object[cols.Length];
@@ -1176,7 +1176,7 @@ namespace SQLite
                 vals[i] = cols[i].GetValue(obj);
             }
 
-            var insertCmd = map.GetInsertCommand(this, extra);
+            var insertCmd = map.GetInsertCommand(this, extra, insertType);
             var count = insertCmd.ExecuteNonQuery(vals);
 
             if (map.HasAutoIncPK)
@@ -1215,7 +1215,7 @@ namespace SQLite
                 return 0;
             }
 
-            var map = GetMapping(objType);
+			var map = GetMapping(objType, TableMappingType.Write);
 
             var pk = map.PK;
 
@@ -1248,7 +1248,7 @@ namespace SQLite
         /// </returns>
         public virtual int Delete(object objectToDelete)
         {
-            var map = GetMapping(objectToDelete.GetType());
+			var map = GetMapping(objectToDelete.GetType(), TableMappingType.Write);
             var pk = map.PK;
             if (pk == null)
             {
@@ -1272,7 +1272,7 @@ namespace SQLite
         /// </typeparam>
         public int Delete<T>(object primaryKey)
         {
-            var map = GetMapping(typeof (T));
+			var map = GetMapping(typeof (T), TableMappingType.Write);
             var pk = map.PK;
             if (pk == null)
             {
@@ -1295,7 +1295,7 @@ namespace SQLite
         /// </typeparam>
         public int DeleteAll<T>()
         {
-            var map = GetMapping(typeof (T));
+			var map = GetMapping(typeof (T), TableMappingType.Write);
             var query = string.Format("delete from \"{0}\"", map.TableName);
             return Execute(query);
         }
@@ -1371,7 +1371,6 @@ namespace SQLite
         }
     }
 
-
     public class TableMapping : ITableMapping
     {
         public Type MappedType { get; private set; }
@@ -1387,7 +1386,7 @@ namespace SQLite
         private readonly Column _autoPk;
         private Column[] _insertColumns;
 
-        public TableMapping(Type type)
+        public TableMapping(Type type, TableMappingType mappingType)
         {
             MappedType = type;
 
@@ -1411,9 +1410,10 @@ namespace SQLite
             foreach (var p in props)
             {
 #if !NETFX_CORE
-                var ignore = p.GetCustomAttributes(typeof (IgnoreAttribute), true).Length > 0;
+				Type ignoreType = mappingType == TableMappingType.Read ? typeof (IgnoreReadAttribute) : typeof (IgnoreWriteAttribute);
+				var ignore = p.GetCustomAttributes(ignoreType, true).Length > 0;
 #else
-				var ignore = p.GetCustomAttributes (typeof(IgnoreAttribute), true).Count() > 0;
+				var ignore = p.GetCustomAttributes (ignoreType, true).Count() > 0;
 #endif
                 if (p.CanWrite && !ignore)
                 {
@@ -1483,33 +1483,42 @@ namespace SQLite
         private PreparedSqlLiteInsertCommand _insertCommand;
         private string _insertCommandExtra;
 
-        public PreparedSqlLiteInsertCommand GetInsertCommand(SQLiteConnection conn, string extra)
+        public PreparedSqlLiteInsertCommand GetInsertCommand(SQLiteConnection conn, string extra, InsertType insertType)
         {
             if (_insertCommand == null)
             {
-                _insertCommand = CreateInsertCommand(conn, extra);
+				_insertCommand = CreateInsertCommand(conn, extra, insertType);
                 _insertCommandExtra = extra;
             }
             else if (_insertCommandExtra != extra)
             {
                 _insertCommand.Dispose();
-                _insertCommand = CreateInsertCommand(conn, extra);
+                _insertCommand = CreateInsertCommand(conn, extra, insertType);
                 _insertCommandExtra = extra;
             }
             return _insertCommand;
         }
 
-        private PreparedSqlLiteInsertCommand CreateInsertCommand(SQLiteConnection conn, string extra)
+        private PreparedSqlLiteInsertCommand CreateInsertCommand(SQLiteConnection conn, string extra, InsertType insertType)
         {
+			string insertString;
+			switch (insertType)
+			{
+				case InsertType.InsertOrIgnore: insertString = "INSERT OR IGNORE"; break;
+				case InsertType.Replace: insertString = "REPLACE"; break;
+				case InsertType.Insert: 
+				default: insertString = "INSERT"; break;
+			}
+
             var cols = InsertColumns;
             string insertSql;
             if (!cols.Any() && Columns.Count() == 1 && Columns[0].IsAutoInc)
             {
-                insertSql = string.Format("insert {1} into \"{0}\" default values", TableName, extra);
+                insertSql = string.Format(insertString + " {1} INTO \"{0}\" DEFAULT VALUES", TableName, extra);
             }
             else
             {
-                insertSql = string.Format("insert {3} into \"{0}\"({1}) values ({2})", TableName,
+				insertSql = string.Format(insertString + " {3} INTO \"{0}\"({1}) VALUES ({2})", TableName,
                                           string.Join(",", (from c in cols
                                                             select "\"" + c.Name + "\"").ToArray()),
                                           string.Join(",", (from c in cols
@@ -1765,12 +1774,12 @@ namespace SQLite
 
         public IEnumerable<T> ExecuteDeferredQuery<T>()
         {
-            return ExecuteDeferredQuery<T>(_conn.GetMapping(typeof (T)));
+			return ExecuteDeferredQuery<T>(_conn.GetMapping(typeof (T), TableMappingType.Read));
         }
 
         public List<T> ExecuteQuery<T>()
         {
-            return ExecuteDeferredQuery<T>(_conn.GetMapping(typeof (T))).ToList();
+			return ExecuteDeferredQuery<T>(_conn.GetMapping(typeof (T), TableMappingType.Read)).ToList();
         }
 
         public List<T> ExecuteQuery<T>(ITableMapping map)
@@ -2221,7 +2230,7 @@ namespace SQLite
         public TableQuery(SQLiteConnection conn)
         {
             Connection = conn;
-            Table = Connection.GetMapping(typeof (T));
+            Table = Connection.GetMapping(typeof (T), TableMappingType.Read);
         }
 
         public TableQuery<U> Clone<U>()
@@ -2350,7 +2359,7 @@ namespace SQLite
             where TInner : new()
             where TResult : new()
         {
-            var q = new TableQuery<TResult>(Connection, Connection.GetMapping(typeof (TResult)))
+            var q = new TableQuery<TResult>(Connection, Connection.GetMapping(typeof (TResult), TableMappingType.Read))
                 {
                     _joinOuter = this,
                     _joinOuterKeySelector = outerKeySelector,

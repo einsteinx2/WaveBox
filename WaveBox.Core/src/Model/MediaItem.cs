@@ -8,6 +8,7 @@ using WaveBox.Model;
 using WaveBox.Static;
 using System.Diagnostics;
 using Newtonsoft.Json;
+using Cirrious.MvvmCross.Plugins.Sqlite;
 
 namespace WaveBox.Model
 {
@@ -15,10 +16,10 @@ namespace WaveBox.Model
 	{
 		//private static Logger logger = LogManager.GetCurrentClassLogger();
 
-		[JsonIgnore]
+		[JsonIgnore, IgnoreRead, IgnoreWrite]
 		public virtual ItemType ItemType { get { return ItemType.Unknown; } }
 
-		[JsonProperty("itemTypeId")]
+		[JsonProperty("itemTypeId"), IgnoreRead, IgnoreWrite]
 		public virtual int ItemTypeId { get { return (int)ItemType; } }
 
 		[JsonProperty("itemId")]
@@ -48,16 +49,16 @@ namespace WaveBox.Model
 		[JsonProperty("genreId")]
 		public int? GenreId { get; set; }
 		
-		[JsonProperty("genreName")]
+		[JsonProperty("genreName"), IgnoreWrite]
 		public string GenreName { get; set; }
 
-		[JsonProperty("artId")]
+		[JsonProperty("artId"), IgnoreRead, IgnoreWrite]
 		public int? ArtId { get { return Art.ArtIdForItemId(ItemId); } }
 
-		[JsonIgnore]
+		[JsonIgnore, IgnoreRead, IgnoreWrite]
 		public string FilePath { get { return new Folder.Factory().CreateFolder((int)FolderId).FolderPath + Path.DirectorySeparatorChar + FileName; } }
 
-		[JsonIgnore]
+		[JsonIgnore, IgnoreRead, IgnoreWrite]
 		public FileStream File { get { return new FileStream(FilePath, FileMode.Open, FileAccess.Read); } }
 
 		/// <summary>

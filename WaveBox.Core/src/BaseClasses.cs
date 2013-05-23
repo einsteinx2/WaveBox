@@ -66,9 +66,14 @@ namespace Cirrious.MvvmCross.Plugins.Sqlite
     }
 
     [AttributeUsage(AttributeTargets.Property)]
-    public class IgnoreAttribute : Attribute
+    public class IgnoreReadAttribute : Attribute
     {
     }
+
+	[AttributeUsage(AttributeTargets.Property)]
+	public class IgnoreWriteAttribute : Attribute
+	{
+	}
 
     [AttributeUsage(AttributeTargets.Property)]
     public class UniqueAttribute : IndexedAttribute
@@ -117,7 +122,7 @@ namespace Cirrious.MvvmCross.Plugins.Sqlite
 
         int DropTable<T>();
 
-        ITableMapping GetMapping(Type type);
+		ITableMapping GetMapping(Type type, TableMappingType mappingType);
 
         ISQLiteCommand CreateCommand(string cmdText, params object[] ps);
 
@@ -151,15 +156,15 @@ namespace Cirrious.MvvmCross.Plugins.Sqlite
 
         void RunInTransaction(Action action);
 
-        int InsertAll(System.Collections.IEnumerable objects, bool beginTransaction = true);
+		int InsertAll(System.Collections.IEnumerable objects, bool beginTransaction = true, InsertType insertType = InsertType.Insert);
 
-        int Insert(object obj);
+		int Insert(object obj, InsertType insertType = InsertType.Insert);
 
-        int Insert(object obj, Type objType);
+		int Insert(object obj, Type objType, InsertType insertType = InsertType.Insert);
 
-        int Insert(object obj, string extra);
+		int Insert(object obj, string extra, InsertType insertType = InsertType.Insert);
 
-        int Insert(object obj, string extra, Type objType);
+		int Insert(object obj, string extra, Type objType, InsertType insertType = InsertType.Insert);
 
         int Update(object obj);
 
@@ -173,7 +178,7 @@ namespace Cirrious.MvvmCross.Plugins.Sqlite
 		 * WaveBox
 		 */
 
-		int InsertLogged(object obj);
+		int InsertLogged(object obj, InsertType insertType = InsertType.Insert);
 		int UpdateLogged(object obj);
 		int DeleteLogged(object objectToDelete);
 
@@ -192,4 +197,17 @@ namespace Cirrious.MvvmCross.Plugins.Sqlite
     public interface ITableQuery<T> : IEnumerable<T> where T : new()
     {
     }
+
+	public enum InsertType
+	{
+		Insert,
+		InsertOrIgnore,
+		Replace
+	}
+
+	public enum TableMappingType
+	{
+		Read,
+		Write
+	}
 }

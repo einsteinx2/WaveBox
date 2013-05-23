@@ -184,8 +184,8 @@ namespace WaveBox.Model
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT artist.* " +
 													 "FROM genre " + 
-													 "LEFT JOIN song ON song.song_genre_id = genre.genre_id " +
-													 "LEFT JOIN artist ON song.song_artist_id = artist.artist_id " +
+													 "LEFT JOIN song ON song.GenreId = genre.genre_id " +
+													 "LEFT JOIN artist ON song.ArtistId = artist.artist_id " +
 													 "WHERE genre_id = @genreid GROUP BY artist.artist_id", conn);
 
 				q.AddNamedParam("@genreid", GenreId);
@@ -223,8 +223,8 @@ namespace WaveBox.Model
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT album.* " +
 													 "FROM genre " + 
-													 "LEFT JOIN song ON song.song_genre_id = genre.genre_id " +
-													 "LEFT JOIN album ON song.song_album_id = album.album_id " +
+													 "LEFT JOIN song ON song.GenreId = genre.genre_id " +
+													 "LEFT JOIN album ON song.AlbumId = album.album_id " +
 													 "WHERE genre_id = @genreid GROUP BY album.album_id", conn);
 				
 				q.AddNamedParam("@genreid", GenreId);
@@ -262,8 +262,8 @@ namespace WaveBox.Model
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT song.*, genre.genre_name " +
 													 "FROM genre " + 
-													 "LEFT JOIN song ON song.song_genre_id = genre.genre_id " +
-													 "WHERE genre_id = @genreid GROUP BY song.song_id", conn);
+													 "LEFT JOIN song ON song.GenreId = genre.genre_id " +
+													 "WHERE genre_id = @genreid GROUP BY song.ItemId", conn);
 				
 				q.AddNamedParam("@genreid", GenreId);
 				
@@ -300,8 +300,8 @@ namespace WaveBox.Model
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT folder.* " +
 													 "FROM genre " + 
-													 "LEFT JOIN song ON song.song_genre_id = genre.genre_id " +
-													 "LEFT JOIN folder ON song.song_folder_id = folder.FolderId " +
+													 "LEFT JOIN song ON song.GenreId = genre.genre_id " +
+													 "LEFT JOIN folder ON song.FolderId = folder.FolderId " +
 													 "WHERE genre_id = @genreid GROUP BY folder.FolderId", conn);
 				
 				q.AddNamedParam("@genreid", GenreId);

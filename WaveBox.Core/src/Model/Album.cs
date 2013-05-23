@@ -163,8 +163,8 @@ namespace WaveBox.Model
 			{
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT art_item.art_id FROM song " +
-													 "LEFT JOIN art_item ON song_id = art_item.item_id " +
-													 "WHERE song.song_album_id = @albumid AND art_item.art_id IS NOT NULL GROUP BY art_item.art_id", conn);
+				                                     "LEFT JOIN art_item ON song.ItemId = art_item.item_id " +
+													 "WHERE song.AlbumId = @albumid AND art_item.art_id IS NOT NULL GROUP BY art_item.art_id", conn);
 				q.AddNamedParam("@albumid", AlbumId);
 				q.Prepare();
 				reader = q.ExecuteReader();
@@ -197,8 +197,8 @@ namespace WaveBox.Model
 			{
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT art_item.art_id FROM song " +
-													 "LEFT JOIN art_item ON song_folder_id = art_item.item_id " +
-													 "WHERE song.song_album_id = @albumid AND art_item.art_id IS NOT NULL GROUP BY art_item.art_id", conn);
+													 "LEFT JOIN art_item ON song.FolderId = art_item.item_id " +
+													 "WHERE song.AlbumId = @albumid AND art_item.art_id IS NOT NULL GROUP BY art_item.art_id", conn);
 				q.AddNamedParam("@albumid", AlbumId);
 				q.Prepare();
 				reader = q.ExecuteReader();
@@ -285,10 +285,10 @@ namespace WaveBox.Model
 			{
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT song.*, artist.artist_name, album.album_name, genre.genre_name FROM song " +
-													 "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
-													 "LEFT JOIN album ON song_album_id = album.album_id " +
-													 "LEFT JOIN genre ON song_genre_id = genre.genre_id " +
-													 "WHERE song_album_id = @albumid", conn);
+													 "LEFT JOIN artist ON song.ArtistId = artist.artist_id " +
+													 "LEFT JOIN album ON song.AlbumId = album.album_id " +
+													 "LEFT JOIN genre ON song.GenreId = genre.genre_id " +
+													 "WHERE song.AlbumId = @albumid", conn);
 				q.AddNamedParam("@albumid", AlbumId);
 				q.Prepare();
 				reader = q.ExecuteReader();

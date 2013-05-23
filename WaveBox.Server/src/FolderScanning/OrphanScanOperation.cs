@@ -147,7 +147,7 @@ namespace WaveBox.FolderScanning
 
 					try
 					{
-						IDbCommand q2 = Database.GetDbCommand("DELETE FROM song WHERE song_folder_id = @folderid", conn);
+						IDbCommand q2 = Database.GetDbCommand("DELETE FROM song WHERE FolderId = @folderid", conn);
 						q2.AddNamedParam("@folderid", fid);
 
 						q2.Prepare();
@@ -185,17 +185,17 @@ namespace WaveBox.FolderScanning
 			try
 			{
 				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT song.song_id, song.song_file_name, folder.FolderPath " +
+				IDbCommand q = Database.GetDbCommand("SELECT song.ItemId, song.FileName, folder.FolderPath " +
 					"FROM song " + 
-					"LEFT JOIN folder ON song.song_folder_id = folder.FolderId", conn);
+					"LEFT JOIN folder ON song.FolderId = folder.FolderId", conn);
 
 				q.Prepare();
 				reader = q.ExecuteReader();
 
 				while (reader.Read())
 				{
-					songid = reader.GetInt32(reader.GetOrdinal("song_id"));
-					filename = reader.GetString(reader.GetOrdinal("song_file_name"));
+					songid = reader.GetInt32(reader.GetOrdinal("ItemId"));
+					filename = reader.GetString(reader.GetOrdinal("FileName"));
 					path = reader.GetString(reader.GetOrdinal("FolderPath")) + Path.DirectorySeparatorChar + filename;
 
 					long timestamp = DateTime.Now.ToUniversalUnixTimestamp();
@@ -222,7 +222,7 @@ namespace WaveBox.FolderScanning
 				try
 				{
 					conn = Database.GetDbConnection();
-					IDbCommand q1 = Database.GetDbCommand("DELETE FROM song WHERE song_id = @songid", conn);
+					IDbCommand q1 = Database.GetDbCommand("DELETE FROM song WHERE ItemId = @songid", conn);
 					q1.AddNamedParam("@songid", id);
 					q1.Prepare();
 					q1.ExecuteNonQueryLogged();
@@ -255,8 +255,8 @@ namespace WaveBox.FolderScanning
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT artist.artist_id " +
 													 "FROM artist " + 
-													 "LEFT JOIN song ON artist.artist_id = song.song_artist_id " +
-													 "WHERE song.song_artist_id IS NULL", conn);
+													 "LEFT JOIN song ON artist.artist_id = song.ArtistId " +
+													 "WHERE song.ArtistId IS NULL", conn);
 
 				q.Prepare();
 				reader = q.ExecuteReader();
@@ -313,8 +313,8 @@ namespace WaveBox.FolderScanning
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT album.album_id " +
 													 "FROM album " + 
-													 "LEFT JOIN song ON album.album_id = song.song_album_id " +
-													 "WHERE song.song_album_id IS NULL", conn);
+													 "LEFT JOIN song ON album.album_id = song.AlbumId " +
+				                                     "WHERE song.AlbumId IS NULL", conn);
 
 				q.Prepare();
 				reader = q.ExecuteReader();
@@ -371,8 +371,8 @@ namespace WaveBox.FolderScanning
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT genre.genre_id " +
 													 "FROM genre " +
-													 "LEFT JOIN song ON genre.genre_id = song.song_genre_id " +
-													 "WHERE song.song_genre_id IS NULL", conn);
+													 "LEFT JOIN song ON genre.genre_id = song.GenreId " +
+													 "WHERE song.GenreId IS NULL", conn);
 
 				q.Prepare();
 				reader = q.ExecuteReader();

@@ -73,7 +73,7 @@ namespace WaveBox.ApiHandler
 								if ((itemType == ItemType.Song) && (statTypeEnum == StatType.PLAYED))
 								{
 									// Also record a play for the artist, album, and folder
-									Song song = new Song(itemIdInt);
+									Song song = new Song.Factory().CreateSong(itemIdInt);
 									if ((object)song.AlbumId != null)
 									{
 										Stat.RecordStat((int)song.AlbumId, statTypeEnum, timeStampLong);

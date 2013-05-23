@@ -7,13 +7,13 @@ namespace WaveBox.Model
 {
 	public interface IItem
 	{
-		[JsonIgnore, Ignore]
+		[JsonIgnore, IgnoreRead, IgnoreWrite]
 		ItemType ItemType { get; }
 		
-		[JsonProperty("itemTypeId"), Ignore]
+		[JsonProperty("itemTypeId"), IgnoreRead, IgnoreWrite]
 		int ItemTypeId { get; }
 		
-		[JsonProperty("itemId"), Ignore]
+		[JsonProperty("itemId")]
 		int? ItemId { get; set; }
 	}
 }

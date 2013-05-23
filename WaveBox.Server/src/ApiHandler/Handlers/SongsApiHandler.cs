@@ -44,7 +44,7 @@ namespace WaveBox.ApiHandler.Handlers
 			if (success)
 			{
 				// Add song by ID to the list
-				listOfSongs.Add(new Song(id));
+				listOfSongs.Add(new Song.Factory().CreateSong(id));
 			}
 			else
 			{

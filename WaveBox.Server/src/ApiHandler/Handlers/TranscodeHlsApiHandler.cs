@@ -52,7 +52,7 @@ namespace WaveBox.ApiHandler.Handlers
 					IMediaItem item = null;
 					if (itemType == ItemType.Song)
 					{
-						item = new Song(id);
+						item = new Song.Factory().CreateSong(id);
 						if (logger.IsInfoEnabled) logger.Info("HLS transcoding for songs not currently supported");
 
 						// CURRENTLY DO NOT SUPPORT HLS STREAMING FOR SONGS
