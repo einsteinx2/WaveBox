@@ -75,7 +75,7 @@ namespace WaveBox.ApiHandler.Handlers
 					}
 					else if (itemType == ItemType.Video)
 					{
-						item = new Video(id);
+						item = new Video.Factory().CreateVideo(id);
 						if (logger.IsInfoEnabled) logger.Info("Preparing video transcode: " + item.FileName);
 
 						// Default to h.264 transcoding

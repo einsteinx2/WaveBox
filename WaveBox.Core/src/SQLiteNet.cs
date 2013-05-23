@@ -118,49 +118,71 @@ namespace SQLite
 
 		public int InsertLogged(object obj, InsertType insertType = InsertType.Insert)
 		{
-			int affectedRows = Insert(obj);
-
-			if (affectedRows > 0)
+			lock (Database.dbBackupLock)
 			{
-				var map = this.GetMapping(obj.GetType(), TableMappingType.Write);
+				int affectedRows = Insert(obj);
 
-				var cols = map.InsertColumns;
-				var vals = new object[cols.Length];
-				for (var i = 0; i < vals.Length; i++)
+				if (affectedRows > 0)
 				{
-					vals[i] = cols[i].GetValue(obj);
+					var map = this.GetMapping(obj.GetType(), TableMappingType.Write);
+
+					var cols = map.InsertColumns;
+					var vals = new object[cols.Length];
+					for (var i = 0; i < vals.Length; i++)
+					{
+						vals[i] = cols[i].GetValue(obj);
+					}
+
+					var insertCmd = map.GetInsertCommand(this, "", insertType);
+
+					// Log the query
+					ISQLiteConnection conn = null;
+					try
+					{
+						conn = Database.GetQueryLogSqliteConnection();
+						conn.Execute("INSERT INTO query_log (query_string, values_string) VALUES (?, ?)", insertCmd.CommandText, JsonConvert.SerializeObject(vals, Formatting.None));
+					}
+					catch(Exception e)
+					{
+						logger.Error(e);
+					}
+					finally
+					{
+						conn.Close();
+					}
 				}
 
-				var insertCmd = map.GetInsertCommand(this, "", insertType);
-				
-				// Log the query
-				ISQLiteConnection conn = null;
-				try
-				{
-					conn = Database.GetQueryLogSqliteConnection();
-					conn.Execute("INSERT INTO query_log (query_string, values_string) VALUES (?, ?)", insertCmd.CommandText, JsonConvert.SerializeObject(vals, Formatting.None));
-				}
-				catch(Exception e)
-				{
-					logger.Error(e);
-				}
-				finally
-				{
-					conn.Close();
-				}
+				return affectedRows;
 			}
-
-			return affectedRows;
 		}
 
-		public int UpdateLogged(object obj)
+		public int ExecuteLogged(string query, params object[] args)
 		{
-			return Update(obj);
-		}
+			lock (Database.dbBackupLock)
+			{
+				int affectedRows = Execute(query, args);
 
-		public int DeleteLogged(object objectToDelete)
-		{
-			return Delete(objectToDelete);
+				if (affectedRows > 0)
+				{
+					// Log the query
+					ISQLiteConnection conn = null;
+					try
+					{
+						conn = Database.GetQueryLogSqliteConnection();
+						conn.Execute("INSERT INTO query_log (query_string, values_string) VALUES (?, ?)", query, JsonConvert.SerializeObject(args, Formatting.None));
+					}
+					catch(Exception e)
+					{
+						logger.Error(e);
+					}
+					finally
+					{
+						conn.Close();
+					}
+				}
+
+				return affectedRows;
+			}
 		}
 
 		///////////////////////////////////////

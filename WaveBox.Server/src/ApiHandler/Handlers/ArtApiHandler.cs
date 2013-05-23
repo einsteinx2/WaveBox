@@ -52,7 +52,7 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 
 			// Grab art stream
-			Art art = new Art(artId);
+			Art art = new Art.Factory().CreateArt(artId);
 			Stream stream = art.Stream;
 
 			// If the stream could not be produced, return error

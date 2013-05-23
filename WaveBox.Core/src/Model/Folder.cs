@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Data;
-using System.Data.SqlTypes;
 using WaveBox.Static;
 using WaveBox.Model;
 using Newtonsoft.Json;
@@ -55,16 +53,6 @@ namespace WaveBox.Model
 
 		}
 
-		public Folder(IDataReader reader)
-		{
-			if ((object)reader == null)
-			{
-				return;
-			}
-
-			SetPropertiesFromQueryReader(reader);
-		}
-
 		public Folder ParentFolder()
 		{
 			return new Folder.Factory().CreateFolder((int)ParentFolderId);
@@ -73,35 +61,6 @@ namespace WaveBox.Model
 		public void Scan()
 		{
 			// TO DO: scanning!  yay!
-		}
-
-		public void SetPropertiesFromQueryReader(IDataReader reader)
-		{
-			if ((object)reader == null)
-			{
-				return;
-			}
-			
-			FolderId = reader.GetInt32(reader.GetOrdinal("FolderId"));
-			FolderName = reader.GetString(reader.GetOrdinal("FolderName"));
-			FolderPath = reader.GetString(reader.GetOrdinal("FolderPath"));
-			if (reader.GetValue(reader.GetOrdinal("ParentFolderId")) == DBNull.Value)
-			{
-				ParentFolderId = null;
-			}
-			else 
-			{
-				ParentFolderId = reader.GetInt32(reader.GetOrdinal("ParentFolderId"));
-			}
-			
-			if (reader.GetValue(reader.GetOrdinal("MediaFolderId")) == DBNull.Value)
-			{
-				MediaFolderId = null;
-			}
-			else 
-			{
-				MediaFolderId = reader.GetInt32(reader.GetOrdinal("ParentFolderId"));
-			}
 		}
 
 		public List<IMediaItem> ListOfMediaItems()
@@ -116,79 +75,12 @@ namespace WaveBox.Model
 
 		public List<Song> ListOfSongs()
 		{
-			List<Song> songs = new List<Song>();
-			
-			IDbConnection conn = null;
-			IDataReader reader = null;
-			
-			// For now just get songs
-			try
-			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT song.*, artist.artist_name, album.album_name, genre.genre_name FROM song " +
-													 "LEFT JOIN artist ON song.ArtistId = artist.artist_id " +
-													 "LEFT JOIN album ON song.AlbumId = album.album_id " +
-													 "LEFT JOIN genre ON song.GenreId = genre.genre_id " +
-													 "WHERE song.FolderId = @folderid", conn);
-				
-				q.AddNamedParam("@folderid", FolderId);
-				q.Prepare();
-				reader = q.ExecuteReader();
-				
-				while (reader.Read())
-				{
-					songs.Add(new Song(reader));
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Database.Close(conn, reader);
-			}
-			
-			songs.Sort(Song.CompareSongsByDiscAndTrack);
-			
-			return songs;
+			return Song.SearchSongs("FolderId", FolderId.ToString());
 		}
 
 		public List<Video> ListOfVideos()
 		{
-			List<Video> videos = new List<Video>();
-
-			IDbConnection conn = null;
-			IDataReader reader = null;
-			
-			// For now just get songs
-			try
-			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT * FROM video " +
-													 "WHERE video_folder_id = @folderid", conn);
-				
-				q.AddNamedParam("@folderid", FolderId);
-				q.Prepare();
-				reader = q.ExecuteReader();
-				
-				while (reader.Read())
-				{
-					videos.Add(new Video(reader));
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Database.Close(conn, reader);
-			}
-			
-			videos.Sort(Video.CompareVideosByFileName);
-			
-			return videos;
+			return Video.SearchVideos("FolderId", FolderId.ToString());
 		}
 
 		public List<Folder> ListOfSubFolders()
@@ -320,7 +212,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				int id = conn.ExecuteScalar<int>("SELECT FolderId FROM folder WHERE FolderPath = ?", new object[] { parentFolderPath });
+				int id = conn.ExecuteScalar<int>("SELECT FolderId FROM folder WHERE FolderPath = ?", parentFolderPath);
 
 				if (id == 0)
 				{
@@ -406,7 +298,7 @@ namespace WaveBox.Model
 				{
 					conn = Database.GetSqliteConnection();
 
-					List<Folder> folder = conn.Query<Folder>("SELECT * FROM folder WHERE FolderId = ? LIMIT 1", new object[] { folderId });
+					List<Folder> folder = conn.Query<Folder>("SELECT * FROM folder WHERE FolderId = ? LIMIT 1", folderId);
 					if (folder.Count > 0)
 					{
 						return folder[0];
@@ -450,14 +342,14 @@ namespace WaveBox.Model
 					conn = Database.GetSqliteConnection();
 					if (folder.IsMediaFolder() || Settings.MediaFolders == null)
 					{
-						int folderId = conn.ExecuteScalar<int>("SELECT FolderId FROM folder WHERE FolderName = ? AND ParentFolderId IS NULL", new object[] { folder.FolderName });
+						int folderId = conn.ExecuteScalar<int>("SELECT FolderId FROM folder WHERE FolderName = ? AND ParentFolderId IS NULL", folder.FolderName);
 						folder.FolderId = folderId == 0 ? (int?)null : folderId;
 					}
 					else
 					{
 						folder.ParentFolderId = folder.GetParentFolderId(folder.FolderPath);
 
-						int folderId = conn.ExecuteScalar<int>("SELECT FolderId FROM folder WHERE FolderName = ? AND ParentFolderId = ?", new object[] { folder.FolderName, folder.ParentFolderId });
+						int folderId = conn.ExecuteScalar<int>("SELECT FolderId FROM folder WHERE FolderName = ? AND ParentFolderId = ?", folder.FolderName, folder.ParentFolderId);
 						folder.FolderId = folderId == 0 ? (int?)null : folderId;
 					}
 				}
@@ -485,7 +377,7 @@ namespace WaveBox.Model
 				try
 				{
 					conn = Database.GetSqliteConnection();
-					IList<Folder> result = conn.Query<Folder>("SELECT * FROM folder WHERE FolderPath = ? AND MediaFolderId IS NULL", new object[] { path });
+					IList<Folder> result = conn.Query<Folder>("SELECT * FROM folder WHERE FolderPath = ? AND MediaFolderId IS NULL", path);
 
 					foreach (Folder f in result)
 					{

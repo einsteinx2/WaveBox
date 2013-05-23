@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Data;
 using Newtonsoft.Json;
 using WaveBox.Static;
 using WaveBox.Model;
 using System.Security.Cryptography;
+using Cirrious.MvvmCross.Plugins.Sqlite;
 
 namespace WaveBox.Model
 {
@@ -24,10 +24,10 @@ namespace WaveBox.Model
 		public string UserName { get; set; }
 
 		// This is only used after test account creation
-		[JsonProperty("password")]
+		[JsonProperty("password"), IgnoreRead, IgnoreWrite]
 		public string Password { get; set; }
 
-		[JsonProperty("sessions")]
+		[JsonProperty("sessions"), IgnoreRead, IgnoreWrite]
 		public List<Session> Sessions { get; set; }
 
 		[JsonIgnore]
@@ -36,7 +36,7 @@ namespace WaveBox.Model
 		[JsonIgnore]
 		public string PasswordSalt { get; set; }
 
-		[JsonIgnore]
+		[JsonIgnore, IgnoreRead, IgnoreWrite]
 		public string SessionId { get; set; }
 
 		[JsonProperty("lastfmSession")]
@@ -53,110 +53,13 @@ namespace WaveBox.Model
 
 		}
 
-		public User(IDataReader reader)
-		{
-			SetPropertiesFromQueryReader(reader);
-		}
-
-		public User(int userId)
-		{
-			UserId = userId;
-
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
-			try
-			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT * FROM user WHERE user_id = @userid", conn);
-				q.AddNamedParam("@userid", UserId);
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
-				{
-					SetPropertiesFromQueryReader(reader);
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Database.Close(conn, reader);
-			}
-		}
-
-		public User(string userName)
-		{
-			UserName = userName;
-
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
-			try
-			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT * FROM user WHERE user_name = @username", conn);
-				q.AddNamedParam("@username", userName);
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
-				{
-					SetPropertiesFromQueryReader(reader);
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Database.Close(conn, reader);
-			}
-		}
-
-		private void SetPropertiesFromQueryReader(IDataReader reader)
-		{
-			UserId = reader.GetInt32(reader.GetOrdinal("user_id"));
-			UserName = reader.GetString(reader.GetOrdinal("user_name"));
-			PasswordHash = reader.GetString(reader.GetOrdinal("user_password"));
-			PasswordSalt = reader.GetString(reader.GetOrdinal("user_salt"));
-			Sessions = this.ListOfSessions();
-
-			if (reader.GetValue(reader.GetOrdinal("user_lastfm_session")) != DBNull.Value)
-			{
-				LastfmSession = reader.GetString(reader.GetOrdinal("user_lastfm_session"));
-			}
-			else
-			{
-				LastfmSession = null;
-			}
-
-			CreateTime = reader.GetInt64(reader.GetOrdinal("create_time"));
-			DeleteTime = reader.GetInt64OrNull(reader.GetOrdinal("delete_time"));
-		}
-
 		public static string UserNameForSessionid(string sessionId)
 		{
-			string userName = null;
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT user.user_name FROM session JOIN user USING (user_id) WHERE session_id = @sessionid", conn);
-				q.AddNamedParam("@sessionid", sessionId);
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
-				{
-					userName = reader.GetString(0);
-				}
+				conn = Database.GetSqliteConnection();
+				return conn.ExecuteScalar<string>("SELECT User.UserName FROM Session JOIN User USING (UserId) WHERE SessionId = ?", sessionId);
 			}
 			catch (Exception e)
 			{
@@ -164,16 +67,16 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
-			return userName;
+			return null;
 		}
 
 		public bool UpdateSession(string sessionId)
 		{
 			// Update user's session based on its session ID
-			Session s = new Session(sessionId);
+			Session s = new Session.Factory().CreateSession(sessionId);
 
 			if (s != null)
 			{
@@ -185,22 +88,11 @@ namespace WaveBox.Model
 
 		public List<Session> ListOfSessions()
 		{
-			List<Session> sessions = new List<Session>();
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT ROWID,* FROM session WHERE user_id = @userid", conn);
-				q.AddNamedParam("@userid", UserId);
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				while (reader.Read())
-				{
-					sessions.Add(new Session(reader));
-				}
+				conn = Database.GetSqliteConnection();
+				return conn.Query<Session>("SELECT RowId, * FROM session WHERE UserId = ?", UserId);
 			}
 			catch (Exception e)
 			{
@@ -208,30 +100,19 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
-			return sessions;
+			return new List<Session>();
 		}
 
 		public static List<User> AllUsers()
 		{
-			List<User> users = new List<User>();
-
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT * FROM user", conn);
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				while (reader.Read())
-				{
-					users.Add(new User(reader));
-				}
+				conn = Database.GetSqliteConnection();
+				return conn.Query<User>("SELECT * FROM user ORDER BY UserName");
 			}
 			catch (Exception e)
 			{
@@ -239,33 +120,19 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
-			users.Sort(User.CompareUsersByName);
-
-			return users;
+			return new List<User>();
 		}
 
 		public static List<User> ExpiredUsers()
 		{
-			List<User> users = new List<User>();
-
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT * FROM user WHERE delete_time <= @deletetime", conn);
-				q.AddNamedParam("@deletetime", DateTime.Now.ToUniversalUnixTimestamp());
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				while (reader.Read())
-				{
-					users.Add(new User(reader));
-				}
+				conn = Database.GetSqliteConnection();
+				return conn.Query<User>("SELECT * FROM user WHERE DeleteTime <= @deletetime ORDER BY UserName", DateTime.Now.ToUniversalUnixTimestamp());
 			}
 			catch (Exception e)
 			{
@@ -273,12 +140,10 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
-			users.Sort(User.CompareUsersByName);
-
-			return users;
+			return new List<User>();
 		}
 
 		public static int CompareUsersByName(User x, User y)
@@ -325,21 +190,20 @@ namespace WaveBox.Model
 
 		public void UpdatePassword(string password)
 		{
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
 			string salt = GeneratePasswordSalt();
 			string hash = ComputePasswordHash(password, salt);
 
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("UPDATE user SET user_password = @hash, user_salt = @salt WHERE user_name = @username", conn);
-				q.AddNamedParam("@hash", hash);
-				q.AddNamedParam("@salt", salt);
-				q.AddNamedParam("@username", UserName);
-				q.Prepare();
-				q.ExecuteNonQuery();
+				conn = Database.GetSqliteConnection();
+				int affected = conn.Execute("UPDATE user SET PasswordHash = ?, PasswordSalt = ? WHERE UserName = ?", hash, salt, UserName);
+
+				if (affected > 0)
+				{
+					PasswordHash = hash;
+					PasswordSalt = salt;
+				}
 			}
 			catch (Exception e)
 			{
@@ -347,26 +211,22 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
-
-			PasswordHash = hash;
-			PasswordSalt = salt;
 		}
 
 		public void UpdateLastfmSession(string sessionKey)
 		{
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("UPDATE user SET user_lastfm_session = @session WHERE user_name = @username", conn);
-				q.AddNamedParam("@session", sessionKey);
-				q.AddNamedParam("@username", UserName);
-				q.Prepare();
-				q.ExecuteNonQuery();
+				conn = Database.GetSqliteConnection();
+				int affected = conn.Execute("UPDATE user SET LastfmSession = ? WHERE UserName = ?", sessionKey, UserName);
+
+				if (affected > 0)
+				{
+					LastfmSession = sessionKey;
+				}
 			}
 			catch (Exception e)
 			{
@@ -374,65 +234,8 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
-
-			LastfmSession = sessionKey;
-		}
-
-		public static User CreateUser(string userName, string password, long? deleteTime)
-		{
-			int? itemId = Item.GenerateItemId(ItemType.User);
-			if (itemId == null)
-			{
-				return null;
-			}
-
-			string salt = GeneratePasswordSalt();
-			string hash = ComputePasswordHash(password, salt);
-
-			IDbConnection conn = null;
-			IDataReader reader = null;
-			try
-			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("INSERT OR IGNORE INTO user (user_id, user_name, user_password, user_salt, create_time, delete_time) VALUES (@userid, @username, @userhash, @usersalt, @createtime, @deletetime)", conn);
-				q.AddNamedParam("@userid", itemId);
-				q.AddNamedParam("@username", userName);
-				q.AddNamedParam("@userhash", hash);
-				q.AddNamedParam("@usersalt", salt);
-				q.AddNamedParam("@createtime", DateTime.Now.ToUniversalUnixTimestamp());
-				q.AddNamedParam("@deletetime", deleteTime);
-				q.Prepare();
-
-				q.ExecuteNonQuery();
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Database.Close(conn, reader);
-			}
-
-			return new User(userName);
-		}
-
-		public static User CreateTestUser(long? durationSeconds)
-		{
-			// Create a new user with random username and password, that lasts for the specified duration
-			if (ReferenceEquals(durationSeconds, null))
-			{
-				// If no duration specified, use 24 hours
-				durationSeconds = 60 * 60 * 24;
-			}
-
-			string pass = Utility.RandomString(16);
-
-			User testUser = CreateUser(Utility.RandomString(16), pass, DateTime.Now.ToUniversalUnixTimestamp() + durationSeconds);
-			testUser.Password = pass;
-			return testUser;
 		}
 
 		// Verify password, using timing attack resistant approach
@@ -480,16 +283,17 @@ namespace WaveBox.Model
 				return;
 
 			// Delete the user
-			IDbConnection conn = null;
-			IDataReader reader = null;
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("DELETE FROM user WHERE user_id = @userid", conn);
-				q.AddNamedParam("@userid", UserId);
-				q.Prepare();
+				conn = Database.GetSqliteConnection();
+				int affected = conn.Execute("DELETE FROM user WHERE UserId = ?", UserId);
 
-				q.ExecuteNonQuery();
+				if (affected > 0)
+				{
+					// Delete associated sessions
+					Session.DeleteSessionsForUserId((int)UserId);
+				}
 			}
 			catch (Exception e)
 			{
@@ -497,11 +301,116 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
+			}
+		}
+
+		public class Factory
+		{
+			public User CreateUser(int userId)
+			{
+				ISQLiteConnection conn = null;
+				try
+				{
+					conn = Database.GetSqliteConnection();
+					var result = conn.DeferredQuery<User>("SELECT * FROM user WHERE UserId = ?", userId);
+
+					foreach (var u in result)
+					{
+						return u;
+					}
+				}
+				catch (Exception e)
+				{
+					logger.Error(e);
+				}
+				finally
+				{
+					conn.Close();
+				}
+
+				var user = new User();
+				user.UserId = userId;
+				return user;
 			}
 
-			// Delete associated sessions
-			Session.DeleteSessionsForUserId((int)UserId);
+			public User CreateUser(string userName)
+			{
+				ISQLiteConnection conn = null;
+				try
+				{
+					conn = Database.GetSqliteConnection();
+					var result = conn.DeferredQuery<User>("SELECT * FROM user WHERE UserName = ?", userName);
+
+					foreach (var u in result)
+					{
+						return u;
+					}
+				}
+				catch (Exception e)
+				{
+					logger.Error(e);
+				}
+				finally
+				{
+					conn.Close();
+				}
+
+				var user = new User();
+				user.UserName = userName;
+				return user;
+			}
+
+			public User CreateUser(string userName, string password, long? deleteTime)
+			{
+				int? itemId = Item.GenerateItemId(ItemType.User);
+				if (itemId == null)
+				{
+					return null;
+				}
+
+				string salt = GeneratePasswordSalt();
+				string hash = ComputePasswordHash(password, salt);
+
+				ISQLiteConnection conn = null;
+				try
+				{
+					conn = Database.GetSqliteConnection();
+					var u = new User();
+					u.UserId = itemId;
+					u.UserName = userName;
+					u.PasswordHash = hash;
+					u.Password = password;
+					u.PasswordSalt = salt;
+					u.CreateTime = DateTime.Now.ToUniversalUnixTimestamp();
+					u.DeleteTime = deleteTime;
+					conn.Insert(u);
+
+					return u;
+				}
+				catch (Exception e)
+				{
+					logger.Error(e);
+				}
+				finally
+				{
+					conn.Close();
+				}
+
+				return new User();
+			}
+
+			public User CreateTestUser(long? durationSeconds)
+			{
+				// Create a new user with random username and password, that lasts for the specified duration
+				if (ReferenceEquals(durationSeconds, null))
+				{
+					// If no duration specified, use 24 hours
+					durationSeconds = 60 * 60 * 24;
+				}
+
+				return CreateUser(Utility.RandomString(16), Utility.RandomString(16), DateTime.Now.ToUniversalUnixTimestamp() + durationSeconds);
+			}
 		}
 	}
 }

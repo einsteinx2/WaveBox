@@ -50,12 +50,6 @@
     <Reference Include="log4net">
       <HintPath>lib\log4net.dll</HintPath>
     </Reference>
-    <Reference Include="System.Data.SQLite.Linq">
-      <HintPath>lib\System.Data.SQLite.Linq.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Data.SQLite">
-      <HintPath>lib\System.Data.SQLite.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -85,6 +79,9 @@
     <Compile Include="src\Static\Settings.cs" />
     <Compile Include="src\BaseClasses.cs" />
     <Compile Include="src\SQLiteNet.cs" />
+    <Compile Include="src\Model\PlaylistItem.cs" />
+    <Compile Include="src\Model\ArtItem.cs" />
+    <Compile Include="src\Model\QueryLog.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -103,8 +100,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="lib\log4net.dll" />
-    <None Include="lib\System.Data.SQLite.dll" />
-    <None Include="lib\System.Data.SQLite.Linq.dll" />
     <None Include="lib\Cirrious.MvvmCross.Plugins.Sqlite.dll" />
     <None Include="lib\Cirrious.MvvmCross.dll" />
   </ItemGroup>

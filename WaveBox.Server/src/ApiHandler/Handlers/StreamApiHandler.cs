@@ -57,7 +57,7 @@ namespace WaveBox.ApiHandler.Handlers
 					}
 					else if (itemType == ItemType.Video)
 					{
-						item = new Video(id);
+						item = new Video.Factory().CreateVideo(id);
 						if (logger.IsInfoEnabled) logger.Info("Preparing video stream: " + item.FileName);
 					}
 

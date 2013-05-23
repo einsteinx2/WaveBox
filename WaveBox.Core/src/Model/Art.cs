@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using System.Data;
-using System.Data.SqlTypes;
 using WaveBox.Static;
 using WaveBox.Model;
 using System.Security.Cryptography;
 using TagLib;
 using Newtonsoft.Json;
+using Cirrious.MvvmCross.Plugins.Sqlite;
 
 namespace WaveBox.Model
 {
@@ -37,7 +36,7 @@ namespace WaveBox.Model
 		[JsonIgnore]
 		public string FilePath { get; set; }
 
-		[JsonIgnore]
+		[JsonIgnore, IgnoreRead, IgnoreWrite]
 		public Stream Stream { get { return CreateStream(); } }
 
 		/// <summary>
@@ -49,77 +48,6 @@ namespace WaveBox.Model
 
 		}
 
-		public Art(int artId)
-		{
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
-			try
-			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT * FROM art WHERE art_id = @artid", conn);
-				q.AddNamedParam("@artid", artId);
-
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
-				{
-					ArtId = reader.GetInt32OrNull(reader.GetOrdinal("art_id"));
-					Md5Hash = reader.GetStringOrNull(reader.GetOrdinal("md5_hash"));
-					LastModified = reader.GetInt64OrNull(reader.GetOrdinal("art_last_modified"));
-					FileSize = reader.GetInt64OrNull(reader.GetOrdinal("art_file_size"));
-					FilePath = reader.GetStringOrNull(reader.GetOrdinal("art_file_path"));
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Database.Close(conn, reader);
-			}
-		}
-
-		// used for getting art from a file.
-		public Art(string filePath)
-		{
-			FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-
-			// compute the hash of the file stream
-			Md5Hash = CalcMd5Hash(fs);
-			FileSize = fs.Length;
-			LastModified = System.IO.File.GetLastWriteTime(fs.Name).ToUniversalUnixTimestamp();
-			ArtId = Art.ArtIdForMd5(Md5Hash);
-			FilePath = filePath;
-
-			if ((object)ArtId == null)
-			{
-				InsertArt();
-			}
-		}
-
-		// used for getting art from a tag.
-		// We don't set the FilePath here, because that is only used for actual art files on disk
-		public Art(TagLib.File file)
-		{
-			if (file.Tag.Pictures.Length > 0)
-			{
-				byte[] data = file.Tag.Pictures[0].Data.Data;
-				Md5Hash = CalcMd5Hash(data);
-				FileSize = data.Length;
-				LastModified = System.IO.File.GetLastWriteTime(file.Name).ToUniversalUnixTimestamp();
-
-				ArtId = Art.ArtIdForMd5(Md5Hash);
-				if (ArtId == null)
-				{
-					// This art isn't in the database yet, so add it
-					InsertArt();
-				}
-			}
-		}
-
 		public void InsertArt()
 		{
 			int? itemId = Item.GenerateItemId(ItemType.Art);
@@ -128,29 +56,17 @@ namespace WaveBox.Model
 				return;
 			}
 
-			IDbConnection conn = null;
-			IDataReader reader = null;
+			ISQLiteConnection conn = null;
 			try
 			{
-				// insert the song into the database
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("INSERT INTO art (art_id, md5_hash, art_last_modified, art_file_size, art_file_path)" + 
-													 "VALUES (@artid, @md5hash, @lastmodified, @filesize, @artfilepath)"
-													, conn);
+				conn = Database.GetSqliteConnection();
+				ArtId = itemId;
+				int affected = conn.InsertLogged(this);
 
-				q.AddNamedParam("@artid", itemId);
-				q.AddNamedParam("@md5hash", Md5Hash);
-				q.AddNamedParam("@lastmodified", LastModified);
-				q.AddNamedParam("@filesize", FileSize);
-				q.AddNamedParam("@artfilepath", FilePath);
-				q.Prepare();
-
-				if (q.ExecuteNonQueryLogged() > 0)
+				if (affected == 0)
 				{
-					ArtId = itemId;
+					ArtId = null;
 				}
-
-				return;
 			}
 			catch (Exception e)
 			{
@@ -158,7 +74,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 		}
 
@@ -293,25 +209,13 @@ namespace WaveBox.Model
 			long lastModified = System.IO.File.GetLastWriteTime(filePath).ToUniversalUnixTimestamp();
 			bool needsUpdating = true;
 
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
+			ISQLiteConnection conn = null;
 			try
 			{
-				// Turns out that COUNT(*) on large tables is REALLY slow in SQLite because it does a full table search.  I created an index on folder_id(because weirdly enough,
-				// even though it's a primary key, SQLite doesn't automatically make one!  :O).  We'll pull that, and if we get a row back, then we'll know that this thing exists.
+				conn = Database.GetSqliteConnection();
+				string artId = conn.ExecuteScalar<string>("SELECT ArtId FROM art WHERE LastModified = ? AND FilePath = ?", filePath, lastModified);
 
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT art_id FROM art WHERE art_last_modified = @lastmod AND art_file_path = @filepath", conn);
-				//IDbCommand q = Database.GetDbCommand("SELECT COUNT(*) AS count FROM song WHERE song_folder_id = @folderid AND song_file_name = @filename AND song_last_modified = @lastmod", conn);
-
-				q.AddNamedParam("@filepath", filePath);
-				q.AddNamedParam("@lastmod", lastModified);
-
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
+				if (ReferenceEquals(artId, null))
 				{
 					needsUpdating = false;
 				}
@@ -322,34 +226,25 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
 			return needsUpdating;
 		}
 
-		public static int? ItemIdForArtId(int artId)
+		public static int? ItemIdForArtId(int? artId)
 		{
-			IDbConnection conn = null;
-			IDataReader reader = null;
+			if ((object)artId == null)
+			{
+				return null;
+			}
 
-			int? itemId = null;
-
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT item_id FROM art_item WHERE art_id = @artid", conn);
-				q.AddNamedParam("@artid", artId);
-
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
-				{
-					// Grab the first available item id that is associated with this art id
-					// doesn't matter which one because they all have the same art
-					itemId = reader.GetInt32(0);
-				}
+				conn = Database.GetSqliteConnection();
+				int itemId = conn.ExecuteScalar<int>("SELECT ItemId FROM ArtItem WHERE ArtId = ?", artId);
+				return itemId == 0 ? (int?)null : itemId;
 			}
 			catch (Exception e)
 			{
@@ -357,10 +252,10 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
-			return itemId;
+			return null;
 		}
 
 		public static int? ArtIdForItemId(int? itemId)
@@ -370,26 +265,12 @@ namespace WaveBox.Model
 				return null;
 			}
 
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
-			int? artId = null;
-
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT art_id FROM art_item WHERE item_id = @itemid", conn);
-				q.AddNamedParam("@itemid", itemId);
-
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
-				{
-					// Grab the first available item id that is associated with this art id
-					// doesn't matter which one because they all have the same art
-					artId = reader.GetInt32(0);
-				}
+				conn = Database.GetSqliteConnection();
+				int artId = conn.ExecuteScalar<int>("SELECT ArtId FROM ArtItem WHERE ItemId = ?", itemId);
+				return artId == 0 ? (int?)null : artId;
 			}
 			catch (Exception e)
 			{
@@ -397,10 +278,10 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
-			return artId;
+			return null;
 		}
 
 		public static int? ArtIdForMd5(string hash)
@@ -410,24 +291,12 @@ namespace WaveBox.Model
 				return null;
 			}
 
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
-			int? artId = null;
-
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT art_id FROM art WHERE md5_hash = @md5hash", conn);
-				q.AddNamedParam("@md5hash", hash);
-
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
-				{
-					artId = reader.GetInt32(0);
-				}
+				conn = Database.GetSqliteConnection();
+				int artId = conn.ExecuteScalar<int>("SELECT ArtId FROM art WHERE Md5Hash = ?", hash);
+				return artId == 0 ? (int?)null : artId;
 			}
 			catch (Exception e)
 			{
@@ -435,10 +304,10 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
-			return artId;
+			return null;
 		}
 
 		public static bool UpdateArtItemRelationship(int? artId, int? itemId, bool replace)
@@ -449,24 +318,15 @@ namespace WaveBox.Model
 			}
 
 			bool success = false;
-			IDbConnection conn = null;
-
+			ISQLiteConnection conn = null;
 			try
 			{
 				// insert the song into the database
-				conn = Database.GetDbConnection();
-				string command = replace ? "REPLACE" : "INSERT OR IGNORE";
-				IDbCommand q = Database.GetDbCommand(command + " INTO art_item (art_id, item_id) " + 
-													 "VALUES (@artid, @itemid)", conn);
+				conn = Database.GetSqliteConnection();
+				string type = replace ? "REPLACE" : "INSERT OR IGNORE";
+				int affected = conn.ExecuteLogged(type + " INTO ArtItem (ArtId, ItemId) VALUES (?, ?)", artId, itemId);
 
-				q.AddNamedParam("@artid", artId);
-				q.AddNamedParam("@itemid", itemId);
-				q.Prepare();
-
-				if (q.ExecuteNonQueryLogged() > 0)
-				{
-					success = true;
-				}
+				success = affected > 0;
 			}
 			catch (Exception e)
 			{
@@ -474,7 +334,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, null);
+				conn.Close();
 			}
 
 			return success;
@@ -488,21 +348,13 @@ namespace WaveBox.Model
 			}
 
 			bool success = false;
-			IDbConnection conn = null;
-
+			ISQLiteConnection conn = null;
 			try
 			{
-				// insert the song into the database
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("DELETE FROM art_item WHERE item_id = @itemid" , conn);
+				conn = Database.GetSqliteConnection();
+				int affected = conn.ExecuteLogged("DELETE FROM ArtItem WHERE ItemId = ?", itemId);
 
-				q.AddNamedParam("@itemid", itemId);
-				q.Prepare();
-
-				if (q.ExecuteNonQueryLogged() > 0)
-				{
-					success = true;
-				}
+				success = affected > 0;
 			}
 			catch (Exception e)
 			{
@@ -510,7 +362,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, null);
+				conn.Close();
 			}
 
 			return success;
@@ -524,22 +376,13 @@ namespace WaveBox.Model
 			}
 
 			bool success = false;
-			IDbConnection conn = null;
-
+			ISQLiteConnection conn = null;
 			try
 			{
-				// insert the song into the database
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("UPDATE art_item SET art_id = @newartid WHERE art_id = @oldartid", conn);
+				conn = Database.GetSqliteConnection();
+				int affected = conn.ExecuteLogged("UPDATE ArtItem SET ArtId = ? WHERE ArtId = ?", newArtId, oldArtId);
 
-				q.AddNamedParam("@newartid", newArtId);
-				q.AddNamedParam("@oldartid", oldArtId);
-				q.Prepare();
-
-				if (q.ExecuteNonQueryLogged() > 0)
-				{
-					success = true;
-				}
+				success = affected > 0;
 			}
 			catch (Exception e)
 			{
@@ -547,10 +390,83 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, null);
+				conn.Close();
 			}
 
 			return success;
+		}
+
+		public class Factory
+		{
+			public Art CreateArt(int artId)
+			{
+				ISQLiteConnection conn = null;
+				try
+				{
+					conn = Database.GetSqliteConnection();
+					var result = conn.DeferredQuery<Art>("SELECT * FROM art WHERE ArtId = ?", artId);
+
+					foreach (Art a in result)
+					{
+						return a;
+					}
+				}
+				catch (Exception e)
+				{
+					logger.Error(e);
+				}
+				finally
+				{
+					conn.Close();
+				}
+
+				return new Art();
+			}
+
+			// used for getting art from a file.
+			public Art CreateArt(string filePath)
+			{
+				FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+
+				// compute the hash of the file stream
+				Art art = new Art();
+				art.Md5Hash = CalcMd5Hash(fs);
+				art.FileSize = fs.Length;
+				art.LastModified = System.IO.File.GetLastWriteTime(fs.Name).ToUniversalUnixTimestamp();
+				art.ArtId = Art.ArtIdForMd5(art.Md5Hash);
+				art.FilePath = filePath;
+
+				if ((object)art.ArtId == null)
+				{
+					art.InsertArt();
+				}
+
+				return art;
+			}
+
+			// used for getting art from a tag.
+			// We don't set the FilePath here, because that is only used for actual art files on disk
+			public Art CreateArt(TagLib.File file)
+			{
+				Art art = new Art();
+
+				if (file.Tag.Pictures.Length > 0)
+				{
+					byte[] data = file.Tag.Pictures[0].Data.Data;
+					art.Md5Hash = CalcMd5Hash(data);
+					art.FileSize = data.Length;
+					art.LastModified = System.IO.File.GetLastWriteTime(file.Name).ToUniversalUnixTimestamp();
+
+					art.ArtId = Art.ArtIdForMd5(art.Md5Hash);
+					if (art.ArtId == null)
+					{
+						// This art isn't in the database yet, so add it
+						art.InsertArt();
+					}
+				}
+
+				return art;
+			}
 		}
 	}
 }

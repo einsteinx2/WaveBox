@@ -2,12 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Data;
 using System.Threading;
-using System.Data.SQLite;
 using System.IO;
 using WaveBox.Model;
 using WaveBox.Static;
+using Cirrious.MvvmCross.Plugins.Sqlite;
 
 namespace WaveBox
 {
@@ -18,28 +17,21 @@ namespace WaveBox
 		public static int? GenerateItemId(ItemType itemType)
 		{
 			int? itemId = null;
-			IDbConnection conn = null;
-			IDataReader reader = null;
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("INSERT INTO item (item_type_id, time_stamp) VALUES (@itemType, @timestamp)", conn);
-				q.AddNamedParam("@itemType", itemType);
-				q.AddNamedParam("@timestamp", DateTime.UtcNow.ToUniversalUnixTimestamp());
-				q.Prepare();
-				int affected = (int)q.ExecuteNonQueryLogged();
+				conn = Database.GetSqliteConnection();
+				int affected = conn.ExecuteLogged("INSERT INTO item (ItemType, Timestamp) VALUES (?, ?)", itemType, DateTime.UtcNow.ToUniversalUnixTimestamp());
 
 				if (affected >= 1)
 				{
-					IDataReader reader2 = null;
 					try
 					{
-						q.CommandText = "SELECT last_insert_rowid()";
-						reader2 = q.ExecuteReader();
+						int rowId = conn.ExecuteScalar<int>("SELECT last_insert_rowid()");
 
-						if (reader2.Read())
+						if (rowId != 0)
 						{
-							itemId = reader2.GetInt32(0);
+							itemId = rowId;
 						}
 					}
 					catch(Exception e)
@@ -48,7 +40,7 @@ namespace WaveBox
 					}
 					finally
 					{
-						Database.Close(null, reader2);
+						conn.Close();
 					}
 				}
 			}
@@ -58,7 +50,7 @@ namespace WaveBox
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
 			return itemId;
@@ -67,20 +59,11 @@ namespace WaveBox
 		public static ItemType ItemTypeForItemId(int itemId)
 		{
 			int itemTypeId = 0;
-			IDbConnection conn = null;
-			IDataReader reader = null;
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT item_type_id FROM item WHERE item_id = @itemid", conn);
-				q.AddNamedParam("@itemid", itemId);
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
-				{
-					itemTypeId = reader.GetInt32(0);
-				}
+				conn = Database.GetSqliteConnection();
+				itemTypeId = conn.ExecuteScalar<int>("SELECT ItemType FROM item WHERE ItemId = ?", itemId);
 			}
 			catch (Exception e)
 			{
@@ -88,7 +71,7 @@ namespace WaveBox
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
 			return ItemTypeExtensions.ItemTypeForId(itemTypeId);
@@ -121,6 +104,11 @@ namespace WaveBox
 
 			// Return unknown, if we didn't return yet
 			return ItemType.Unknown;
+		}
+
+		public static bool RecordStat(this IItem item, StatType statType, long timestamp)
+		{
+			return (object)item.ItemId == null ? false : Stat.RecordStat((int)item.ItemId, statType, timestamp);
 		}
 	}
 }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Data;
 using WaveBox.Model;
 using WaveBox.Static;
 using System.IO;
@@ -54,45 +53,6 @@ namespace WaveBox.Model
 		{
 		}
 
-		public Song(IDataReader reader)
-		{
-			SetPropertiesFromQueryReader(reader);
-		}
-
-		private void SetPropertiesFromQueryReader(IDataReader reader)
-		{
-			try
-			{
-				ItemId = reader.GetInt32(reader.GetOrdinal("ItemId"));
-
-				FolderId = reader.GetInt32OrNull(reader.GetOrdinal("FolderId"));
-				ArtistId = reader.GetInt32OrNull(reader.GetOrdinal("ArtistId"));
-				ArtistName = reader.GetStringOrNull(reader.GetOrdinal("ArtistName"));
-				AlbumId = reader.GetInt32OrNull(reader.GetOrdinal("AlbumId"));
-				AlbumName = reader.GetStringOrNull(reader.GetOrdinal("AlbumName"));
-				int? fileType = reader.GetInt32OrNull(reader.GetOrdinal("FileType"));
-				if (fileType != null)
-				{
-					FileType = FileType.FileTypeForId((int)fileType);
-				}
-				SongName = reader.GetStringOrNull(reader.GetOrdinal("SongName"));
-				TrackNumber = reader.GetInt32OrNull(reader.GetOrdinal("TrackNum"));
-				DiscNumber = reader.GetInt32OrNull(reader.GetOrdinal("DiscNum"));
-				Duration = reader.GetInt32OrNull(reader.GetOrdinal("Duration"));
-				Bitrate = reader.GetInt32OrNull(reader.GetOrdinal("Bitrate"));
-				FileSize = reader.GetInt64OrNull(reader.GetOrdinal("FileSize"));
-				LastModified = reader.GetInt64OrNull(reader.GetOrdinal("LastModified"));
-				FileName = reader.GetStringOrNull(reader.GetOrdinal("FileName"));
-				ReleaseYear = reader.GetInt32OrNull(reader.GetOrdinal("ReleaseYear"));
-				GenreId = reader.GetInt32OrNull(reader.GetOrdinal("GenreId"));
-				GenreName = reader.GetStringOrNull(reader.GetOrdinal("genre_name"));
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-		}
-
 		public override void InsertMediaItem()
 		{
 			ISQLiteConnection conn = null;
@@ -101,39 +61,6 @@ namespace WaveBox.Model
 				// insert the song into the database
 				conn = Database.GetSqliteConnection();
 				conn.InsertLogged(this, InsertType.Replace);
-
-
-
-				/*IDbCommand q = Database.GetDbCommand("REPLACE INTO song (song_id, song_folder_id, song_artist_id, song_album_id, song_file_type_id, song_name, song_track_num, song_disc_num, song_duration, song_bitrate, song_file_size, song_last_modified, song_file_name, song_release_year, song_genre_id) " + 
-													 "VALUES (@songid, @folderid, @artistid, @albumid, @filetype, @songname, @tracknum, @discnum, @duration, @bitrate, @filesize, @lastmod, @filename, @releaseyear, @genreid)"
-													 , conn);
-
-				q.AddNamedParam("@songid", ItemId);
-				q.AddNamedParam("@folderid", FolderId);
-				q.AddNamedParam("@artistid", ArtistId);
-				q.AddNamedParam("@albumid", AlbumId);
-				q.AddNamedParam("@filetype", (int)FileType);
-				q.AddNamedParam("@songname", SongName);
-				q.AddNamedParam("@tracknum", TrackNumber);
-				q.AddNamedParam("@discnum", DiscNumber);
-				q.AddNamedParam("@duration", Duration);
-				q.AddNamedParam("@bitrate", Bitrate);
-				q.AddNamedParam("@filesize", FileSize);
-				q.AddNamedParam("@lastmod", LastModified);
-				q.AddNamedParam("@filename", FileName);
-				if (ReleaseYear == null)
-				{
-					q.AddNamedParam("@releaseyear", DBNull.Value);
-				}
-				else
-				{
-					q.AddNamedParam("@releaseyear", ReleaseYear);
-				}
-				q.AddNamedParam("@genreid", GenreId);
-
-				q.Prepare();
-
-				q.ExecuteNonQueryLogged();*/
 			}
 			catch (Exception e)
 			{
@@ -141,7 +68,6 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				//Database.Close(conn, reader);
 				conn.Close();
 			}
 
@@ -303,16 +229,19 @@ namespace WaveBox.Model
 			{
 				conn = Database.GetSqliteConnection();
 
+				List<Song> songs;
 				if (exact)
 				{
 					// Search for exact match
-					return conn.Query<Song>("SELECT * FROM song WHERE " + field + " = ?", new object[] { query });
+					songs = conn.Query<Song>("SELECT * FROM song WHERE " + field + " = ?", query);
 				}
 				else
 				{
 					// Search for fuzzy match (containing query)
-					return conn.Query<Song>("SELECT * FROM song WHERE " + field + " LIKE ?", new object[] { "%" + query + "%" });
+					songs = conn.Query<Song>("SELECT * FROM song WHERE " + field + " LIKE ?", "%" + query + "%");
 				}
+				songs.Sort(Song.CompareSongsByDiscAndTrack);
+				return songs;
 			}
 			catch (Exception e)
 			{
@@ -356,7 +285,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				IEnumerable result = conn.Query<Song>("SELECT * FROM song WHERE FolderId = ? AND FileName = ? LIMIT 1", new object[] { folderId, fileName });
+				IEnumerable result = conn.Query<Song>("SELECT * FROM song WHERE FolderId = ? AND FileName = ? LIMIT 1", folderId, fileName);
 
 				foreach (Song song in result)
 				{
@@ -399,7 +328,7 @@ namespace WaveBox.Model
 					                                              "LEFT JOIN artist ON song.ArtistId = artist.artist_id " +
 					                                              "LEFT JOIN album ON song.AlbumId = album.album_id " +
 					                                              "LEFT JOIN genre ON song.GenreId = genre.genre_id " +
-					                                              "WHERE song.ItemId = @songid LIMIT 1", new object[] { songId });
+					                                              "WHERE song.ItemId = @songid LIMIT 1", songId);
 
 					foreach (Song song in result)
 					{
@@ -511,7 +440,7 @@ namespace WaveBox.Model
 				if ((object)song.GenreName != null)
 				{
 					// Retreive the genre id
-					song.GenreId = new Genre(song.GenreName).GenreId;
+					song.GenreId = new Genre.Factory().CreateGenre(song.GenreName).GenreId;
 				}
 
 				song.Duration = Convert.ToInt32(file.Properties.Duration.TotalSeconds);
@@ -522,7 +451,7 @@ namespace WaveBox.Model
 				song.FileName = fsFile.Name;
 
 				// Generate an art id from the embedded art, if it exists
-				int? artId = new Art(file).ArtId;
+				int? artId = new Art.Factory().CreateArt(file).ArtId;
 
 				// If there was no embedded art, use the folder's art
 				artId = (object)artId == null ? Art.ArtIdForItemId(song.FolderId) : artId;

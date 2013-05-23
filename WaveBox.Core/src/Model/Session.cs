@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Data;
 using WaveBox;
 using WaveBox.Model;
 using WaveBox.Static;
@@ -10,6 +9,7 @@ using System.IO;
 using TagLib;
 using Newtonsoft.Json;
 using System.Diagnostics;
+using Cirrious.MvvmCross.Plugins.Sqlite;
 
 namespace WaveBox.Model
 {
@@ -37,108 +37,22 @@ namespace WaveBox.Model
 
 		public Session()
 		{
-
-		}
-
-		public Session(int rowId)
-		{
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
-			try
-			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT ROWID,* FROM session WHERE ROWID = @rowid", conn);
-				q.AddNamedParam("@rowid", rowId);
-
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
-				{
-					SetPropertiesFromQueryReader(reader);
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Database.Close(conn, reader);
-			}
-		}
-
-		public Session(string sessionId)
-		{
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
-			try
-			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT ROWID,* FROM session WHERE session_id = @sessionid", conn);
-				q.AddNamedParam("@sessionid", sessionId);
-
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
-				{
-					SetPropertiesFromQueryReader(reader);
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Database.Close(conn, reader);
-			}
-		}
-
-		public Session(IDataReader reader)
-		{
-			SetPropertiesFromQueryReader(reader);
-		}
-
-		private void SetPropertiesFromQueryReader(IDataReader reader)
-		{
-			try
-			{
-				RowId = reader.GetInt32(reader.GetOrdinal("ROWID"));
-				SessionId = reader.GetStringOrNull(reader.GetOrdinal("session_id"));
-				UserId = reader.GetInt32OrNull(reader.GetOrdinal("user_id"));
-				ClientName = reader.GetStringOrNull(reader.GetOrdinal("client_name"));
-				CreateTime = reader.GetInt32OrNull(reader.GetOrdinal("create_time"));
-				UpdateTime = reader.GetInt32OrNull(reader.GetOrdinal("update_time"));
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
 		}
 
 		public bool UpdateSession()
 		{
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
 			bool success = false;
 
 			// Get current UNIX time
 			long unixTime = DateTime.Now.ToUniversalUnixTimestamp();
 
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("UPDATE session SET update_time = @updatetime WHERE session_id = @sessionid", conn);
-				q.AddNamedParam("@updatetime", unixTime);
-				q.AddNamedParam("@sessionid", SessionId);
-				q.Prepare();
+				conn = Database.GetSqliteConnection();
+				int affected = conn.ExecuteLogged("UPDATE session SET UpdateTime = ? WHERE SessionId = ?", unixTime, SessionId);
 
-				if (q.ExecuteNonQuery() > 0)
+				if (affected > 0)
 				{
 					UpdateTime = unixTime;
 					success = true;
@@ -150,7 +64,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
 			return success;
@@ -158,33 +72,23 @@ namespace WaveBox.Model
 
 		public static Session CreateSession(int userId, string clientName)
 		{
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
-			// Generate random string, use SHA1 for session ID
-			string sessionId = Utility.SHA1(Utility.RandomString(100));
-
-			// Get current UNIX time
-			long unixTime = DateTime.Now.ToUniversalUnixTimestamp();
-
-			// Output session
-			Session outSession = null;
-
-			// Attempt session creation
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("INSERT INTO session (session_id, user_id, client_name, create_time, update_time) VALUES (@sessionid, @userid, @clientname, @createtime, @updatetime)", conn);
-				q.AddNamedParam("@sessionid", sessionId);
-				q.AddNamedParam("@userid", userId);
-				q.AddNamedParam("@clientname", clientName);
-				q.AddNamedParam("@createtime", unixTime);
-				q.AddNamedParam("@updatetime", unixTime);
-				q.Prepare();
+				conn = Database.GetSqliteConnection();
+				var session = new Session();
+				session.SessionId = Utility.SHA1(Utility.RandomString(100));
+				session.UserId = userId;
+				session.ClientName = clientName;
+				long unixTime = DateTime.Now.ToUniversalUnixTimestamp();
+				session.CreateTime = unixTime;
+				session.UpdateTime = unixTime;
 
-				if (q.ExecuteNonQuery() > 0)
+				int affected = conn.InsertLogged(session);
+
+				if (affected > 0)
 				{
-					outSession = new Session(sessionId);
+					return session;
 				}
 			}
 			catch (Exception e)
@@ -193,30 +97,22 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
-			return outSession;
+			return new Session();
 		}
 
 		public bool DeleteSession()
 		{
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
-			// Attempt session deletion
+			ISQLiteConnection conn = null;
 			bool success = false;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("DELETE FROM session WHERE ROWID = @rowid", conn);
-				q.AddNamedParam("@rowid", RowId);
-				q.Prepare();
+				conn = Database.GetSqliteConnection();
+				int affected = conn.ExecuteLogged("DELETE FROM session WHERE ROWID = ?", RowId);
 
-				if (q.ExecuteNonQuery() > 0)
-				{
-					success = true;
-				}
+				success = affected > 0;
 			}
 			catch (Exception e)
 			{
@@ -224,7 +120,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
 			return success;
@@ -232,22 +128,11 @@ namespace WaveBox.Model
 
 		public static List<Session> AllSessions()
 		{
-			List<Session> allSessions = new List<Session>();
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT ROWID,* FROM session", conn);
-
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				while (reader.Read())
-				{
-					allSessions.Add(new Session(reader));
-				}
+				conn = Database.GetSqliteConnection();
+				return conn.Query<Session>("SELECT RowId, * FROM session");
 			}
 			catch (Exception e)
 			{
@@ -255,24 +140,19 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
-			return allSessions;
+			return new List<Session>();
 		}
 
-		public static int? CountSessions()
+		public static int CountSessions()
 		{
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
-			int? count = null;
-
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT count(ROWID) FROM session", conn);
-				count = Convert.ToInt32(q.ExecuteScalar());
+				conn = Database.GetSqliteConnection();
+				return conn.ExecuteScalar<int>("SELECT count(RowId) FROM session");
 			}
 			catch (Exception e)
 			{
@@ -280,30 +160,22 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
-			return count;
+			return 0;
 		}
 
 		public static bool DeleteSessionsForUserId(int userId)
 		{
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
-			// Attempt session deletion
 			bool success = false;
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("DELETE FROM session WHERE user_id = @userid", conn);
-				q.AddNamedParam("@userid", userId);
-				q.Prepare();
+				conn = Database.GetSqliteConnection();
+				int affected = conn.ExecuteLogged("DELETE FROM session WHERE UserId = ?", userId);
 
-				if (q.ExecuteNonQuery() > 0)
-				{
-					success = true;
-				}
+				success = affected > 0;
 			}
 			catch (Exception e)
 			{
@@ -311,10 +183,63 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
 			return success;
+		}
+
+		public class Factory
+		{
+			public Session CreateSession(int rowId)
+			{
+				ISQLiteConnection conn = null;
+				try
+				{
+					conn = Database.GetSqliteConnection();
+					var result = conn.DeferredQuery<Session>("SELECT RowId, * FROM session WHERE RowId = ?", rowId);
+
+					foreach (var session in result)
+					{
+						return session;
+					}
+				}
+				catch (Exception e)
+				{
+					logger.Error(e);
+				}
+				finally
+				{
+					conn.Close();
+				}
+
+				return new Session();
+			}
+
+			public Session CreateSession(string sessionId)
+			{
+				ISQLiteConnection conn = null;
+				try
+				{
+					conn = Database.GetSqliteConnection();
+					var result = conn.DeferredQuery<Session>("SELECT RowId, * FROM session WHERE SessionId = ?", sessionId);
+
+					foreach (var session in result)
+					{
+						return session;
+					}
+				}
+				catch (Exception e)
+				{
+					logger.Error(e);
+				}
+				finally
+				{
+					conn.Close();
+				}
+
+				return new Session();
+			}
 		}
 	}
 }

@@ -225,11 +225,11 @@ namespace WaveBox.FolderScanning
 							{
 								if (isNew)
 								{
-									new Video(file, folderId, f).InsertMediaItem();
+									new Video.Factory().CreateVideo(file, folderId, f).InsertMediaItem();
 								}
 								else if (itemId != null)
 								{
-									new Video((int)itemId).InsertMediaItem();
+									new Video.Factory().CreateVideo((int)itemId).InsertMediaItem();
 								}
 							}
 						}
@@ -243,7 +243,7 @@ namespace WaveBox.FolderScanning
 
 						// Find the old art id, if it exists
 						int? oldArtId = folder.ArtId;
-						int? newArtId = new Art(file).ArtId;
+						int? newArtId = new Art.Factory().CreateArt(file).ArtId;
 						
 						if ((object)oldArtId == null)
 						{
@@ -259,7 +259,7 @@ namespace WaveBox.FolderScanning
 						{
 							if (logger.IsInfoEnabled) logger.Info("There was an old art id");
 
-							Art oldArt = new Art((int)oldArtId);
+							Art oldArt = new Art.Factory().CreateArt((int)oldArtId);
 							
 							// Check if the previous folder art was actually from embedded tag art
 							if ((object)oldArt.FilePath == null)

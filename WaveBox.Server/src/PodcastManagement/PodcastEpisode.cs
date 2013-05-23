@@ -8,6 +8,7 @@ using System.Xml;
 using WaveBox.Model;
 using System.Collections.Generic;
 using System.Threading;
+using Cirrious.MvvmCross.Plugins.Sqlite;
 
 namespace WaveBox.PodcastManagement
 {
@@ -24,73 +25,23 @@ namespace WaveBox.PodcastManagement
 		public string FilePath { get; set; }
 
 		/* Constructors */
-		public PodcastEpisode(XmlNode episode, XmlNamespaceManager mgr, long? podcastId)
+		public PodcastEpisode()
 		{
-			if (podcastId == null)
-			{
-				return;
-			}
-
-			PodcastId = podcastId;
-			Title = episode.SelectSingleNode("title").InnerText;
-			Author = episode.SelectSingleNode("itunes:author", mgr).InnerText;
-			Subtitle = episode.SelectSingleNode("itunes:subtitle", mgr).InnerText;
-			MediaUrl = episode.SelectSingleNode("enclosure").Attributes["url"].InnerText;
-			//if (logger.IsInfoEnabled) logger.Info(episode.SelectSingleNode("title").InnerText);
-			//if (logger.IsInfoEnabled) logger.Info(episode.SelectSingleNode("itunes:author", mgr).InnerText);
-			//if (logger.IsInfoEnabled) logger.Info(episode.SelectSingleNode("itunes:subtitle", mgr).InnerText);
-			//if (logger.IsInfoEnabled) logger.Info(episode.SelectSingleNode("enclosure").Attributes["url"].InnerText);
-			//if (logger.IsInfoEnabled) logger.Info();
-		}
-
-		public PodcastEpisode(long podcastId)
-		{
-			IDbConnection conn = null;
-			IDataReader reader = null;
-			try
-			{
-				conn = Database.GetDbConnection();
-
-				IDbCommand q = Database.GetDbCommand("SELECT * FROM podcast_episode WHERE podcast_episode_id = @podcastid", conn);
-				q.AddNamedParam("@podcastid", podcastId);
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
-				{
-					SetPropertiesFromQueryReader(reader);
-				}
-				else
-				{
-					if (logger.IsInfoEnabled) logger.Info("Podcast constructor query returned no results");
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Database.Close(conn, reader);
-			}
 		}
 
 		/* Public methods */
 
 		public bool Delete()
 		{
-			IDbConnection conn = null;
-			IDataReader reader = null;
 			bool success = false;
 
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
+				conn = Database.GetSqliteConnection();
+				int affected = conn.ExecuteLogged("DELETE FROM PodcastEpisode WHERE EpisodeId = ?", EpisodeId);
 
-				IDbCommand q = Database.GetDbCommand("DELETE FROM podcast_episode WHERE podcast_episode_id = @podcastid", conn);
-				q.AddNamedParam("@podcastid", EpisodeId);
-				q.Prepare();
-				success = q.ExecuteNonQueryLogged() >= 1;
+				success = affected > 0;
 			}
 			catch (Exception e)
 			{
@@ -98,7 +49,7 @@ namespace WaveBox.PodcastManagement
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
 			if (File.Exists(FilePath))
@@ -114,29 +65,22 @@ namespace WaveBox.PodcastManagement
 			return true;
 		}
 
-
-
 		public void AddToDatabase()
 		{
 			EpisodeId = Item.GenerateItemId(ItemType.PodcastEpisode);
-			IDbConnection conn = null;
-			IDataReader reader = null;
+			if (ReferenceEquals(EpisodeId, null))
+				return;
+
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
+				conn = Database.GetSqliteConnection();
+				int affected = conn.InsertLogged(this);
 
-				IDbCommand q = Database.GetDbCommand("INSERT OR IGNORE INTO podcast_episode (podcast_episode_id, podcast_episode_podcast_id, podcast_episode_title, podcast_episode_author, podcast_episode_subtitle, podcast_episode_media_url, podcast_episode_file_path) " + 
-													 "VALUES (@pe_id, @pe_pid, @pe_title, @pe_author, @pe_subtitle, @pe_mediaurl, @pe_filepath)", conn);
-				q.AddNamedParam("@pe_id", EpisodeId);
-				q.AddNamedParam("@pe_pid", PodcastId);
-				q.AddNamedParam("@pe_title", Title);
-				q.AddNamedParam("@pe_author", Author);
-				q.AddNamedParam("@pe_subtitle", Subtitle);
-				q.AddNamedParam("@pe_mediaurl", MediaUrl);
-				q.AddNamedParam("@pe_filepath", FilePath);
-				q.Prepare();
-
-				q.ExecuteNonQueryLogged();
+				if (affected == 0)
+				{
+					EpisodeId = null;
+				}
 			}
 			catch (Exception e)
 			{
@@ -144,21 +88,58 @@ namespace WaveBox.PodcastManagement
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 		}
 
-		/* Private methods */
-
-		private void SetPropertiesFromQueryReader(IDataReader reader)
+		public class Factory
 		{
-			EpisodeId = reader.GetInt32(reader.GetOrdinal("podcast_episode_id"));
-			PodcastId = reader.GetInt32(reader.GetOrdinal("podcast_episode_podcast_id"));
-			Title = reader.GetString(reader.GetOrdinal("podcast_episode_title"));
-			Author = reader.GetString(reader.GetOrdinal("podcast_episode_author"));
-			Subtitle = reader.GetString(reader.GetOrdinal("podcast_episode_subtitle"));
-			MediaUrl = reader.GetString(reader.GetOrdinal("podcast_episode_media_url"));
-			FilePath = reader.GetString(reader.GetOrdinal("podcast_episode_file_path"));
+			public PodcastEpisode CreatePodcastEpisode(XmlNode episode, XmlNamespaceManager mgr, long? podcastId)
+			{
+				if (podcastId == null)
+				{
+					return new PodcastEpisode();
+				}
+
+				var podcastEpisode = new PodcastEpisode();
+				podcastEpisode.PodcastId = podcastId;
+				podcastEpisode.Title = episode.SelectSingleNode("title").InnerText;
+				podcastEpisode.Author = episode.SelectSingleNode("itunes:author", mgr).InnerText;
+				podcastEpisode.Subtitle = episode.SelectSingleNode("itunes:subtitle", mgr).InnerText;
+				podcastEpisode.MediaUrl = episode.SelectSingleNode("enclosure").Attributes["url"].InnerText;
+				//if (logger.IsInfoEnabled) logger.Info(episode.SelectSingleNode("title").InnerText);
+				//if (logger.IsInfoEnabled) logger.Info(episode.SelectSingleNode("itunes:author", mgr).InnerText);
+				//if (logger.IsInfoEnabled) logger.Info(episode.SelectSingleNode("itunes:subtitle", mgr).InnerText);
+				//if (logger.IsInfoEnabled) logger.Info(episode.SelectSingleNode("enclosure").Attributes["url"].InnerText);
+				//if (logger.IsInfoEnabled) logger.Info();
+
+				return podcastEpisode;
+			}
+
+			public PodcastEpisode CreatePodcastEpisode(long podcastId)
+			{
+				ISQLiteConnection conn = null;
+				try
+				{
+					conn = Database.GetSqliteConnection();
+					var result = conn.DeferredQuery<PodcastEpisode>("SELECT * FROM PodcastEpisode WHERE EpisodeId = ? LIMIT 1", podcastId);
+
+					foreach (var episode in result)
+					{
+						return episode;
+					}
+				}
+				catch (Exception e)
+				{
+					logger.Error(e);
+				}
+				finally
+				{
+					conn.Close();
+				}
+
+				return new PodcastEpisode();
+			}
 		}
 	}
 }

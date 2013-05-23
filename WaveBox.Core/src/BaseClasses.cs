@@ -174,15 +174,14 @@ namespace Cirrious.MvvmCross.Plugins.Sqlite
 
         int Delete<T>(object primaryKey);
 
+        void Close();
+
 		/*
 		 * WaveBox
 		 */
 
 		int InsertLogged(object obj, InsertType insertType = InsertType.Insert);
-		int UpdateLogged(object obj);
-		int DeleteLogged(object objectToDelete);
-
-        void Close();
+		int ExecuteLogged(string query, params object[] args);
     }
 
     public interface ITableMapping

@@ -222,7 +222,7 @@ namespace WaveBox.PodcastManagement
 			Uri uri = new Uri(ep.MediaUrl);
 			string[] fns = ep.MediaUrl.Split('/');
 			string fn = fns[fns.Length - 1];
-			Podcast pc = new Podcast(ep.PodcastId);
+			Podcast pc = new Podcast.Factory().CreatePodcast(ep.PodcastId);
 			ep.FilePath = Podcast.PodcastMediaDirectory + Path.DirectorySeparatorChar + pc.Title + Path.DirectorySeparatorChar + fn;
 
 			webClient.DownloadFileAsync(uri, ep.FilePath);

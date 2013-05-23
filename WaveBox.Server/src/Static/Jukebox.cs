@@ -39,7 +39,7 @@ namespace WaveBox.Static
 
 		static Jukebox()
 		{
-			playlist = new Playlist(PLAYLIST_NAME);
+			playlist = new Playlist.Factory().CreatePlaylist(PLAYLIST_NAME);
 			if (playlist.PlaylistId == null)
 			{
 				// playlist doesn't exist, so create it.

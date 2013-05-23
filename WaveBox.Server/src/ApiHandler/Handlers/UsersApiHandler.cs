@@ -43,7 +43,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 
 				// Create a test user and reply with the account info
-				User testUser = User.CreateTestUser(success ? (int?)durationSeconds : null);
+				User testUser = new User.Factory().CreateTestUser(success ? (int?)durationSeconds : null);
 				if (!ReferenceEquals(testUser, null))
 				{
 					listOfUsers.Add(testUser);
@@ -83,7 +83,7 @@ namespace WaveBox.ApiHandler.Handlers
 				// On valid key, return a specific user, and their attributes
 				if (success)
 				{
-					User user = new User(id);
+					User user = new User.Factory().CreateUser(id);
 					listOfUsers.Add(user);
 				}
 				else

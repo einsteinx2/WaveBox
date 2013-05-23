@@ -149,7 +149,7 @@ namespace WaveBox
 
 		public static string GetArtistInfo(int artistId)
 		{
-			return GetArtistInfo(new Artist(artistId));
+			return GetArtistInfo(new Artist.Factory().CreateArtist(artistId));
 		}
 
 		private static string CompileApiCall(SortedDictionary<string, string> parameters)
