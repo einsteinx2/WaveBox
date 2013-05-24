@@ -58,7 +58,7 @@ namespace WaveBox.Transcoding
 			{ 
 				if (Item != null)
 				{
-					string path = IsDirect ? "-" : TranscodeManager.TRANSCODE_PATH + Path.DirectorySeparatorChar + OutputFilename;
+					string path = IsDirect ? "-" : TranscodeManager.TranscodePath + Path.DirectorySeparatorChar + OutputFilename;
 					return path;
 				}
 
