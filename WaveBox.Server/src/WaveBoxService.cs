@@ -1,15 +1,16 @@
 using System;
-using System.ServiceProcess;
-using System.Threading;
 using System.Diagnostics;
-using Mono.Unix;
-using Mono.Unix.Native;
-using System.Runtime.InteropServices;
-using WaveBox.Transcoding;
-using WaveBox.Static;
-using System.Text;
 using System.Net;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.ServiceProcess;
+using System.Text;
+using System.Threading;
 using System.Web;
+using Mono.Unix.Native;
+using Mono.Unix;
+using WaveBox.Static;
+using WaveBox.Transcoding;
 
 namespace WaveBox
 {
@@ -21,6 +22,8 @@ namespace WaveBox
 		// Gather metrics about WaveBox instance
 		// Operating system platform
 		public static string Platform { get; set; }
+		// Current version of WaveBox, from assembly
+		public static string BuildVersion { get; set; }
 		// DateTime object containing the build date of WaveBox (for versioning, status metric)
 		public static DateTime BuildDate { get; set; }
 		// DateTime object containing start time, used to calculate uptime
@@ -61,6 +64,10 @@ namespace WaveBox
 						Platform = "unknown";
 						break;
 				}
+
+				// Store version
+				var assembly = Assembly.GetExecutingAssembly().GetName();
+				BuildVersion = String.Format("{0}.{1}.{2}.{3}", assembly.Version.Major, assembly.Version.Minor, assembly.Version.Build, assembly.Version.Revision);
 
 				// Build date detection
 				BuildDate = Utility.GetBuildDate();

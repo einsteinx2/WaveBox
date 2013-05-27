@@ -17,8 +17,6 @@ namespace WaveBox.Static
 		public static string SettingsTemplatePath() { return "res" + Path.DirectorySeparatorChar + settingsFileName; }
 		public static string SettingsPath() { return Utility.RootPath() + settingsFileName; }
 
-		public static double Version { get { return 1.0; } }
-
 		private static SettingsData settingsModel = new SettingsData();
 		public static SettingsData SettingsModel { get { return settingsModel; } }
 

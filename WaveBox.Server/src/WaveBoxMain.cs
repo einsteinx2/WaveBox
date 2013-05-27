@@ -109,7 +109,7 @@ namespace WaveBox
 		/// </summary>
 		public void Start()
 		{
-			if (logger.IsInfoEnabled) logger.Info("Initializing WaveBox on " + WaveBoxService.Platform + " platform...");
+			if (logger.IsInfoEnabled) logger.Info("Initializing WaveBox " + WaveBoxService.BuildVersion + " on " + WaveBoxService.Platform + " platform...");
 
 			// Initialize ImageMagick
 			try
