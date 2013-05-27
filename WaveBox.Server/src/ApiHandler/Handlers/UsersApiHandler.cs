@@ -96,7 +96,7 @@ namespace WaveBox.ApiHandler.Handlers
 					{
 						try
 						{
-							string json = JsonConvert.SerializeObject(new UsersResponse("invalid integer for 'rowId' for action 'killSession'", null), Settings.JsonFormatting);
+							string json = JsonConvert.SerializeObject(new UsersResponse("Invalid integer for 'rowId' for action 'killSession'", null), Settings.JsonFormatting);
 							Processor.WriteJson(json);
 						}
 						catch (Exception e)
@@ -116,6 +116,19 @@ namespace WaveBox.ApiHandler.Handlers
 					try
 					{
 						string json = JsonConvert.SerializeObject(new UsersResponse(null, listOfUsers), Settings.JsonFormatting);
+						Processor.WriteJson(json);
+					}
+					catch (Exception e)
+					{
+						logger.Error(e);
+					}
+				}
+				else
+				{
+					// Invalid action
+					try
+					{
+						string json = JsonConvert.SerializeObject(new UsersResponse("Invalid action '" + Uri.Parameters["action"] + "'", null), Settings.JsonFormatting);
 						Processor.WriteJson(json);
 					}
 					catch (Exception e)
