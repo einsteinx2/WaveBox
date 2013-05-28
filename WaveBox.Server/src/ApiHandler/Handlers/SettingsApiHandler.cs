@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Web;
 using WaveBox.Static;
 using WaveBox.Model;
 using Newtonsoft.Json;
@@ -12,6 +13,8 @@ namespace WaveBox.ApiHandler
 {
 	class SettingsApiHandler : IApiHandler
 	{
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 		
@@ -26,13 +29,16 @@ namespace WaveBox.ApiHandler
 			if (Uri.Parameters.ContainsKey("settingsJson"))
 			{
 				// Take in settings in the JSON format (same as it is stored on disk) and pass it on to the Settings class for processing=
-				string settingsJson = Uri.Parameters["settingsJson"];
+				string settingsJson = HttpUtility.UrlDecode(Uri.Parameters["settingsJson"]);
+
+				if (logger.IsInfoEnabled) logger.Info("Received settings JSON: " + settingsJson);
 
 				// Attempt to write settings
 				bool success = false;
 				try
 				{
 					success = Settings.WriteSettings(settingsJson);
+					Settings.Reload();
 				}
 				catch (JsonException)
 				{

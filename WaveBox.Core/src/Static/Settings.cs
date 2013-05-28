@@ -26,8 +26,6 @@ namespace WaveBox.Static
 
 		public static short WsPort { get { return settingsModel.WsPort; } }
 
-		public static short MpdPort { get { return settingsModel.MpdPort; } }
-
 		public static bool CrashReportEnable { get { return settingsModel.CrashReportEnable; } }
 
 		public static bool NatEnable { get { return settingsModel.NatEnable; } }
@@ -104,18 +102,6 @@ namespace WaveBox.Static
 					settingsModel.WsPort = (short)wsPort;
 					settingsChanged = true;
 					if (logger.IsInfoEnabled) logger.Info("Setting 'wsPort': " + settingsModel.WsPort);
-				}
-			}
-			catch { }
-
-			try
-			{
-				short? mpdPort = json.mpdPort;
-				if (mpdPort != null)
-				{
-					settingsModel.MpdPort = (short)mpdPort;
-					settingsChanged = true;
-					if (logger.IsInfoEnabled) logger.Info("Setting 'mpdPort': " + settingsModel.MpdPort);
 				}
 			}
 			catch { }
@@ -398,9 +384,6 @@ namespace WaveBox.Static
 
 		[JsonProperty("wsPort")]
 		public short WsPort { get; set; }
-		
-		[JsonProperty("mpdPort")]
-		public short MpdPort { get; set; }
 
 		[JsonProperty("crashReportEnable")]
 		public bool CrashReportEnable { get; set; }
