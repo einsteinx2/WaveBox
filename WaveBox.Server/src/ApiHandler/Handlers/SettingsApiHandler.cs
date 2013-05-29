@@ -23,16 +23,16 @@ namespace WaveBox.ApiHandler
 
 		public void Process()
 		{
-			if (Uri.Parameters.ContainsKey("settingsJson"))
+			if (Uri.Parameters.ContainsKey("json"))
 			{
 				// Take in settings in the JSON format (same as it is stored on disk) and pass it on to the Settings class for processing=
-				string settingsJson = Uri.Parameters["settingsJson"];
+				string json = Uri.Parameters["json"];
 
 				// Attempt to write settings
 				bool success = false;
 				try
 				{
-					success = Settings.WriteSettings(settingsJson);
+					success = Settings.WriteSettings(json);
 				}
 				catch (JsonException)
 				{
