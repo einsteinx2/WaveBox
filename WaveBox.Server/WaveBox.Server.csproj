@@ -226,6 +226,9 @@
     <None Include="res\wavebox.conf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="res\wavebox.conf.template">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="lib\Mono.Zeroconf.dll" />
     <None Include="lib\Mono.Zeroconf.Providers.Bonjour.dll" />
     <None Include="Mono.Zeroconf.Providers.Bonjour.dll.config">
