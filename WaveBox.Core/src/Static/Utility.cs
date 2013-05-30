@@ -19,7 +19,7 @@ namespace WaveBox.Static
 		// Adapted from here: http://mono.1490590.n4.nabble.com/Howto-detect-os-td1549244.html
 		[DllImport("libc")] 
 		static extern int uname(IntPtr buf); 
-		public enum OS {Windows, MacOSX, Unix, unknown};
+		public enum OS {Windows, MacOSX, Linux, BSD, Solaris, Unix, unknown};
 
 		/// <summary>
 		/// DetectOS uses a couple different tricks to detect if we are running on Windows, Mac OSX, or Unix.
@@ -31,15 +31,38 @@ namespace WaveBox.Static
 			{
 				return OS.Windows;
 			} 
-			// Detect MacOSX using a uname hack
-			else if (IsMacOSX())
+			else
 			{
-				return OS.MacOSX;
-			}
-			// Detect Unix via OS platform
-			else if (System.Environment.OSVersion.Platform == PlatformID.Unix)
-			{
-				return OS.Unix;
+				// Call uname to determine if we're running on a UNIX variant
+				// In theory, this could be any platform on which Mono runs, so we check a lot of cases.
+				switch (KernelUname())
+				{
+					// Darwin - Mac OSX
+					case "Darwin":
+						return OS.MacOSX;
+					// Linux
+					case "Linux":
+						return OS.Linux;
+					// BSD and friends - BSD
+					case "DragonFly":
+					case "FreeBSD":
+					case "GNU/kFreeBSD":
+					case "OpenBSD":
+					case "NetBSD":
+						return OS.BSD;
+					// SunOS - Solaris
+					case "SunOS":
+						return OS.Solaris;
+					default:
+						break;
+				}
+
+				// Last resort, check for platform ID values historically linked to UNIX
+				int platformId = (int)Environment.OSVersion.Platform;
+				if (platformId == 4 || platformId == 6 || platformId == 128)
+				{
+					return OS.Unix;
+				}
 			}
 
 			// If no matching cases, OS is unknown
@@ -47,35 +70,36 @@ namespace WaveBox.Static
 		}
 
 		/// <summary>
-		/// IsMacOSX uses a uname hack to determine if the operating system is MacOSX
+		/// Calls the system's uname function, to return the name of the current kernel (e.g. Darwin (Mac OSX), Linux,
+		/// FreeBSD, etc.)
 		/// </summary>
-		private static bool IsMacOSX()
-		{ 
-			IntPtr buf = IntPtr.Zero; 
+		public static string KernelUname()
+		{
+			IntPtr buf = IntPtr.Zero;
+			string kernel = "";
+
 			try
-			{ 
-				buf = Marshal.AllocHGlobal(8192); 
-				// This is a hacktastic way of getting sysname from uname() 
+			{
+				buf = Marshal.AllocHGlobal(8192);
+				// This is a hacktastic way of getting sysname from uname()
 				if (uname(buf) == 0)
-				{ 
-					string os = Marshal.PtrToStringAnsi(buf); 
-					if (os == "Darwin")
-					{
-						return true;
-					} 
-				} 
+				{
+					kernel = Marshal.PtrToStringAnsi(buf);
+				}
 			}
 			catch
-			{ 
+			{
+
 			}
 			finally
-			{ 
+			{
 				if (buf != IntPtr.Zero)
-				{ 
+				{
 					Marshal.FreeHGlobal(buf);
-				} 
-			} 
-			return false; 
+				}
+			}
+
+			return kernel;
 		}
 
 		// Borrowed from: http://stackoverflow.com/questions/1600962/displaying-the-build-date
@@ -179,11 +203,14 @@ namespace WaveBox.Static
 			{
 				case OS.Windows:
 					return Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + "\\WaveBox\\";
-					case OS.MacOSX:
+				case OS.MacOSX:
 					return Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "/Library/Application Support/WaveBox/";
-					case OS.Unix:
+				case OS.Linux:
+				case OS.BSD:
+				case OS.Solaris:
+				case OS.Unix:
 					return Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "/.wavebox/";
-					default:
+				default:
 					return "";
 			}
 		}

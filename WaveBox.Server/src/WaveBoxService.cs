@@ -57,8 +57,17 @@ namespace WaveBox
 					case Utility.OS.MacOSX:
 						Platform = "Mac OS X";
 						break;
+					case Utility.OS.Linux:
+						Platform = "Linux";
+						break;
+					case Utility.OS.BSD:
+						Platform = "BSD";
+						break;
+					case Utility.OS.Solaris:
+						Platform = "Solaris";
+						break;
 					case Utility.OS.Unix:
-						Platform = "UNIX/Linux";
+						Platform = "Unix";
 						break;
 					default:
 						Platform = "unknown";
