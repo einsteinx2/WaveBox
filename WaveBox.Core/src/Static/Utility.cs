@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Security.Cryptography;
 using System.Runtime.InteropServices;
@@ -316,6 +317,27 @@ namespace WaveBox.Static
 		public static long ToLocalUnixTimestamp(this DateTime dateTime)
 		{
 			return (long)(dateTime.ToUniversalTime() - new DateTime(1970, 1, 1).ToUniversalTime()).TotalSeconds;
+		}
+
+		/// <summary>
+		/// Convert a List to a quoted CSV string
+		/// </summary>
+		public static string ToCSV(this IList<string> list)
+		{
+			string buffer = "";
+
+			// If list is empty, return empty list
+			if (list.Count == 0)
+			{
+				return "\"\"";
+			}
+
+			foreach (string s in list)
+			{
+				buffer += "\"" + s + "\", ";
+			}
+
+			return buffer.Trim(new char[] {' ', ','});
 		}
 	}
 }

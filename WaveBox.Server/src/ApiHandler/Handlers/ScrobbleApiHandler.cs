@@ -39,11 +39,9 @@ namespace WaveBox.ApiHandler.Handlers
 			// Pull URL parameters for Last.fm integration
 			string action = null;
 			string eve = null;
-			string eveType = null;
 
 			Uri.Parameters.TryGetValue("action", out action);
 			Uri.Parameters.TryGetValue("event", out eve);
-			Uri.Parameters.TryGetValue("eventType", out eveType);
 
 			if (action == null || action == "auth")
 			{

@@ -26,18 +26,17 @@ namespace WaveBox.ApiHandler
 
 		public void Process()
 		{
-			if (Uri.Parameters.ContainsKey("settingsJson"))
+			if (Uri.Parameters.ContainsKey("json"))
 			{
 				// Take in settings in the JSON format (same as it is stored on disk) and pass it on to the Settings class for processing=
-				string settingsJson = HttpUtility.UrlDecode(Uri.Parameters["settingsJson"]);
-
-				if (logger.IsInfoEnabled) logger.Info("Received settings JSON: " + settingsJson);
+				string json = HttpUtility.UrlDecode(Uri.Parameters["json"]);
+				if (logger.IsInfoEnabled) logger.Info("Received settings JSON: " + json);
 
 				// Attempt to write settings
 				bool success = false;
 				try
 				{
-					success = Settings.WriteSettings(settingsJson);
+					success = Settings.WriteSettings(json);
 					Settings.Reload();
 				}
 				catch (JsonException)
