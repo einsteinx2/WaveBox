@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using WaveBox.Model;
-using System.IO;
 
 namespace WaveBox.Static
 {
@@ -57,8 +57,18 @@ namespace WaveBox.Static
 		{
 			if (logger.IsInfoEnabled) logger.Info("Reading settings: " + SettingsPath());
 
-			StreamReader reader = new StreamReader(SettingsPath());
-			string configFile = RemoveJsonComments(reader);
+			string configFile = "";
+			try
+			{
+				StreamReader reader = new StreamReader(SettingsPath());
+				configFile = RemoveJsonComments(reader);
+				reader.Close();
+			}
+			catch (Exception e)
+			{
+				logger.Error("Could not open configuration file: " + SettingsPath());
+				logger.Error(e);
+			}
 
 			// Grab all settings from the file
 			settingsModel = JsonConvert.DeserializeObject<SettingsData>(configFile);
@@ -252,10 +262,71 @@ namespace WaveBox.Static
 
 		public static void FlushSettings()
 		{
+			// Read in the settings template, with placeholders
+			string template = null;
+			try
+			{
+				StreamReader templateIn = new StreamReader(SettingsTemplatePath() + ".template");
+				template = templateIn.ReadToEnd();
+				templateIn.Close();
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+
+			// Begin template creation with an auto-generated line stating WaveBox version and date/time generated
+			StringBuilder templateBuilder = new StringBuilder("// WaveBox auto-generated file on " + DateTime.Now.ToString("MM/dd/yyyy, hh:mm:sstt") + "\r\n");
+
+			// Add the template to templateBuilder
+			templateBuilder.Append(template);
+
+			// Check for any null strings
+			if (settingsModel.PodcastFolder == null)
+			{
+				settingsModel.PodcastFolder = "";
+			}
+
+			// Replace all template placeholders with their actual values
+			// Notes:
+			//  - all settings must be converted to string
+			//  - convert booleans using ToString().ToLower()
+			//  - convert lists using ToCSV() extension method
+			//  - ... sorry that this is probably the best way to do this.
+			try
+			{
+				templateBuilder
+					.Replace("{setting-port}", settingsModel.Port.ToString())
+					.Replace("{setting-wsPort}", settingsModel.WsPort.ToString())
+					.Replace("{setting-crashReportEnable}", settingsModel.CrashReportEnable.ToString().ToLower())
+					.Replace("{setting-natEnable}", settingsModel.NatEnable.ToString().ToLower())
+					.Replace("{setting-mediaFolders}", settingsModel.MediaFolders.ToCSV())
+					.Replace("{setting-podcastFolder}", settingsModel.PodcastFolder)
+					.Replace("{setting-podcastCheckInterval}", settingsModel.PodcastCheckInterval.ToString())
+					.Replace("{setting-sessionTimeout}", settingsModel.SessionTimeout.ToString())
+					.Replace("{setting-sessionScrubInterval}", settingsModel.SessionScrubInterval.ToString())
+					.Replace("{setting-prettyJson}", settingsModel.PrettyJson.ToString().ToLower())
+					.Replace("{setting-folderArtNames}", settingsModel.FolderArtNames.ToCSV());
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+
+			template = templateBuilder.ToString();
+
 			// Write the settings data model to disk
-			StreamWriter settingsOut = new StreamWriter(SettingsPath());
-			settingsOut.Write(JsonConvert.SerializeObject(settingsModel, Formatting.Indented));
-			settingsOut.Close();
+			try
+			{
+				StreamWriter settingsOut = new StreamWriter(SettingsPath());
+				settingsOut.Write(template);
+				settingsOut.Close();
+			}
+			catch (Exception e)
+			{
+				logger.Error("Could not write settings to file: " + SettingsPath());
+				logger.Error(e);
+			}
 		}
 
 		public static void SettingsSetup()
@@ -286,21 +357,28 @@ namespace WaveBox.Static
 		{
 			List<Folder> folders = new List<Folder>();
 
-			foreach (string mediaFolderString in settingsModel.MediaFolders)
+			try
 			{
-				if (Directory.Exists(mediaFolderString))
+				foreach (string mediaFolderString in settingsModel.MediaFolders)
 				{
-					Folder mediaFolder = new Folder(mediaFolderString, true);
-					if (mediaFolder.FolderId == null)
+					if (Directory.Exists(mediaFolderString))
 					{
-						mediaFolder.InsertFolder(true);
+						Folder mediaFolder = new Folder(mediaFolderString, true);
+						if (mediaFolder.FolderId == null)
+						{
+							mediaFolder.InsertFolder(true);
+						}
+						folders.Add(mediaFolder);
 					}
-					folders.Add(mediaFolder);
+					else
+					{
+						if (logger.IsInfoEnabled) logger.Info("Media folder does not exist: " + mediaFolderString);
+					}
 				}
-				else 
-				{
-					if (logger.IsInfoEnabled) logger.Info("Media folder does not exist: " + mediaFolderString);
-				}
+			}
+			catch (Exception e)
+			{
+				logger.Warn("No media folders specified in configuration file!");
 			}
 
 			return folders;

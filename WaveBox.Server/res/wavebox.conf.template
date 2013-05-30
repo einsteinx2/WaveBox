@@ -1,0 +1,42 @@
+/*
+	WaveBox.conf
+
+	Defines settings for the WaveBox server.  Everything here is also modifiable from the web ui, so
+	if you're unfamiliar with JSON notation, you may wish to use that.  Malformed JSON will result
+	in the server not running.
+*/
+
+{
+	// Choose the port for WaveBox to listen on. Remember that if choosing a port under 1024, WaveBox will need to be run as root
+	"port": {setting-port},
+	
+	// Choose the port for WaveBox's WebSockets interface to listen on
+	"wsPort": {setting-wsPort},
+
+	// Choose whether to automatically report WaveBox crashes.  It is STRONGLY suggested to leave this set to 'true'
+	"crashReportEnable": {setting-crashReportEnable},
+
+	// Choose whether or not to enable NAT for UPnP/NAT-PMP. Setting to false will require manual router configuration
+	"natEnable": {setting-natEnable},
+
+	// Define your media folders here.  They are comma-delimited between the brackets, e.g. ["path1", "path2"]
+	"mediaFolders": [{setting-mediaFolders}],
+
+	// This is where WaveBox will store podcasts it downloads from the feeds you provide
+	"podcastFolder": "{setting-podcastFolder}",
+
+	// Defines how often WaveBox will check for new podcasts (in minutes)
+	"podcastCheckInterval": {setting-podcastCheckInterval},
+
+	// Defines how long a session may remain idle before being purged by the session scrubber (in minutes)
+	"sessionTimeout": {setting-sessionTimeout},
+
+	// Defines how often WaveBox will purge unused sessions (in minutes)
+	"sessionScrubInterval": {setting-sessionScrubInterval},
+
+	// Choose whether to enable pretty formatting for API responses. Setting to false reduces the response size
+	"prettyJson": {setting-prettyJson},
+	
+	// Defines the order that folder art is searched for
+	"folderArtNames": [{setting-folderArtNames}]
+}
