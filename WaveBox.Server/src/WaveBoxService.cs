@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -18,6 +19,9 @@ namespace WaveBox
 	{
 		// Loggererererer... er.
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+		// WaveBox temporary folder, for transcodes and such
+		public static string TempFolder = Path.GetTempPath() + "wavebox";
 
 		// Gather metrics about WaveBox instance
 		// Operating system platform
@@ -85,6 +89,13 @@ namespace WaveBox
 
 				// Get start up time
 				StartTime = DateTime.Now;
+
+				// Create WaveBox's temporary folder
+				if (!Directory.Exists(TempFolder))
+				{
+					Directory.CreateDirectory(TempFolder);
+					if (logger.IsInfoEnabled) logger.Info("Created temp folder: " + TempFolder);
+				}
 
 				// Instantiate a WaveBox object
 				wavebox = new WaveBoxMain();
@@ -154,6 +165,26 @@ namespace WaveBox
 
 			// Stop the file manager operation queue thread
 			FileManager.Stop();
+
+			// Destroy temp folder
+			if (Directory.Exists(TempFolder))
+			{
+				// Count of files deleted
+				int i = 0;
+
+				// Remove any files in folder
+				foreach (string f in Directory.GetFiles(TempFolder))
+				{
+					File.Delete(f);
+					i++;
+				}
+
+				// Remove folder
+				Directory.Delete(TempFolder);
+
+				if (logger.IsInfoEnabled) logger.Info("Deleted temp folder: " + TempFolder + " (" + i + " files)");
+			}
+
 
 			// Stop the server
 			wavebox.Stop();

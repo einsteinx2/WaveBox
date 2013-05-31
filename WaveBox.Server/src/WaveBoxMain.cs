@@ -189,9 +189,6 @@ namespace WaveBox
 				logger.Warn(e);
 			}
 
-			// Start transcode manager
-			TranscodeManager.Instance.Setup();
-
 			// Temporary: create test user
 			User.CreateUser("test", "test", null);
 
