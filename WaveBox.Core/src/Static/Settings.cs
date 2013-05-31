@@ -17,8 +17,6 @@ namespace WaveBox.Static
 		public static string SettingsTemplatePath() { return "res" + Path.DirectorySeparatorChar + settingsFileName; }
 		public static string SettingsPath() { return Utility.RootPath() + settingsFileName; }
 
-		public static double Version { get { return 1.0; } }
-
 		private static SettingsData settingsModel = new SettingsData();
 		public static SettingsData SettingsModel { get { return settingsModel; } }
 
@@ -27,8 +25,6 @@ namespace WaveBox.Static
 		public static short Port { get { return settingsModel.Port; } }
 
 		public static short WsPort { get { return settingsModel.WsPort; } }
-
-		public static short MpdPort { get { return settingsModel.MpdPort; } }
 
 		public static bool CrashReportEnable { get { return settingsModel.CrashReportEnable; } }
 
@@ -116,18 +112,6 @@ namespace WaveBox.Static
 					settingsModel.WsPort = (short)wsPort;
 					settingsChanged = true;
 					if (logger.IsInfoEnabled) logger.Info("Setting 'wsPort': " + settingsModel.WsPort);
-				}
-			}
-			catch { }
-
-			try
-			{
-				short? mpdPort = json.mpdPort;
-				if (mpdPort != null)
-				{
-					settingsModel.MpdPort = (short)mpdPort;
-					settingsChanged = true;
-					if (logger.IsInfoEnabled) logger.Info("Setting 'mpdPort': " + settingsModel.MpdPort);
 				}
 			}
 			catch { }
@@ -478,9 +462,6 @@ namespace WaveBox.Static
 
 		[JsonProperty("wsPort")]
 		public short WsPort { get; set; }
-		
-		[JsonProperty("mpdPort")]
-		public short MpdPort { get; set; }
 
 		[JsonProperty("crashReportEnable")]
 		public bool CrashReportEnable { get; set; }

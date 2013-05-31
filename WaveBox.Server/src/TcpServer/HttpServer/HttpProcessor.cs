@@ -28,8 +28,6 @@ namespace WaveBox.TcpServer.Http
 		public HttpServer Srv { get; set; }
 
 		private Stream InputStream { get; set; }
-		//public StreamWriter OutputStream { get; set; }
-		//public StreamWriter HeaderOutputStream { get; set; }
 
 		public String HttpMethod { get; set; }
 		public String HttpUrl { get; set; }
@@ -44,9 +42,6 @@ namespace WaveBox.TcpServer.Http
 		{
 			HttpHeaders = new Hashtable();
 			Socket = s;
-			//if (logger.IsInfoEnabled) logger.Info("Send timeout: " + s.SendTimeout);
-			//s.SendTimeout = -1;
-			//if (logger.IsInfoEnabled) logger.Info("Send timeout after: " + s.SendTimeout);
 			Srv = srv;
 		}
 
@@ -127,19 +122,15 @@ namespace WaveBox.TcpServer.Http
 			HttpMethod = tokens[0].ToUpper();
 			HttpUrl = tokens[1];
 			HttpProtocolVersionString = tokens[2];
-
-			//if (logger.IsInfoEnabled) logger.Info("starting: " + request);
 		}
 
 		public void ReadHeaders() 
 		{
-			//if (logger.IsInfoEnabled) logger.Info("readHeaders()");
 			String line;
 			while ((line = streamReadLine(InputStream)) != null)
 			{
 				if (line.Equals("")) 
 				{
-					//if (logger.IsInfoEnabled) logger.Info("got headers");
 					return;
 				}
 				
@@ -156,20 +147,15 @@ namespace WaveBox.TcpServer.Http
 				}
 					
 				string value = line.Substring(pos, line.Length - pos);
-				//if (logger.IsInfoEnabled) logger.Info("header: {0}:{1}",name,value);
 				HttpHeaders[name] = value;
 			}
 		}
 
 		public void HandleGETRequest() 
 		{
-			Stopwatch sw = new Stopwatch();
 			IApiHandler apiHandler = ApiHandlerFactory.CreateApiHandler(HttpUrl, this);
 
-			sw.Start();
 			apiHandler.Process();
-			//if (logger.IsInfoEnabled) logger.Info(apiHandler.GetType() + ": {0}ms", sw.ElapsedMilliseconds);
-			sw.Stop();
 		}
 
 		private const int BUF_SIZE = 4096;
@@ -190,14 +176,11 @@ namespace WaveBox.TcpServer.Http
 				{
 					throw new Exception(String.Format("POST Content-Length({0}) too big for this simple server", content_len));
 				}
-				byte[] buf = new byte[BUF_SIZE];			  
+				byte[] buf = new byte[BUF_SIZE]; 
 				int to_read = content_len;
 				while (to_read > 0) 
 				{  
-					//if (logger.IsInfoEnabled) logger.Info("starting Read, to_read={0}",to_read);
-
 					int numread = InputStream.Read(buf, 0, Math.Min(BUF_SIZE, to_read));
-					//if (logger.IsInfoEnabled) logger.Info("read finished, numread={0}", numread);
 					if (numread == 0) 
 					{
 						if (to_read == 0) 
@@ -216,15 +199,10 @@ namespace WaveBox.TcpServer.Http
 			}
 
 			string data = HttpUrl + "?" + new StreamReader(ms).ReadToEnd();
-			//if (logger.IsInfoEnabled) logger.Info("[HTTPSERVER] POST request: {0}", data);
 			
-			Stopwatch sw = new Stopwatch();
 			IApiHandler apiHandler = ApiHandlerFactory.CreateApiHandler(data, this);
 
-			sw.Start();
 			apiHandler.Process();
-			//if (logger.IsInfoEnabled) logger.Info(apiHandler.GetType() + ": {0}ms", sw.ElapsedMilliseconds);
-			sw.Stop();
 		}
 
 		public void WriteNotModifiedHeader()
@@ -274,8 +252,6 @@ namespace WaveBox.TcpServer.Http
 			// Makes no sense at all, but for whatever reason, all ajax calls fail with a cross site 
 			// scripting error if Content-Type is set, but the player needs it for files for seeking,
 			// so pass -1 for no Content-Length header for all text requests
-			//
-			//WriteSuccessHeader(UTF8Encoding.Unicode.GetByteCount(text), mimeType + ";charset=utf-8", null);
 			WriteSuccessHeader(Encoding.UTF8.GetByteCount(text) + 3, mimeType + ";charset=utf-8", null);
 			StreamWriter outStream = new StreamWriter(new BufferedStream(Socket.GetStream()), Encoding.UTF8);
 			outStream.Write(text);
@@ -297,7 +273,6 @@ namespace WaveBox.TcpServer.Http
 			long contentLength = length - startOffset;
 
 			WriteSuccessHeader(isSendContentLength ? contentLength : -1, mimeType, customHeaders);
-			//OutputStream.Flush();
 			if (logger.IsInfoEnabled) logger.Info("File header, contentLength: " + contentLength + ", contentType: " + mimeType + ", lastMod: " + (customHeaders != null && customHeaders.ContainsKey("Last-Modified") ? customHeaders["Last-Modified"] : String.Empty));
 
 			// Read/Write in 8 KB chunks
@@ -308,21 +283,16 @@ namespace WaveBox.TcpServer.Http
 			int bytesRead;
 			long bytesWritten = 0;
 			Socket.SendTimeout = 30000;
-			Stream stream = new BufferedStream(Socket.GetStream());//OutputStream.BaseStream;
+			Stream stream = new BufferedStream(Socket.GetStream());
 			int sinceLastReport = 0;
 			Stopwatch sw = new Stopwatch();
 
-			if (fs.CanSeek)// && startOffset < fs.Length)
+			if (fs.CanSeek)
 			{
 				// Seek to the start offset
 				fs.Seek(startOffset, SeekOrigin.Begin);
 				bytesWritten = fs.Position;
 			}
-			/*else
-			{
-				// This part doesn't exist, so bail
-				return;
-			}*/
 
 			sw.Start();
 			while (true)
@@ -340,7 +310,15 @@ namespace WaveBox.TcpServer.Http
 					// Log the progress (only for testing)
 					if (sw.ElapsedMilliseconds > 1000)
 					{
-						if (logger.IsInfoEnabled) logger.Info("[ " + bytesWritten + " / " + (contentLength + startOffset) + " | " + ((Convert.ToDouble(bytesWritten) / Convert.ToDouble(contentLength + startOffset)) * 100) + " | " + (((double)(sinceLastReport * 8) / 1024) / 1024) / (double)(sw.ElapsedMilliseconds / 1000) + " Mbps ]");
+						if (logger.IsInfoEnabled)
+						{
+							logger.Info(String.Format("[ {0,10} / {1,10} | {2:000}% | {3:00.00000} Mbps ]",
+								bytesWritten,
+								(contentLength + startOffset),
+								((Convert.ToDouble(bytesWritten) / Convert.ToDouble(contentLength + startOffset)) * 100),
+								Math.Round((((double)(sinceLastReport * 8) / 1024) / 1024) / (double)(sw.ElapsedMilliseconds / 1000), 5)
+							));
+						}
 						sinceLastReport = 0;
 						sw.Restart();
 					}
@@ -381,7 +359,6 @@ namespace WaveBox.TcpServer.Http
 				}
 			}
 			sw.Stop();
-			//_sh.writeFailure
 		}
 
 		public static string DateTimeToLastMod(DateTime theDate)

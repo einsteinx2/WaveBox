@@ -29,32 +29,43 @@ namespace WaveBox.FolderScanning
 			Stopwatch sw = new Stopwatch();
 
 			if (logger.IsInfoEnabled) logger.Info("---------------- ORPHAN SCAN ----------------");
+			if (logger.IsInfoEnabled) logger.Info("Folders:");
 			sw.Start();
 			CheckFolders();
 			sw.Stop();
-			if (logger.IsInfoEnabled) logger.Info("check folders: " + sw.ElapsedMilliseconds + "ms");
+			if (logger.IsInfoEnabled) logger.Info("Done, elapsed: " + sw.ElapsedMilliseconds + "ms");
 
+			if (logger.IsInfoEnabled) logger.Info("Songs:");
 			sw.Restart();
 			CheckSongs();
 			sw.Stop();
-			if (logger.IsInfoEnabled) logger.Info("check songs: " + sw.ElapsedMilliseconds + "ms");
+			if (logger.IsInfoEnabled) logger.Info("Done, elapsed: " + sw.ElapsedMilliseconds + "ms");
 
+			if (logger.IsInfoEnabled) logger.Info("Artists:");
 			sw.Restart();
 			CheckArtists();
 			sw.Stop();
-			if (logger.IsInfoEnabled) logger.Info("check artists: " + sw.ElapsedMilliseconds + "ms");
+			if (logger.IsInfoEnabled) logger.Info("Done, elapsed: " + sw.ElapsedMilliseconds + "ms");
 
+			if (logger.IsInfoEnabled) logger.Info("Albums:");
 			sw.Restart();
 			CheckAlbums();
 			sw.Stop();
-			if (logger.IsInfoEnabled) logger.Info("check albums: " + sw.ElapsedMilliseconds + "ms");
+			if (logger.IsInfoEnabled) logger.Info("Done, elapsed: " + sw.ElapsedMilliseconds + "ms");
 
+			if (logger.IsInfoEnabled) logger.Info("Genres:");
 			sw.Restart();
 			CheckGenres();
 			sw.Stop();
-			if (logger.IsInfoEnabled) logger.Info("check genres: " + sw.ElapsedMilliseconds + "ms");
+			if (logger.IsInfoEnabled) logger.Info("Done, elapsed: " + sw.ElapsedMilliseconds + "ms");
 
-			if (logger.IsInfoEnabled) logger.Info("check songs exists calls total time: " + (totalExistsTime / 10000) + "ms"); // Convert ticks to milliseconds, divide by 10,000
+			if (logger.IsInfoEnabled) logger.Info("Videos:");
+			sw.Restart();
+			CheckVideos();
+			sw.Stop();
+			if (logger.IsInfoEnabled) logger.Info("Done, elapsed: " + sw.ElapsedMilliseconds + "ms");
+
+			if (logger.IsInfoEnabled) logger.Info("DONE, TOTAL ELAPSED: " + (totalExistsTime / 10000) + "ms");
 			if (logger.IsInfoEnabled) logger.Info("---------------------------------------------");
 		}
 
@@ -70,7 +81,8 @@ namespace WaveBox.FolderScanning
 			ArrayList mediaFolderIds = new ArrayList();
 			ArrayList orphanFolderIds = new ArrayList();
 
-			foreach (Folder mediaFolder in Settings.MediaFolders) {
+			foreach (Folder mediaFolder in Settings.MediaFolders)
+			{
 				mediaFolderIds.Add (mediaFolder.FolderId);
 			}
 
@@ -124,7 +136,26 @@ namespace WaveBox.FolderScanning
 					{
 						if (!mediaFolderIds.Contains(mediaFolderId) || !Directory.Exists(path)) 
 						{
-							logger.Info(folderId + " is orphaned");
+							orphanFolderIds.Add(folderId);
+						}
+					}
+					// Alternatively, if folder was or is a root media folder, it won't have a media folder ID.
+					else
+					{
+						// Check if it's in the list of root media folders.  If not, it's an orphan
+						bool success = false;
+						foreach (Folder f in Settings.MediaFolders)
+						{
+							if (f.FolderPath == path)
+							{
+								success = true;
+								break;
+							}
+						}
+
+						// Add any orphan folders to purge list
+						if (!success)
+						{
 							orphanFolderIds.Add(folderId);
 						}
 					}
@@ -139,6 +170,8 @@ namespace WaveBox.FolderScanning
 
 						q1.Prepare();
 						q1.ExecuteNonQueryLogged();
+
+						if (logger.IsInfoEnabled) logger.Info("  - Folder " + fid + " deleted");
 					} 
 					catch (Exception e) 
 					{
@@ -226,7 +259,7 @@ namespace WaveBox.FolderScanning
 					q1.AddNamedParam("@songid", id);
 					q1.Prepare();
 					q1.ExecuteNonQueryLogged();
-					if (logger.IsInfoEnabled) logger.Info("Song " + id + " deleted");
+					if (logger.IsInfoEnabled) logger.Info("  - Song " + id + " deleted");
 				}
 				catch (Exception e)
 				{
@@ -284,7 +317,7 @@ namespace WaveBox.FolderScanning
 					q1.AddNamedParam("@artistid", id);
 					q1.Prepare();
 					q1.ExecuteNonQueryLogged();
-					if (logger.IsInfoEnabled) logger.Info("Artist " + id + " deleted");
+					if (logger.IsInfoEnabled) logger.Info("  - Artist " + id + " deleted");
 				}
 				catch (Exception e)
 				{
@@ -342,7 +375,7 @@ namespace WaveBox.FolderScanning
 					q1.AddNamedParam("@albumid", id);
 					q1.Prepare();
 					q1.ExecuteNonQueryLogged();
-					if (logger.IsInfoEnabled) logger.Info("Album " + id + " deleted");
+					if (logger.IsInfoEnabled) logger.Info("  - Album " + id + " deleted");
 				}
 				catch (Exception e)
 				{
@@ -400,11 +433,71 @@ namespace WaveBox.FolderScanning
 					q1.AddNamedParam("@genreid", id);
 					q1.Prepare();
 					q1.ExecuteNonQueryLogged();
-					if (logger.IsInfoEnabled) logger.Info("Genre " + id + " deleted");
+					if (logger.IsInfoEnabled) logger.Info("  - Genre " + id + " deleted");
 				}
 				catch (Exception e)
 				{
 					logger.Error("Failed deleting orphan genres : " + e);
+				}
+				finally
+				{
+					Database.Close(conn, reader);
+				}
+			}
+		}
+
+		private void CheckVideos()
+		{
+			if (isRestart)
+			{
+				return;
+			}
+
+			IDbConnection conn = null;
+			IDataReader reader = null;
+			ArrayList orphanVideoIds = new ArrayList();
+			int videoid;
+			string path, filename;
+
+			try
+			{
+				// Check for videos which don't have a folder path, meaning that they're orphaned
+				conn = Database.GetDbConnection();
+				IDbCommand q = Database.GetDbCommand("SELECT video.video_id, folder.folder_path FROM video " +
+					"LEFT JOIN folder ON video.video_folder_id = folder.folder_id WHERE folder.folder_path IS NULL", conn);
+
+				q.Prepare();
+				reader = q.ExecuteReader();
+
+				while (reader.Read())
+				{
+					videoid = reader.GetInt32(reader.GetOrdinal("video_id"));
+					orphanVideoIds.Add(videoid);
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error("Failed checking for orphan videos " + e);
+			}
+			finally
+			{
+				Database.Close(conn, reader);
+			}
+
+			foreach (int id in orphanVideoIds)
+			{
+				try
+				{
+					conn = Database.GetDbConnection();
+					IDbCommand q1 = Database.GetDbCommand("DELETE FROM video WHERE video_id = @videoid", conn);
+					q1.AddNamedParam("@videoid", id);
+					q1.Prepare();
+					q1.ExecuteNonQueryLogged();
+					if (logger.IsInfoEnabled) logger.Info("  - Video " + id + " deleted");
+				}
+				catch (Exception e)
+				{
+					logger.Error("Failed deleting orphan videos : " + e);
 				}
 				finally
 				{

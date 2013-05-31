@@ -275,11 +275,6 @@ namespace WaveBox.Model
 			return new Artist(ArtistId);
 		}
 
-		// TO DO
-		public void AutoTag()
-		{
-		}
-
 		public List<Song> ListOfSongs()
 		{
 			List<Song> songs = new List<Song>();

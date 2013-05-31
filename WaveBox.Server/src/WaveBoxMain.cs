@@ -109,7 +109,7 @@ namespace WaveBox
 		/// </summary>
 		public void Start()
 		{
-			if (logger.IsInfoEnabled) logger.Info("Initializing WaveBox on " + WaveBoxService.Platform + " platform...");
+			if (logger.IsInfoEnabled) logger.Info("Initializing WaveBox " + WaveBoxService.BuildVersion + " on " + WaveBoxService.Platform + " platform...");
 
 			// Initialize ImageMagick
 			try
@@ -188,9 +188,6 @@ namespace WaveBox
 				logger.Warn("Could not start WaveBox ZeroConf, please check port in your configuration");
 				logger.Warn(e);
 			}
-
-			// Start transcode manager
-			TranscodeManager.Instance.Setup();
 
 			// Temporary: create test user
 			User.CreateUser("test", "test", null);
