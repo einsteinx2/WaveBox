@@ -11,23 +11,12 @@ namespace WaveBox.Transcoding
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		// Use the system's temp folder to store transcodes
-		public static string TranscodePath = Path.GetTempPath() + "wavebox";
-
 		private TranscodeManager() { }
 		private static readonly TranscodeManager instance = new TranscodeManager();
 		public static TranscodeManager Instance { get { return instance; } }
 
 		private IList<ITranscoder> transcoders = new List<ITranscoder>();
 
-		public void Setup()
-		{
-			if (!Directory.Exists(TranscodePath))
-			{
-				Directory.CreateDirectory(TranscodePath);
-			}
-		}
-		
 		public ITranscoder TranscodeSong(IMediaItem song, TranscodeType type, uint quality, bool isDirect, uint offsetSeconds, uint lengthSeconds)
 		{
 			if (logger.IsInfoEnabled) logger.Info("Asked to transcode song: " + song.FileName);

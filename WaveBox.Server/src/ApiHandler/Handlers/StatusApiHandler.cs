@@ -71,9 +71,8 @@ namespace WaveBox.ApiHandler.Handlers
 				status["updated"] = unixTime;
 				// Get hostname of machine
 				status["hostname"] = System.Environment.MachineName;
-				// Get WaveBox version, currently in the format 'wavebox-builddate-git' (change to true version later,
-				// something like 'wavebox-1.0.0-alpha'
-				status["version"] = "wavebox-" + WaveBoxService.BuildDate.ToString("yyyyMMdd") + "-git";
+				// Get WaveBox version
+				status["version"] = WaveBoxService.BuildVersion;
 				// Get build date
 				status["buildDate"] = WaveBoxService.BuildDate.ToString("MMMM dd, yyyy");
 				// Get host platform
