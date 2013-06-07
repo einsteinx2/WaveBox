@@ -21,7 +21,9 @@ namespace WaveBox
 		// Body writing methods
 		void WriteNotModifiedHeader();
 		void WriteJson(string json);
+		void WriteJson(string json, IDictionary<string, string> customHeaders);
 		void WriteText(string text, string mimeType);
+		void WriteText(string text, string mimeType, IDictionary<string, string> customHeaders);
 
 		void WriteFile(Stream fs, int startOffset, long length, string mimeType, IDictionary<string, string> customHeaders, bool isSendContentLength);
 

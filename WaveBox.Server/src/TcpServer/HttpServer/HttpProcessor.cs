@@ -36,6 +36,9 @@ namespace WaveBox.TcpServer.Http
 
 		public ITranscoder Transcoder { get; set; }
 
+		// Delayed headers, mostly used for updating sessions if needed
+		public Dictionary<string, string> DelayedHeaders = new Dictionary<string, string>();
+
 		private static int MAX_POST_SIZE = 10 * 1024 * 1024; // 10MB
 
 		public HttpProcessor(TcpClient s, HttpServer srv) 
@@ -118,6 +121,7 @@ namespace WaveBox.TcpServer.Http
 			if (tokens.Length != 3) 
 			{
 				throw new Exception("invalid http request line");
+				logger.Error("Failed reading HTTP request");
 			}
 			HttpMethod = tokens[0].ToUpper();
 			HttpUrl = tokens[1];
@@ -138,6 +142,7 @@ namespace WaveBox.TcpServer.Http
 				if (separator == -1) 
 				{
 					throw new Exception("invalid http header line: " + line);
+					logger.Error("Failed reading HTTP headers");
 				}
 				String name = line.Substring(0, separator);
 				int pos = separator + 1;
@@ -240,6 +245,11 @@ namespace WaveBox.TcpServer.Http
 					outStream.WriteLine(key + ": " + customHeaders[key]);
 				}
 			}
+			// Inject delayed headers
+			foreach (string key in DelayedHeaders.Keys)
+			{
+				outStream.WriteLine(key + ": " + DelayedHeaders[key]);
+			}
 			outStream.WriteLine("Connection: close");
 			outStream.WriteLine("");
 			outStream.Flush();
@@ -249,10 +259,15 @@ namespace WaveBox.TcpServer.Http
 
 		public void WriteText(string text, string mimeType)
 		{
+			WriteText(text, mimeType, null);
+		}
+
+		public void WriteText(string text, string mimeType, IDictionary<string, string> customHeaders)
+		{
 			// Makes no sense at all, but for whatever reason, all ajax calls fail with a cross site 
 			// scripting error if Content-Type is set, but the player needs it for files for seeking,
 			// so pass -1 for no Content-Length header for all text requests
-			WriteSuccessHeader(Encoding.UTF8.GetByteCount(text) + 3, mimeType + ";charset=utf-8", null);
+			WriteSuccessHeader(Encoding.UTF8.GetByteCount(text) + 3, mimeType + ";charset=utf-8", customHeaders);
 			StreamWriter outStream = new StreamWriter(new BufferedStream(Socket.GetStream()), Encoding.UTF8);
 			outStream.Write(text);
 			outStream.Flush();
@@ -261,6 +276,11 @@ namespace WaveBox.TcpServer.Http
 		public void WriteJson(string json)
 		{
 			WriteText(json, "application/json");
+		}
+
+		public void WriteJson(string json, IDictionary<string, string> customHeaders)
+		{
+			WriteText(json, "application/json", customHeaders);
 		}
 
 		public void WriteFile(Stream fs, int startOffset, long length, string mimeType, IDictionary<string, string> customHeaders, bool isSendContentLength)
