@@ -259,15 +259,10 @@ namespace WaveBox.TcpServer.Http
 
 		public void WriteText(string text, string mimeType)
 		{
-			WriteText(text, mimeType, null);
-		}
-
-		public void WriteText(string text, string mimeType, IDictionary<string, string> customHeaders)
-		{
 			// Makes no sense at all, but for whatever reason, all ajax calls fail with a cross site 
 			// scripting error if Content-Type is set, but the player needs it for files for seeking,
 			// so pass -1 for no Content-Length header for all text requests
-			WriteSuccessHeader(Encoding.UTF8.GetByteCount(text) + 3, mimeType + ";charset=utf-8", customHeaders);
+			WriteSuccessHeader(Encoding.UTF8.GetByteCount(text) + 3, mimeType + ";charset=utf-8", null);
 			StreamWriter outStream = new StreamWriter(new BufferedStream(Socket.GetStream()), Encoding.UTF8);
 			outStream.Write(text);
 			outStream.Flush();
@@ -276,11 +271,6 @@ namespace WaveBox.TcpServer.Http
 		public void WriteJson(string json)
 		{
 			WriteText(json, "application/json");
-		}
-
-		public void WriteJson(string json, IDictionary<string, string> customHeaders)
-		{
-			WriteText(json, "application/json", customHeaders);
 		}
 
 		public void WriteFile(Stream fs, int startOffset, long length, string mimeType, IDictionary<string, string> customHeaders, bool isSendContentLength)
