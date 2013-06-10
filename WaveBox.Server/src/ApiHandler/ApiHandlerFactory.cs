@@ -66,11 +66,11 @@ namespace WaveBox.ApiHandler
 						// Iterate all cookies
 						for (int i = 0; i < cookies.Length; i += 2)
 						{
-							// Look for wavebox-session cookie
-							if (cookies[i] == "wavebox-session")
+							// Look for wavebox_session cookie
+							if (cookies[i] == "wavebox_session")
 							{
 								sessionId = cookies[i + 1];
-								logger.Info("Cookie wavebox-session: " + sessionId);
+								logger.Info("Cookie wavebox_session: " + sessionId);
 								break;
 							}
 						}
@@ -94,7 +94,7 @@ namespace WaveBox.ApiHandler
 						DateTime expire = DateTime.Now.ToUniversalTime().AddMinutes(Settings.SessionTimeout);
 
 						// Add a delayed header so cookie will be reset on each API call (to prevent timeout)
-						processor.DelayedHeaders["Set-Cookie"] = String.Format("wavebox-session={0}; Expires={1};", sessionId, HttpProcessor.DateTimeToLastMod(expire));
+						processor.DelayedHeaders["Set-Cookie"] = String.Format("wavebox_session={0}; Expires={1};", sessionId, HttpProcessor.DateTimeToLastMod(expire));
 					}
 
 					// Determine call type (note: switch is actually faster than if/else for strings in Mono)
