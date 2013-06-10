@@ -42,12 +42,12 @@ namespace WaveBox.ApiHandler
 		/// </summary>
 		private void ParseParameters()
 		{
-			// Make sure the URI contains parameters
-			if(UriString.Contains('?'))
-			{
-				// Initialize a dictionary
-				Parameters = new Dictionary<string,string>();
+			// Initialize a dictionary
+			Parameters = new Dictionary<string,string>();
 
+			// Grab parameters, if they exist
+			if (UriString.Contains('?'))
+			{
 				// if we split the uri by the question mark, the second part of the split will be the params
 				string parametersString = UriString.Split('?')[1];
 				string[] splitParams = parametersString.Split(new char[]{'=', '&'});
