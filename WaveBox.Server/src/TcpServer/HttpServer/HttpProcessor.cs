@@ -121,8 +121,8 @@ namespace WaveBox.TcpServer.Http
 			string[] tokens = request.Split(' ');
 			if (tokens.Length != 3) 
 			{
-				throw new Exception("invalid http request line");
 				logger.Error("Failed reading HTTP request");
+				throw new Exception("invalid http request line");
 			}
 			HttpMethod = tokens[0].ToUpper();
 			HttpUrl = tokens[1];
@@ -142,8 +142,8 @@ namespace WaveBox.TcpServer.Http
 				int separator = line.IndexOf(':');
 				if (separator == -1) 
 				{
-					throw new Exception("invalid http header line: " + line);
 					logger.Error("Failed reading HTTP headers");
+					throw new Exception("invalid http header line: " + line);
 				}
 				String name = line.Substring(0, separator);
 				int pos = separator + 1;

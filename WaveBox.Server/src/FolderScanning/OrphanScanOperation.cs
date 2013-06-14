@@ -457,7 +457,6 @@ namespace WaveBox.FolderScanning
 			IDataReader reader = null;
 			ArrayList orphanVideoIds = new ArrayList();
 			int videoid;
-			string path, filename;
 
 			try
 			{

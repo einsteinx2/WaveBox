@@ -94,7 +94,7 @@ namespace WaveBox.ApiHandler
 						DateTime expire = DateTime.Now.ToUniversalTime().AddMinutes(Settings.SessionTimeout);
 
 						// Add a delayed header so cookie will be reset on each API call (to prevent timeout)
-						processor.DelayedHeaders["Set-Cookie"] = String.Format("wavebox_session={0}; Expires={1};", sessionId, HttpProcessor.DateTimeToLastMod(expire));
+						processor.DelayedHeaders["Set-Cookie"] = String.Format("wavebox_session={0}; Expires={1};", sessionId, expire.ToRFC1123());
 					}
 
 					// Determine call type (note: switch is actually faster than if/else for strings in Mono)
