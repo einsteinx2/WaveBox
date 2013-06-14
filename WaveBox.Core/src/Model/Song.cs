@@ -87,10 +87,6 @@ namespace WaveBox.Model
 
 		public Song(string filePath, int? folderId, TagLib.File file)
 		{
-			// We need to check to make sure the tag isn't corrupt before handing off to this method, anyway, so just feed in the tag
-			// file that we checked for corruption.
-			//TagLib.File file = TagLib.File.Create(fsFile.FullName);
-
 			ItemId = Item.GenerateItemId(ItemType.Song);
 			if (ItemId == null)
 			{
@@ -293,10 +289,10 @@ namespace WaveBox.Model
 			try
 			{
 				StringBuilder sb = new StringBuilder("SELECT song.*, artist.artist_name, album.album_name, genre.genre_name FROM song " +
-				                                     "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
-				                                     "LEFT JOIN album ON song_album_id = album.album_id " +
-				                                     "LEFT JOIN genre ON song_genre_id = genre.genre_id " + 
-				                                     "WHERE");
+													 "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
+													 "LEFT JOIN album ON song_album_id = album.album_id " +
+													 "LEFT JOIN genre ON song_genre_id = genre.genre_id " + 
+													 "WHERE");
 
 				for (int i = 0; i < songIds.Count; i++)
 				{
@@ -519,10 +515,6 @@ namespace WaveBox.Model
 
 		public static int CompareSongsByDiscAndTrack(Song x, Song y)
 		{
-			// if one track contains a disc number and the other doesn't, the one with the disc number is greater
-			//if (x.DiscNumber == 0 && y.DiscNumber != 0) return 1;
-			//else if (x.DiscNumber != 0 && y.DiscNumber == 0) return -1;
-
 			if (x.DiscNumber == y.DiscNumber && x.TrackNumber == y.TrackNumber) return 0;
 
 			// if the disc numbers are equal, we have to compare by track
@@ -535,7 +527,6 @@ namespace WaveBox.Model
 		public static bool SongNeedsUpdating(string filePath, int? folderId, out bool isNew, out int? songId)
 		{
 			// We don't need to instantiate another folder to know what the folder id is.  This should be known when the method is called.
-			//Stopwatch sw = new Stopwatch();
 			string fileName = Path.GetFileName(filePath);
 			long lastModified = System.IO.File.GetLastWriteTime(filePath).ToUniversalUnixTimestamp();
 			bool needsUpdating = true;
@@ -553,7 +544,6 @@ namespace WaveBox.Model
 				conn = Database.GetDbConnection();
 				IDbCommand q = Database.GetDbCommand("SELECT song_id, song_last_modified, song_file_size " +
 													 "FROM song WHERE song_folder_id = @folderid AND song_file_name = @filename", conn); //AND song_file_size = @filesize", conn);
-				//IDbCommand q = Database.GetDbCommand("SELECT COUNT(*) AS count FROM song WHERE song_folder_id = @folderid AND song_file_name = @filename AND song_last_modified = @lastmod", conn);
 
 				q.AddNamedParam("@folderid", folderId);
 				q.AddNamedParam("@filename", fileName);

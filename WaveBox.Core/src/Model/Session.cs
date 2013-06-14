@@ -162,7 +162,7 @@ namespace WaveBox.Model
 			IDataReader reader = null;
 
 			// Generate random string, use SHA1 for session ID
-			string sessionId = Utility.SHA1(Utility.RandomString(100));
+			string sessionId = Utility.RandomString(100).SHA1();
 
 			// Get current UNIX time
 			long unixTime = DateTime.Now.ToUniversalUnixTimestamp();

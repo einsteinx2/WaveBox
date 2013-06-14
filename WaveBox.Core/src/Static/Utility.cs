@@ -354,19 +354,31 @@ namespace WaveBox.Static
 		/// <summary>
 		/// Convert a List to a quoted CSV string
 		/// </summary>
-		public static string ToCSV(this IList<string> list)
+		public static string ToCSV(this IList<string> list, bool quoted = false)
 		{
 			string buffer = "";
 
 			// If list is empty, return empty list
 			if (list.Count == 0)
 			{
-				return "\"\"";
+				if (quoted)
+				{
+					return "\"\"";
+				}
+
+				return "";
 			}
 
 			foreach (string s in list)
 			{
-				buffer += "\"" + s + "\", ";
+				if (quoted)
+				{
+					buffer += "\"" + s + "\", ";
+				}
+				else
+				{
+					buffer += s + ", ";
+				}
 			}
 
 			return buffer.Trim(new char[] {' ', ','});

@@ -24,43 +24,8 @@ namespace WaveBox.Model
 
 	public static class FileTypeExtensions
 	{
-		//private static Logger logger = LogManager.GetCurrentClassLogger();
-
-		/*public static FileType FileTypeForTagSharpString(this FileType ft, string formatString)
-		{
-			if (logger.IsInfoEnabled) logger.Info("format string: " + formatString);
-
-			// Lossy codecs
-			if (formatString == "MPEG-4 Audio (mp4a)")
-				return FileType.AAC;
-			else if (formatString == "MPEG Version 1 Audio, Layer 3 VBR" || formatString == "MPEG Version 1 Audio, Layer 3")
-				return FileType.MP3;
-			else if (formatString == "MusePack Version 7 Audio")
-				return FileType.MPC;
-			else if (formatString == "Vorbis Version 0 Audio")
-				return FileType.OGG;
-			else if (formatString == "Microsoft WMA2 Audio" || formatString == "Microsoft Lossless WMA Audio")
-				return FileType.WMA;
-			// Lossless codecs; reordered slightly to prevent ArgumentOutOfRange exception on substring()
-			else if (formatString == "MPEG-4 Audio (alac)")
-				return FileType.ALAC;
-			else if (formatString == "Flac Audio")
-				return FileType.FLAC;
-			// These two use substrings because their version numbers constantly increment with each release
-			else if (formatString.Contains("WavPack"))
-				return FileType.WV;
-			else if (formatString.Contains("Monkey's Audio"))
-				return FileType.APE;
-			else if (formatString.Contains("MPEG-4 Video (avc1)"))
-				return FileType.MP4;
-			else
-				return FileType.Unknown;
-		}*/
-
 		public static FileType FileTypeForTagLibMimeType(this FileType ft, string mimeType)
 		{
-			//if (logger.IsInfoEnabled) logger.Info("mime type: " + mimeType);
-
 			// Try audio types
 			switch (mimeType)
 			{
@@ -75,10 +40,6 @@ namespace WaveBox.Model
 					return FileType.OGG;
 				case "taglib/wma":
 					return FileType.WMA;
-				/*
-				case "MPEG-4 Audio (alac)":
-					return FileType.ALAC;
-				*/
 				case "taglib/flac":
 					return FileType.FLAC;
 				case "taglib/wv":

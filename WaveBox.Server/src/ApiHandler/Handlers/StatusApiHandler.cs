@@ -83,10 +83,10 @@ namespace WaveBox.ApiHandler.Handlers
 				status["memoryMb"] = (float)proc.WorkingSet64 / 1024f / 1024f;
 				// Get peak memory usage in MB
 				status["peakMemoryMb"] = (float)proc.PeakWorkingSet64 / 1024f / 1024f;
-				// Get list of media types WaveBox can index and serve
-				status["mediaTypes"] = MediaTypes();
+				// Get list of media types WaveBox can index and serve (removing "Unknown")
+				status["mediaTypes"] = Enum.GetNames(typeof(FileType)).Where(x => x != "Unknown").ToList().ToCSV();
 				// Get list of transcoders available
-				status["transcoders"] = Transcoders();
+				status["transcoders"] = Enum.GetNames(typeof(TranscodeType)).ToList().ToCSV();
 				// Get last query log ID
 				status["lastQueryLogId"] = queryLogId;
 				// Get whether an update is available or not
@@ -163,62 +163,6 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 
 			return usage;
-		}
-
-		/// <summary>
-		/// Grabs a list of valid file types for media files from the enumerator in Wavebox.Model.FileType
-		/// </summary>
-		private string MediaTypes()
-		{
-			var fileTypes = Enum.GetValues(typeof(FileType));
-			Array.Sort(fileTypes);
-			int i = 2;
-			string types = "";
-
-			foreach (FileType f in fileTypes)
-			{
-				if (f != FileType.Unknown)
-				{
-					if (i == fileTypes.Length)
-					{
-						types += f.ToString();
-					}
-					else
-					{
-						types += f.ToString() + ", ";
-					}
-				}
-
-				i++;
-			}
-
-			return types;
-		}
-
-		/// <summary>
-		/// Grabs a list of valid transcoder types from the enumerator in Wavebox.Transcoding.TranscoderType
-		/// </summary>
-		private string Transcoders()
-		{
-			var transcoders = Enum.GetValues(typeof(TranscodeType));
-			int i = 1;
-			string trans = "";
-
-			foreach (TranscodeType t in transcoders)
-			{
-				if (i == transcoders.Length)
-				{
-					trans += t.ToString();
-				}
-				else
-				{
-					trans += t.ToString() + ", ";
-				}
-
-				i++;
-			}
-
-			return trans;
 		}
 
 		private class StatusResponse

@@ -137,7 +137,6 @@ namespace WaveBox.Static
 			}
 		}
 
-		//private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 		public static int ExecuteNonQueryLogged(this IDbCommand command)
 		{
 			lock (dbBackupLock)
@@ -265,34 +264,6 @@ namespace WaveBox.Static
 			return value;
 		}
 
-		/* public bool DeleteItemId (int itemId)
-		{
-			bool success = false;
-			IDbConnection conn = null;
-			IDataReader reader = null;
-			try 
-			{
-				conn = Database.GetDbConnection ();
-				IDbCommand q = Database.GetDbCommand ("DELETE FROM item WHERE item_id = @itemid", conn);
-				q.AddNamedParam("@itemid", itemId);
-				q.Prepare ();
-				int affected = (int)q.ExecuteNonQueryLogged();
-
-				if (affected >= 1)
-					success = true;
-			} 
-			catch (Exception e) 
-			{
-				logger.Info ("[DATABASE] ERROR deleting item id: " + e);
-			} 
-			finally 
-			{
-				Database.Close(conn, reader);
-			}
-
-			return success;
-		}*/
-	
 		// Backup SQLite database (modified code from: http://sqlite.phxsoftware.com/forums/t/2403.aspx)
 		//
 
