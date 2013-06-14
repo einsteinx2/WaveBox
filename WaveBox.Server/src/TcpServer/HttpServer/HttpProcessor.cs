@@ -432,7 +432,7 @@ namespace WaveBox.TcpServer.Http
 					if (bytesRead < chunkSize)
 					{
 						// Check if the stream is done
-						if (!fs.CanSeek || !(fs is FileStream) || bytesWritten >= fs.Length)
+						if (!fs.CanSeek || !(fs is FileStream) || totalBytesWritten >= fs.Length)
 						{
 							if ((object)Transcoder == null || Transcoder.State != TranscodeState.Active)
 							{

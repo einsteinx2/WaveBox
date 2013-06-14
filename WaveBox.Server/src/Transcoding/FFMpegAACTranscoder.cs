@@ -80,7 +80,14 @@ namespace WaveBox.Transcoding
 
 		private string FFMpegOptionsWith(uint quality)
 		{
-			return "-loglevel quiet -i \"" + Item.FilePath + "\" -acodec " + Codec + " -strict -2 -aq " + quality + " " + OutputPath;
+			if (quality > 12)
+			{
+				return "-loglevel quiet -i \"" + Item.FilePath + "\" -acodec " + Codec + " -strict -2 -ab " + (quality * 1024) + " " + OutputPath;
+			}
+			else
+			{
+				return "-loglevel quiet -i \"" + Item.FilePath + "\" -acodec " + Codec + " -strict -2 -aq " + quality + " " + OutputPath;
+			}
 		}
 	}
 }
