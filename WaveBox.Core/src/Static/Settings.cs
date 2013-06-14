@@ -275,7 +275,7 @@ namespace WaveBox.Static
 			// Notes:
 			//  - all settings must be converted to string
 			//  - convert booleans using ToString().ToLower()
-			//  - convert lists using ToCSV() extension method
+			//  - convert lists using ToCSV(true) extension method, for quoted list
 			//  - ... sorry that this is probably the best way to do this.
 			try
 			{
@@ -284,13 +284,13 @@ namespace WaveBox.Static
 					.Replace("{setting-wsPort}", settingsModel.WsPort.ToString())
 					.Replace("{setting-crashReportEnable}", settingsModel.CrashReportEnable.ToString().ToLower())
 					.Replace("{setting-natEnable}", settingsModel.NatEnable.ToString().ToLower())
-					.Replace("{setting-mediaFolders}", settingsModel.MediaFolders.ToCSV())
+					.Replace("{setting-mediaFolders}", settingsModel.MediaFolders.ToCSV(true))
 					.Replace("{setting-podcastFolder}", settingsModel.PodcastFolder)
 					.Replace("{setting-podcastCheckInterval}", settingsModel.PodcastCheckInterval.ToString())
 					.Replace("{setting-sessionTimeout}", settingsModel.SessionTimeout.ToString())
 					.Replace("{setting-sessionScrubInterval}", settingsModel.SessionScrubInterval.ToString())
 					.Replace("{setting-prettyJson}", settingsModel.PrettyJson.ToString().ToLower())
-					.Replace("{setting-folderArtNames}", settingsModel.FolderArtNames.ToCSV());
+					.Replace("{setting-folderArtNames}", settingsModel.FolderArtNames.ToCSV(true));
 			}
 			catch (Exception e)
 			{
