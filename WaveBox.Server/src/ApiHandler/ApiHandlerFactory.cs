@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using WaveBox.ApiHandler.Handlers;
 using WaveBox.Model;
+using WaveBox.Static;
 using WaveBox.TcpServer.Http;
 
 namespace WaveBox.ApiHandler
@@ -54,6 +55,28 @@ namespace WaveBox.ApiHandler
 					// If we fail to grab a parameter needed by a requested handler, it will report the error
 				}
 
+				// Attempt to parse session ID from cookie if not already set
+				if (sessionId == null)
+				{
+					if (processor.HttpHeaders.ContainsKey("Cookie"))
+					{
+						// Split each cookie into pairs
+						string[] cookies = processor.HttpHeaders["Cookie"].ToString().Split(new [] {';', ',', '='}, StringSplitOptions.RemoveEmptyEntries);
+
+						// Iterate all cookies
+						for (int i = 0; i < cookies.Length; i += 2)
+						{
+							// Look for wavebox_session cookie
+							if (cookies[i] == "wavebox_session")
+							{
+								sessionId = cookies[i + 1];
+								logger.Info("Cookie wavebox_session: " + sessionId);
+								break;
+							}
+						}
+					}
+				}
+
 				// Authenticate user
 				User user = Authenticate(action, sessionId, username, password, clientName);
 				if (user == null)
@@ -63,6 +86,17 @@ namespace WaveBox.ApiHandler
 				}
 				else
 				{
+					// user.SessionId will be generated on new login, so that takes precedence
+					sessionId = user.SessionId == null ? sessionId : user.SessionId;
+					if (sessionId != null)
+					{
+						// Calculate session timeout time (DateTime.Now UTC + Settings.SessionTimeout minutes)
+						DateTime expire = DateTime.Now.ToUniversalTime().AddMinutes(Settings.SessionTimeout);
+
+						// Add a delayed header so cookie will be reset on each API call (to prevent timeout)
+						processor.DelayedHeaders["Set-Cookie"] = String.Format("wavebox_session={0}; Expires={1};", sessionId, HttpProcessor.DateTimeToLastMod(expire));
+					}
+
 					// Determine call type (note: switch is actually faster than if/else for strings in Mono)
 					// source: http://stackoverflow.com/questions/445067/if-vs-switch-speed
 					switch (action)

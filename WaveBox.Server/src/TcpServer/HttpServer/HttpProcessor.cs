@@ -37,6 +37,9 @@ namespace WaveBox.TcpServer.Http
 
 		public ITranscoder Transcoder { get; set; }
 
+		// Delayed headers, mostly used for updating sessions if needed
+		public Dictionary<string, string> DelayedHeaders = new Dictionary<string, string>();
+
 		private static int MAX_POST_SIZE = 10 * 1024 * 1024; // 10MB
 
 		public HttpProcessor(TcpClient s, HttpServer srv) 
@@ -119,6 +122,7 @@ namespace WaveBox.TcpServer.Http
 			if (tokens.Length != 3) 
 			{
 				throw new Exception("invalid http request line");
+				logger.Error("Failed reading HTTP request");
 			}
 			HttpMethod = tokens[0].ToUpper();
 			HttpUrl = tokens[1];
@@ -139,6 +143,7 @@ namespace WaveBox.TcpServer.Http
 				if (separator == -1) 
 				{
 					throw new Exception("invalid http header line: " + line);
+					logger.Error("Failed reading HTTP headers");
 				}
 				String name = line.Substring(0, separator);
 				int pos = separator + 1;
@@ -247,7 +252,13 @@ namespace WaveBox.TcpServer.Http
 					outStream.WriteLine(key + ": " + customHeaders[key]);
 				}
 			}
-			//outStream.WriteLine("Connection: close");
+
+			// Inject delayed headers
+			foreach (string key in DelayedHeaders.Keys)
+			{
+				outStream.WriteLine(key + ": " + DelayedHeaders[key]);
+			}
+			outStream.WriteLine("Connection: close");
 			outStream.WriteLine("");
 			outStream.Flush();
 			
