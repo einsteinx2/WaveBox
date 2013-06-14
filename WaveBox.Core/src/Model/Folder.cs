@@ -157,8 +157,6 @@ namespace WaveBox.Model
 			{
 				conn = Database.GetDbConnection();
 				q = Database.GetDbCommand("SELECT * FROM folder WHERE folder_path = \"" + path + "\" AND folder_media_folder_id IS NULL", conn);
-				//q = Database.GetDbCommand("SELECT * FROM folder WHERE folder_path = @folderpath AND folder_media_folder_id = 0", conn);
-				//q.AddNamedParam("@folderpath", path);
 				q.Prepare();
 				reader = q.ExecuteReader();
 
@@ -454,9 +452,7 @@ namespace WaveBox.Model
 
 				if (affected > 0)
 				{
-					// get the id of the previous insert.  weird.
 					FolderId = itemId;
-					//FolderId = Convert.ToInt32(((SqlDecimal)q.ExecuteScalar()).ToString());
 				}
 			}
 			catch (Exception e)
@@ -522,7 +518,6 @@ namespace WaveBox.Model
 				{
 					conn = Database.GetDbConnection();
 					IDbCommand q = Database.GetDbCommand ("SELECT * FROM folder WHERE parent_folder_id IS NULL", conn);
-					//q.Parameters.AddWithValue("@nullvalue", DBNull.Value);
 					q.Prepare();
 					reader = q.ExecuteReader();
 
