@@ -16,14 +16,14 @@ namespace WaveBox
 
 		// Header writing methods
 		void WriteErrorHeader();
-		void WriteSuccessHeader(long contentLength, string mimeType, IDictionary<string, string> customHeaders);
+		void WriteSuccessHeader(long contentLength, string mimeType, IDictionary<string, string> customHeaders, DateTime lastModified, bool isPartial = false);
 
 		// Body writing methods
 		void WriteNotModifiedHeader();
 		void WriteJson(string json);
 		void WriteText(string text, string mimeType);
 
-		void WriteFile(Stream fs, int startOffset, long length, string mimeType, IDictionary<string, string> customHeaders, bool isSendContentLength);
+		void WriteFile(Stream fs, int startOffset, long length, string mimeType, IDictionary<string, string> customHeaders, bool isSendContentLength, DateTime? lastModified, long? limitToBytes = null);
 
 		// Utility methods
 		//static string DateTimeToLastMod(DateTime theDate);

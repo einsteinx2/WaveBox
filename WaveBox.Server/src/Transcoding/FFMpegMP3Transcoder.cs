@@ -13,7 +13,7 @@ namespace WaveBox.Transcoding
 
 		public override string OutputExtension { get { return "mp3"; } }
 
-		public override string MimeType { get { return "audio/mp3"; } }
+		public override string MimeType { get { return "audio/mpeg"; } }
 
 		public FFMpegMP3Transcoder(IMediaItem item, uint quality, bool isDirect, uint offsetSeconds, uint lengthSeconds) : base(item, quality, isDirect, offsetSeconds, lengthSeconds)
 		{

@@ -69,7 +69,7 @@ namespace WaveBox.ApiHandler.Handlers
 						customHeader["WaveBox-LastQueryId"] = databaseLastQueryId.ToString();
 					
 						// Send the database file
-						Processor.WriteFile(stream, startOffset, length, "application/octet-stream", customHeader, true);
+						Processor.WriteFile(stream, startOffset, length, "application/octet-stream", customHeader, true, new FileInfo(Utility.RootPath() + databaseFileName).LastWriteTimeUtc);
                         stream.Close();
 					}
 					catch

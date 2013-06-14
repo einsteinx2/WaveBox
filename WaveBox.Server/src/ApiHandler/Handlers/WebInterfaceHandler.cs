@@ -60,23 +60,6 @@ namespace WaveBox.ApiHandler.Handlers
 			// Make sure the file exists
 			if (File.Exists(path))
 			{
-				// If it exists, check to see if the headers contains an If-Modified-Since entry
-				if (Processor.HttpHeaders.ContainsKey("If-Modified-Since"))
-				{
-					if (logger.IsInfoEnabled) logger.Info(Processor.HttpHeaders["If-Modified-Since"]);
-
-					// Took me a while to figure this out, but even if the time zone in the request is GMT, DateTime.Parse converts it to local time.
-					var ims = DateTime.Parse(Processor.HttpHeaders["If-Modified-Since"].ToString());
-					var lastMod = File.GetLastWriteTime(path);
-
-					if (ims >= lastMod)
-					{
-						if (logger.IsInfoEnabled) logger.Info("File not modified: " + path);
-						Processor.WriteNotModifiedHeader();
-						return;
-					}
-				}
-
 				if (logger.IsInfoEnabled) logger.Info("serving file at path: " + path);
 
 				// Serve up files inside html directory
@@ -94,11 +77,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 				long length = file.Length - startOffset;
 
-				var dict = new Dictionary<string, string>();
-				var lwt = HttpProcessor.DateTimeToLastMod(new FileInfo(path).LastWriteTimeUtc);
-				dict.Add("Last-Modified", lwt);
-
-				Processor.WriteFile(file, startOffset, length, HttpHeader.MimeTypeForExtension(Path.GetExtension(path)), dict, true);
+				Processor.WriteFile(file, startOffset, length, HttpHeader.MimeTypeForExtension(Path.GetExtension(path)), null, true, new FileInfo(path).LastWriteTimeUtc);
 				file.Close();
 			}
 			else

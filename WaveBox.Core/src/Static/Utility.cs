@@ -322,6 +322,11 @@ namespace WaveBox.Static
 			return BitConverter.ToString(provider.ComputeHash(Encoding.ASCII.GetBytes(sumthis))).Replace("-", "");
 		}
 
+		public static string ToRFC1123(this DateTime dateTime)
+		{
+			return dateTime.ToUniversalTime().ToString("ddd, dd MMM yyyy HH:mm:ss") + " GMT";
+		}
+
 		/// <summary>
 		/// Creates universal DateTime object from an input UNIX timestamp
 		/// </summary>

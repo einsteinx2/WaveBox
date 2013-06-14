@@ -17,6 +17,7 @@ using WaveBox.TcpServer.Http;
 // simple HTTP explanation
 // http://www.jmarshall.com/easy/http/
 using WaveBox.ApiHandler;
+using WaveBox.Static;
 
 namespace WaveBox.TcpServer.Http
 {
@@ -217,22 +218,28 @@ namespace WaveBox.TcpServer.Http
 		public void WriteErrorHeader()
 		{
 			StreamWriter outStream = new StreamWriter(new BufferedStream(Socket.GetStream()));
-			outStream.WriteLine("HTTP/1.0 404 File not found");
+			outStream.WriteLine("HTTP/1.1 404 File not found");
 			outStream.WriteLine("Connection: close");
 			outStream.WriteLine("");
 			outStream.Flush();
 		}
 
-		public void WriteSuccessHeader(long contentLength, string mimeType, IDictionary<string, string> customHeaders)
+		public void WriteSuccessHeader(long contentLength, string mimeType, IDictionary<string, string> customHeaders, DateTime lastModified, bool isPartial = false)
 		{
 			StreamWriter outStream = new StreamWriter(new BufferedStream(Socket.GetStream()));
-			outStream.WriteLine("HTTP/1.0 200 OK");
-			outStream.WriteLine("Content-Type: " + mimeType);
+			string status = isPartial ? "HTTP/1.1 206 Partial Content" : "HTTP/1.1 200 OK";
+			outStream.WriteLine(status);
+			outStream.WriteLine("Date: " + DateTime.UtcNow.ToRFC1123());
+			outStream.WriteLine("Server: WaveBox/" + WaveBoxService.BuildVersion);
+			outStream.WriteLine("Last-Modified: " + lastModified.ToRFC1123());
+			outStream.WriteLine("ETag: \"" + CreateETagString(lastModified) + "\"");
+			outStream.WriteLine("Accept-Ranges: bytes");
 			if (contentLength >= 0)
 			{
 				outStream.WriteLine("Content-Length: " + contentLength);
 			}
 			outStream.WriteLine("Access-Control-Allow-Origin: *");
+			outStream.WriteLine("Content-Type: " + mimeType);
 			if ((object)customHeaders != null)
 			{
 				foreach (string key in customHeaders.Keys)
@@ -240,11 +247,11 @@ namespace WaveBox.TcpServer.Http
 					outStream.WriteLine(key + ": " + customHeaders[key]);
 				}
 			}
-			outStream.WriteLine("Connection: close");
+			//outStream.WriteLine("Connection: close");
 			outStream.WriteLine("");
 			outStream.Flush();
 			
-			if (logger.IsInfoEnabled) logger.Info("Success header, contentLength: " + contentLength);
+			if (logger.IsInfoEnabled) logger.Info("Success header, status: " + status + " contentLength: " + contentLength + " ETag: " + CreateETagString(lastModified) + " Last-Modified: " + lastModified.ToRFC1123());
 		}
 
 		public void WriteText(string text, string mimeType)
@@ -252,7 +259,7 @@ namespace WaveBox.TcpServer.Http
 			// Makes no sense at all, but for whatever reason, all ajax calls fail with a cross site 
 			// scripting error if Content-Type is set, but the player needs it for files for seeking,
 			// so pass -1 for no Content-Length header for all text requests
-			WriteSuccessHeader(Encoding.UTF8.GetByteCount(text) + 3, mimeType + ";charset=utf-8", null);
+			WriteSuccessHeader(Encoding.UTF8.GetByteCount(text) + 3, mimeType + ";charset=utf-8", null, DateTime.UtcNow);
 			StreamWriter outStream = new StreamWriter(new BufferedStream(Socket.GetStream()), Encoding.UTF8);
 			outStream.Write(text);
 			outStream.Flush();
@@ -263,17 +270,36 @@ namespace WaveBox.TcpServer.Http
 			WriteText(json, "application/json");
 		}
 
-		public void WriteFile(Stream fs, int startOffset, long length, string mimeType, IDictionary<string, string> customHeaders, bool isSendContentLength)
+		public void WriteFile(Stream fs, int startOffset, long length, string mimeType, IDictionary<string, string> customHeaders, bool isSendContentLength, DateTime? lastModified, long? limitToBytes = null)
 		{
 			if ((object)fs == null || !fs.CanRead || length == 0 || startOffset >= length)
 			{ 
 				return;
 			}
 
-			long contentLength = length - startOffset;
+			DateTime lastMod = CleanLastModified(lastModified);
 
-			WriteSuccessHeader(isSendContentLength ? contentLength : -1, mimeType, customHeaders);
-			if (logger.IsInfoEnabled) logger.Info("File header, contentLength: " + contentLength + ", contentType: " + mimeType + ", lastMod: " + (customHeaders != null && customHeaders.ContainsKey("Last-Modified") ? customHeaders["Last-Modified"] : String.Empty));
+			// If it exists, check to see if the headers contains an If-Modified-Since or If-None-Match entry
+			if (HttpHeaders.ContainsKey("If-Modified-Since"))
+			{
+				if (logger.IsInfoEnabled) logger.Info("If-Modified-Since header: " + HttpHeaders["If-Modified-Since"]);
+
+				if (HttpHeaders["If-Modified-Since"].Equals(lastMod.ToRFC1123()))
+				{
+					WriteNotModifiedHeader();
+					return;
+				}
+			}
+			if (HttpHeaders.ContainsKey("If-None-Match"))
+			{
+				if (logger.IsInfoEnabled) logger.Info("If-None-Match header: " + HttpHeaders["If-None-Match"]);
+
+				if (HttpHeaders["If-None-Match"].Equals(CreateETagString(lastMod)))
+				{
+					WriteNotModifiedHeader();
+					return;
+				}
+			}
 
 			// Read/Write in 8 KB chunks
 			const int chunkSize = 8192;
@@ -282,30 +308,88 @@ namespace WaveBox.TcpServer.Http
 			byte[] buf = new byte[chunkSize];
 			int bytesRead;
 			long bytesWritten = 0;
+			long totalBytesWritten = 0;
 			Socket.SendTimeout = 30000;
 			Stream stream = new BufferedStream(Socket.GetStream());
 			int sinceLastReport = 0;
+			long actualStartOffset = startOffset;
 			Stopwatch sw = new Stopwatch();
 
 			if (fs.CanSeek)
 			{
+				if (logger.IsInfoEnabled) logger.Info("Trying to seek to " + startOffset);
+
 				// Seek to the start offset
 				fs.Seek(startOffset, SeekOrigin.Begin);
-				bytesWritten = fs.Position;
+				actualStartOffset = fs.Position;
+				if (actualStartOffset < startOffset && !ReferenceEquals(Transcoder, null) && Transcoder.State == TranscodeState.Active)
+				{
+					// Wait for the file to catch up
+					while (Transcoder.State == TranscodeState.Active)
+					{
+						// Try the seek again
+						fs.Seek(startOffset, SeekOrigin.Begin);
+
+						// Check the position
+						actualStartOffset = fs.Position;
+						if (actualStartOffset >= startOffset)
+						{
+							// We've made it, so break
+							break;
+						}
+
+						// Sleep for a bit to prevent a tight loop
+						Thread.Sleep(250);
+					}
+				}
+
+				if (logger.IsInfoEnabled) logger.Info("actual start offset " + actualStartOffset);
+
+				totalBytesWritten = fs.Position;
 			}
+
+			// TODO: make sure content length is correct when doing range requests on transcoded files
+			long contentLength = length - actualStartOffset;
+			if (!ReferenceEquals(limitToBytes, null) && contentLength > limitToBytes)
+				contentLength = (long)limitToBytes;
+
+			bool isPartial = startOffset != 0 || !ReferenceEquals(limitToBytes, null);
+			if (isPartial)
+			{
+				if (ReferenceEquals(customHeaders, null))
+					customHeaders = new Dictionary<string, string>();
+
+				string contentRange = "bytes " + startOffset + "-" + (startOffset + contentLength - 1) + "/" + length;
+				customHeaders["Content-Range"] = contentRange;
+			}
+
+			WriteSuccessHeader(isSendContentLength ? contentLength : -1, mimeType, customHeaders, lastMod, isPartial);
+			if (logger.IsInfoEnabled) logger.Info("File header, contentLength: " + contentLength + ", contentType: " + mimeType);
 
 			sw.Start();
 			while (true)
 			{
 				try
 				{
+					int thisChunkSize = chunkSize;
+					if (!ReferenceEquals(limitToBytes, null))
+					{
+						// Make sure we don't send too much data on the last (potentially) partial chunk
+						if (bytesWritten + chunkSize > limitToBytes)
+						{
+							// Reduce the chunk size
+							thisChunkSize = (int)(limitToBytes - bytesWritten);
+						}
+					}
+
 					// Attempt to read a chunk
-					bytesRead = fs.Read(buf, 0, chunkSize);
+					bytesRead = fs.Read(buf, 0, thisChunkSize);
 
 					// Send the bytes out to the client
 					stream.Write(buf, 0, bytesRead);
 					stream.Flush();
 					bytesWritten += bytesRead;
+					totalBytesWritten += bytesRead;
 
 					// Log the progress (only for testing)
 					if (sw.ElapsedMilliseconds > 1000)
@@ -313,9 +397,9 @@ namespace WaveBox.TcpServer.Http
 						if (logger.IsInfoEnabled)
 						{
 							logger.Info(String.Format("[ {0,10} / {1,10} | {2:000}% | {3:00.00000} Mbps ]",
-								bytesWritten,
+							    totalBytesWritten,
 								(contentLength + startOffset),
-								((Convert.ToDouble(bytesWritten) / Convert.ToDouble(contentLength + startOffset)) * 100),
+							    ((Convert.ToDouble(totalBytesWritten) / Convert.ToDouble(contentLength + startOffset)) * 100),
 								Math.Round((((double)(sinceLastReport * 8) / 1024) / 1024) / (double)(sw.ElapsedMilliseconds / 1000), 5)
 							));
 						}
@@ -325,6 +409,12 @@ namespace WaveBox.TcpServer.Http
 					else
 					{
 						sinceLastReport += bytesRead;
+					}
+
+					// See if we need to stop the transfer to limit the size
+					if (!ReferenceEquals(limitToBytes, null) && bytesWritten == limitToBytes)
+					{
+						break;
 					}
 
 					// See if we're done
@@ -361,54 +451,25 @@ namespace WaveBox.TcpServer.Http
 			sw.Stop();
 		}
 
-		public static string DateTimeToLastMod(DateTime theDate)
+		private DateTime CleanLastModified(DateTime? lastModified)
 		{
-			string dayOfWeek;
+			// If null, use current time
+			if (ReferenceEquals(lastModified, null))
+				return DateTime.UtcNow;
 
-			//var offset = TimeZone.CurrentTimeZone.GetUtcOffset(theDate).Ticks;
-			//var theDateUtc = theDate.AddTicks(-offset);
-			var d = theDate.DayOfWeek;
-			if(d == DayOfWeek.Sunday)
-				dayOfWeek = "Sun";
-			else if(d == DayOfWeek.Monday)
-				dayOfWeek = "Mon";
-			else if(d == DayOfWeek.Tuesday)
-				dayOfWeek = "Tue";
-			else if(d == DayOfWeek.Wednesday)
-				dayOfWeek = "Wed";
-			else if(d == DayOfWeek.Thursday)
-				dayOfWeek = "Thu";
-			else if(d == DayOfWeek.Friday)
-				dayOfWeek = "Fri";
-			else dayOfWeek = "Sat";
+			// Make sure we're using UTC
+			DateTime lastMod = ((DateTime)lastModified).ToUniversalTime();
 
-			string month;
-			var m = theDate.Month;
-			if(m == 1)
-				month = "Jan";
-			else if(m == 2)
-				month = "Feb";
-			else if(m == 3)
-				month = "Mar";
-			else if(m == 4)
-				month = "Apr";
-			else if(m == 5)
-				month = "May";
-			else if(m == 6)
-				month = "Jun";
-			else if(m == 7)
-				month = "Jul";
-			else if(m == 8)
-				month = "Aug";
-			else if(m == 9)
-				month = "Sep";
-			else if(m == 10)
-				month = "Oct";
-			else if(m == 11)
-				month = "Nov";
-			else month = "Dec";
+			// If the time is later than now, use now
+			if (DateTime.Compare(DateTime.UtcNow, lastMod) < 0)
+				lastMod = DateTime.UtcNow;
 
-			return dayOfWeek + ", " + theDate.Day + " " + month + " " + theDate.Year + " " + string.Format("{0:HH}:{0:mm}:{0:ss}", theDate) + " GMT";
+			return lastMod;
+		}
+		
+		private string CreateETagString(DateTime lastModified)
+		{
+			return lastModified.ToRFC1123().SHA1();
 		}
 	}
 }
