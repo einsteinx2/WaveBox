@@ -28,8 +28,6 @@ namespace WaveBox.Static
 
 			public override void Start()
 			{
-				if (logger.IsInfoEnabled) logger.Info("Checking for expired users");
-
 				// Delete the expired users
 				IList<User> users = User.ExpiredUsers();
 				foreach (User user in users)

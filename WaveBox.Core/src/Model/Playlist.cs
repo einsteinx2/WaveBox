@@ -187,7 +187,6 @@ namespace WaveBox.Model
 				conn = Database.GetDbConnection();
 
 				IDbCommand q = null;
-				//q.Parameters.AddWithValue("@playlistid", PlaylistId);
 				if (PlaylistId == null)
 				{
 					int? itemId = Item.GenerateItemId(ItemType.Playlist);
@@ -202,8 +201,6 @@ namespace WaveBox.Model
 					LastUpdateTime = DateTime.Now.ToUniversalUnixTimestamp() - (new DateTime(1970, 1, 1).ToUniversalUnixTimestamp());
 					q = Database.GetDbCommand("INSERT INTO playlist (playlist_id, playlist_name, playlist_count, playlist_duration, md5_hash, last_update) " +
 											"VALUES (@playlistid, @playlistname, @playlistcount, @playlistduration, @md5, @lastupdate)", conn);
-					//q = Database.GetDbCommand("INSERT INTO playlist VALUES (@playlistid, @playlistname, @playlistcount, @playlistduration, @md5, @lastupdate)");
-					//q.Parameters.AddWithValue("@playlistid", DBNull.Value);
 				}
 				else
 				{
@@ -445,7 +442,6 @@ namespace WaveBox.Model
 				// temporary storage for playlist item information.  We can't use temp tables with SQL CE, so this
 				// is a workaround for that.  There is probably a better solution.
 				ArrayList idValues = new ArrayList();
-
 
 				// delete the items at the indicated indices
 				foreach (int index in indices)

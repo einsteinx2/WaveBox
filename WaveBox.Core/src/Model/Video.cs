@@ -84,10 +84,6 @@ namespace WaveBox.Model
 
 		public Video(string filePath, int? folderId, TagLib.File file)
 		{
-			// We need to check to make sure the tag isn't corrupt before handing off to this method, anyway, so just feed in the tag
-			// file that we checked for corruption.
-			//TagLib.File file = TagLib.File.Create(fsFile.FullName);
-			
 			ItemId = Item.GenerateItemId(ItemType.Video);
 			if (ItemId == null)
 			{
@@ -95,8 +91,6 @@ namespace WaveBox.Model
 			}
 			
 			FileInfo fsFile = new FileInfo(filePath);
-			//TagLib.Tag tag = file.Tag;
-			//var lol = file.Properties.Codecs;
 			FolderId = folderId;
 			
 			FileType = FileType.FileTypeForTagLibMimeType(file.MimeType);

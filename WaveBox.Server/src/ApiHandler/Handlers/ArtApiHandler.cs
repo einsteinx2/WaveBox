@@ -4,11 +4,11 @@ using System.Collections.Generic;
 using System.Text;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using WaveBox.Model;
-using WaveBox.TcpServer.Http;
-using WaveBox.Static;
-using TagLib;
 using System.Runtime.InteropServices;
+using WaveBox.Model;
+using WaveBox.Static;
+using WaveBox.TcpServer.Http;
+using TagLib;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -101,9 +101,10 @@ namespace WaveBox.ApiHandler.Handlers
 
 			DateTime? lastModified = null;
 			if (!ReferenceEquals(art.LastModified, null))
+			{
 				lastModified = ((long)art.LastModified).ToDateTimeFromUnixTimestamp();
+			}
 			Processor.WriteFile(stream, 0, stream.Length, HttpHeader.MimeTypeForExtension(".jpg"), null, true, lastModified);
-			stream.Close();
 
 			// Close the file so we don't get sharing violations on future accesses
 			stream.Close();
