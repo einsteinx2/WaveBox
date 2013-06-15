@@ -112,8 +112,8 @@ namespace WaveBox.Model
 			// Need to verify these
 			switch (ft)
 			{
-				case FileType.AAC: return "audio/aac";
-				case FileType.MP3: return "audio/mp3";
+				case FileType.AAC: return "audio/mp4";
+				case FileType.MP3: return "audio/mpeg";
 				case FileType.MPC: return "audio/mpc";
 				case FileType.OGG: return "audio/ogg";
 				case FileType.WMA: return "audio/wma";

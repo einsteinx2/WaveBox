@@ -73,24 +73,24 @@ namespace WaveBox.ApiHandler.Handlers
 					Stream stream = item.File;
 					long length = stream.Length;
 					int startOffset = 0;
+					long? limitToSize = null;
 
 					// Handle the Range header to start from later in the file
 					if (Processor.HttpHeaders.ContainsKey("Range"))
 					{
 						string range = (string)Processor.HttpHeaders["Range"];
-						string start = range.Split(new char[]{'-', '='})[1];
+						var split = range.Split(new char[]{'-', '='});
+						string start = split[1];
+						string end = split.Length > 2 ? split[2] : null;
 
-						if (logger.IsInfoEnabled) logger.Info("Connection retried.  Resuming from " + start);
+						if (logger.IsInfoEnabled) logger.Info("Range header: " + range + "  Resuming from " + start);
 						startOffset = Convert.ToInt32(start);
+						if (!ReferenceEquals(end, null))
+							limitToSize = (Convert.ToInt64(end) + 1) - startOffset;
 					}
 
-					// Write additional file headers
-					var dict = new Dictionary<string, string>();
-					var lmt = HttpProcessor.DateTimeToLastMod(new FileInfo(item.FilePath).LastWriteTimeUtc);
-					dict.Add("Last-Modified", lmt);
-
 					// Send the file
-					Processor.WriteFile(stream, startOffset, length, item.FileType.MimeType(), dict, true);
+					Processor.WriteFile(stream, startOffset, length, item.FileType.MimeType(), null, true, new FileInfo(item.FilePath).LastWriteTimeUtc, limitToSize);
 					stream.Close();
 					
 					if (logger.IsInfoEnabled) logger.Info("Successfully streamed file!");

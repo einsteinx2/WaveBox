@@ -24,6 +24,9 @@ namespace WaveBox.Model
 		[JsonProperty("artistId")]
 		public int? ArtistId { get; set; }
 
+		[JsonProperty("artistName"), IgnoreWrite]
+		public string ArtistName { get; set; }
+
 		[JsonProperty("albumId")]
 		public int? AlbumId { get; set; }
 
@@ -174,11 +177,6 @@ namespace WaveBox.Model
 		public Artist Artist()
 		{
 			return new Artist.Factory().CreateArtist(ArtistId);
-		}
-
-		// TO DO
-		public void AutoTag()
-		{
 		}
 
 		public List<Song> ListOfSongs()

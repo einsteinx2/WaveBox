@@ -48,31 +48,32 @@ namespace WaveBox.ApiHandler.Handlers
 					{
 						if (action == "add")
 						{
-							if ((Uri.Parameters.ContainsKey("podcastUrl")) && (Uri.Parameters.ContainsKey("podcastKeepCap")))
+							if ((Uri.Parameters.ContainsKey("url")) && (Uri.Parameters.ContainsKey("keepCap")))
 							{
-								string podcastUrl = null;
+								string url = null;
 								string keepCapTemp = null;
 								int keepCap = 0;
-								Uri.Parameters.TryGetValue("podcastUrl", out podcastUrl);
-								Uri.Parameters.TryGetValue("podcastKeepCap", out keepCapTemp);
+								Uri.Parameters.TryGetValue("url", out url);
+								Uri.Parameters.TryGetValue("keepCap", out keepCapTemp);
 
-								if (podcastUrl == null)
+								if (url == null)
 								{
-									Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Parameter 'podcastUrl' contained an invalid value", null), Settings.JsonFormatting));
+									Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Parameter 'url' contained an invalid value", null), Settings.JsonFormatting));
 								}
 
 								else if (keepCapTemp == null)
 								{
-									Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Parameter 'podcastKeepCap' contained an invalid value", null), Settings.JsonFormatting));
+									Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Parameter 'keepCap' contained an invalid value", null), Settings.JsonFormatting));
 								}
 								else 
 								{
 									if (!Int32.TryParse(keepCapTemp, out keepCap))
 									{
-										Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Parameter 'podcastKeepCap' contained an invalid value", null), Settings.JsonFormatting));
+										Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Parameter 'keepCap' contained an invalid value", null), Settings.JsonFormatting));
 									}
-									podcastUrl = System.Web.HttpUtility.UrlDecode(podcastUrl);
-									Podcast pod = new Podcast.Factory().CreatePodcast(podcastUrl, keepCap);
+									url = System.Web.HttpUtility.UrlDecode(url);
+									Podcast pod = new Podcast.Factory().CreatePodcast(url, keepCap);
+
 									pod.DownloadNewEpisodes();
 									Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse(null, null), Settings.JsonFormatting));
 									return;
@@ -85,22 +86,22 @@ namespace WaveBox.ApiHandler.Handlers
 						}
 						else if (action == "delete")
 						{
-							if (!(Uri.Parameters.ContainsKey("podcastId") || Uri.Parameters.ContainsKey("podcastEpisodeId")))
+							if (!(Uri.Parameters.ContainsKey("id") || Uri.Parameters.ContainsKey("episodeId")))
 							{
 								Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Missing parameter for action 'delete'", null), Settings.JsonFormatting));
 								return;
 							}
-							else if (Uri.Parameters.ContainsKey("podcastId") && Uri.Parameters.ContainsKey("podcastEpisodeId"))
+							else if (Uri.Parameters.ContainsKey("id") && Uri.Parameters.ContainsKey("episodeId"))
 							{
-								Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Ambiguous parameters for action 'delete'.  'delete' accepts either a podcastId or a podcastEpisodeId, but not both.", null), Settings.JsonFormatting));
+								Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Ambiguous parameters for action 'delete'.  'delete' accepts either a id or a episodeId, but not both.", null), Settings.JsonFormatting));
 								return;
 							}
-							else if (Uri.Parameters.ContainsKey("podcastId"))
+							else if (Uri.Parameters.ContainsKey("id"))
 							{
 								int id = 0;
 								string idString = null;
 
-								Uri.Parameters.TryGetValue("podcastId", out idString);
+								Uri.Parameters.TryGetValue("id", out idString);
 								if (Int32.TryParse(idString, out id))
 								{
 									Processor.WriteJson(JsonConvert.SerializeObject(new PodcastActionResponse(null, new Podcast.Factory().CreatePodcast(id).Delete()), Settings.JsonFormatting));
@@ -108,7 +109,7 @@ namespace WaveBox.ApiHandler.Handlers
 								}
 								else
 								{
-									Processor.WriteJson(JsonConvert.SerializeObject(new PodcastActionResponse("Parameter 'podcastId' contained an invalid value", false), Settings.JsonFormatting));
+									Processor.WriteJson(JsonConvert.SerializeObject(new PodcastActionResponse("Parameter 'id' contained an invalid value", false), Settings.JsonFormatting));
 									return;
 								}
 							}
@@ -117,7 +118,7 @@ namespace WaveBox.ApiHandler.Handlers
 								int id = 0;
 								string idString = null;
 
-								Uri.Parameters.TryGetValue("podcastEpisodeId", out idString);
+								Uri.Parameters.TryGetValue("episodeId", out idString);
 								if (Int32.TryParse(idString, out id))
 								{
 									Processor.WriteJson(JsonConvert.SerializeObject(new PodcastActionResponse(null, new PodcastEpisode.Factory().CreatePodcastEpisode(id).Delete()), Settings.JsonFormatting));
@@ -125,7 +126,7 @@ namespace WaveBox.ApiHandler.Handlers
 								}
 								else
 								{
-									Processor.WriteJson(JsonConvert.SerializeObject(new PodcastActionResponse("Parameter 'podcastEpisodeId' contained an invalid value", false), Settings.JsonFormatting));
+									Processor.WriteJson(JsonConvert.SerializeObject(new PodcastActionResponse("Parameter 'episodeId' contained an invalid value", false), Settings.JsonFormatting));
 									return;
 								}
 							}
@@ -139,12 +140,12 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 			else
 			{
-				int podcastId = 0;
-				Int32.TryParse(Uri.UriPart(2), out podcastId);
+				int id = 0;
+				Int32.TryParse(Uri.UriPart(2), out id);
 
-				if (podcastId != 0)
+				if (id != 0)
 				{
-					Podcast thisPodcast = new Podcast.Factory().CreatePodcast(podcastId);
+					Podcast thisPodcast = new Podcast.Factory().CreatePodcast(id);
 					List<PodcastEpisode> epList = thisPodcast.ListOfStoredEpisodes();
 
 					Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse(null, thisPodcast, epList), Settings.JsonFormatting));

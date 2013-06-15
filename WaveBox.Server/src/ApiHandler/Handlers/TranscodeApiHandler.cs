@@ -55,6 +55,7 @@ namespace WaveBox.ApiHandler.Handlers
 					bool isDirect = false;
 					Stream stream = null;
 					int startOffset = 0;
+					long? limitToSize = null;
 					long length = 0;
 					bool estimateContentLength = false;
 
@@ -100,11 +101,14 @@ namespace WaveBox.ApiHandler.Handlers
 					if (Processor.HttpHeaders.ContainsKey("Range"))
 					{
 						string range = (string)Processor.HttpHeaders["Range"];
-						string start = range.Split(new char[]{'-', '='})[1];
-						if (logger.IsInfoEnabled) logger.Info("Connection retried.  Resuming from " + start);
+						var split = range.Split(new char[]{'-', '='});
+						string start = split[1];
+						string end = split.Length > 2 ? split[2] : null;
+						if (logger.IsInfoEnabled) logger.Info("Range header: " + range + "  Resuming from " + start + " end: " + end);
 
 						if (isDirect)
 						{
+							// TODO: Actually implement this lol
 							// This is a direct transfer with no file buffer, so treat a Range request as if it
 							// were start offset, unless an offsetSeconds was specified
 							if (Uri.Parameters.ContainsKey("offsetSeconds"))
@@ -120,8 +124,9 @@ namespace WaveBox.ApiHandler.Handlers
 						{
 							// This is a file request so use the range header to specify where in the file to return
 							startOffset = Convert.ToInt32(start);
+							if (!ReferenceEquals(end, null))
+								limitToSize = (Convert.ToInt64(end) + 1) - startOffset;
 						}
-
 					}
 
 					// Get the transcoding type if specified
@@ -261,8 +266,10 @@ namespace WaveBox.ApiHandler.Handlers
 							if (logger.IsInfoEnabled) logger.Info("ApiHandlerFactory writing file at offsetSeconds " + Uri.Parameters["offsetSeconds"]);
 						}
 
+						DateTime lastModified = Transcoder.IsDirect ? DateTime.UtcNow : new FileInfo(Transcoder.OutputPath).LastWriteTimeUtc;
+
 						// Direct write file
-						Processor.WriteFile(stream, startOffset, length, mimeType, null, estimateContentLength);
+						Processor.WriteFile(stream, startOffset, length, mimeType, null, estimateContentLength, lastModified, limitToSize);
 						stream.Close();
 						if (logger.IsInfoEnabled) logger.Info("Successfully sent direct stream");
 

@@ -176,7 +176,9 @@
     <Compile Include="src\TcpServer\HttpServer\HttpProcessor.cs" />
     <Compile Include="src\TcpServer\HttpServer\HttpServer.cs" />
     <Compile Include="src\TcpServer\HttpServer\IHttpProcessor.cs" />
+    <Compile Include="src\TcpServer\MpdServer\MpdCache.cs" />
     <Compile Include="src\TcpServer\MpdServer\MpdEnum.cs" />
+    <Compile Include="src\TcpServer\MpdServer\MpdOperation.cs" />
     <Compile Include="src\TcpServer\MpdServer\MpdProcessor.cs" />
     <Compile Include="src\TcpServer\MpdServer\MpdServer.cs" />
     <Compile Include="src\Static\ZeroConf.cs" />
@@ -229,6 +231,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="res\wavebox.conf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="res\wavebox.conf.template">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="lib\Mono.Zeroconf.dll" />

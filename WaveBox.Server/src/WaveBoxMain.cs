@@ -55,7 +55,7 @@ namespace WaveBox
 				ServerGuid = conn.ExecuteScalar<string>("SELECT Guid FROM Server");
 				ServerUrl = conn.ExecuteScalar<string>("SELECT Url FROM Server");
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				logger.Error("exception loading server info", e);
 			}
@@ -100,7 +100,7 @@ namespace WaveBox
 		/// </summary>
 		public void Start()
 		{
-			if (logger.IsInfoEnabled) logger.Info("Initializing WaveBox on " + WaveBoxService.Platform + " platform...");
+			if (logger.IsInfoEnabled) logger.Info("Initializing WaveBox " + WaveBoxService.BuildVersion + " on " + WaveBoxService.Platform + " platform...");
 
 			// Initialize ImageMagick
 			try
@@ -124,9 +124,17 @@ namespace WaveBox
 			Settings.SettingsSetup();
 
 			// If configured, start NAT routing
-			if (Settings.NatEnable)
+			try
 			{
-				Nat.Start();
+				if (Settings.NatEnable)
+				{
+					Nat.Start();
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Warn("natEnable not set in configuration, disabling NAT");
+				logger.Warn(e);
 			}
 
 			// Register server with registration service
@@ -134,21 +142,43 @@ namespace WaveBox
 			DynamicDns.RegisterUrl(ServerUrl, ServerGuid);
 
 			// Start the HTTP server
-			httpServer = new HttpServer(Settings.Port);
-			StartTcpServer(httpServer);
+			try
+			{
+				httpServer = new HttpServer(Settings.Port);
+				StartTcpServer(httpServer);
+			}
+			catch (Exception e)
+			{
+				logger.Error("Could not start WaveBox HTTP server, please check port in your configuration");
+				logger.Error(e);
+				Environment.Exit(-1);
+			}
 
 			// Start the SignalR server for real time device state syncing
-			WebApplication.Start<DeviceSyncStartup>("http://localhost:" + Settings.WsPort + "/");
+			try
+			{
+				WebApplication.Start<DeviceSyncStartup>("http://localhost:" + Settings.WsPort + "/");
+			}
+			catch (Exception e)
+			{
+				logger.Warn("Could not start WaveBox SignalR server, please check wsPort in your configuration");
+				logger.Warn(e);
+			}
 
 			// Start the MPD server
 			//mpdServer = new MpdServer(Settings.MpdPort);
 			//StartTcpServer(mpdServer);
 
 			// Start ZeroConf
-			ZeroConf.PublishZeroConf(ServerUrl, Settings.Port);
-
-			// Start transcode manager
-			TranscodeManager.Instance.Setup();
+			try
+			{
+				ZeroConf.PublishZeroConf(ServerUrl, Settings.Port);
+			}
+			catch (Exception e)
+			{
+				logger.Warn("Could not start WaveBox ZeroConf, please check port in your configuration");
+				logger.Warn(e);
+			}
 
 			// Temporary: create test user
 			new User.Factory().CreateUser("test", "test", null);

@@ -84,7 +84,7 @@ namespace WaveBox.Transcoding
 		{
 			if (quality > 12)
 			{
-				return "-loglevel quiet -i \"" + Item.FilePath + "\" -acodec " + Codec + " -ab " + quality + " " + OutputPath;
+				return "-loglevel quiet -i \"" + Item.FilePath + "\" -acodec " + Codec + " -ab " + (quality * 1024) + " " + OutputPath;
 			}
 			else
 			{
