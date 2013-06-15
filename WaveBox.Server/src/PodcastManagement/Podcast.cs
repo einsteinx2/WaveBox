@@ -6,6 +6,8 @@ using WaveBox.Static;
 using WaveBox.Model;
 using System.Collections.Concurrent;
 using Cirrious.MvvmCross.Plugins.Sqlite;
+using WaveBox.Core.Injected;
+using Ninject;
 
 namespace WaveBox.PodcastManagement
 {
@@ -13,7 +15,7 @@ namespace WaveBox.PodcastManagement
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public static readonly string PodcastMediaDirectory = Settings.PodcastFolder;
+		public static readonly string PodcastMediaDirectory = Injection.Kernel.Get<IServerSettings>().PodcastFolder;
 
 		/* IVars */
 		protected string rssUrl;
@@ -39,7 +41,7 @@ namespace WaveBox.PodcastManagement
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				conn.InsertLogged(this);
 			}
 			catch (Exception e)
@@ -98,7 +100,7 @@ namespace WaveBox.PodcastManagement
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				var result = conn.DeferredQuery<PodcastEpisode>("SELECT * FROM PodcastEpisode WHERE PodcastId = ? ORDER BY EpisodeId LIMIT ?", PodcastId, count);
 
 				foreach (var episode in result)
@@ -135,7 +137,7 @@ namespace WaveBox.PodcastManagement
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				int affected = conn.ExecuteLogged("DELETE FROM Podcast WHERE PodcastId = ?", PodcastId);
 
 				success = affected > 0;
@@ -180,7 +182,7 @@ namespace WaveBox.PodcastManagement
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.Query<PodcastEpisode>("SELECT * FROM PodcastEpisode WHERE PodcastId = ?", PodcastId);
 			}
 			catch (Exception e)
@@ -201,7 +203,7 @@ namespace WaveBox.PodcastManagement
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.Query<Podcast>("SELECT * FROM Podcast ORDER BY Title DESC");
 			}
 			catch (Exception e)
@@ -220,7 +222,7 @@ namespace WaveBox.PodcastManagement
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				int podcastId = conn.ExecuteScalar<int>("SELECT PodcastId FROM Podcast WHERE RssUrl = ?", rss);
 
 				return podcastId == 0 ? (int?)null : podcastId;
@@ -287,7 +289,7 @@ namespace WaveBox.PodcastManagement
 				ISQLiteConnection conn = null;
 				try
 				{
-					conn = Database.GetSqliteConnection();
+					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 					var result = conn.Query<Podcast>("SELECT * FROM Podcast WHERE PodcastId = ? LIMIT 1", podcastId);
 
 					foreach (var p in result)

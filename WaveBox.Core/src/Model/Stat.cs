@@ -9,6 +9,8 @@ using TagLib;
 using Newtonsoft.Json;
 using System.Diagnostics;
 using Cirrious.MvvmCross.Plugins.Sqlite;
+using Ninject;
+using WaveBox.Core.Injected;
 
 namespace WaveBox.Model
 {
@@ -38,7 +40,7 @@ namespace WaveBox.Model
 			bool success = false;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				var stat = new Stat();
 				stat.StatType = statType;
 				stat.ItemId = itemId;

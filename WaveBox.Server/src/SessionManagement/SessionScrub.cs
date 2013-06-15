@@ -6,6 +6,9 @@ using System.Diagnostics;
 using WaveBox.Model;
 using WaveBox.Static;
 using WaveBox.OperationQueue;
+using WaveBox.Core.Extensions;
+using WaveBox.Core.Injected;
+using Ninject;
 
 namespace WaveBox.SessionManagement
 {
@@ -34,7 +37,7 @@ namespace WaveBox.SessionManagement
 			foreach (Session s in sessions)
 			{
 				// Check current time and last update, purge if the diff is higher than SessionTimeout minutes
-				if ((unixTime - Convert.ToInt32(s.UpdateTime)) >= (Settings.SessionTimeout * 60))
+				if ((unixTime - Convert.ToInt32(s.UpdateTime)) >= (Injection.Kernel.Get<IServerSettings>().SessionTimeout * 60))
 				{
 					if (s.DeleteSession())
 					{

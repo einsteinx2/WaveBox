@@ -5,13 +5,13 @@ namespace WaveBox.Core.Injected
 {
 	public interface IDatabase
 	{
+		object DbBackupLock { get; }
+
 		string DatabaseTemplatePath();
 		string DatabasePath();
 
 		string QuerylogTemplatePath();
 		string QuerylogPath();
-
-		object DbBackupLock();
 
 		void DatabaseSetup();
 

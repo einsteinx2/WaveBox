@@ -2,6 +2,8 @@ using System;
 using WaveBox.Static;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using System.Collections.Generic;
+using Ninject;
+using WaveBox.Core.Injected;
 
 namespace WaveBox.Model
 {
@@ -26,7 +28,7 @@ namespace WaveBox.Model
 			try
 			{
 				// Gather a list of queries from the query log, which can be used to synchronize a local database
-				conn = Database.GetQueryLogSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetQueryLogSqliteConnection();
 				var log = new QueryLog();
 				log.QueryString = queryString;
 				log.ValuesString = valuesString;
@@ -50,7 +52,7 @@ namespace WaveBox.Model
 			try
 			{
 				// Gather a list of queries from the query log, which can be used to synchronize a local database
-				conn = Database.GetQueryLogSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetQueryLogSqliteConnection();
 				return conn.Query<QueryLog>("SELECT * FROM QueryLog WHERE QueryId >= ?", queryId);
 			}
 			catch (Exception e)

@@ -6,50 +6,53 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using WaveBox.Model;
+using Cirrious.MvvmCross.Plugins.Sqlite;
+using Ninject;
+using WaveBox.Core.Injected;
+using WaveBox.Core;
 
 namespace WaveBox.Static
 {
-	public static class Settings
+	public class ServerSettings : IServerSettings
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public static string settingsFileName = "wavebox.conf";
-		public static string SettingsTemplatePath() { return "res" + Path.DirectorySeparatorChar + settingsFileName; }
-		public static string SettingsPath() { return Utility.RootPath() + settingsFileName; }
+		private static readonly string settingsFileName = "wavebox.conf";
+		public string SettingsTemplatePath() { return "res" + Path.DirectorySeparatorChar + settingsFileName; }
+		public string SettingsPath() { return ServerUtility.RootPath() + settingsFileName; }
 
-		private static SettingsData settingsModel = new SettingsData();
-		public static SettingsData SettingsModel { get { return settingsModel; } }
+		private ServerSettingsData settingsModel = new ServerSettingsData();
+		public ServerSettingsData SettingsModel { get { return settingsModel; } }
 
-		public static Formatting JsonFormatting { get { return settingsModel.PrettyJson ? Formatting.Indented : Formatting.None; } }
+		public Formatting JsonFormatting { get { return settingsModel.PrettyJson ? Formatting.Indented : Formatting.None; } }
 
-		public static short Port { get { return settingsModel.Port; } }
+		public short Port { get { return settingsModel.Port; } }
 
-		public static short WsPort { get { return settingsModel.WsPort; } }
+		public short WsPort { get { return settingsModel.WsPort; } }
 
-		public static bool CrashReportEnable { get { return settingsModel.CrashReportEnable; } }
+		public bool CrashReportEnable { get { return settingsModel.CrashReportEnable; } }
 
-		public static bool NatEnable { get { return settingsModel.NatEnable; } }
+		public bool NatEnable { get { return settingsModel.NatEnable; } }
 
-		public static string PodcastFolder { get { return settingsModel.PodcastFolder; } }
+		public string PodcastFolder { get { return settingsModel.PodcastFolder; } }
 
-		public static int PodcastCheckInterval { get { return settingsModel.PodcastCheckInterval; } }
+		public int PodcastCheckInterval { get { return settingsModel.PodcastCheckInterval; } }
 
-		public static int SessionScrubInterval { get { return settingsModel.SessionScrubInterval; } }
+		public int SessionScrubInterval { get { return settingsModel.SessionScrubInterval; } }
 
-		public static int SessionTimeout { get { return settingsModel.SessionTimeout; } }
+		public int SessionTimeout { get { return settingsModel.SessionTimeout; } }
 
-		private static List<Folder> mediaFolders;
-		public static List<Folder> MediaFolders { get { return mediaFolders; } }
+		public List<Folder> MediaFolders { get; private set; }
 
-		public static List<string> FolderArtNames { get { return settingsModel.FolderArtNames; } }
+		public List<string> FolderArtNames { get { return settingsModel.FolderArtNames; } }
 
 
-		public static void Reload()
+		public void Reload()
 		{
 			ParseSettings();
 		}
 
-		private static void ParseSettings()
+		private void ParseSettings()
 		{
 			if (logger.IsInfoEnabled) logger.Info("Reading settings: " + SettingsPath());
 
@@ -67,10 +70,10 @@ namespace WaveBox.Static
 			}
 
 			// Grab all settings from the file
-			settingsModel = JsonConvert.DeserializeObject<SettingsData>(configFile);
+			settingsModel = JsonConvert.DeserializeObject<ServerSettingsData>(configFile);
 
 			// Generate Folder objects from the media folders
-			mediaFolders = PopulateMediaFolders();
+			MediaFolders = PopulateMediaFolders();
 
 			dynamic json = JsonConvert.DeserializeObject(configFile);
 			bool settingsChanged = false;
@@ -86,7 +89,7 @@ namespace WaveBox.Static
 			if (logger.IsInfoEnabled) logger.Info("settings changed: " + settingsChanged);
 		}
 
-		public static bool WriteSettings(string jsonString)
+		public bool WriteSettings(string jsonString)
 		{
 			dynamic json = JsonConvert.DeserializeObject(jsonString);
 
@@ -152,7 +155,7 @@ namespace WaveBox.Static
 						if (logger.IsInfoEnabled) logger.Info("\t" + mediaFolderString);
 					}
 					settingsModel.MediaFolders = mediaFoldersTemp;
-					mediaFolders = PopulateMediaFolders();
+					MediaFolders = PopulateMediaFolders();
 					settingsChanged = true;
 				}
 			}
@@ -244,7 +247,7 @@ namespace WaveBox.Static
 			return settingsChanged;
 		}
 
-		public static void FlushSettings()
+		public void FlushSettings()
 		{
 			// Read in the settings template, with placeholders
 			string template = null;
@@ -313,7 +316,7 @@ namespace WaveBox.Static
 			}
 		}
 
-		public static void SettingsSetup()
+		public void SettingsSetup()
 		{
 			if (!File.Exists(SettingsPath()))
 			{
@@ -337,7 +340,7 @@ namespace WaveBox.Static
 			Reload();
 		}
 
-		private static List<Folder> PopulateMediaFolders()
+		private List<Folder> PopulateMediaFolders()
 		{
 			List<Folder> folders = new List<Folder>();
 
@@ -347,7 +350,7 @@ namespace WaveBox.Static
 				{
 					if (Directory.Exists(mediaFolderString))
 					{
-						Folder mediaFolder = new Folder.Factory().CreateFolder(mediaFolderString, true);
+						Folder mediaFolder = CreateFolder(mediaFolderString, true);
 						if (mediaFolder.FolderId == null)
 						{
 							mediaFolder.InsertFolder(true);
@@ -368,7 +371,45 @@ namespace WaveBox.Static
 			return folders;
 		}
 
-		private static string RemoveJsonComments(StreamReader reader)
+		private Folder CreateFolder(string path, bool mediafolder)
+		{
+			if (path == null || path == "")
+			{
+				// No path so just return a folder
+				return new Folder();
+			}
+
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+				IList<Folder> result = conn.Query<Folder>("SELECT * FROM Folder WHERE FolderPath = ? AND MediaFolderId IS NULL", path);
+
+				foreach (Folder f in result)
+				{
+					if (path.Equals(f.FolderPath))
+					{
+						return f;
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				conn.Close();
+			}
+
+			// If not in database, return a folder object with the specified parameters
+			Folder folder = new Folder();
+			folder.FolderPath = path;
+			folder.FolderName = Path.GetFileName(path);
+			return folder;
+		}
+
+		private string RemoveJsonComments(StreamReader reader)
 		{
 			StringBuilder js = new StringBuilder();
 			string line = null;
@@ -453,41 +494,5 @@ namespace WaveBox.Static
 			}
 			return js.ToString();
 		}
-	}
-
-	public class SettingsData
-	{
-		[JsonProperty("port")]
-		public short Port { get; set; }
-
-		[JsonProperty("wsPort")]
-		public short WsPort { get; set; }
-
-		[JsonProperty("crashReportEnable")]
-		public bool CrashReportEnable { get; set; }
-
-		[JsonProperty("natEnable")]
-		public bool NatEnable { get; set; }
-
-		[JsonProperty("mediaFolders")]
-		public List<string> MediaFolders { get; set; }
-		
-		[JsonProperty("podcastFolder")]
-		public string PodcastFolder { get; set; }
-		
-		[JsonProperty("podcastCheckInterval")]
-		public int PodcastCheckInterval { get; set; }
-
-		[JsonProperty("sessionScrubInterval")]
-		public int SessionScrubInterval { get; set; }
-
-		[JsonProperty("sessionTimeout")]
-		public int SessionTimeout { get; set; }
-
-		[JsonProperty("prettyJson")]
-		public bool PrettyJson { get; set; }
-
-		[JsonProperty("folderArtNames")]
-		public List<string> FolderArtNames { get; set; }
 	}
 }

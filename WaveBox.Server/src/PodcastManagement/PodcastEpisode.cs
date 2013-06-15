@@ -9,6 +9,8 @@ using WaveBox.Model;
 using System.Collections.Generic;
 using System.Threading;
 using Cirrious.MvvmCross.Plugins.Sqlite;
+using WaveBox.Core.Injected;
+using Ninject;
 
 namespace WaveBox.PodcastManagement
 {
@@ -38,7 +40,7 @@ namespace WaveBox.PodcastManagement
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				int affected = conn.ExecuteLogged("DELETE FROM PodcastEpisode WHERE EpisodeId = ?", EpisodeId);
 
 				success = affected > 0;
@@ -74,7 +76,7 @@ namespace WaveBox.PodcastManagement
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				int affected = conn.InsertLogged(this);
 
 				if (affected == 0)
@@ -121,7 +123,7 @@ namespace WaveBox.PodcastManagement
 				ISQLiteConnection conn = null;
 				try
 				{
-					conn = Database.GetSqliteConnection();
+					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 					var result = conn.DeferredQuery<PodcastEpisode>("SELECT * FROM PodcastEpisode WHERE EpisodeId = ? LIMIT 1", podcastId);
 
 					foreach (var episode in result)

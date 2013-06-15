@@ -5,6 +5,8 @@ using System.Data;
 using System.IO;
 using System.Data.SQLite;
 using System.Reflection;
+using WaveBox.Core.Injected;
+using Ninject;
 
 namespace WaveBox
 {
@@ -16,7 +18,7 @@ namespace WaveBox
 		//
 
 		public static string BackupFileName(long queryId) { return "wavebox_backup_" + queryId + ".db"; }
-		public static string BackupPath(long queryId) { return Utility.RootPath() + BackupFileName(queryId); }
+		public static string BackupPath(long queryId) { return ServerUtility.RootPath() + BackupFileName(queryId); }
 
 		[DllImport("sqlite3", CallingConvention = CallingConvention.Cdecl)]
 		internal static extern IntPtr sqlite3_backup_init(IntPtr destDb, byte[] destname, IntPtr srcDB, byte[] srcname);
@@ -79,9 +81,9 @@ namespace WaveBox
 
 		public static string Backup(out long lastQueryId)
 		{
-			lock (Database.dbBackupLock)
+			lock (Injection.Kernel.Get<IDatabase>().DbBackupLock)
 			{
-				lastQueryId = Database.LastQueryLogId();
+				lastQueryId = Injection.Kernel.Get<IDatabase>().LastQueryLogId();
 				string fileName = BackupFileName(lastQueryId);
 
 				// If the database is already backed up at this point, return it
@@ -91,7 +93,7 @@ namespace WaveBox
 				}
 
 				// If not, do the backup then return it
-				bool success = Backup((System.Data.SQLite.SQLiteConnection)GetDbConnection(Database.DatabasePath()), (System.Data.SQLite.SQLiteConnection)GetBackupDbConnection(lastQueryId));
+				bool success = Backup((System.Data.SQLite.SQLiteConnection)GetDbConnection(Injection.Kernel.Get<IDatabase>().DatabasePath()), (System.Data.SQLite.SQLiteConnection)GetBackupDbConnection(lastQueryId));
 				if (success)
 				{
 					return fileName;
@@ -105,7 +107,7 @@ namespace WaveBox
 
 		public static bool Backup(SQLiteConnection source, SQLiteConnection destination)
 		{
-			lock (Database.dbBackupLock)
+			lock (Injection.Kernel.Get<IDatabase>().DbBackupLock)
 			{
 				try
 				{

@@ -36,12 +36,6 @@ namespace WaveBox.Model
 
 		[JsonProperty("artId")]
 		int? ArtId { get; }
-		
-		[JsonIgnore]
-		string FilePath { get; }
-		
-		[JsonIgnore, IgnoreRead, IgnoreWrite]
-		FileStream File { get; }
 
 		void AddToPlaylist(Playlist thePlaylist, int index);
 

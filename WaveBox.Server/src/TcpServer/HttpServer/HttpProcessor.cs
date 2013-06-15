@@ -10,6 +10,7 @@ using WaveBox;
 using System.Diagnostics;
 using WaveBox.Transcoding;
 using WaveBox.TcpServer.Http;
+using WaveBox.Core.Extensions;
 
 // offered to the public domain for any use with no restriction
 // and also with no warranty of any kind, please enjoy. - David Jeske. 

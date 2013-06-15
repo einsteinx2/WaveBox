@@ -2,6 +2,8 @@ using System;
 using WaveBox.Model;
 using System.Diagnostics;
 using System.IO;
+using WaveBox.Static;
+using WaveBox.Server.Extensions;
 
 namespace WaveBox.Transcoding
 {
@@ -31,7 +33,7 @@ namespace WaveBox.Transcoding
 		{
 			try 
 			{
-				string ffmpegArguments = "-loglevel quiet -i \"" + Item.FilePath + "\" -f wav -";
+				string ffmpegArguments = "-loglevel quiet -i \"" + Item.FilePath() + "\" -f wav -";
 				if (logger.IsInfoEnabled) logger.Info("Forking the process");
 				if (logger.IsInfoEnabled) logger.Info("ffmpeg " + ffmpegArguments);
 				

@@ -12,6 +12,10 @@ using Mono.Unix.Native;
 using Mono.Unix;
 using WaveBox.Static;
 using WaveBox.Transcoding;
+using WaveBox.Server.Extensions;
+using WaveBox.Core.Extensions;
+using WaveBox.Core.Injected;
+using Ninject;
 
 namespace WaveBox
 {
@@ -53,24 +57,24 @@ namespace WaveBox
 
 				// Gather some metrics about this instance of WaveBox
 				// Operating system detection
-				switch (Utility.DetectOS())
+				switch (ServerUtility.DetectOS())
 				{
-					case Utility.OS.Windows:
+					case ServerUtility.OS.Windows:
 						Platform = "Windows";
 						break;
-					case Utility.OS.MacOSX:
+					case ServerUtility.OS.MacOSX:
 						Platform = "Mac OS X";
 						break;
-					case Utility.OS.Linux:
+					case ServerUtility.OS.Linux:
 						Platform = "Linux";
 						break;
-					case Utility.OS.BSD:
+					case ServerUtility.OS.BSD:
 						Platform = "BSD";
 						break;
-					case Utility.OS.Solaris:
+					case ServerUtility.OS.Solaris:
 						Platform = "Solaris";
 						break;
-					case Utility.OS.Unix:
+					case ServerUtility.OS.Unix:
 						Platform = "Unix";
 						break;
 					default:
@@ -83,7 +87,7 @@ namespace WaveBox
 				BuildVersion = String.Format("{0}.{1}.{2}.{3}", assembly.Version.Major, assembly.Version.Minor, assembly.Version.Build, assembly.Version.Revision);
 
 				// Build date detection
-				BuildDate = Utility.GetBuildDate();
+				BuildDate = ServerUtility.GetBuildDate();
 
 				if (logger.IsInfoEnabled) logger.Info("BuildDate timestamp: " + BuildDate.ToUniversalUnixTimestamp());
 
@@ -107,8 +111,14 @@ namespace WaveBox
 			catch (Exception e)
 			{
 				//logger.Error(e);
-				Utility.ReportCrash(e, false);
+				ServerUtility.ReportCrash(e, false);
 			}
+		}
+
+		private static void InjectClasses()
+		{
+			Injection.Kernel.Bind<IDatabase>().To<Database>().InSingletonScope();
+			Injection.Kernel.Bind<IServerSettings>().To<ServerSettings>().InSingletonScope();
 		}
 
 		/// <summary>
@@ -116,6 +126,9 @@ namespace WaveBox
 		/// </summary>
 		static void Main(string[] args)
 		{
+			// Setup the depencency injection
+			InjectClasses();
+
 			// Create an instance of the service, run it!
 			ServiceBase[] service = new ServiceBase[] { new WaveBoxService() };
 			ServiceBase.Run(service);

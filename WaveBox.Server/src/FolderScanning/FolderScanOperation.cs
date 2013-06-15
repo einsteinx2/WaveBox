@@ -13,6 +13,9 @@ using TagLib;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using System.Security.Cryptography;
 using System.Collections;
+using WaveBox.Core.Extensions;
+using WaveBox.Core.Injected;
+using Ninject;
 
 namespace WaveBox.FolderScanning
 {
@@ -444,7 +447,7 @@ namespace WaveBox.FolderScanning
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				string artId = conn.ExecuteScalar<string>("SELECT ArtId FROM Art WHERE LastModified = ? AND FilePath = ?", filePath, lastModified);
 
 				if (ReferenceEquals(artId, null))
@@ -587,7 +590,7 @@ namespace WaveBox.FolderScanning
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				var result = conn.DeferredQuery<Video>("SELECT * FROM Video WHERE FolderId = ? AND FileName = ?", folderId, fileName);
 
 				foreach (Video video in result)
@@ -627,7 +630,7 @@ namespace WaveBox.FolderScanning
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				IEnumerable result = conn.Query<Song>("SELECT * FROM Song WHERE FolderId = ? AND FileName = ? LIMIT 1", folderId, fileName);
 
 				foreach (Song song in result)

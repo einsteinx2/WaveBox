@@ -6,6 +6,8 @@ using WaveBox.Model;
 using WaveBox.TcpServer.Http;
 using WaveBox.Static;
 using Newtonsoft.Json;
+using WaveBox.Core.Injected;
+using Ninject;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -85,7 +87,7 @@ namespace WaveBox.ApiHandler.Handlers
 			try
 			{
 				// Write JSON to HTTP response
-				string json = JsonConvert.SerializeObject(new ArtistsResponse(null, listOfArtists, listOfAlbums, listOfSongs, lastfmInfo), Settings.JsonFormatting);
+				string json = JsonConvert.SerializeObject(new ArtistsResponse(null, listOfArtists, listOfAlbums, listOfSongs, lastfmInfo), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 				Processor.WriteJson(json);
 			}
 			catch (Exception e)

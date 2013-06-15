@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using System.IO;
 using WaveBox.Model;
 using WaveBox.Static;
 using Cirrious.MvvmCross.Plugins.Sqlite;
+using WaveBox.Core.Extensions;
+using WaveBox.Core.Injected;
+using Ninject;
 
 namespace WaveBox
 {
@@ -20,7 +22,7 @@ namespace WaveBox
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				int affected = conn.ExecuteLogged("INSERT INTO Item (ItemType, Timestamp) VALUES (?, ?)", itemType, DateTime.UtcNow.ToUniversalUnixTimestamp());
 
 				if (affected >= 1)
@@ -62,7 +64,7 @@ namespace WaveBox
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				itemTypeId = conn.ExecuteScalar<int>("SELECT ItemType FROM Item WHERE ItemId = ?", itemId);
 			}
 			catch (Exception e)
@@ -86,7 +88,12 @@ namespace WaveBox
 			}
 
 			// Get the extension
-			string extension = Path.GetExtension(filePath).ToLower();
+			string extension = "";
+			var split = filePath.ToLower().Split('.');
+			if (split.Length > 0)
+			{
+				extension = split[split.Length - 1];
+			}
 
 			// Compare to valid song extensions
 			if (Song.ValidExtensions.Contains(extension))

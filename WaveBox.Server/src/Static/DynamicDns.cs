@@ -2,6 +2,8 @@ using System;
 using System.Net;
 using System.Linq;
 using System.Net.Sockets;
+using WaveBox.Core.Injected;
+using Ninject;
 
 namespace WaveBox.Static
 {
@@ -37,7 +39,7 @@ namespace WaveBox.Static
 				string urlString = "http://register.wavebox.es" + 
 					"?host=" + Uri.EscapeUriString(serverUrl) + 
 						"&serverId=" + Uri.EscapeUriString(serverGuid) + 
-						"&port=" + Settings.Port + 
+						"&port=" + Injection.Kernel.Get<IServerSettings>().Port + 
 						"&isSecure=0" + 
 						"&localIp=" + LocalIPAddress().ToString();
 

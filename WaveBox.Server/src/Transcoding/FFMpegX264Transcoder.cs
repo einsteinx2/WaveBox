@@ -1,5 +1,7 @@
 using System;
 using WaveBox.Model;
+using WaveBox.Static;
+using WaveBox.Server.Extensions;
 
 namespace WaveBox.Transcoding
 {
@@ -28,7 +30,7 @@ namespace WaveBox.Transcoding
 
 			//return "-i \"" + Item.FilePath + "\" -vcodec libx264 -crf 21 -acodec aac -ac 2 -ab 192000 -strict experimental -refs 3 -threads 4 \"" + OutputPath + "\"";
 
-			return "-i \"" + Item.FilePath + "\" -async 1 -b " + vbitrate + " -s " + width + "x" + height + " -ss " + OffsetSeconds + " -t " + LengthSeconds + " -ar 44100 -ac 2 -v 0 -f mpegts -refs 3 -vcodec " + Codec + " -preset superfast -threads 0 " + OutputPath;
+			return "-i \"" + Item.FilePath() + "\" -async 1 -b " + vbitrate + " -s " + width + "x" + height + " -ss " + OffsetSeconds + " -t " + LengthSeconds + " -ar 44100 -ac 2 -v 0 -f mpegts -refs 3 -vcodec " + Codec + " -preset superfast -threads 0 " + OutputPath;
 
 			// multi-threaded
 			//return "-threads 8 -loglevel quiet -i \"" + Item.FilePath + "\" -ab " + abitrate + " -vcodec libx264 -b " + vbitrate + " -s " + width + "x" + height + " \"" + OutputPath + "\"";

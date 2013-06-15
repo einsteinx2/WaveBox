@@ -9,6 +9,9 @@ using WaveBox.Static;
 using WaveBox.TcpServer.Http;
 using WaveBox.Transcoding;
 using Newtonsoft.Json;
+using WaveBox.Server.Extensions;
+using WaveBox.Core.Injected;
+using Ninject;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -62,15 +65,15 @@ namespace WaveBox.ApiHandler.Handlers
 					}
 
 					// Return an error if none exists
-					if ((item == null) || (!File.Exists(item.FilePath)))
+					if ((item == null) || (!File.Exists(item.FilePath())))
 					{
-						string json = JsonConvert.SerializeObject(new StreamResponse("No media item exists with ID: " + id), Settings.JsonFormatting);
+						string json = JsonConvert.SerializeObject(new StreamResponse("No media item exists with ID: " + id), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 						Processor.WriteJson(json);
 						return;
 					}
 
 					// Prepare file stream
-					Stream stream = item.File;
+					Stream stream = item.File();
 					long length = stream.Length;
 					int startOffset = 0;
 					long? limitToSize = null;
@@ -90,7 +93,7 @@ namespace WaveBox.ApiHandler.Handlers
 					}
 
 					// Send the file
-					Processor.WriteFile(stream, startOffset, length, item.FileType.MimeType(), null, true, new FileInfo(item.FilePath).LastWriteTimeUtc, limitToSize);
+					Processor.WriteFile(stream, startOffset, length, item.FileType.MimeType(), null, true, new FileInfo(item.FilePath()).LastWriteTimeUtc, limitToSize);
 					stream.Close();
 					
 					if (logger.IsInfoEnabled) logger.Info("Successfully streamed file!");
@@ -103,7 +106,7 @@ namespace WaveBox.ApiHandler.Handlers
 			else
 			{
 				// For missing ID parameter, print JSON error
-				string json = JsonConvert.SerializeObject(new StreamResponse("Missing required parameter 'id'"), Settings.JsonFormatting);
+				string json = JsonConvert.SerializeObject(new StreamResponse("Missing required parameter 'id'"), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 				Processor.WriteJson(json);
 			}
 		}

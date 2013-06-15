@@ -6,6 +6,8 @@ using WaveBox.Static;
 using WaveBox.Model;
 using Newtonsoft.Json;
 using WaveBox.TcpServer.Http;
+using WaveBox.Core.Injected;
+using Ninject;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -55,7 +57,7 @@ namespace WaveBox.ApiHandler.Handlers
 			// Return generated list of songs
 			try
 			{
-				string json = JsonConvert.SerializeObject(new SongsResponse(null, listOfSongs), Settings.JsonFormatting);
+				string json = JsonConvert.SerializeObject(new SongsResponse(null, listOfSongs), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 				Processor.WriteJson(json);
 			}
 			catch (Exception e)

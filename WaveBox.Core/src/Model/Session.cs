@@ -10,6 +10,9 @@ using TagLib;
 using Newtonsoft.Json;
 using System.Diagnostics;
 using Cirrious.MvvmCross.Plugins.Sqlite;
+using WaveBox.Core.Extensions;
+using Ninject;
+using WaveBox.Core.Injected;
 
 namespace WaveBox.Model
 {
@@ -49,7 +52,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				int affected = conn.ExecuteLogged("UPDATE Session SET UpdateTime = ? WHERE SessionId = ?", unixTime, SessionId);
 
 				if (affected > 0)
@@ -76,7 +79,7 @@ namespace WaveBox.Model
 
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				var session = new Session();
 				session.SessionId = Utility.RandomString(100).SHA1();
 				session.UserId = userId;
@@ -110,7 +113,7 @@ namespace WaveBox.Model
 			bool success = false;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				int affected = conn.ExecuteLogged("DELETE FROM Session WHERE RowId = ?", RowId);
 
 				success = affected > 0;
@@ -132,7 +135,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.Query<Session>("SELECT RowId, * FROM Session");
 			}
 			catch (Exception e)
@@ -152,7 +155,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.ExecuteScalar<int>("SELECT COUNT(RowId) FROM Session");
 			}
 			catch (Exception e)
@@ -173,7 +176,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				int affected = conn.ExecuteLogged("DELETE FROM Session WHERE UserId = ?", userId);
 
 				success = affected > 0;
@@ -197,7 +200,7 @@ namespace WaveBox.Model
 				ISQLiteConnection conn = null;
 				try
 				{
-					conn = Database.GetSqliteConnection();
+					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 					var result = conn.DeferredQuery<Session>("SELECT RowId, * FROM Session WHERE RowId = ?", rowId);
 
 					foreach (var session in result)
@@ -222,7 +225,7 @@ namespace WaveBox.Model
 				ISQLiteConnection conn = null;
 				try
 				{
-					conn = Database.GetSqliteConnection();
+					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 					var result = conn.DeferredQuery<Session>("SELECT RowId, * FROM Session WHERE SessionId = ?", sessionId);
 
 					foreach (var session in result)

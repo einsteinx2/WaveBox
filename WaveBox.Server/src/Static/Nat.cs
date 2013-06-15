@@ -1,5 +1,7 @@
 using System;
 using Mono.Nat;
+using WaveBox.Core.Injected;
+using Ninject;
 
 namespace WaveBox.Static
 {
@@ -40,7 +42,7 @@ namespace WaveBox.Static
 		{
 			if ((object)Device != null && Status == NatStatus.PortForwardedSuccessfully) 
 			{
-				Device.DeletePortMap(new Mapping(Protocol.Tcp, Settings.Port, Settings.Port));
+				Device.DeletePortMap(new Mapping(Protocol.Tcp, Injection.Kernel.Get<IServerSettings>().Port, Injection.Kernel.Get<IServerSettings>().Port));
 				Status = NatStatus.NotInitialized;
 			}
 		}
@@ -57,7 +59,7 @@ namespace WaveBox.Static
 			// Create a mapping to forward external port to local port
 			try
 			{
-				Device.CreatePortMap(new Mapping(Protocol.Tcp, Settings.Port, Settings.Port));
+				Device.CreatePortMap(new Mapping(Protocol.Tcp, Injection.Kernel.Get<IServerSettings>().Port, Injection.Kernel.Get<IServerSettings>().Port));
 				Nat.Status = NatStatus.PortForwardedSuccessfully;
 			}
 			catch (Exception e)

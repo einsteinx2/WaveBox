@@ -23,6 +23,8 @@ using WaveBox.Transcoding;
 using WaveBox.DeviceSync;
 using Microsoft.Owin.Hosting;
 using Cirrious.MvvmCross.Plugins.Sqlite;
+using WaveBox.Core.Injected;
+using Ninject;
 
 namespace WaveBox
 {
@@ -51,7 +53,7 @@ namespace WaveBox
 			try
 			{
 				// Grab server GUID and URL from the database
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				ServerGuid = conn.ExecuteScalar<string>("SELECT Guid FROM Server");
 				ServerUrl = conn.ExecuteScalar<string>("SELECT Url FROM Server");
 			}
@@ -74,7 +76,7 @@ namespace WaveBox
 				// Store the GUID in the database
 				try
 				{
-					conn = Database.GetSqliteConnection();
+					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 					int affected = conn.Execute("INSERT INTO Server (Guid) VALUES (?)", ServerGuid);
 
 					if (affected == 0)
@@ -113,20 +115,20 @@ namespace WaveBox
 			}
 
 			// Create directory for WaveBox's root path, if it doesn't exist
-			string rootDir = Utility.RootPath();
+			string rootDir = ServerUtility.RootPath();
 			if (!Directory.Exists(rootDir))
 			{
 				Directory.CreateDirectory(rootDir);
 			}
 
 			// Perform initial setup of Settings, Database
-			Database.DatabaseSetup();
-			Settings.SettingsSetup();
+			Injection.Kernel.Get<IDatabase>().DatabaseSetup();
+			Injection.Kernel.Get<IServerSettings>().SettingsSetup();
 
 			// If configured, start NAT routing
 			try
 			{
-				if (Settings.NatEnable)
+				if (Injection.Kernel.Get<IServerSettings>().NatEnable)
 				{
 					Nat.Start();
 				}
@@ -144,7 +146,7 @@ namespace WaveBox
 			// Start the HTTP server
 			try
 			{
-				httpServer = new HttpServer(Settings.Port);
+				httpServer = new HttpServer(Injection.Kernel.Get<IServerSettings>().Port);
 				StartTcpServer(httpServer);
 			}
 			catch (Exception e)
@@ -157,7 +159,7 @@ namespace WaveBox
 			// Start the SignalR server for real time device state syncing
 			try
 			{
-				WebApplication.Start<DeviceSyncStartup>("http://localhost:" + Settings.WsPort + "/");
+				WebApplication.Start<DeviceSyncStartup>("http://localhost:" + Injection.Kernel.Get<IServerSettings>().WsPort + "/");
 			}
 			catch (Exception e)
 			{
@@ -166,13 +168,13 @@ namespace WaveBox
 			}
 
 			// Start the MPD server
-			//mpdServer = new MpdServer(Settings.MpdPort);
+			//mpdServer = new MpdServer(Injection.Kernel.Get<IServerSettings>().MpdPort);
 			//StartTcpServer(mpdServer);
 
 			// Start ZeroConf
 			try
 			{
-				ZeroConf.PublishZeroConf(ServerUrl, Settings.Port);
+				ZeroConf.PublishZeroConf(ServerUrl, Injection.Kernel.Get<IServerSettings>().Port);
 			}
 			catch (Exception e)
 			{

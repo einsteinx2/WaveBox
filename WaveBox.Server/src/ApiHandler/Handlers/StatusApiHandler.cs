@@ -12,6 +12,9 @@ using WaveBox.Model;
 using WaveBox.Transcoding;
 using Newtonsoft.Json;
 using System.Runtime.Serialization.Formatters;
+using WaveBox.Core.Extensions;
+using WaveBox.Core.Injected;
+using Ninject;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -61,7 +64,7 @@ namespace WaveBox.ApiHandler.Handlers
 				long unixTime = DateTime.Now.ToUniversalUnixTimestamp();
 
 				// Get current query log ID
-				long queryLogId = Database.LastQueryLogId();
+				long queryLogId = Injection.Kernel.Get<IDatabase>().LastQueryLogId();
 
 				// Get process ID
 				status["pid"] = proc.Id;
@@ -136,7 +139,7 @@ namespace WaveBox.ApiHandler.Handlers
 					}
 				}
 
-				string json = JsonConvert.SerializeObject(new StatusResponse(null, status), Settings.JsonFormatting);
+				string json = JsonConvert.SerializeObject(new StatusResponse(null, status), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 				Processor.WriteJson(json);
 			}
 			catch(Exception e)

@@ -7,6 +7,8 @@ using WaveBox.Model;
 using WaveBox.FolderScanning;
 using System.IO;
 using WaveBox.OperationQueue;
+using WaveBox.Core.Injected;
+using Ninject;
 
 namespace WaveBox.Static
 {
@@ -25,7 +27,7 @@ namespace WaveBox.Static
 		public static void Setup()
 		{
 			// Grab list of media folders, initialize the scan queue
-			mediaFolders = Settings.MediaFolders;
+			mediaFolders = Injection.Kernel.Get<IServerSettings>().MediaFolders;
 			scanQueue = new DelayedOperationQueue();
 			scanQueue.startQueue();
 			scanQueue.queueOperation(new FolderScanning.OrphanScanOperation(0));
@@ -50,7 +52,7 @@ namespace WaveBox.Static
 					watch.IncludeSubdirectories = true;
 					watch.EnableRaisingEvents = true;
 
-					if (Utility.DetectOS() == Utility.OS.MacOSX)
+					if (ServerUtility.DetectOS() == ServerUtility.OS.MacOSX)
 					{
 						// On OS X, there is a bug that requires us to explicitly set
 						// watchers for all subdirectories. The IncludeSubdirectories

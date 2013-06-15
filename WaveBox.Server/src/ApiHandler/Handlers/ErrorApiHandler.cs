@@ -5,6 +5,8 @@ using System.Text;
 using WaveBox.Static;
 using WaveBox.TcpServer.Http;
 using Newtonsoft.Json;
+using WaveBox.Core.Injected;
+using Ninject;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -47,7 +49,7 @@ namespace WaveBox.ApiHandler.Handlers
 			Dictionary<string, string> response = new Dictionary<string, string>();
 			response["error"] = Err;
 
-			string json = JsonConvert.SerializeObject(response, Settings.JsonFormatting);
+			string json = JsonConvert.SerializeObject(response, Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 			Processor.WriteJson(json);
 		}
 	}
