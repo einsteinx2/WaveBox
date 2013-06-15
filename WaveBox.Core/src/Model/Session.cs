@@ -73,11 +73,12 @@ namespace WaveBox.Model
 		public static Session CreateSession(int userId, string clientName)
 		{
 			ISQLiteConnection conn = null;
+
 			try
 			{
 				conn = Database.GetSqliteConnection();
 				var session = new Session();
-				session.SessionId = Utility.SHA1(Utility.RandomString(100));
+				session.SessionId = Utility.RandomString(100).SHA1();
 				session.UserId = userId;
 				session.ClientName = clientName;
 				long unixTime = DateTime.Now.ToUniversalUnixTimestamp();

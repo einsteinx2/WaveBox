@@ -258,10 +258,6 @@ namespace WaveBox.Model
 
 		public static int CompareSongsByDiscAndTrack(Song x, Song y)
 		{
-			// if one track contains a disc number and the other doesn't, the one with the disc number is greater
-			//if (x.DiscNumber == 0 && y.DiscNumber != 0) return 1;
-			//else if (x.DiscNumber != 0 && y.DiscNumber == 0) return -1;
-
 			if (x.DiscNumber == y.DiscNumber && x.TrackNumber == y.TrackNumber) return 0;
 
 			// if the disc numbers are equal, we have to compare by track
@@ -274,7 +270,6 @@ namespace WaveBox.Model
 		public static bool SongNeedsUpdating(string filePath, int? folderId, out bool isNew, out int? itemId)
 		{
 			// We don't need to instantiate another folder to know what the folder id is.  This should be known when the method is called.
-			//Stopwatch sw = new Stopwatch();
 			string fileName = Path.GetFileName(filePath);
 			long lastModified = System.IO.File.GetLastWriteTime(filePath).ToUniversalUnixTimestamp();
 			bool needsUpdating = true;
