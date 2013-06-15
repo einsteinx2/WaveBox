@@ -1,14 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Data;
 using WaveBox.Model;
 using WaveBox.Static;
-using System.IO;
 using TagLib;
 using Newtonsoft.Json;
 using System.Diagnostics;
+using Cirrious.MvvmCross.Plugins.Sqlite;
 
 namespace WaveBox.Model
 {
@@ -18,10 +17,10 @@ namespace WaveBox.Model
 
 		public static readonly string[] ValidExtensions = { ".m4v", ".mp4", ".mpg", ".mkv", ".avi" };
 
-		[JsonIgnore]
+		[JsonIgnore, IgnoreRead, IgnoreWrite]
 		public override ItemType ItemType { get { return ItemType.Video; } }
 
-		[JsonProperty("itemTypeId")]
+		[JsonProperty("itemTypeId"), IgnoreRead, IgnoreWrite]
 		public override int ItemTypeId { get { return (int)ItemType; } }
 
 		[JsonProperty("width")]
@@ -47,120 +46,14 @@ namespace WaveBox.Model
 		public Video()
 		{
 		}
-
-		public Video(IDataReader reader)
-		{
-			SetPropertiesFromQueryReader(reader);
-		}
 		
-		public Video(int videoId)
-		{
-			IDbConnection conn = null;
-			IDataReader reader = null;
-			
-			try
-			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT * FROM video WHERE video_id = @videoid", conn);
-				q.AddNamedParam("@videoid", videoId);
-				
-				q.Prepare();
-				reader = q.ExecuteReader();
-				
-				if (reader.Read())
-				{
-					SetPropertiesFromQueryReader(reader);
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Database.Close(conn, reader);
-			}
-		}
-
-		public Video(string filePath, int? folderId, TagLib.File file)
-		{
-			ItemId = Item.GenerateItemId(ItemType.Video);
-			if (ItemId == null)
-			{
-				return;
-			}
-			
-			FileInfo fsFile = new FileInfo(filePath);
-			FolderId = folderId;
-			
-			FileType = FileType.FileTypeForTagLibMimeType(file.MimeType);
-
-			if (FileType == FileType.Unknown)
-			{
-				if (logger.IsInfoEnabled) logger.Info("\"" + filePath + "\" Unknown file type: " + file.Properties.Description);
-			}
-
-			Width = file.Properties.VideoWidth;
-			Height = file.Properties.VideoHeight;
-			Duration = Convert.ToInt32(file.Properties.Duration.TotalSeconds);
-			Bitrate = file.Properties.AudioBitrate;
-			FileSize = fsFile.Length;
-			LastModified = fsFile.LastWriteTime.ToUniversalUnixTimestamp();
-			FileName = fsFile.Name;
-
-			// Generate an art id from the embedded art, if it exists
-			int? artId = new Art(file).ArtId;
-
-			// If there was no embedded art, use the folder's art
-			artId = (object)artId == null ? Art.ArtIdForItemId(FolderId) : artId;
-
-			// Create the art/item relationship
-			Art.UpdateArtItemRelationship(artId, ItemId, true);
-		}
-
-		private void SetPropertiesFromQueryReader(IDataReader reader)
-		{
-			try
-			{
-				ItemId = reader.GetInt32(reader.GetOrdinal("video_id"));
-				FolderId = reader.GetInt32OrNull(reader.GetOrdinal("video_folder_id"));
-				Duration = reader.GetInt32OrNull(reader.GetOrdinal("video_duration"));
-				Bitrate = reader.GetInt32OrNull(reader.GetOrdinal("video_bitrate"));
-				FileSize = reader.GetInt64OrNull(reader.GetOrdinal("video_file_size"));
-				LastModified = reader.GetInt64OrNull(reader.GetOrdinal("video_last_modified"));
-				FileName = reader.GetStringOrNull(reader.GetOrdinal("video_file_name"));
-				Width = reader.GetInt32OrNull(reader.GetOrdinal("video_width"));
-				Height = reader.GetInt32OrNull(reader.GetOrdinal("video_height"));
-				int? fileTypeId = reader.GetInt32OrNull(reader.GetOrdinal("video_file_type_id"));
-				if (fileTypeId != null)
-				{
-					FileType = FileType.FileTypeForId((int)fileTypeId);
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-		}
-
 		public static List<Video> AllVideos()
 		{
-			List<Video> allVideos = new List<Video>();
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT * FROM video", conn);
-				
-				q.Prepare();
-				reader = q.ExecuteReader();
-				
-				while (reader.Read())
-				{
-					allVideos.Add(new Video(reader));
-				}
+				conn = Database.GetSqliteConnection();
+				return conn.Query<Video>("SELECT * FROM Video");
 			}
 			catch (Exception e)
 			{
@@ -168,28 +61,19 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
-			return allVideos;
+			return new List<Video>();
 		}
 
-		public static int? CountVideos()
+		public static int CountVideos()
 		{
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
-			int? count = 0;
-
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT count(video_id) FROM video", conn);
-				object result = q.ExecuteScalar();
-				if (result != DBNull.Value)
-				{
-					count = Convert.ToInt32(result);
-				}
+				conn = Database.GetSqliteConnection();
+				return conn.ExecuteScalar<int>("SELECT COUNT(ItemId) FROM Video");
 			}
 			catch (Exception e)
 			{
@@ -197,28 +81,19 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
-			return count;
+			return 0;
 		}
 
-		public static long? TotalVideoSize()
+		public static long TotalVideoSize()
 		{
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
-			long? total = 0;
-
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT sum(video_file_size) FROM video", conn);
-				object result = q.ExecuteScalar();
-				if (result != DBNull.Value)
-				{
-					total = Convert.ToInt64(result);
-				}
+				conn = Database.GetSqliteConnection();
+				return conn.ExecuteScalar<long>("SELECT SUM(FileSize) FROM Video");
 			}
 			catch (Exception e)
 			{
@@ -226,28 +101,19 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
-			return total;
+			return 0;
 		}
 
-		public static long? TotalVideoDuration()
+		public static long TotalVideoDuration()
 		{
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
-			long? total = 0;
-
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT sum(video_duration) FROM video", conn);
-				object result = q.ExecuteScalar();
-				if (result != DBNull.Value)
-				{
-					total = Convert.ToInt64(result);
-				}
+				conn = Database.GetSqliteConnection();
+				return conn.ExecuteScalar<long>("SELECT SUM(Duration) FROM Video");
 			}
 			catch (Exception e)
 			{
@@ -255,62 +121,46 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
-			return total;
+			return 0;
 		}
 
 		public static List<Video> SearchVideos(string field, string query, bool exact = true)
 		{
-			List<Video> results = new List<Video>();
-
 			if (query == null)
 			{
-				return results;
+				return new List<Video>();
 			}
 
 			// Set default field, if none provided
 			if (field == null)
 			{
-				field = "video_file_name";
+				field = "FileName";
 			}
 
 			// Check to ensure a valid query field was set
-			if (!new string[] {"video_id", "video_folder_id", "video_duration", "video_bitrate", "video_file_size",
-				"video_last_modified", "video_file_name", "video_width", "video_height", "video_file_type_id",
-				"video_genere_id"}.Contains(field))
+			if (!new string[] {"ItemId", "FolderId", "Duration", "Bitrate", "FileSize",
+				"LastModified", "FileName", "Width", "Height", "FileType",
+				"GenereId"}.Contains(field))
 			{
-				return results;
+				return new List<Video>();
 			}
 
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = null;
-
-				// Search for exact match
+				conn = Database.GetSqliteConnection();
 				if (exact)
 				{
-					q = Database.GetDbCommand("SELECT * FROM video WHERE " + field + " = @query", conn);
-					q.AddNamedParam("@query", query);
+					// Search for exact match
+					return conn.Query<Video>("SELECT * FROM Video WHERE " + field + " = ? ORDER BY FileName", query);
 				}
-				// Search for fuzzy match (containing query)
 				else
 				{
-					q = Database.GetDbCommand("SELECT * FROM video WHERE " + field + " LIKE @query", conn);
-					q.AddNamedParam("@query", "%" + query + "%");
-				}
-
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				while (reader.Read())
-				{
-					results.Add(new Video(reader));
+					// Search for fuzzy match (containing query)
+					return conn.Query<Video>("SELECT * FROM Video WHERE " + field + " LIKE ? ORDER BY FileName", "%" + query + "%");
 				}
 			}
 			catch (Exception e)
@@ -319,84 +169,19 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
-			return results;
-		}
-
-		public static bool VideoNeedsUpdating(string filePath, int? folderId, out bool isNew, out int? songId)
-		{
-			string fileName = Path.GetFileName(filePath);
-			long lastModified = System.IO.File.GetLastWriteTime(filePath).ToUniversalUnixTimestamp();
-			bool needsUpdating = true;
-			isNew = true;
-			songId = null;
-
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
-			try
-			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT video_id, video_last_modified, video_file_size " +
-													 "FROM video WHERE video_folder_id = @folderid AND video_file_name = @filename", conn);
-				q.AddNamedParam("@folderid", folderId);
-				q.AddNamedParam("@filename", fileName);
-
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
-				{
-					isNew = false;
-
-					songId = reader.GetInt32(0);
-					long lastModDb = reader.GetInt64(1);
-					if (lastModDb == lastModified)
-					{
-						needsUpdating = false;
-					}
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Database.Close(conn, reader);
-			}
-
-			return needsUpdating;
+			return new List<Video>();
 		}
 
 		public override void InsertMediaItem()
 		{
-			IDbConnection conn = null;
-			IDataReader reader = null;
+			ISQLiteConnection conn = null;
 			try
 			{
-				// insert the song into the database
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("REPLACE INTO video (video_id, video_folder_id, video_duration, video_bitrate, video_file_size, video_last_modified, video_file_name, video_width, video_height, video_file_type_id) " + 
-													 "VALUES (@videoid, @folderid, @duration, @bitrate, @filesize, @lastmod, @filename, @width, @height, @filetype)"
-													 , conn);
-
-				q.AddNamedParam("@videoid", ItemId);
-				q.AddNamedParam("@folderid", FolderId);
-				q.AddNamedParam("@duration", Duration);
-				q.AddNamedParam("@bitrate", Bitrate);
-				q.AddNamedParam("@filesize", FileSize);
-				q.AddNamedParam("@lastmod", LastModified);
-				q.AddNamedParam("@filename", FileName);
-				q.AddNamedParam("@width", Width);
-				q.AddNamedParam("@height", Height);
-				q.AddNamedParam("@filetype", (int)FileType);
-
-				q.Prepare();
-				
-				q.ExecuteNonQueryLogged();
+				conn = Database.GetSqliteConnection();
+				conn.InsertLogged(this, InsertType.Replace);
 			}
 			catch (Exception e)
 			{
@@ -404,7 +189,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
 			Art.UpdateArtItemRelationship(ArtId, ItemId, true);
@@ -414,6 +199,34 @@ namespace WaveBox.Model
 		public static int CompareVideosByFileName(Video x, Video y)
 		{
 			return x.FileName.CompareTo(y.FileName);
+		}
+
+		public class Factory
+		{
+			public Video CreateVideo(int videoId)
+			{
+				ISQLiteConnection conn = null;
+				try
+				{
+					conn = Database.GetSqliteConnection();
+					var result = conn.DeferredQuery<Video>("SELECT * FROM Video WHERE ItemId = ?", videoId);
+
+					foreach (Video v in result)
+					{
+						return v;
+					}
+				}
+				catch (Exception e)
+				{
+					logger.Error(e);
+				}
+				finally
+				{
+					conn.Close();
+				}
+
+				return new Video();
+			}
 		}
 	}
 }

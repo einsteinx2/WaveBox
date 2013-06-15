@@ -104,6 +104,18 @@
     <Reference Include="taglib-sharp">
       <HintPath>lib\taglib-sharp.dll</HintPath>
     </Reference>
+    <Reference Include="System.Data.SQLite.Linq">
+      <HintPath>lib\System.Data.SQLite.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Data.SQLite">
+      <HintPath>lib\System.Data.SQLite.dll</HintPath>
+    </Reference>
+    <Reference Include="Ninject.Common">
+      <HintPath>lib\Ninject.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Ninject.NetFx">
+      <HintPath>lib\Ninject.NetFx.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -182,6 +194,8 @@
     <Compile Include="src\Static\DynamicDns.cs" />
     <Compile Include="src\Transcoding\ITranscoder.cs" />
     <Compile Include="src\Lastfm.cs" />
+    <Compile Include="src\Static\DatabaseBackup.cs" />
+    <Compile Include="src\Static\Database.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
@@ -288,6 +302,10 @@
     <None Include="lib\log4net.dll" />
     <None Include="lib\Newtonsoft.Json.dll" />
     <None Include="lib\taglib-sharp.dll" />
+    <None Include="lib\System.Data.SQLite.dll" />
+    <None Include="lib\System.Data.SQLite.Linq.dll" />
+    <None Include="lib\Ninject.Common.dll" />
+    <None Include="lib\Ninject.NetFx.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

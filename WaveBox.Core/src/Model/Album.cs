@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Data;
 using WaveBox.Static;
 using Newtonsoft.Json;
+using Cirrious.MvvmCross.Plugins.Sqlite;
 
 namespace WaveBox.Model
 {
@@ -12,19 +12,19 @@ namespace WaveBox.Model
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		[JsonIgnore]
+		[JsonIgnore, IgnoreRead, IgnoreWrite]
 		public int? ItemId { get { return AlbumId; } set { AlbumId = ItemId; } }
 
-		[JsonIgnore]
+		[JsonIgnore, IgnoreRead, IgnoreWrite]
 		public ItemType ItemType { get { return ItemType.Album; } }
 
-		[JsonProperty("itemTypeId")]
+		[JsonProperty("itemTypeId"), IgnoreRead, IgnoreWrite]
 		public int ItemTypeId { get { return (int)ItemType; } }
 
 		[JsonProperty("artistId")]
 		public int? ArtistId { get; set; }
 
-		[JsonProperty("artistName")]
+		[JsonProperty("artistName"), IgnoreWrite]
 		public string ArtistName { get; set; }
 
 		[JsonProperty("albumId")]
@@ -36,82 +36,11 @@ namespace WaveBox.Model
 		[JsonProperty("releaseYear")]
 		public int? ReleaseYear { get; set; }
 
-		[JsonProperty("artId")]
+		[JsonProperty("artId"), IgnoreWrite]
 		public int? ArtId { get { return DetermineArtId(); } }
 
 		public Album()
 		{
-		}
-
-		public Album(IDataReader reader)
-		{
-			SetPropertiesFromQueryReader(reader);
-		}
-
-		public Album(int albumId)
-		{
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
-			try
-			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT * FROM album WHERE album_id = @albumid", conn);
-				q.AddNamedParam("@albumid", albumId);
-
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
-				{
-					SetPropertiesFromQueryReader(reader);
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Database.Close(conn, reader);
-			}
-		}
-
-		public Album(string albumName, int? artistId)
-		{
-			if (albumName == null || albumName == "")
-			{
-				return;
-			}
-
-			AlbumName = albumName;
-			ArtistId = artistId;
-
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
-			try
-			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT * FROM album WHERE album_name = @albumname AND artist_id = @artistid", conn);
-				q.AddNamedParam("@albumname", AlbumName);
-				q.AddNamedParam("@artistid", ArtistId);
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
-				{
-					SetPropertiesFromQueryReader(reader);
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Database.Close(conn, reader);
-			}
 		}
 
 		public int? DetermineArtId()
@@ -157,24 +86,18 @@ namespace WaveBox.Model
 
 		private List<int> SongArtIds()
 		{
-			List<int> artIds = new List<int>();
-			
-			IDbConnection conn = null;
-			IDataReader reader = null;
-			
+			List<int> songArtIds = new List<int>();
+
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT art_item.art_id FROM song " +
-													 "LEFT JOIN art_item ON song_id = art_item.item_id " +
-													 "WHERE song.song_album_id = @albumid AND art_item.art_id IS NOT NULL GROUP BY art_item.art_id", conn);
-				q.AddNamedParam("@albumid", AlbumId);
-				q.Prepare();
-				reader = q.ExecuteReader();
-				
-				while (reader.Read())
+				conn = Database.GetSqliteConnection();
+				var result = conn.DeferredQuery<Art>("SELECT ArtItem.ArtId FROM Song " +
+				                                  	 "LEFT JOIN ArtItem ON Song.ItemId = ArtItem.ItemId " +
+				                                  	 "WHERE Song.AlbumId = ? AND ArtItem.ArtId IS NOT NULL GROUP BY ArtItem.ArtId", AlbumId);
+				foreach (Art art in result)
 				{
-					artIds.Add(reader.GetInt32(0));
+					songArtIds.Add((int)art.ArtId);
 				}
 			}
 			catch (Exception e)
@@ -183,32 +106,26 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 			
-			return artIds;
+			return songArtIds;
 		}
 
 		private List<int> FolderArtIds()
 		{
-			List<int> artIds = new List<int>();
-			
-			IDbConnection conn = null;
-			IDataReader reader = null;
-			
+			List<int> folderArtIds = new List<int>();
+
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT art_item.art_id FROM song " +
-													 "LEFT JOIN art_item ON song_folder_id = art_item.item_id " +
-													 "WHERE song.song_album_id = @albumid AND art_item.art_id IS NOT NULL GROUP BY art_item.art_id", conn);
-				q.AddNamedParam("@albumid", AlbumId);
-				q.Prepare();
-				reader = q.ExecuteReader();
-				
-				while (reader.Read())
+				conn = Database.GetSqliteConnection();
+				var result = conn.DeferredQuery<Art>("SELECT ArtItem.ArtId FROM Song " +
+				                                     "LEFT JOIN ArtItem ON Song.FolderId = ArtItem.ItemId " +
+				                                     "WHERE Song.AlbumId = ? AND ArtItem.ArtId IS NOT NULL GROUP BY ArtItem.ArtId", AlbumId);
+				foreach (Art art in result)
 				{
-					artIds.Add(reader.GetInt32(0));
+					folderArtIds.Add((int)art.ArtId);
 				}
 			}
 			catch (Exception e)
@@ -217,10 +134,10 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 			
-			return artIds;
+			return folderArtIds;
 		}
 
 		private static bool InsertAlbum(string albumName, int? artistId, int? releaseYear)
@@ -233,83 +150,38 @@ namespace WaveBox.Model
 
 			bool success = false;
 
-			IDbConnection conn = null;
-			IDataReader reader = null;
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("INSERT OR IGNORE INTO album (album_id, album_name, artist_id, album_release_year) VALUES (@albumid, @albumname, @artistid, @albumreleaseyear)", conn);
-				q.AddNamedParam("@albumid", itemId);
-				q.AddNamedParam("@albumname", albumName);
-				q.AddNamedParam("@artistid", artistId);
-				q.AddNamedParam("@albumreleaseyear", releaseYear);
-				q.Prepare();
-
-				success = (q.ExecuteNonQueryLogged() > 0);
+				conn = Database.GetSqliteConnection();
+				Album album = new Album();
+				album.AlbumId = itemId;
+				album.AlbumName = albumName;
+				album.ArtistId = artistId;
+				album.ReleaseYear = releaseYear;
+				success = conn.InsertLogged(album, InsertType.InsertOrIgnore) > 0;
 			}
 			catch (Exception e)
 			{
-				logger.Error(e);
+				logger.Error("Error inserting album " + albumName, e);
+				success = false;
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
 			return success;
 		}
 
-		private void SetPropertiesFromQueryReader(IDataReader reader)
-		{
-			ArtistId = reader.GetInt32OrNull(reader.GetOrdinal("artist_id"));
-			AlbumId = reader.GetInt32OrNull(reader.GetOrdinal("album_id"));
-			AlbumName = reader.GetStringOrNull(reader.GetOrdinal("album_name"));
-			ReleaseYear = reader.GetInt32OrNull(reader.GetOrdinal("album_release_year"));
-
-			// Add artistName from Id
-			ArtistName = this.Artist().ArtistName;
-		}
-
 		public Artist Artist()
 		{
-			return new Artist(ArtistId);
+			return new Artist.Factory().CreateArtist(ArtistId);
 		}
 
 		public List<Song> ListOfSongs()
 		{
-			List<Song> songs = new List<Song>();
-
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
-			try
-			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT song.*, artist.artist_name, album.album_name, genre.genre_name FROM song " +
-													 "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
-													 "LEFT JOIN album ON song_album_id = album.album_id " +
-													 "LEFT JOIN genre ON song_genre_id = genre.genre_id " +
-													 "WHERE song_album_id = @albumid", conn);
-				q.AddNamedParam("@albumid", AlbumId);
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				while (reader.Read())
-				{
-					songs.Add(new Song(reader));
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Database.Close(conn, reader);
-			}
-
-			songs.Sort(Song.CompareSongsByDiscAndTrack);
-			return songs;
+			return Song.SearchSongs("AlbumId", AlbumId.ToString());
 		}
 
 		public static Album AlbumForName(string albumName, int? artistId, int? releaseYear = null)
@@ -319,7 +191,7 @@ namespace WaveBox.Model
 				return new Album();
 			}
 
-			Album a = new Album(albumName, artistId);
+			Album a = new Album.Factory().CreateAlbum(albumName, artistId);
 
 			if (a.AlbumId == null)
 			{
@@ -332,7 +204,7 @@ namespace WaveBox.Model
 				{
 					// The insert failed because this album was inserted by another
 					// thread, so grab the album id, it will exist this time
-					a = new Album(albumName, artistId);
+					a = new Album.Factory().CreateAlbum(albumName, artistId);
 				}
 			}
 
@@ -341,21 +213,11 @@ namespace WaveBox.Model
 
 		public static List<Album> AllAlbums()
 		{
-			List<Album> albums = new List<Album>();
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT * FROM album", conn);
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				while (reader.Read())
-				{
-					albums.Add(new Album(reader));
-				}
+				conn = Database.GetSqliteConnection();
+				return conn.Query<Album>("SELECT * FROM Album ORDER BY AlbumName");
 			}
 			catch (Exception e)
 			{
@@ -363,25 +225,19 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
-			albums.Sort(CompareAlbumsByName);
-			return albums;
+			return new List<Album>();
 		}
 
-		public static int? CountAlbums()
+		public static int CountAlbums()
 		{
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
-			int? count = null;
-
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT count(album_id) FROM album", conn);
-				count = Convert.ToInt32(q.ExecuteScalar());
+				conn = Database.GetSqliteConnection();
+				return conn.ExecuteScalar<int>("SELECT COUNT(ItemId) FROM Album");
 			}
 			catch (Exception e)
 			{
@@ -389,60 +245,45 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
-			return count;
+			return 0;
 		}
 		
 		public static List<Album> SearchAlbums(string field, string query, bool exact = true)
 		{
-			List<Album> results = new List<Album>();
-
 			if (query == null)
 			{
-				return results;
+				return new List<Album>();
 			}
 
 			// Set default field, if none provided
 			if (field == null)
 			{
-				field = "album_name";
+				field = "AlbumName";
 			}
 
 			// Check to ensure a valid query field was set
-			if (!new string[] {"album_id", "album_name", "artist_id", "album_release_year"}.Contains(field))
+			if (!new string[] {"ItemId", "AlbumName", "ArtistId", "ReleaseYear"}.Contains(field))
 			{
-				return results;
+				return new List<Album>();
 			}
 
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = null;
+				conn = Database.GetSqliteConnection();
 
-				// Search for exact match
 				if (exact)
 				{
-					q = Database.GetDbCommand("SELECT * FROM album WHERE " + field + " = @query", conn);
-					q.AddNamedParam("@query", query);
+					// Search for exact match
+					return conn.Query<Album>("SELECT * FROM Album WHERE " + field + " = ? ORDER BY AlbumName", query);
 				}
-				// Search for fuzzy match (containing query)
 				else
 				{
-					q = Database.GetDbCommand("SELECT * FROM album WHERE " + field + " LIKE @query", conn);
-					q.AddNamedParam("@query", "%" + query + "%");
-				}
-
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				while (reader.Read())
-				{
-					results.Add(new Album(reader));
+					// Search for fuzzy match (containing query)
+					return conn.Query<Album>("SELECT * FROM Album WHERE " + field + " LIKE ? ORDER BY AlbumName", "%" + query + "%");
 				}
 			}
 			catch (Exception e)
@@ -451,30 +292,19 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
-			return results;
+			return new List<Album>();
 		}
 
-		public static List<Album> RandomAlbums()
+		public static List<Album> RandomAlbums(int limit = 10)
 		{
-			List<Album> random = new List<Album>();
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT count(*) FROM album ORDER BY NEWID() LIMIT 1", conn);
-
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				while (reader.Read())
-				{
-					random.Add(new Album(reader));
-				}
+				conn = Database.GetSqliteConnection();
+				return conn.Query<Album>("SELECT * FROM Album ORDER BY RANDOM() LIMIT " + limit, conn);
 			}
 			catch (Exception e)
 			{
@@ -482,15 +312,80 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
-			return random;
+			return new List<Album>();
 		}
 
 		public static int CompareAlbumsByName(Album x, Album y)
 		{
 			return StringComparer.OrdinalIgnoreCase.Compare(x.AlbumName, y.AlbumName);
+		}
+
+		public class Factory
+		{
+			public Factory()
+			{
+			}
+
+			public Album CreateAlbum(int albumId)
+			{
+				ISQLiteConnection conn = null;
+				try
+				{
+					conn = Database.GetSqliteConnection();
+					var result = conn.DeferredQuery<Album>("SELECT * FROM Album WHERE AlbumId = ?", albumId);
+
+					foreach (Album a in result)
+					{
+						return a;
+					}
+				}
+				catch (Exception e)
+				{
+					logger.Error(e);
+				}
+				finally
+				{
+					conn.Close();
+				}
+
+				return new Album();
+			}
+
+			public Album CreateAlbum(string albumName, int? artistId)
+			{
+				if (albumName == null || albumName == "")
+				{
+					return new Album();
+				}
+
+				ISQLiteConnection conn = null;
+				try
+				{
+					conn = Database.GetSqliteConnection();
+					var result = conn.DeferredQuery<Album>("SELECT * FROM Album WHERE AlbumName = ? AND ArtistId = ?", albumName, artistId);
+
+					foreach (Album a in result)
+					{
+						return a;
+					}
+				}
+				catch (Exception e)
+				{
+					logger.Error(e);
+				}
+				finally
+				{
+					conn.Close();
+				}
+
+				Album album = new Album();
+				album.AlbumName = albumName;
+				album.ArtistId = artistId;
+				return album;
+			}
 		}
 	}
 }

@@ -58,7 +58,7 @@ namespace WaveBox.ApiHandler.Handlers
 			// On valid key, return a specific artist, and a list of their albums
 			if (success)
 			{
-				Artist artist = new Artist(id);
+				Artist artist = new Artist.Factory().CreateArtist(id);
 				listOfArtists.Add(artist);
 				listOfAlbums = artist.ListOfAlbums();
 

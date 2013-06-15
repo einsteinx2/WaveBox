@@ -52,12 +52,12 @@ namespace WaveBox.ApiHandler.Handlers
 					IMediaItem item = null;
 					if (itemType == ItemType.Song)
 					{
-						item = new Song(id);
+						item = new Song.Factory().CreateSong(id);
 						if (logger.IsInfoEnabled) logger.Info("Preparing audio stream: " + item.FileName);
 					}
 					else if (itemType == ItemType.Video)
 					{
-						item = new Video(id);
+						item = new Video.Factory().CreateVideo(id);
 						if (logger.IsInfoEnabled) logger.Info("Preparing video stream: " + item.FileName);
 					}
 

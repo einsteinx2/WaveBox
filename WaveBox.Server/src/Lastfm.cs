@@ -99,7 +99,7 @@ namespace WaveBox
 
 			for (int i = 0; i < limit; i++)
 			{
-				song = new Song(scrobbles[i].SongId);
+				song = new Song.Factory().CreateSong(scrobbles[i].SongId);
 				parameters.Add("artist" + (scrobbleType == LfmScrobbleType.NOWPLAYING ? "" : string.Format("[{0}]", i)), HttpUtility.UrlEncode(song.ArtistName, Encoding.UTF8));
 				parameters.Add("timestamp" + (scrobbleType == LfmScrobbleType.NOWPLAYING ? "" : string.Format("[{0}]", i)), HttpUtility.UrlEncode(timestamp.ToString(), Encoding.UTF8));
 				parameters.Add("track" + (scrobbleType == LfmScrobbleType.NOWPLAYING ? "" : string.Format("[{0}]", i)), HttpUtility.UrlEncode(song.SongName, Encoding.UTF8));
@@ -149,7 +149,7 @@ namespace WaveBox
 
 		public static string GetArtistInfo(int artistId)
 		{
-			return GetArtistInfo(new Artist(artistId));
+			return GetArtistInfo(new Artist.Factory().CreateArtist(artistId));
 		}
 
 		private static string CompileApiCall(SortedDictionary<string, string> parameters)

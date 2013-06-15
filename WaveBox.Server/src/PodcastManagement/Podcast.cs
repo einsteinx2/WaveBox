@@ -4,8 +4,8 @@ using System.IO;
 using System.Xml;
 using WaveBox.Static;
 using WaveBox.Model;
-using System.Data;
 using System.Collections.Concurrent;
+using Cirrious.MvvmCross.Plugins.Sqlite;
 
 namespace WaveBox.PodcastManagement
 {
@@ -16,9 +16,9 @@ namespace WaveBox.PodcastManagement
 		public static readonly string PodcastMediaDirectory = Settings.PodcastFolder;
 
 		/* IVars */
-		private string rssUrl;
-		XmlDocument doc;
-		XmlNamespaceManager mgr;
+		protected string rssUrl;
+		protected XmlDocument doc;
+		protected XmlNamespaceManager mgr;
 
 		/* Properties */
 		public long? PodcastId { get; set; }
@@ -28,107 +28,19 @@ namespace WaveBox.PodcastManagement
 		public string Description { get; set; }
 
 		/* Constructors */
-		public Podcast(string rss, int keepCap)
+		public Podcast()
 		{
-			rssUrl = rss;
-			EpisodeKeepCap = keepCap;
-
-			XmlNode root, channel;
-			doc = new XmlDocument();
-			doc.Load(rssUrl);
-			mgr = new XmlNamespaceManager(doc.NameTable);
-			mgr.AddNamespace("itunes", "http://www.itunes.com/dtds/podcast-1.0.dtd");
-
-			root = doc.DocumentElement;
-			channel = root.SelectSingleNode("descendant::channel");
-
-			Title = channel.SelectSingleNode("title").InnerText;
-			Author = channel.SelectSingleNode("itunes:author", mgr).InnerText;
-			Description = channel.SelectSingleNode("description").InnerText;
-
-			int? existingPodcastId = PodcastIdForRssUrl(rss);
-			if (existingPodcastId != null)
-			{
-				Podcast existing = new Podcast(existingPodcastId);
-				PodcastId = existingPodcastId;
-				EpisodeKeepCap = existing.EpisodeKeepCap;
-				Title = existing.Title;
-				Author = existing.Author;
-				Description = existing.Description;
-				return;
-			}
-			else
-			{
-				AddToDatabase();
-			}
-
-			//if (logger.IsInfoEnabled) logger.Info(Title + "\r\n " + Author + "\r\n " + Description + "\r\n\r\n");
 		}
-
-		public Podcast(long? podcastId)
-		{
-			if (podcastId == null)
-			{
-				return;
-			}
-
-			PodcastId = podcastId.Value;
-
-			IDbConnection conn = null;
-			IDataReader reader = null;
-			try
-			{
-				conn = Database.GetDbConnection();
-
-				IDbCommand q = Database.GetDbCommand("SELECT * FROM podcast WHERE podcast_id = @podcastid", conn);
-				q.AddNamedParam("@podcastid", podcastId);
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
-				{
-					EpisodeKeepCap = reader.GetInt32(reader.GetOrdinal("podcast_keep_cap"));
-					Title = reader.GetString(reader.GetOrdinal("podcast_title"));
-					Author = reader.GetString(reader.GetOrdinal("podcast_author"));
-					Description = reader.GetString(reader.GetOrdinal("podcast_description"));
-					rssUrl = reader.GetString(reader.GetOrdinal("podcast_rss_url"));
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Database.Close(conn, reader);
-			}
-		}
-
-		public Podcast(IDataReader reader)
-		{
-			SetPropertiesFromQueryReader(reader);
-		}
-
+		
 		/* Instance methods */
 		public void AddToDatabase()
 		{
 			PodcastId = Item.GenerateItemId(ItemType.Podcast);
-			IDbConnection conn = null;
-			IDataReader reader = null;
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-
-				IDbCommand q = Database.GetDbCommand("INSERT OR IGNORE INTO podcast (podcast_id, podcast_keep_cap, podcast_title, podcast_author, podcast_description, podcast_rss_url) VALUES (@id, @keepcap, @title, @author, @desc, @rss)", conn);
-				q.AddNamedParam("@id", PodcastId);
-				q.AddNamedParam("@keepcap", EpisodeKeepCap.Value);
-				q.AddNamedParam("@title", Title);
-				q.AddNamedParam("@author", Author);
-				q.AddNamedParam("@desc", Description);
-				q.AddNamedParam("@rss", rssUrl);
-				q.Prepare();
-
-				q.ExecuteNonQueryLogged();
+				conn = Database.GetSqliteConnection();
+				conn.InsertLogged(this);
 			}
 			catch (Exception e)
 			{
@@ -136,7 +48,7 @@ namespace WaveBox.PodcastManagement
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 		}
 
@@ -183,22 +95,15 @@ namespace WaveBox.PodcastManagement
 
 		private void DeleteOldEpisodes(int count)
 		{
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
+				conn = Database.GetSqliteConnection();
+				var result = conn.DeferredQuery<PodcastEpisode>("SELECT * FROM PodcastEpisode WHERE PodcastId = ? ORDER BY EpisodeId LIMIT ?", PodcastId, count);
 
-				IDbCommand q = Database.GetDbCommand("SELECT podcast_episode_id FROM podcast_episode WHERE podcast_episode_podcast_id = @podcastid ORDER BY podcast_episode_id LIMIT @count", conn);
-				q.AddNamedParam("@podcastid", PodcastId);
-				q.AddNamedParam("@count", count);
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				while (reader.Read())
+				foreach (var episode in result)
 				{
-					new PodcastEpisode(reader.GetInt32(0)).Delete();
+					episode.Delete();
 				}
 			}
 			catch (Exception e)
@@ -207,7 +112,7 @@ namespace WaveBox.PodcastManagement
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 		}
 
@@ -224,19 +129,16 @@ namespace WaveBox.PodcastManagement
 				ep.Delete();
 			}
 
-			IDbConnection conn = null;
-			IDataReader reader = null;
 			bool success = false;
 
 			// remove podcast entry
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
+				conn = Database.GetSqliteConnection();
+				int affected = conn.ExecuteLogged("DELETE FROM Podcast WHERE PodcastId = ?", PodcastId);
 
-				IDbCommand q = Database.GetDbCommand("DELETE FROM podcast WHERE podcast_id = @podcastid", conn);
-				q.AddNamedParam("@podcastid", PodcastId);
-				q.Prepare();
-				success = q.ExecuteNonQueryLogged() >= 1;
+				success = affected > 0;
 			}
 			catch (Exception e)
 			{
@@ -244,7 +146,7 @@ namespace WaveBox.PodcastManagement
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
 			if (Directory.Exists(PodcastMediaDirectory + Path.DirectorySeparatorChar + Title))
@@ -268,29 +170,18 @@ namespace WaveBox.PodcastManagement
 			long? j = EpisodeKeepCap <= xmlList.Count ? EpisodeKeepCap : list.Count;
 			for (int i = 0; i < j; i++)
 			{
-				list.Add(new PodcastEpisode(xmlList.Item(i), mgr, PodcastId));
+				list.Add(new PodcastEpisode.Factory().CreatePodcastEpisode(xmlList.Item(i), mgr, PodcastId));
 			}
 			return list;
 		}
 
 		public List<PodcastEpisode> ListOfStoredEpisodes()
 		{
-			List<PodcastEpisode> list = new List<PodcastEpisode>();
-			IDbConnection conn = null;
-			IDataReader reader = null;
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-
-				IDbCommand q = Database.GetDbCommand("SELECT podcast_episode_id FROM podcast_episode WHERE podcast_episode_podcast_id = @podcastid", conn);
-				q.AddNamedParam("podcastid", PodcastId);
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				while (reader.Read())
-				{
-					list.Add(new PodcastEpisode(reader.GetInt32(0)));
-				}
+				conn = Database.GetSqliteConnection();
+				return conn.Query<PodcastEpisode>("SELECT * FROM PodcastEpisode WHERE PodcastId = ?", PodcastId);
 			}
 			catch (Exception e)
 			{
@@ -298,39 +189,20 @@ namespace WaveBox.PodcastManagement
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
-			return list;
-		}
 
-		public void SetPropertiesFromQueryReader(IDataReader reader)
-		{
-			PodcastId = reader.GetInt64(reader.GetOrdinal("podcast_id"));
-			EpisodeKeepCap = reader.GetInt64(reader.GetOrdinal("podcast_keep_cap"));
-			Title = reader.GetString(reader.GetOrdinal("podcast_title"));
-			Author = reader.GetString(reader.GetOrdinal("podcast_author"));
-			Description = reader.GetString(reader.GetOrdinal("podcast_description"));
-			rssUrl = reader.GetString(reader.GetOrdinal("podcast_rss_url"));
+			return new List<PodcastEpisode>();
 		}
 
 		/* Class methods */
 		public static List<Podcast> ListOfStoredPodcasts()
 		{	
-			List<Podcast> list = new List<Podcast>();
-			IDbConnection conn = null;
-			IDataReader reader = null;
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-
-				IDbCommand q = Database.GetDbCommand("SELECT podcast_id FROM podcast ORDER BY podcast_title DESC", conn);
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				while (reader.Read())
-				{
-					list.Add(new Podcast(reader.GetInt32(0)));
-				}
+				conn = Database.GetSqliteConnection();
+				return conn.Query<Podcast>("SELECT * FROM Podcast ORDER BY Title DESC");
 			}
 			catch (Exception e)
 			{
@@ -338,28 +210,20 @@ namespace WaveBox.PodcastManagement
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
-			return list;
+			return new List<Podcast>();
 		}
 
 		private static int? PodcastIdForRssUrl(string rss)
 		{
-			IDbConnection conn = null;
-			IDataReader reader = null;
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
+				conn = Database.GetSqliteConnection();
+				int podcastId = conn.ExecuteScalar<int>("SELECT PodcastId FROM Podcast WHERE RssUrl = ?", rss);
 
-				IDbCommand q = Database.GetDbCommand("SELECT podcast_id FROM podcast WHERE podcast_rss_url = @rss", conn);
-				q.AddNamedParam("@rss", rss);
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
-				{
-					return reader.GetInt32(0);
-				}
+				return podcastId == 0 ? (int?)null : podcastId;
 			}
 			catch (Exception e)
 			{
@@ -367,9 +231,83 @@ namespace WaveBox.PodcastManagement
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
+
 			return null;
+		}
+
+		public class Factory
+		{
+			public Podcast CreatePodcast(string rss, int keepCap)
+			{
+				var podcast = new Podcast();
+
+				podcast.rssUrl = rss;
+				podcast.EpisodeKeepCap = keepCap;
+
+				XmlNode root, channel;
+				podcast.doc = new XmlDocument();
+				podcast.doc.Load(podcast.rssUrl);
+				podcast.mgr = new XmlNamespaceManager(podcast.doc.NameTable);
+				podcast.mgr.AddNamespace("itunes", "http://www.itunes.com/dtds/podcast-1.0.dtd");
+
+				root = podcast.doc.DocumentElement;
+				channel = root.SelectSingleNode("descendant::channel");
+
+				podcast.Title = channel.SelectSingleNode("title").InnerText;
+				podcast.Author = channel.SelectSingleNode("itunes:author", podcast.mgr).InnerText;
+				podcast.Description = channel.SelectSingleNode("description").InnerText;
+
+				int? existingPodcastId = PodcastIdForRssUrl(rss);
+				if (existingPodcastId != null)
+				{
+					Podcast existing = new Podcast.Factory().CreatePodcast(existingPodcastId);
+					podcast.PodcastId = existingPodcastId;
+					podcast.EpisodeKeepCap = existing.EpisodeKeepCap;
+					podcast.Title = existing.Title;
+					podcast.Author = existing.Author;
+					podcast.Description = existing.Description;
+				}
+				else
+				{
+					podcast.AddToDatabase();
+				}
+
+				return podcast;
+			}
+
+			public Podcast CreatePodcast(long? podcastId)
+			{
+				if (podcastId == null)
+				{
+					return new Podcast();
+				}
+
+				ISQLiteConnection conn = null;
+				try
+				{
+					conn = Database.GetSqliteConnection();
+					var result = conn.Query<Podcast>("SELECT * FROM Podcast WHERE PodcastId = ? LIMIT 1", podcastId);
+
+					foreach (var p in result)
+					{
+						return p;
+					}
+				}
+				catch (Exception e)
+				{
+					logger.Error(e);
+				}
+				finally
+				{
+					conn.Close();
+				}
+
+				var podcast = new Podcast();
+				podcast.PodcastId = podcastId.Value;
+				return podcast;
+			}
 		}
 	}
 }

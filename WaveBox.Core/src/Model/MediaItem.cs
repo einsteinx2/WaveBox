@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using System.Data;
 using WaveBox.Model;
 using WaveBox.Static;
 using System.Diagnostics;
 using Newtonsoft.Json;
+using Cirrious.MvvmCross.Plugins.Sqlite;
 
 namespace WaveBox.Model
 {
@@ -15,10 +15,10 @@ namespace WaveBox.Model
 	{
 		//private static Logger logger = LogManager.GetCurrentClassLogger();
 
-		[JsonIgnore]
+		[JsonIgnore, IgnoreRead, IgnoreWrite]
 		public virtual ItemType ItemType { get { return ItemType.Unknown; } }
 
-		[JsonProperty("itemTypeId")]
+		[JsonProperty("itemTypeId"), IgnoreRead, IgnoreWrite]
 		public virtual int ItemTypeId { get { return (int)ItemType; } }
 
 		[JsonProperty("itemId")]
@@ -48,16 +48,16 @@ namespace WaveBox.Model
 		[JsonProperty("genreId")]
 		public int? GenreId { get; set; }
 		
-		[JsonProperty("genreName")]
+		[JsonProperty("genreName"), IgnoreWrite]
 		public string GenreName { get; set; }
 
-		[JsonProperty("artId")]
+		[JsonProperty("artId"), IgnoreRead, IgnoreWrite]
 		public int? ArtId { get { return Art.ArtIdForItemId(ItemId); } }
 
-		[JsonIgnore]
-		public string FilePath { get { return new Folder(FolderId).FolderPath + Path.DirectorySeparatorChar + FileName; } }
+		[JsonIgnore, IgnoreRead, IgnoreWrite]
+		public string FilePath { get { return new Folder.Factory().CreateFolder((int)FolderId).FolderPath + Path.DirectorySeparatorChar + FileName; } }
 
-		[JsonIgnore]
+		[JsonIgnore, IgnoreRead, IgnoreWrite]
 		public FileStream File { get { return new FileStream(FilePath, FileMode.Open, FileAccess.Read); } }
 
 		/// <summary>
@@ -71,26 +71,6 @@ namespace WaveBox.Model
 		public virtual void InsertMediaItem()
 		{
 
-		}
-
-		public static bool FileNeedsUpdating(string filePath, int? folderId, out bool isNew, out int? itemId)
-		{
-			ItemType type = Item.ItemTypeForFilePath(filePath);
-
-			bool needsUpdating = false;
-			isNew = false;
-			itemId = null;
-
-			if (type == ItemType.Song)
-			{
-				needsUpdating = Song.SongNeedsUpdating(filePath, folderId, out isNew, out itemId);
-			}
-			else if (type == ItemType.Video)
-			{
-				needsUpdating = Video.VideoNeedsUpdating(filePath, folderId, out isNew, out itemId);
-			}
-
-			return needsUpdating;
 		}
 
 		public override bool Equals(Object obj)

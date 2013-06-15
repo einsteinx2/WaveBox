@@ -9,6 +9,7 @@ using WaveBox.Model;
 using WaveBox.Static;
 using WaveBox.TcpServer.Http;
 using TagLib;
+using System.Linq;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -52,8 +53,8 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 
 			// Grab art stream
-			Art art = new Art(artId);
-			Stream stream = art.Stream;
+			Art art = new Art.Factory().CreateArt(artId);
+			Stream stream = CreateStream(art);
 
 			// If the stream could not be produced, return error
 			if ((object)stream == null)
@@ -110,8 +111,7 @@ namespace WaveBox.ApiHandler.Handlers
 			stream.Close();
 		}
 
-
-		private static byte[] ResizeImageMagick(Stream stream, int width)
+		private byte[] ResizeImageMagick(Stream stream, int width)
 		{
 			// new wand
 			IntPtr wand = ImageMagickInterop.NewWand();
@@ -161,7 +161,7 @@ namespace WaveBox.ApiHandler.Handlers
 		/// <summary>
 		/// Code which can resize an image and return it as requested
 		/// </summary>
-		private static Image ResizeImageGDI(Image imgToResize, Size size)
+		private Image ResizeImageGDI(Image imgToResize, Size size)
 		{
 			int sourceWidth = imgToResize.Width;
 			int sourceHeight = imgToResize.Height;
@@ -195,6 +195,119 @@ namespace WaveBox.ApiHandler.Handlers
 			g.Dispose();
 
 			return (Image)b;
+		}
+
+		private Stream CreateStream(Art art)
+		{
+			if ((object)art.ArtId == null)
+			{
+				return null;
+			}
+
+			int? itemId = Art.ItemIdForArtId((int)art.ArtId);
+
+			if ((object)itemId == null)
+			{
+				return null;
+			}
+
+			ItemType type = Item.ItemTypeForItemId((int)itemId);
+
+			Stream stream = null;
+
+			if (type == ItemType.Song)
+			{
+				stream = StreamForSong((int)itemId);
+			}
+			else if (type == ItemType.Folder)
+			{
+				stream = StreamForFolder((int)itemId);
+			}
+
+			return stream;
+		}
+
+		private Stream StreamForSong(int songId)
+		{
+			Song song = new Song.Factory().CreateSong(songId);
+			Stream stream = null;
+
+			// Open the image from the tag
+			TagLib.File f = null;
+			try
+			{
+				f = TagLib.File.Create(song.FilePath);
+				byte[] data = f.Tag.Pictures[0].Data.Data;
+
+				stream = new MemoryStream(data);
+			}
+			catch (TagLib.CorruptFileException e)
+			{
+				if (logger.IsInfoEnabled) logger.Info(song.FileName + " has a corrupt tag so can't return the art. " + e);
+			}
+			catch (Exception e)
+			{
+				logger.Error("Error processing file: ", e);
+			}
+
+			return stream;
+		}
+
+		private Stream StreamForFolder(int folderId)
+		{
+			Folder folder = new Folder.Factory().CreateFolder(folderId);
+			Stream stream = null;
+
+			string artPath = FolderArtPath(folder);
+
+			if ((object)artPath != null)
+			{
+				stream = new FileStream(artPath, FileMode.Open, FileAccess.Read);
+			}
+
+			return stream;
+		}
+
+		private string FolderArtPath(Folder folder)
+		{
+			string artPath = null;
+
+			foreach (string fileName in Settings.FolderArtNames)
+			{
+				string path = folder.FolderPath + Path.DirectorySeparatorChar + fileName;
+				if (System.IO.File.Exists(path))
+				{
+					// Use this one
+					artPath = path;
+				}
+			}
+
+			if ((object)artPath == null)
+			{
+				// Check for any images
+				FolderContainsImages(folder.FolderPath, out artPath);
+			}
+
+			return artPath;
+		}
+
+		private bool FolderContainsImages(string dir, out string firstImageFoundPath)
+		{
+			string[] validImageExtensions = new string[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
+			string ext = null;
+			firstImageFoundPath = null;
+
+			foreach (string file in Directory.GetFiles(dir))
+			{
+				ext = Path.GetExtension(file).ToLower();
+				if (validImageExtensions.Contains(ext) && !Path.GetFileName(file).StartsWith("."))
+				{
+					firstImageFoundPath = file;
+				}
+			}
+
+			// Return true if firstImageFoundPath exists
+			return ((object)firstImageFoundPath != null);
 		}
 	}
 }

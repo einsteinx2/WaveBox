@@ -72,7 +72,8 @@ namespace WaveBox.ApiHandler.Handlers
 										Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Parameter 'keepCap' contained an invalid value", null), Settings.JsonFormatting));
 									}
 									url = System.Web.HttpUtility.UrlDecode(url);
-									Podcast pod = new Podcast(url, keepCap);
+									Podcast pod = new Podcast.Factory().CreatePodcast(url, keepCap);
+
 									pod.DownloadNewEpisodes();
 									Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse(null, null), Settings.JsonFormatting));
 									return;
@@ -103,7 +104,7 @@ namespace WaveBox.ApiHandler.Handlers
 								Uri.Parameters.TryGetValue("id", out idString);
 								if (Int32.TryParse(idString, out id))
 								{
-									Processor.WriteJson(JsonConvert.SerializeObject(new PodcastActionResponse(null, new Podcast(id).Delete()), Settings.JsonFormatting));
+									Processor.WriteJson(JsonConvert.SerializeObject(new PodcastActionResponse(null, new Podcast.Factory().CreatePodcast(id).Delete()), Settings.JsonFormatting));
 									return;
 								}
 								else
@@ -120,7 +121,7 @@ namespace WaveBox.ApiHandler.Handlers
 								Uri.Parameters.TryGetValue("episodeId", out idString);
 								if (Int32.TryParse(idString, out id))
 								{
-									Processor.WriteJson(JsonConvert.SerializeObject(new PodcastActionResponse(null, new PodcastEpisode(id).Delete()), Settings.JsonFormatting));
+									Processor.WriteJson(JsonConvert.SerializeObject(new PodcastActionResponse(null, new PodcastEpisode.Factory().CreatePodcastEpisode(id).Delete()), Settings.JsonFormatting));
 									return;
 								}
 								else
@@ -144,7 +145,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 				if (id != 0)
 				{
-					Podcast thisPodcast = new Podcast(id);
+					Podcast thisPodcast = new Podcast.Factory().CreatePodcast(id);
 					List<PodcastEpisode> epList = thisPodcast.ListOfStoredEpisodes();
 
 					Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse(null, thisPodcast, epList), Settings.JsonFormatting));

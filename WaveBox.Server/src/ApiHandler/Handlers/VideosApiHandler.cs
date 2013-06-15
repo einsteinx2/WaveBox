@@ -44,7 +44,7 @@ namespace WaveBox.ApiHandler.Handlers
 			// On successful ID, grab one video
 			if (success)
 			{
-				listOfVideos.Add(new Video(id));
+				listOfVideos.Add(new Video.Factory().CreateVideo(id));
 			}
 			else
 			{

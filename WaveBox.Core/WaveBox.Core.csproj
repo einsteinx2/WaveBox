@@ -7,8 +7,8 @@
     <ProjectGuid>{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>WaveBox.Core.Model</RootNamespace>
-    <AssemblyName>WaveBox.Core.Model</AssemblyName>
+    <RootNamespace>WaveBox.Core</RootNamespace>
+    <AssemblyName>WaveBox.Core</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProductVersion>10.0.0</ProductVersion>
@@ -50,11 +50,11 @@
     <Reference Include="log4net">
       <HintPath>lib\log4net.dll</HintPath>
     </Reference>
-    <Reference Include="System.Data.SQLite.Linq">
-      <HintPath>lib\System.Data.SQLite.Linq.dll</HintPath>
+    <Reference Include="Ninject.Common">
+      <HintPath>lib\Ninject.Common.dll</HintPath>
     </Reference>
-    <Reference Include="System.Data.SQLite">
-      <HintPath>lib\System.Data.SQLite.dll</HintPath>
+    <Reference Include="Ninject.NetFx">
+      <HintPath>lib\Ninject.NetFx.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -83,6 +83,13 @@
     <Compile Include="src\OperationQueue\IDelayedOperation.cs" />
     <Compile Include="src\OperationQueue\AbstractOperation.cs" />
     <Compile Include="src\Static\Settings.cs" />
+    <Compile Include="src\BaseClasses.cs" />
+    <Compile Include="src\SQLiteNet.cs" />
+    <Compile Include="src\Model\PlaylistItem.cs" />
+    <Compile Include="src\Model\ArtItem.cs" />
+    <Compile Include="src\Model\QueryLog.cs" />
+    <Compile Include="src\Static\Injection.cs" />
+    <Compile Include="src\Injected\IDatabase.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -93,9 +100,8 @@
   </Target>
   -->
   <ItemGroup>
-    <Folder Include="src\" />
-    <Folder Include="lib\" />
     <Folder Include="lib_native\" />
+    <Folder Include="src\Injected\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="lib\taglib-sharp.dll" />
@@ -103,7 +109,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="lib\log4net.dll" />
-    <None Include="lib\System.Data.SQLite.dll" />
-    <None Include="lib\System.Data.SQLite.Linq.dll" />
+    <None Include="lib\Cirrious.MvvmCross.Plugins.Sqlite.dll" />
+    <None Include="lib\Cirrious.MvvmCross.dll" />
+    <None Include="lib\Ninject.Common.dll" />
+    <None Include="lib\Ninject.NetFx.dll" />
   </ItemGroup>
 </Project>

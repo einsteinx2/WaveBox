@@ -47,7 +47,7 @@ namespace WaveBox.ApiHandler.Handlers
 			if (success)
 			{
 				// Return the folder for this id
-				containingFolder = new Folder(id);
+				containingFolder = new Folder.Factory().CreateFolder(id);
 				listOfFolders = containingFolder.ListOfSubFolders();
 
 				// Recursively add media items from sub-folders

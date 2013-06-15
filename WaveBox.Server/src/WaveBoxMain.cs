@@ -22,6 +22,7 @@ using WaveBox.TcpServer;
 using WaveBox.Transcoding;
 using WaveBox.DeviceSync;
 using Microsoft.Owin.Hosting;
+using Cirrious.MvvmCross.Plugins.Sqlite;
 
 namespace WaveBox
 {
@@ -46,22 +47,13 @@ namespace WaveBox
 		/// </summary>
 		private void ServerSetup()
 		{
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
+			ISQLiteConnection conn = null;
 			try
 			{
 				// Grab server GUID and URL from the database
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT * FROM server", conn);
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
-				{
-					ServerGuid = reader.GetStringOrNull(reader.GetOrdinal("guid"));
-					ServerUrl = reader.GetStringOrNull(reader.GetOrdinal("url"));
-				}
+				conn = Database.GetSqliteConnection();
+				ServerGuid = conn.ExecuteScalar<string>("SELECT Guid FROM Server");
+				ServerUrl = conn.ExecuteScalar<string>("SELECT Url FROM Server");
 			}
 			catch (Exception e)
 			{
@@ -69,7 +61,7 @@ namespace WaveBox
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
 			// If it doesn't exist, generate a new one
@@ -82,11 +74,10 @@ namespace WaveBox
 				// Store the GUID in the database
 				try
 				{
-					conn = Database.GetDbConnection();
-					IDbCommand q = Database.GetDbCommand("INSERT INTO server (guid) VALUES (@guid)", conn);
-					q.AddNamedParam("@guid", ServerGuid);
-					q.Prepare();
-					if (q.ExecuteNonQuery() == 0)
+					conn = Database.GetSqliteConnection();
+					int affected = conn.Execute("INSERT INTO Server (Guid) VALUES (?)", ServerGuid);
+
+					if (affected == 0)
 					{
 						ServerGuid = null;
 					}
@@ -98,7 +89,7 @@ namespace WaveBox
 				}
 				finally
 				{
-					Database.Close(conn, null);
+					conn.Close();
 				}
 			}
 		}
@@ -190,7 +181,7 @@ namespace WaveBox
 			}
 
 			// Temporary: create test user
-			User.CreateUser("test", "test", null);
+			new User.Factory().CreateUser("test", "test", null);
 
 			// Start the UserManager
 			UserManager.Setup();

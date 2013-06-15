@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Data;
 using WaveBox.Model;
 using WaveBox.Static;
 using System.IO;
 using TagLib;
 using Newtonsoft.Json;
 using System.Diagnostics;
+using Cirrious.MvvmCross.Plugins.Sqlite;
+using System.Collections;
 
 namespace WaveBox.Model
 {
@@ -27,13 +28,13 @@ namespace WaveBox.Model
 		[JsonProperty("artistId")]
 		public int? ArtistId { get; set; }
 
-		[JsonProperty("artistName")]
+		[JsonProperty("artistName"), IgnoreWrite]
 		public string ArtistName { get; set; }
 
 		[JsonProperty("albumId")]
 		public int? AlbumId { get; set; }
 
-		[JsonProperty("albumName")]
+		[JsonProperty("albumName"), IgnoreWrite]
 		public string AlbumName { get; set; }
 
 		[JsonProperty("songName")]
@@ -52,219 +53,14 @@ namespace WaveBox.Model
 		{
 		}
 
-		public Song(int songId)
-		{
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
-			try
-			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT song.*, artist.artist_name, album.album_name, genre.genre_name FROM song " +
-													 "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
-													 "LEFT JOIN album ON song_album_id = album.album_id " +
-													 "LEFT JOIN genre ON song_genre_id = genre.genre_id " +
-													 "WHERE song_id = @songid", conn);
-				q.AddNamedParam("@songid", songId);
-
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
-				{
-					SetPropertiesFromQueryReader(reader);
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Database.Close(conn, reader);
-			}
-		}
-
-		public Song(string filePath, int? folderId, TagLib.File file)
-		{
-			ItemId = Item.GenerateItemId(ItemType.Song);
-			if (ItemId == null)
-			{
-				return;
-			}
-
-			FileInfo fsFile = new FileInfo(filePath);
-			TagLib.Tag tag = file.Tag;
-			FolderId = folderId;
-
-			try
-			{
-				Artist artist = Artist.ArtistForName(tag.FirstPerformer);
-				ArtistId = artist.ArtistId;
-				ArtistName = artist.ArtistName;
-			}
-			catch
-			{
-				ArtistId = null;
-				ArtistName = null;
-			}
-
-			try
-			{
-				Album album = Album.AlbumForName(tag.Album, ArtistId, Convert.ToInt32(tag.Year));
-				AlbumId = album.AlbumId;
-				AlbumName = album.AlbumName;
-				ReleaseYear = album.ReleaseYear;
-			}
-			catch
-			{
-				AlbumId = null;
-				AlbumName = null;
-			}
-
-			FileType = FileType.FileTypeForTagLibMimeType(file.MimeType);
-
-			if (FileType == FileType.Unknown)
-			{
-				if (logger.IsInfoEnabled) logger.Info("\"" + filePath + "\" Unknown file type: " + file.Properties.Description);
-			}
-
-			try
-			{
-				SongName = tag.Title;
-			}
-			catch
-			{
-				SongName = null;
-			}
-
-			try
-			{
-				TrackNumber = Convert.ToInt32(tag.Track);
-			}
-			catch
-			{
-				TrackNumber = null;
-			}
-
-			try
-			{
-				DiscNumber = Convert.ToInt32(tag.Disc);
-			}
-			catch
-			{
-				DiscNumber = null;
-			}
-
-			try
-			{
-				GenreName = tag.FirstGenre;
-			}
-			catch
-			{
-				GenreName = null;
-			}
-
-			if ((object)GenreName != null)
-			{
-				// Retreive the genre id
-				GenreId = new Genre(GenreName).GenreId;
-			}
-
-			Duration = Convert.ToInt32(file.Properties.Duration.TotalSeconds);
-			Bitrate = file.Properties.AudioBitrate;
-			FileSize = fsFile.Length;
-			LastModified = fsFile.LastWriteTime.ToUniversalUnixTimestamp();
-
-			FileName = fsFile.Name;
-
-			// Generate an art id from the embedded art, if it exists
-			int? artId = new Art(file).ArtId;
-
-			// If there was no embedded art, use the folder's art
-			artId = (object)artId == null ? Art.ArtIdForItemId(FolderId) : artId;
-
-			// Create the art/item relationship
-			Art.UpdateArtItemRelationship(artId, ItemId, true);
-		}
-
-		public Song(IDataReader reader)
-		{
-			SetPropertiesFromQueryReader(reader);
-		}
-
-		private void SetPropertiesFromQueryReader(IDataReader reader)
-		{
-			try
-			{
-				ItemId = reader.GetInt32(reader.GetOrdinal("song_id"));
-
-				FolderId = reader.GetInt32OrNull(reader.GetOrdinal("song_folder_id"));
-				ArtistId = reader.GetInt32OrNull(reader.GetOrdinal("song_artist_id"));
-				ArtistName = reader.GetStringOrNull(reader.GetOrdinal("artist_name"));
-				AlbumId = reader.GetInt32OrNull(reader.GetOrdinal("song_album_id"));
-				AlbumName = reader.GetStringOrNull(reader.GetOrdinal("album_name"));
-				int? fileTypeId = reader.GetInt32OrNull(reader.GetOrdinal("song_file_type_id"));
-				if (fileTypeId != null)
-				{
-					FileType = FileType.FileTypeForId((int)fileTypeId);
-				}
-				SongName = reader.GetStringOrNull(reader.GetOrdinal("song_name"));
-				TrackNumber = reader.GetInt32OrNull(reader.GetOrdinal("song_track_num"));
-				DiscNumber = reader.GetInt32OrNull(reader.GetOrdinal("song_disc_num"));
-				Duration = reader.GetInt32OrNull(reader.GetOrdinal("song_duration"));
-				Bitrate = reader.GetInt32OrNull(reader.GetOrdinal("song_bitrate"));
-				FileSize = reader.GetInt64OrNull(reader.GetOrdinal("song_file_size"));
-				LastModified = reader.GetInt64OrNull(reader.GetOrdinal("song_last_modified"));
-				FileName = reader.GetStringOrNull(reader.GetOrdinal("song_file_name"));
-				ReleaseYear = reader.GetInt32OrNull(reader.GetOrdinal("song_release_year"));
-				GenreId = reader.GetInt32OrNull(reader.GetOrdinal("song_genre_id"));
-				GenreName = reader.GetStringOrNull(reader.GetOrdinal("genre_name"));
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-		}
-
 		public override void InsertMediaItem()
 		{
-			IDbConnection conn = null;
-			IDataReader reader = null;
+			ISQLiteConnection conn = null;
 			try
 			{
 				// insert the song into the database
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("REPLACE INTO song (song_id, song_folder_id, song_artist_id, song_album_id, song_file_type_id, song_name, song_track_num, song_disc_num, song_duration, song_bitrate, song_file_size, song_last_modified, song_file_name, song_release_year, song_genre_id) " + 
-													 "VALUES (@songid, @folderid, @artistid, @albumid, @filetype, @songname, @tracknum, @discnum, @duration, @bitrate, @filesize, @lastmod, @filename, @releaseyear, @genreid)"
-													 , conn);
-
-				q.AddNamedParam("@songid", ItemId);
-				q.AddNamedParam("@folderid", FolderId);
-				q.AddNamedParam("@artistid", ArtistId);
-				q.AddNamedParam("@albumid", AlbumId);
-				q.AddNamedParam("@filetype", (int)FileType);
-				q.AddNamedParam("@songname", SongName);
-				q.AddNamedParam("@tracknum", TrackNumber);
-				q.AddNamedParam("@discnum", DiscNumber);
-				q.AddNamedParam("@duration", Duration);
-				q.AddNamedParam("@bitrate", Bitrate);
-				q.AddNamedParam("@filesize", FileSize);
-				q.AddNamedParam("@lastmod", LastModified);
-				q.AddNamedParam("@filename", FileName);
-				if (ReleaseYear == null)
-				{
-					q.AddNamedParam("@releaseyear", DBNull.Value);
-				}
-				else
-				{
-					q.AddNamedParam("@releaseyear", ReleaseYear);
-				}
-				q.AddNamedParam("@genreid", GenreId);
-
-				q.Prepare();
-
-				q.ExecuteNonQueryLogged();
+				conn = Database.GetSqliteConnection();
+				conn.InsertLogged(this, InsertType.Replace);
 			}
 			catch (Exception e)
 			{
@@ -272,7 +68,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
 			Art.UpdateArtItemRelationship(ArtId, ItemId, true);
@@ -282,17 +78,16 @@ namespace WaveBox.Model
 
 		public static IList<Song> SongsForIds(IList<int> songIds)
 		{
-			List<Song> allsongs = new List<Song>();
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
+			ISQLiteConnection conn = null;
 			try
 			{
-				StringBuilder sb = new StringBuilder("SELECT song.*, artist.artist_name, album.album_name, genre.genre_name FROM song " +
-													 "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
-													 "LEFT JOIN album ON song_album_id = album.album_id " +
-													 "LEFT JOIN genre ON song_genre_id = genre.genre_id " + 
-													 "WHERE");
+				conn = Database.GetSqliteConnection();
+
+				StringBuilder sb = new StringBuilder("SELECT Song.*, Artist.ArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
+				                                     "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+				                                     "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
+				                                     "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " + 
+				                                     "WHERE");
 
 				for (int i = 0; i < songIds.Count; i++)
 				{
@@ -300,20 +95,11 @@ namespace WaveBox.Model
 					{
 						sb.Append(" OR");
 					}
-					sb.Append(" song_id = ");
+					sb.Append(" Song.ItemId = ");
 					sb.Append(songIds[i]);
 				}
 
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand(sb.ToString(), conn);
-
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				while (reader.Read())
-				{
-					allsongs.Add(new Song(reader));
-				}
+				return conn.Query<Song>(sb.ToString());
 			}
 			catch (Exception e)
 			{
@@ -321,34 +107,23 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
-			return allsongs;
+			// We had an exception somehow, so return an empty list
+			return new List<Song>();
 		}
 
 		public static IList<Song> AllSongs()
 		{
-			List<Song> allsongs = new List<Song>();
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT song.*, artist.artist_name, album.album_name, genre.genre_name FROM song " +
-													 "LEFT JOIN artist ON song_artist_id = artist.artist_id " +
-													 "LEFT JOIN album ON song_album_id = album.album_id " +
-													 "LEFT JOIN genre ON song_genre_id = genre.genre_id"
-													 , conn);
-
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				while (reader.Read())
-				{
-					allsongs.Add(new Song(reader));
-				}
+				conn = Database.GetSqliteConnection();
+				return conn.Query<Song>("SELECT Song.*, Artist.ArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
+				                        "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+				                        "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
+				                        "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId");
 			}
 			catch (Exception e)
 			{
@@ -356,28 +131,20 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
-			return allsongs;
+			// We had an exception somehow, so return an empty list
+			return new List<Song>();
 		}
 
-		public static int? CountSongs()
+		public static int CountSongs()
 		{
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
-			int? count = 0;
-
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT count(song_id) FROM song", conn);
-				object result = q.ExecuteScalar();
-				if (result != DBNull.Value)
-				{
-					count = Convert.ToInt32(result);
-				}
+				conn = Database.GetSqliteConnection();
+				return conn.ExecuteScalar<int>("SELECT COUNT(ItemId) FROM Song");
 			}
 			catch (Exception e)
 			{
@@ -385,28 +152,20 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
-			return count;
+			// We had an exception somehow, so return 0
+			return 0;
 		}
 
-		public static long? TotalSongSize()
+		public static long TotalSongSize()
 		{
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
-			long? total = 0;
-
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT sum(song_file_size) FROM song", conn);
-				object result = q.ExecuteScalar();
-				if (result != DBNull.Value)
-				{
-					total = Convert.ToInt64(result);
-				}
+				conn = Database.GetSqliteConnection();
+				return conn.ExecuteScalar<long>("SELECT SUM(FileSize) FROM Song");
 			}
 			catch (Exception e)
 			{
@@ -414,28 +173,20 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
-			return total;
+			// We had an exception somehow, so return 0
+			return 0;
 		}
 
-		public static long? TotalSongDuration()
+		public static long TotalSongDuration()
 		{
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
-			long? total = 0;
-
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT sum(song_duration) FROM song", conn);
-				object result = q.ExecuteScalar();
-				if (result != DBNull.Value)
-				{
-					total = Convert.ToInt64(result);
-				}
+				conn = Database.GetSqliteConnection();
+				return conn.ExecuteScalar<long>("SELECT SUM(Duration) FROM Song");
 			}
 			catch (Exception e)
 			{
@@ -443,63 +194,54 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
-			return total;
+			// We had an exception somehow, so return 0
+			return 0;
 		}
 
 		public static List<Song> SearchSongs(string field, string query, bool exact = true)
 		{
-			List<Song> results = new List<Song>();
-
 			if (query == null)
 			{
-				return results;
+				// No query, so return an empty list
+				return new List<Song>();
 			}
 
 			// Set default field, if none provided
 			if (field == null)
 			{
-				field = "song_name";
+				field = "SongName";
 			}
 
 			// Check to ensure a valid query field was set
-			if (!new string[] {"song_id", "song_folder_id", "song_artist_id", "song_album_id", "song_file_type_id",
-				"song_name", "song_track_num", "song_disc_num", "song_duration", "song_bitrate", "song_file_size",
-				"song_last_modified", "song_file_name", "song_release_year", "song_genre_id"}.Contains(field))
+			if (!new string[] {"ItemId", "FolderId", "ArtistId", "AlbumId", "FileTypeId",
+				"SongName", "TrackNum", "DiscNum", "Duration", "Bitrate", "FileSize",
+				"LastModified", "FileName", "ReleaseYear", "GenreId"}.Contains(field))
 			{
-				return results;
+				// Not a valid search field, so return an empty list
+				return new List<Song>();
 			}
 
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = null;
+				conn = Database.GetSqliteConnection();
 
-				// Search for exact match
+				List<Song> songs;
 				if (exact)
 				{
-					q = Database.GetDbCommand("SELECT * FROM song WHERE " + field + " = @query", conn);
-					q.AddNamedParam("@query", query);
+					// Search for exact match
+					songs = conn.Query<Song>("SELECT * FROM Song WHERE " + field + " = ?", query);
 				}
-				// Search for fuzzy match (containing query)
 				else
 				{
-					q = Database.GetDbCommand("SELECT * FROM song WHERE " + field + " LIKE @query", conn);
-					q.AddNamedParam("@query", "%" + query + "%");
+					// Search for fuzzy match (containing query)
+					songs = conn.Query<Song>("SELECT * FROM Song WHERE " + field + " LIKE ?", "%" + query + "%");
 				}
-
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				while (reader.Read())
-				{
-					results.Add(new Song(reader));
-				}
+				songs.Sort(Song.CompareSongsByDiscAndTrack);
+				return songs;
 			}
 			catch (Exception e)
 			{
@@ -507,10 +249,11 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 
-			return results;
+			// We had an exception somehow, so return an empty list
+			return new List<Song>();
 		}
 
 		public static int CompareSongsByDiscAndTrack(Song x, Song y)
@@ -524,55 +267,42 @@ namespace WaveBox.Model
 			else return x.DiscNumber > y.DiscNumber ? 1 : -1;
 		}
 
-		public static bool SongNeedsUpdating(string filePath, int? folderId, out bool isNew, out int? songId)
+		/*
+		 * Factory
+		 */
+
+		public class Factory
 		{
-			// We don't need to instantiate another folder to know what the folder id is.  This should be known when the method is called.
-			string fileName = Path.GetFileName(filePath);
-			long lastModified = System.IO.File.GetLastWriteTime(filePath).ToUniversalUnixTimestamp();
-			bool needsUpdating = true;
-			isNew = true;
-			songId = null;
-
-			IDbConnection conn = null;
-			IDataReader reader = null;
-
-			try
+			public Song CreateSong(int songId)
 			{
-				// Turns out that COUNT(*) on large tables is REALLY slow in SQLite because it does a full table search.  I created an index on folder_id(because weirdly enough,
-				// even though it's a primary key, SQLite doesn't automatically make one!  :O).  We'll pull that, and if we get a row back, then we'll know that this thing exists.
-
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT song_id, song_last_modified, song_file_size " +
-													 "FROM song WHERE song_folder_id = @folderid AND song_file_name = @filename", conn); //AND song_file_size = @filesize", conn);
-
-				q.AddNamedParam("@folderid", folderId);
-				q.AddNamedParam("@filename", fileName);
-
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				if (reader.Read())
+				ISQLiteConnection conn = null;
+				try
 				{
-					isNew = false;
+					conn = Database.GetSqliteConnection();
+					IEnumerable result = conn.DeferredQuery<Song>("SELECT Song.*, Artist.ArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
+					                                              "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+					                                              "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
+					                                              "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
+					                                              "WHERE Song.ItemId = ? LIMIT 1", songId);
 
-					songId = reader.GetInt32(0);
-					long lastModDb = reader.GetInt64(1);
-					if (lastModDb == lastModified)
+					foreach (Song song in result)
 					{
-						needsUpdating = false;
+						// Record exists, so return it
+						return song;
 					}
 				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Database.Close(conn, reader);
-			}
+				catch (Exception e)
+				{
+					logger.Error(e);
+				}
+				finally
+				{
+					conn.Close();
+				}
 
-			return needsUpdating;
+				// No record found, so return an empty Song object
+				return new Song();
+			}
 		}
 	}
 }

@@ -51,7 +51,7 @@ namespace WaveBox.ApiHandler.Handlers
 					type = Uri.Parameters["type"];
 				}
 
-				Genre genre = new Genre(id);
+				Genre genre = new Genre.Factory().CreateGenre(id);
 
 				switch (type)
 				{

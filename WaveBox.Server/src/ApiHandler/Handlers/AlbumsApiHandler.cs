@@ -46,7 +46,7 @@ namespace WaveBox.ApiHandler.Handlers
 			// Return specific album on success, with its songs
 			if (success)
 			{
-				Album album = new Album(id);
+				Album album = new Album.Factory().CreateAlbum(id);
 				albums.Add(album);
 				songs = album.ListOfSongs();
 			}

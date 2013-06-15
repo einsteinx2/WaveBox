@@ -68,7 +68,7 @@ namespace WaveBox.ApiHandler.Handlers
 					// Get the media item associated with this id
 					if (itemType == ItemType.Song)
 					{
-						item = new Song(id);
+						item = new Song.Factory().CreateSong(id);
 						if (logger.IsInfoEnabled) logger.Info("Preparing audio transcode: " + item.FileName);
 						
 						// Default to MP3 transcoding
@@ -76,7 +76,7 @@ namespace WaveBox.ApiHandler.Handlers
 					}
 					else if (itemType == ItemType.Video)
 					{
-						item = new Video(id);
+						item = new Video.Factory().CreateVideo(id);
 						if (logger.IsInfoEnabled) logger.Info("Preparing video transcode: " + item.FileName);
 
 						// Default to h.264 transcoding

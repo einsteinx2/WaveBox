@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Data;
 using WaveBox.Model;
 using WaveBox.Static;
 using System.IO;
 using TagLib;
 using Newtonsoft.Json;
 using System.Diagnostics;
+using Cirrious.MvvmCross.Plugins.Sqlite;
 
 namespace WaveBox.Model
 {
@@ -18,27 +18,34 @@ namespace WaveBox.Model
 		Unknown = 2147483647 // Int32.MaxValue used for database compatibility
 	}
 
-	public static class Stat
+	public class Stat
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+		[PrimaryKey]
+		public int? StatId { get; set; }
+
+		public StatType? StatType { get; set; }
+
+		public int? ItemId { get; set; }
+
+		public long? Timestamp { get; set; }
+
 		// Timestamp is UTC unixtime
-		public static bool RecordStat(int itemId, StatType statType, long timeStamp)
+		public static bool RecordStat(int itemId, StatType statType, long timestamp)
 		{
-			IDbConnection conn = null;
-			IDataReader reader = null;
+			ISQLiteConnection conn = null;
 			bool success = false;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("INSERT INTO stat (time_stamp, item_id, stat_type) " +
-													 "VALUES (@timestamp, @itemid, @stattype)", conn);
-				q.AddNamedParam("@timestamp", timeStamp);
-				q.AddNamedParam("@itemid", itemId);
-				q.AddNamedParam("@stattype", (int)statType);
-				q.Prepare();
-				
-				success = q.ExecuteNonQueryLogged() > 0;
+				conn = Database.GetSqliteConnection();
+				var stat = new Stat();
+				stat.StatType = statType;
+				stat.ItemId = itemId;
+				stat.Timestamp = timestamp;
+				int affected = conn.Insert(stat);
+
+				success = affected > 0;
 			}
 			catch (Exception e)
 			{
@@ -46,15 +53,10 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 			
 			return success;
-		}
-
-		public static bool RecordStat(this IItem item, StatType statType, long timeStamp)
-		{
-			return (object)item.ItemId == null ? false : Stat.RecordStat((int)item.ItemId, statType, timeStamp);
 		}
 	}
 }

@@ -169,7 +169,7 @@ namespace WaveBox.ApiHandler.Handlers
 				{
 					if (Item.ItemTypeForItemId(int.Parse(p)) == ItemType.Song)
 					{
-						Song s = new Song(int.Parse(p));
+						Song s = new Song.Factory().CreateSong(int.Parse(p));
 						songs.Add(s);
 					}
 					else
