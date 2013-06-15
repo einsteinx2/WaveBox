@@ -12,7 +12,6 @@ using System.Reflection;
 using Newtonsoft.Json;
 using SQLite;
 using Cirrious.MvvmCross.Plugins.Sqlite;
-//using Cirrious.MvvmCross.Platform;
 
 namespace WaveBox.Static
 {

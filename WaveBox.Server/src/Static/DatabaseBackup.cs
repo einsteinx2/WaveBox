@@ -118,7 +118,7 @@ namespace WaveBox
 						sqlite3_backup_step(backupHandle, -1);
 						sqlite3_backup_finish(backupHandle);
 
-						string[] tablesToDelete = { "user", "session", "server" };
+						string[] tablesToDelete = { "User", "Session", "Server" };
 
 						foreach (string tableName in tablesToDelete)
 						{
