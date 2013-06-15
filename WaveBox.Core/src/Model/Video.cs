@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using WaveBox.Model;
 using WaveBox.Static;
-using System.IO;
 using TagLib;
 using Newtonsoft.Json;
 using System.Diagnostics;
@@ -176,45 +175,6 @@ namespace WaveBox.Model
 			return new List<Video>();
 		}
 
-		public static bool VideoNeedsUpdating(string filePath, int? folderId, out bool isNew, out int? itemId)
-		{
-			string fileName = Path.GetFileName(filePath);
-			long lastModified = System.IO.File.GetLastWriteTime(filePath).ToUniversalUnixTimestamp();
-			bool needsUpdating = true;
-			isNew = true;
-			itemId = null;
-
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = Database.GetSqliteConnection();
-				var result = conn.DeferredQuery<Video>("SELECT * FROM Video WHERE FolderId = ? AND FileName = ?", folderId, fileName);
-
-				foreach (Video video in result)
-				{
-					isNew = false;
-
-					itemId = video.ItemId;
-					if (video.LastModified == lastModified)
-					{
-						needsUpdating = false;
-					}
-
-					break;
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				conn.Close();
-			}
-
-			return needsUpdating;
-		}
-
 		public override void InsertMediaItem()
 		{
 			ISQLiteConnection conn = null;
@@ -266,53 +226,6 @@ namespace WaveBox.Model
 				}
 
 				return new Video();
-			}
-
-			public Video CreateVideo(string filePath, int? folderId, TagLib.File file)
-			{
-				// We need to check to make sure the tag isn't corrupt before handing off to this method, anyway, so just feed in the tag
-				// file that we checked for corruption.
-				//TagLib.File file = TagLib.File.Create(fsFile.FullName);
-
-				int? itemId = Item.GenerateItemId(ItemType.Video);
-				if (itemId == null)
-				{
-					return new Video();
-				}
-
-				Video video = new Video();
-				video.ItemId = itemId;
-
-				FileInfo fsFile = new FileInfo(filePath);
-				//TagLib.Tag tag = file.Tag;
-				//var lol = file.Properties.Codecs;
-				video.FolderId = folderId;
-
-				video.FileType = video.FileType.FileTypeForTagLibMimeType(file.MimeType);
-
-				if (video.FileType == FileType.Unknown)
-				{
-					if (logger.IsInfoEnabled) logger.Info("\"" + filePath + "\" Unknown file type: " + file.Properties.Description);
-				}
-
-				video.Width = file.Properties.VideoWidth;
-				video.Height = file.Properties.VideoHeight;
-				video.Duration = Convert.ToInt32(file.Properties.Duration.TotalSeconds);
-				video.Bitrate = file.Properties.AudioBitrate;
-				video.FileSize = fsFile.Length;
-				video.LastModified = fsFile.LastWriteTime.ToUniversalUnixTimestamp();
-				video.FileName = fsFile.Name;
-
-				// Generate an art id from the embedded art, if it exists
-				int? artId = new Art.Factory().CreateArt(file).ArtId;
-
-				// If there was no embedded art, use the folder's art
-				artId = (object)artId == null ? Art.ArtIdForItemId(video.FolderId) : artId;
-
-				// Create the art/item relationship
-				Art.UpdateArtItemRelationship(artId, video.ItemId, true);
-
-				return video;
 			}
 		}
 	}

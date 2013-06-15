@@ -10,6 +10,9 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using WaveBox.OperationQueue;
 using TagLib;
+using Cirrious.MvvmCross.Plugins.Sqlite;
+using System.Security.Cryptography;
+using System.Collections;
 
 namespace WaveBox.FolderScanning
 {
@@ -177,7 +180,7 @@ namespace WaveBox.FolderScanning
 					testMediaItemNeedsUpdatingTime.Start();
 					bool isNew = true;
 					int? itemId = null;
-					bool needsUpdating = MediaItem.FileNeedsUpdating(file, folderId, out isNew, out itemId);
+					bool needsUpdating = FileNeedsUpdating(file, folderId, out isNew, out itemId);
 					testMediaItemNeedsUpdatingTime.Stop();
 
 					if (needsUpdating)
@@ -211,12 +214,12 @@ namespace WaveBox.FolderScanning
 								// It's a song!  Do yo thang.
 								if (isNew)
 								{
-									new Song.Factory().CreateSong(file, folderId, f).InsertMediaItem();
+									CreateSong(file, folderId, f).InsertMediaItem();
 								}
 								else if (itemId != null)
 								{
 									var oldSong = new Song.Factory().CreateSong((int)itemId);
-									var newSong = new Song.Factory().CreateSong(file, folderId, f);
+									var newSong = CreateSong(file, folderId, f);
 									newSong.ItemId = oldSong.ItemId;
 									newSong.InsertMediaItem();
 								}
@@ -225,7 +228,7 @@ namespace WaveBox.FolderScanning
 							{
 								if (isNew)
 								{
-									new Video.Factory().CreateVideo(file, folderId, f).InsertMediaItem();
+									CreateVideo(file, folderId, f).InsertMediaItem();
 								}
 								else if (itemId != null)
 								{
@@ -237,13 +240,13 @@ namespace WaveBox.FolderScanning
 				}
 				else if (type == ItemType.Art)
 				{
-					if (Art.FileNeedsUpdating(file, folderId))
+					if (ArtFileNeedsUpdating(file, folderId))
 					{
 						var folder = new Folder.Factory().CreateFolder((int)folderId);
 
 						// Find the old art id, if it exists
 						int? oldArtId = folder.ArtId;
-						int? newArtId = new Art.Factory().CreateArt(file).ArtId;
+						int? newArtId = CreateArt(file).ArtId;
 						
 						if ((object)oldArtId == null)
 						{
@@ -287,7 +290,7 @@ namespace WaveBox.FolderScanning
 							}
 						}
 
-						if (logger.IsInfoEnabled) logger.Info("Art needs updating: " + folder.ArtPath);
+						if (logger.IsInfoEnabled) logger.Info("Art needs updating for folderId: " + folderId);
 					}
 				}
 			}
@@ -311,6 +314,392 @@ namespace WaveBox.FolderScanning
 			{
 				logger.Error("\"" + file + "\" : " + e);
 			}
+		}
+
+		public Song CreateSong(string filePath, int? folderId, TagLib.File file)
+		{
+			// We need to check to make sure the tag isn't corrupt before handing off to this method, anyway, so just feed in the tag
+			// file that we checked for corruption.
+			//TagLib.File file = TagLib.File.Create(fsFile.FullName);
+
+			int? itemId = Item.GenerateItemId(ItemType.Song);
+			if (itemId == null)
+			{
+				return new Song();
+			}
+
+			Song song = new Song();
+			song.ItemId = itemId;
+
+			FileInfo fsFile = new FileInfo(filePath);
+			TagLib.Tag tag = file.Tag;
+			song.FolderId = folderId;
+
+			try
+			{
+				Artist artist = Artist.ArtistForName(tag.FirstPerformer);
+				song.ArtistId = artist.ArtistId;
+				song.ArtistName = artist.ArtistName;
+			}
+			catch (Exception e)
+			{
+				if (logger.IsErrorEnabled) logger.Error("Error creating artist info for song: ", e);
+				song.ArtistId = null;
+				song.ArtistName = null;
+			}
+
+			try
+			{
+				Album album = Album.AlbumForName(tag.Album, song.ArtistId, Convert.ToInt32(tag.Year));
+				song.AlbumId = album.AlbumId;
+				song.AlbumName = album.AlbumName;
+				song.ReleaseYear = album.ReleaseYear;
+			}
+			catch (Exception e)
+			{
+				if (logger.IsErrorEnabled) logger.Error("Error creating album info for song: ", e);
+				song.AlbumId = null;
+				song.AlbumName = null;
+				song.ReleaseYear = null;
+			}
+
+			song.FileType = song.FileType.FileTypeForTagLibMimeType(file.MimeType);
+
+			if (song.FileType == FileType.Unknown)
+			{
+				if (logger.IsInfoEnabled) logger.Info("\"" + filePath + "\" Unknown file type: " + file.Properties.Description);
+			}
+
+			try
+			{
+				song.SongName = tag.Title;
+			}
+			catch
+			{
+				song.SongName = null;
+			}
+
+			try
+			{
+				song.TrackNumber = Convert.ToInt32(tag.Track);
+			}
+			catch
+			{
+				song.TrackNumber = null;
+			}
+
+			try
+			{
+				song.DiscNumber = Convert.ToInt32(tag.Disc);
+			}
+			catch
+			{
+				song.DiscNumber = null;
+			}
+
+			try
+			{
+				song.GenreName = tag.FirstGenre;
+			}
+			catch
+			{
+				song.GenreName = null;
+			}
+
+			if ((object)song.GenreName != null)
+			{
+				// Retreive the genre id
+				song.GenreId = new Genre.Factory().CreateGenre(song.GenreName).GenreId;
+			}
+
+			song.Duration = Convert.ToInt32(file.Properties.Duration.TotalSeconds);
+			song.Bitrate = file.Properties.AudioBitrate;
+			song.FileSize = fsFile.Length;
+			song.LastModified = fsFile.LastWriteTime.ToUniversalUnixTimestamp();
+
+			song.FileName = fsFile.Name;
+
+			// Generate an art id from the embedded art, if it exists
+			int? artId = CreateArt(file).ArtId;
+
+			// If there was no embedded art, use the folder's art
+			artId = (object)artId == null ? Art.ArtIdForItemId(song.FolderId) : artId;
+
+			// Create the art/item relationship
+			Art.UpdateArtItemRelationship(artId, song.ItemId, true);
+
+			return song;
+		}
+
+		private bool ArtFileNeedsUpdating(string filePath, int? folderId)
+		{
+			if (filePath == null || folderId == null)
+			{
+				return false;
+			}
+
+			long lastModified = System.IO.File.GetLastWriteTime(filePath).ToUniversalUnixTimestamp();
+			bool needsUpdating = true;
+
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = Database.GetSqliteConnection();
+				string artId = conn.ExecuteScalar<string>("SELECT ArtId FROM Art WHERE LastModified = ? AND FilePath = ?", filePath, lastModified);
+
+				if (ReferenceEquals(artId, null))
+				{
+					needsUpdating = false;
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				conn.Close();
+			}
+
+			return needsUpdating;
+		}
+
+		// used for getting art from a file.
+		private Art CreateArt(string filePath)
+		{
+			FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+
+			// compute the hash of the file stream
+			Art art = new Art();
+			art.Md5Hash = CalcMd5Hash(fs);
+			art.FileSize = fs.Length;
+			art.LastModified = System.IO.File.GetLastWriteTime(fs.Name).ToUniversalUnixTimestamp();
+			art.ArtId = Art.ArtIdForMd5(art.Md5Hash);
+			art.FilePath = filePath;
+
+			if ((object)art.ArtId == null)
+			{
+				art.InsertArt();
+			}
+
+			return art;
+		}
+
+		// used for getting art from a tag.
+		// We don't set the FilePath here, because that is only used for actual art files on disk
+		private Art CreateArt(TagLib.File file)
+		{
+			Art art = new Art();
+
+			if (file.Tag.Pictures.Length > 0)
+			{
+				byte[] data = file.Tag.Pictures[0].Data.Data;
+				art.Md5Hash = CalcMd5Hash(data);
+				art.FileSize = data.Length;
+				art.LastModified = System.IO.File.GetLastWriteTime(file.Name).ToUniversalUnixTimestamp();
+
+				art.ArtId = Art.ArtIdForMd5(art.Md5Hash);
+				if (art.ArtId == null)
+				{
+					// This art isn't in the database yet, so add it
+					art.InsertArt();
+				}
+			}
+
+			return art;
+		}
+
+		static string CalcMd5Hash(Stream input)
+		{
+			using (MD5 md5 = MD5.Create())
+			{
+				// Convert the input string to a byte array and compute the hash. 
+				byte[] data = md5.ComputeHash(input);
+
+				// Create a new Stringbuilder to collect the bytes 
+				// and create a string.
+				StringBuilder sBuilder = new StringBuilder();
+
+				// Loop through each byte of the hashed data  
+				// and format each one as a hexadecimal string. 
+				for (int i = 0; i < data.Length; i++)
+				{
+					sBuilder.Append(data[i].ToString("x2"));
+				}
+
+				// Return the hexadecimal string. 
+				return sBuilder.ToString();
+			}
+		}
+
+		// Based off of example at http://msdn.microsoft.com/en-us/library/s02tk69a.aspx
+		static string CalcMd5Hash(byte[] input)
+		{
+			using (MD5 md5 = MD5.Create())
+			{
+				// Convert the input string to a byte array and compute the hash. 
+				byte[] data = md5.ComputeHash(input);
+
+				// Create a new Stringbuilder to collect the bytes 
+				// and create a string.
+				StringBuilder sBuilder = new StringBuilder();
+
+				// Loop through each byte of the hashed data  
+				// and format each one as a hexadecimal string. 
+				for (int i = 0; i < data.Length; i++)
+				{
+					sBuilder.Append(data[i].ToString("x2"));
+				}
+
+				// Return the hexadecimal string. 
+				return sBuilder.ToString();
+			}
+		}
+
+		private bool FileNeedsUpdating(string filePath, int? folderId, out bool isNew, out int? itemId)
+		{
+			ItemType type = Item.ItemTypeForFilePath(filePath);
+
+			bool needsUpdating = false;
+			isNew = false;
+			itemId = null;
+
+			if (type == ItemType.Song)
+			{
+				needsUpdating = SongNeedsUpdating(filePath, folderId, out isNew, out itemId);
+			}
+			else if (type == ItemType.Video)
+			{
+				needsUpdating = VideoNeedsUpdating(filePath, folderId, out isNew, out itemId);
+			}
+
+			return needsUpdating;
+		}
+
+		private bool VideoNeedsUpdating(string filePath, int? folderId, out bool isNew, out int? itemId)
+		{
+			string fileName = Path.GetFileName(filePath);
+			long lastModified = System.IO.File.GetLastWriteTime(filePath).ToUniversalUnixTimestamp();
+			bool needsUpdating = true;
+			isNew = true;
+			itemId = null;
+
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = Database.GetSqliteConnection();
+				var result = conn.DeferredQuery<Video>("SELECT * FROM Video WHERE FolderId = ? AND FileName = ?", folderId, fileName);
+
+				foreach (Video video in result)
+				{
+					isNew = false;
+
+					itemId = video.ItemId;
+					if (video.LastModified == lastModified)
+					{
+						needsUpdating = false;
+					}
+
+					break;
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				conn.Close();
+			}
+
+			return needsUpdating;
+		}
+
+		public bool SongNeedsUpdating(string filePath, int? folderId, out bool isNew, out int? itemId)
+		{
+			// We don't need to instantiate another folder to know what the folder id is.  This should be known when the method is called.
+			string fileName = Path.GetFileName(filePath);
+			long lastModified = System.IO.File.GetLastWriteTime(filePath).ToUniversalUnixTimestamp();
+			bool needsUpdating = true;
+			isNew = true;
+			itemId = null;
+
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = Database.GetSqliteConnection();
+				IEnumerable result = conn.Query<Song>("SELECT * FROM Song WHERE FolderId = ? AND FileName = ? LIMIT 1", folderId, fileName);
+
+				foreach (Song song in result)
+				{
+					isNew = false;
+
+					itemId = song.ItemId;
+					if (song.LastModified == lastModified)
+					{
+						needsUpdating = false;
+					}
+
+					return needsUpdating;
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				conn.Close();
+			}
+
+			return needsUpdating;
+		}
+
+		private Video CreateVideo(string filePath, int? folderId, TagLib.File file)
+		{
+			// We need to check to make sure the tag isn't corrupt before handing off to this method, anyway, so just feed in the tag
+			// file that we checked for corruption.
+			//TagLib.File file = TagLib.File.Create(fsFile.FullName);
+
+			int? itemId = Item.GenerateItemId(ItemType.Video);
+			if (itemId == null)
+			{
+				return new Video();
+			}
+
+			Video video = new Video();
+			video.ItemId = itemId;
+
+			FileInfo fsFile = new FileInfo(filePath);
+			//TagLib.Tag tag = file.Tag;
+			//var lol = file.Properties.Codecs;
+			video.FolderId = folderId;
+
+			video.FileType = video.FileType.FileTypeForTagLibMimeType(file.MimeType);
+
+			if (video.FileType == FileType.Unknown)
+			{
+				if (logger.IsInfoEnabled) logger.Info("\"" + filePath + "\" Unknown file type: " + file.Properties.Description);
+			}
+
+			video.Width = file.Properties.VideoWidth;
+			video.Height = file.Properties.VideoHeight;
+			video.Duration = Convert.ToInt32(file.Properties.Duration.TotalSeconds);
+			video.Bitrate = file.Properties.AudioBitrate;
+			video.FileSize = fsFile.Length;
+			video.LastModified = fsFile.LastWriteTime.ToUniversalUnixTimestamp();
+			video.FileName = fsFile.Name;
+
+			// Generate an art id from the embedded art, if it exists
+			int? artId = CreateArt(file).ArtId;
+
+			// If there was no embedded art, use the folder's art
+			artId = (object)artId == null ? Art.ArtIdForItemId(video.FolderId) : artId;
+
+			// Create the art/item relationship
+			Art.UpdateArtItemRelationship(artId, video.ItemId, true);
+
+			return video;
 		}
 	}
 }

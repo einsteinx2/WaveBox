@@ -73,26 +73,6 @@ namespace WaveBox.Model
 
 		}
 
-		public static bool FileNeedsUpdating(string filePath, int? folderId, out bool isNew, out int? itemId)
-		{
-			ItemType type = Item.ItemTypeForFilePath(filePath);
-
-			bool needsUpdating = false;
-			isNew = false;
-			itemId = null;
-
-			if (type == ItemType.Song)
-			{
-				needsUpdating = Song.SongNeedsUpdating(filePath, folderId, out isNew, out itemId);
-			}
-			else if (type == ItemType.Video)
-			{
-				needsUpdating = Video.VideoNeedsUpdating(filePath, folderId, out isNew, out itemId);
-			}
-
-			return needsUpdating;
-		}
-
 		public override bool Equals(Object obj)
 		{
 			// If parameter is null return false.

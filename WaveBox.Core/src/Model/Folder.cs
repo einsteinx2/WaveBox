@@ -5,8 +5,8 @@ using System.Text;
 using WaveBox.Static;
 using WaveBox.Model;
 using Newtonsoft.Json;
-using System.IO;
 using Cirrious.MvvmCross.Plugins.Sqlite;
+using System.IO;
 
 namespace WaveBox.Model
 {
@@ -40,9 +40,6 @@ namespace WaveBox.Model
 
 		[JsonProperty("artId"), IgnoreRead, IgnoreWrite]
 		public int? ArtId { get { return Art.ArtIdForItemId(FolderId); } }
-
-		[JsonIgnore, IgnoreRead, IgnoreWrite]
-		public string ArtPath { get { return FindArtPath(); } }
 
 		/// <summary>
 		/// Constructors
@@ -114,48 +111,6 @@ namespace WaveBox.Model
 				return true;
 			}
 			else return false;
-		}
-
-		public static bool ContainsImages(string dir, out string firstImageFoundPath)
-		{
-			string[] validImageExtensions = new string[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp" };
-			string ext = null;
-			firstImageFoundPath = null;
-
-			foreach (string file in Directory.GetFiles(dir))
-			{
-				ext = Path.GetExtension(file).ToLower();
-				if (validImageExtensions.Contains(ext) && !Path.GetFileName(file).StartsWith("."))
-				{
-					firstImageFoundPath = file;
-				}
-			}
-
-			// Return true if firstImageFoundPath exists
-			return ((object)firstImageFoundPath != null);
-		}
-
-		private string FindArtPath()
-		{
-			string artPath = null;
-
-			foreach (string fileName in Settings.FolderArtNames)
-			{
-				string path = FolderPath + Path.DirectorySeparatorChar + fileName;
-				if (File.Exists(path))
-				{
-					// Use this one
-					artPath = path;
-				}
-			}
-
-			if ((object)artPath == null)
-			{
-				// Check for any images
-				Folder.ContainsImages(FolderPath, out artPath);
-			}
-
-			return artPath;
 		}
 
 		private Folder MediaFolder()
