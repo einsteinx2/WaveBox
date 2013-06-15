@@ -54,7 +54,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				return conn.Query<Video>("SELECT * FROM video");
+				return conn.Query<Video>("SELECT * FROM Video");
 			}
 			catch (Exception e)
 			{
@@ -74,7 +74,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				return conn.ExecuteScalar<int>("SELECT count(ItemId) FROM video");
+				return conn.ExecuteScalar<int>("SELECT COUNT(ItemId) FROM Video");
 			}
 			catch (Exception e)
 			{
@@ -94,7 +94,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				return conn.ExecuteScalar<long>("SELECT sum(video_file_size) FROM video");
+				return conn.ExecuteScalar<long>("SELECT SUM(FileSize) FROM Video");
 			}
 			catch (Exception e)
 			{
@@ -114,7 +114,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				return conn.ExecuteScalar<long>("SELECT sum(video_duration) FROM video");
+				return conn.ExecuteScalar<long>("SELECT SUM(Duration) FROM Video");
 			}
 			catch (Exception e)
 			{
@@ -156,12 +156,12 @@ namespace WaveBox.Model
 				if (exact)
 				{
 					// Search for exact match
-					return conn.Query<Video>("SELECT * FROM video WHERE " + field + " = ? ORDER BY FileName", query);
+					return conn.Query<Video>("SELECT * FROM Video WHERE " + field + " = ? ORDER BY FileName", query);
 				}
 				else
 				{
 					// Search for fuzzy match (containing query)
-					return conn.Query<Video>("SELECT * FROM video WHERE " + field + " LIKE ? ORDER BY FileName", "%" + query + "%");
+					return conn.Query<Video>("SELECT * FROM Video WHERE " + field + " LIKE ? ORDER BY FileName", "%" + query + "%");
 				}
 			}
 			catch (Exception e)
@@ -188,7 +188,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				var result = conn.DeferredQuery<Video>("SELECT * FROM video WHERE FolderId = ? AND FileName = ?", folderId, fileName);
+				var result = conn.DeferredQuery<Video>("SELECT * FROM Video WHERE FolderId = ? AND FileName = ?", folderId, fileName);
 
 				foreach (Video video in result)
 				{
@@ -249,7 +249,7 @@ namespace WaveBox.Model
 				try
 				{
 					conn = Database.GetSqliteConnection();
-					var result = conn.DeferredQuery<Video>("SELECT * FROM video WHERE ItemId = ?", videoId);
+					var result = conn.DeferredQuery<Video>("SELECT * FROM Video WHERE ItemId = ?", videoId);
 
 					foreach (Video v in result)
 					{

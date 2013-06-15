@@ -12,7 +12,7 @@ namespace WaveBox.Model
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		[JsonIgnore]
+		[JsonIgnore, IgnoreRead, IgnoreWrite]
 		public int? ItemId { get { return ArtistId; } set { ArtistId = ItemId; } }
 
 		[JsonIgnore, IgnoreRead, IgnoreWrite]
@@ -24,7 +24,7 @@ namespace WaveBox.Model
 		[JsonProperty("artistId")]
 		public int? ArtistId { get; set; }
 
-		[JsonProperty("artistName"), IgnoreWrite]
+		[JsonProperty("artistName")]
 		public string ArtistName { get; set; }
 
 		[JsonProperty("artId"), IgnoreWrite]
@@ -53,15 +53,15 @@ namespace WaveBox.Model
 			{
 				conn = Database.GetSqliteConnection();
 				Artist artist = new Artist();
-				artist.ItemId = itemId;
+				artist.ArtistId = itemId;
 				artist.ArtistName = artistName;
-				int affected = conn.InsertLogged(artist);
+				int affected = conn.InsertLogged(artist, InsertType.InsertOrIgnore);
 
 				success = affected > 0;
 			}
 			catch (Exception e)
 			{
-				logger.Error(e);
+				logger.Error("Error inserting artist " + artistName, e);
 			}
 			finally
 			{
@@ -106,7 +106,7 @@ namespace WaveBox.Model
 				else 
 				{
 					// The insert failed because this album was inserted by another
-					// thread, so grab the album id, it will exist this time
+					// thread, so grab the artist id, it will exist this time
 					anArtist = new Artist.Factory().CreateArtist(artistName);
 				}
 			}
@@ -121,7 +121,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				return conn.Query<Artist>("SELECT * FROM artist ORDER BY ArtistName");
+				return conn.Query<Artist>("SELECT * FROM Artist ORDER BY ArtistName");
 			}
 			catch (Exception e)
 			{
@@ -141,7 +141,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				return conn.ExecuteScalar<int>("SELECT count(ItemId) FROM artist", conn);
+				return conn.ExecuteScalar<int>("SELECT COUNT(ArtistId) FROM Artist", conn);
 			}
 			catch (Exception e)
 			{
@@ -182,12 +182,12 @@ namespace WaveBox.Model
 				if (exact)
 				{
 					// Search for exact match
-					return conn.Query<Artist>("SELECT * FROM artist WHERE " + field + " = ? ORDER BY ArtistName", query);
+					return conn.Query<Artist>("SELECT * FROM Artist WHERE " + field + " = ? ORDER BY ArtistName", query);
 				}
 				else
 				{	
 					// Search for fuzzy match (containing query)
-					return conn.Query<Artist>("SELECT * FROM artist WHERE " + field + " LIKE ? ORDER BY ArtistName", "%" + query + "%");
+					return conn.Query<Artist>("SELECT * FROM Artist WHERE " + field + " LIKE ? ORDER BY ArtistName", "%" + query + "%");
 				}
 			}
 			catch (Exception e)
@@ -221,7 +221,7 @@ namespace WaveBox.Model
 				{
 					conn = Database.GetSqliteConnection();
 
-					var result = conn.DeferredQuery<Artist>("SELECT * FROM artist WHERE ArtistId = ?", artistId);
+					var result = conn.DeferredQuery<Artist>("SELECT * FROM Artist WHERE ArtistId = ?", artistId);
 
 					foreach (Artist a in result)
 					{
@@ -251,7 +251,7 @@ namespace WaveBox.Model
 				try
 				{
 					conn = Database.GetSqliteConnection();
-					var result = conn.DeferredQuery<Artist>("SELECT * FROM artist WHERE ArtistName = ?", artistName);
+					var result = conn.DeferredQuery<Artist>("SELECT * FROM Artist WHERE ArtistName = ?", artistName);
 
 					foreach (Artist a in result)
 					{

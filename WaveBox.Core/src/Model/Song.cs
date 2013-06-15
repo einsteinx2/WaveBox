@@ -83,10 +83,10 @@ namespace WaveBox.Model
 			{
 				conn = Database.GetSqliteConnection();
 
-				StringBuilder sb = new StringBuilder("SELECT song.*, artist.artist_name, album.album_name, genre.genre_name FROM song " +
-				                                     "LEFT JOIN artist ON song.ArtistId = artist.artist_id " +
-				                                     "LEFT JOIN album ON song.AlbumId = album.album_id " +
-				                                     "LEFT JOIN genre ON song.GenreId = genre.genre_id " + 
+				StringBuilder sb = new StringBuilder("SELECT Song.*, Artist.ArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
+				                                     "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+				                                     "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
+				                                     "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " + 
 				                                     "WHERE");
 
 				for (int i = 0; i < songIds.Count; i++)
@@ -95,7 +95,7 @@ namespace WaveBox.Model
 					{
 						sb.Append(" OR");
 					}
-					sb.Append(" song.ItemId = ");
+					sb.Append(" Song.ItemId = ");
 					sb.Append(songIds[i]);
 				}
 
@@ -120,10 +120,10 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				return conn.Query<Song>("SELECT song.*, artist.artist_name, album.album_name, genre.genre_name FROM song " +
-				                        "LEFT JOIN artist ON song.ArtistId = artist.artist_id " +
-				                        "LEFT JOIN album ON song.AlbumId = album.album_id " +
-				                        "LEFT JOIN genre ON song.GenreId = genre.genre_id");
+				return conn.Query<Song>("SELECT Song.*, Artist.ArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
+				                        "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+				                        "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
+				                        "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId");
 			}
 			catch (Exception e)
 			{
@@ -144,7 +144,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				return conn.ExecuteScalar<int>("SELECT count(ItemId) FROM song");
+				return conn.ExecuteScalar<int>("SELECT COUNT(ItemId) FROM Song");
 			}
 			catch (Exception e)
 			{
@@ -165,7 +165,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				return conn.ExecuteScalar<long>("SELECT sum(FileSize) FROM song");
+				return conn.ExecuteScalar<long>("SELECT SUM(FileSize) FROM Song");
 			}
 			catch (Exception e)
 			{
@@ -186,7 +186,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				return conn.ExecuteScalar<long>("SELECT sum(Duration) FROM song");
+				return conn.ExecuteScalar<long>("SELECT SUM(Duration) FROM Song");
 			}
 			catch (Exception e)
 			{
@@ -233,12 +233,12 @@ namespace WaveBox.Model
 				if (exact)
 				{
 					// Search for exact match
-					songs = conn.Query<Song>("SELECT * FROM song WHERE " + field + " = ?", query);
+					songs = conn.Query<Song>("SELECT * FROM Song WHERE " + field + " = ?", query);
 				}
 				else
 				{
 					// Search for fuzzy match (containing query)
-					songs = conn.Query<Song>("SELECT * FROM song WHERE " + field + " LIKE ?", "%" + query + "%");
+					songs = conn.Query<Song>("SELECT * FROM Song WHERE " + field + " LIKE ?", "%" + query + "%");
 				}
 				songs.Sort(Song.CompareSongsByDiscAndTrack);
 				return songs;
@@ -285,7 +285,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				IEnumerable result = conn.Query<Song>("SELECT * FROM song WHERE FolderId = ? AND FileName = ? LIMIT 1", folderId, fileName);
+				IEnumerable result = conn.Query<Song>("SELECT * FROM Song WHERE FolderId = ? AND FileName = ? LIMIT 1", folderId, fileName);
 
 				foreach (Song song in result)
 				{
@@ -324,11 +324,11 @@ namespace WaveBox.Model
 				try
 				{
 					conn = Database.GetSqliteConnection();
-					IEnumerable result = conn.DeferredQuery<Song>("SELECT song.*, artist.artist_name AS ArtistName, album.album_name AS AlbumName, genre.genre_name AS GenreName FROM song " +
-					                                              "LEFT JOIN artist ON song.ArtistId = artist.artist_id " +
-					                                              "LEFT JOIN album ON song.AlbumId = album.album_id " +
-					                                              "LEFT JOIN genre ON song.GenreId = genre.genre_id " +
-					                                              "WHERE song.ItemId = @songid LIMIT 1", songId);
+					IEnumerable result = conn.DeferredQuery<Song>("SELECT Song.*, Artist.ArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
+					                                              "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+					                                              "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
+					                                              "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
+					                                              "WHERE Song.ItemId = ? LIMIT 1", songId);
 
 					foreach (Song song in result)
 					{
@@ -374,8 +374,9 @@ namespace WaveBox.Model
 					song.ArtistId = artist.ArtistId;
 					song.ArtistName = artist.ArtistName;
 				}
-				catch
+				catch (Exception e)
 				{
+					if (logger.IsErrorEnabled) logger.Error("Error creating artist info for song: ", e);
 					song.ArtistId = null;
 					song.ArtistName = null;
 				}
@@ -387,8 +388,9 @@ namespace WaveBox.Model
 					song.AlbumName = album.AlbumName;
 					song.ReleaseYear = album.ReleaseYear;
 				}
-				catch
+				catch (Exception e)
 				{
+					if (logger.IsErrorEnabled) logger.Error("Error creating album info for song: ", e);
 					song.AlbumId = null;
 					song.AlbumName = null;
 					song.ReleaseYear = null;

@@ -89,7 +89,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				List<Folder> folders = conn.Query<Folder>("SELECT FolderId FROM folder WHERE ParentFolderId = ?", FolderId);
+				List<Folder> folders = conn.Query<Folder>("SELECT FolderId FROM Folder WHERE ParentFolderId = ?", FolderId);
 				folders.Sort(CompareFolderByName);
 				return folders;
 			}
@@ -212,7 +212,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				int id = conn.ExecuteScalar<int>("SELECT FolderId FROM folder WHERE FolderPath = ?", parentFolderPath);
+				int id = conn.ExecuteScalar<int>("SELECT FolderId FROM Folder WHERE FolderPath = ?", parentFolderPath);
 
 				if (id == 0)
 				{
@@ -246,7 +246,7 @@ namespace WaveBox.Model
 				try 
 				{
 					conn = Database.GetSqliteConnection();
-					return conn.Query<Folder>("SELECT * FROM folder WHERE ParentFolderId IS NULL");
+					return conn.Query<Folder>("SELECT * FROM Folder WHERE ParentFolderId IS NULL");
 				} 
 				catch (Exception e) 
 				{
@@ -298,7 +298,7 @@ namespace WaveBox.Model
 				{
 					conn = Database.GetSqliteConnection();
 
-					List<Folder> folder = conn.Query<Folder>("SELECT * FROM folder WHERE FolderId = ? LIMIT 1", folderId);
+					List<Folder> folder = conn.Query<Folder>("SELECT * FROM Folder WHERE FolderId = ? LIMIT 1", folderId);
 					if (folder.Count > 0)
 					{
 						return folder[0];
@@ -342,14 +342,14 @@ namespace WaveBox.Model
 					conn = Database.GetSqliteConnection();
 					if (folder.IsMediaFolder() || Settings.MediaFolders == null)
 					{
-						int folderId = conn.ExecuteScalar<int>("SELECT FolderId FROM folder WHERE FolderName = ? AND ParentFolderId IS NULL", folder.FolderName);
+						int folderId = conn.ExecuteScalar<int>("SELECT FolderId FROM Folder WHERE FolderName = ? AND ParentFolderId IS NULL", folder.FolderName);
 						folder.FolderId = folderId == 0 ? (int?)null : folderId;
 					}
 					else
 					{
 						folder.ParentFolderId = folder.GetParentFolderId(folder.FolderPath);
 
-						int folderId = conn.ExecuteScalar<int>("SELECT FolderId FROM folder WHERE FolderName = ? AND ParentFolderId = ?", folder.FolderName, folder.ParentFolderId);
+						int folderId = conn.ExecuteScalar<int>("SELECT FolderId FROM Folder WHERE FolderName = ? AND ParentFolderId = ?", folder.FolderName, folder.ParentFolderId);
 						folder.FolderId = folderId == 0 ? (int?)null : folderId;
 					}
 				}
@@ -377,7 +377,7 @@ namespace WaveBox.Model
 				try
 				{
 					conn = Database.GetSqliteConnection();
-					IList<Folder> result = conn.Query<Folder>("SELECT * FROM folder WHERE FolderPath = ? AND MediaFolderId IS NULL", path);
+					IList<Folder> result = conn.Query<Folder>("SELECT * FROM Folder WHERE FolderPath = ? AND MediaFolderId IS NULL", path);
 
 					foreach (Folder f in result)
 					{

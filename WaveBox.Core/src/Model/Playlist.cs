@@ -54,11 +54,11 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				var result = conn.Query<int>("SELECT ItemId FROM playlist_item WHERE PlaylistId = ?", PlaylistId);
+				var result = conn.Query<PlaylistItem>("SELECT ItemId FROM PlaylistItem WHERE PlaylistId = ?", PlaylistId);
 				
-				foreach (int itemId in result)
+				foreach (PlaylistItem playlistItem in result)
 				{
-					itemIds.Append(itemId);
+					itemIds.Append(playlistItem.ItemId);
 					itemIds.Append("|");
 				}
 			}
@@ -108,13 +108,13 @@ namespace WaveBox.Model
 					PlaylistDuration = 0;
 					LastUpdateTime = DateTime.Now.ToUniversalUnixTimestamp() - (new DateTime(1970, 1, 1).ToUniversalUnixTimestamp());
 
-					conn.ExecuteLogged("INSERT INTO playlist (PlaylistId, PlaylistName, PlaylistCount, PlaylistDuration, Md5Hash, LastUpdateTime) " +
+					conn.ExecuteLogged("INSERT INTO Playlist (PlaylistId, PlaylistName, PlaylistCount, PlaylistDuration, Md5Hash, LastUpdateTime) " +
 					                   "VALUES (?, ?, ?, ?, ?, ?)", PlaylistId, PlaylistName == null ? "" : PlaylistName, PlaylistCount, PlaylistDuration, CalculateHash(), LastUpdateTime);
 				}
 				else
 				{
-					conn.ExecuteLogged("UPDATE playlist SET playlist_name = ?, playlist_count = ?, playlist_duration = ?, md5_hash = ?, last_update = ? " +
-					                   "WHERE playlist_id = ?", PlaylistName == null ? "" : PlaylistName, PlaylistCount, PlaylistDuration, PlaylistId == 0 ? "" : CalculateHash(), LastUpdateTime, PlaylistId);
+					conn.ExecuteLogged("UPDATE Playlist SET PlaylistName = ?, PlaylistCount = ?, PlaylistDuration = ?, Md5Hash = ?, LastUpdateTime = ? " +
+					                   "WHERE PlaylistId = ?", PlaylistName == null ? "" : PlaylistName, PlaylistCount, PlaylistDuration, PlaylistId == 0 ? "" : CalculateHash(), LastUpdateTime, PlaylistId);
 				}
 			}
 			catch (Exception e)
@@ -134,7 +134,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				return conn.ExecuteScalar<int>("SELECT ItemPosition FROM playlist_item " + 
+				return conn.ExecuteScalar<int>("SELECT ItemPosition FROM PlaylistItem " + 
 				                               "WHERE PlaylistId = ? AND ItemType = ? " + 
 				                               "ORDER BY ItemPosition LIMIT 1", PlaylistId, item.ItemTypeId);
 			}
@@ -156,7 +156,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				var result = conn.DeferredQuery<PlaylistItem>("SELECT * FROM playlist_item WHERE PlaylistId = ? AND ItemPosition = ? LIMIT 1", PlaylistId, index);
+				var result = conn.DeferredQuery<PlaylistItem>("SELECT * FROM PlaylistItem WHERE PlaylistId = ? AND ItemPosition = ? LIMIT 1", PlaylistId, index);
 
 				foreach (PlaylistItem playlistItem in result)
 				{
@@ -186,7 +186,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				var result = conn.DeferredQuery<PlaylistItem>("SELECT * FROM playlist_item WHERE PlaylistId = ? ORDER BY ItemPosition", PlaylistId);
+				var result = conn.DeferredQuery<PlaylistItem>("SELECT * FROM PlaylistItem WHERE PlaylistId = ? ORDER BY ItemPosition", PlaylistId);
 
 				var items = new List<IMediaItem>();
 				foreach (PlaylistItem playlistItem in result)
@@ -247,8 +247,8 @@ namespace WaveBox.Model
 			{
 				conn = Database.GetSqliteConnection();
 				conn.BeginTransaction();
-				conn.ExecuteLogged("DELETE FROM playlist_item WHERE PlaylistId = ? AND ItemPosition = ?", PlaylistId, index);
-				conn.ExecuteLogged("UPDATE playlist_item SET ItemPosition = ItemPosition - 1 WHERE PlaylistId = ? AND ItemPosition > ?", PlaylistId, index);
+				conn.ExecuteLogged("DELETE FROM PlaylistItem WHERE PlaylistId = ? AND ItemPosition = ?", PlaylistId, index);
+				conn.ExecuteLogged("UPDATE PlaylistItem SET ItemPosition = ItemPosition - 1 WHERE PlaylistId = ? AND ItemPosition > ?", PlaylistId, index);
 				conn.Commit();
 			}
 			catch (Exception e)
@@ -276,11 +276,11 @@ namespace WaveBox.Model
 				// delete the items at the indicated indices
 				foreach (int index in indices)
 				{
-					conn.ExecuteLogged("DELETE FROM playlist_item WHERE PlaylistId = ? AND ItemPosition = ?", PlaylistId, index);
+					conn.ExecuteLogged("DELETE FROM PlaylistItem WHERE PlaylistId = ? AND ItemPosition = ?", PlaylistId, index);
 				}
 
 				// select the id of all members of the playlist
-				var result = conn.Query<PlaylistItem>("SELECT * FROM playlist_item WHERE PlaylistId = ?", PlaylistId);
+				var result = conn.Query<PlaylistItem>("SELECT * FROM PlaylistItem WHERE PlaylistId = ?", PlaylistId);
 
 				// update the values of each index in the array to be the new index
 				for (int i = 0; i < result.Count; i++) 
@@ -322,14 +322,14 @@ namespace WaveBox.Model
 				// to do - better way of knowing whether or not a query has been successfully completed.
 				conn = Database.GetSqliteConnection();
 				conn.BeginTransaction();
-				conn.ExecuteLogged("UPDATE playlist_item SET ItemPosition = ItemPosition + 1 WHERE PlaylistId = ? AND ItemPosition >= ?", PlaylistId, toIndex);
+				conn.ExecuteLogged("UPDATE PlaylistItem SET ItemPosition = ItemPosition + 1 WHERE PlaylistId = ? AND ItemPosition >= ?", PlaylistId, toIndex);
 
 				// conditional rollback here
 
 				// If the fromIndex is higher than toIndex, compensate for the position update above
 				fromIndex = fromIndex < toIndex ? fromIndex : fromIndex - 1;
 
-				conn.ExecuteLogged("UPDATE playlist_item SET ItemPosition = ? WHERE PlaylistId = ? AND ItemPosition = ?", toIndex, PlaylistId, fromIndex);
+				conn.ExecuteLogged("UPDATE PlaylistItem SET ItemPosition = ? WHERE PlaylistId = ? AND ItemPosition = ?", toIndex, PlaylistId, fromIndex);
 
 				// conditional rollback here
 
@@ -405,7 +405,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				conn.ExecuteLogged("DELETE FROM playlist_item WHERE PlaylistId = ?", PlaylistId);
+				conn.ExecuteLogged("DELETE FROM PlaylistItem WHERE PlaylistId = ?", PlaylistId);
 			}
 			catch (Exception e)
 			{
@@ -439,7 +439,7 @@ namespace WaveBox.Model
 				try
 				{
 					conn = Database.GetSqliteConnection();
-					var result = conn.DeferredQuery<Playlist>("SELECT * FROM playlist WHERE PlaylistId = ?", playlistId);
+					var result = conn.DeferredQuery<Playlist>("SELECT * FROM Playlist WHERE PlaylistId = ?", playlistId);
 
 					foreach (Playlist p in result)
 					{
@@ -464,7 +464,7 @@ namespace WaveBox.Model
 				try
 				{
 					conn = Database.GetSqliteConnection();
-					var result = conn.DeferredQuery<Playlist>("SELECT * FROM playlist WHERE PlaylistName = ?", playlistName);
+					var result = conn.DeferredQuery<Playlist>("SELECT * FROM Playlist WHERE PlaylistName = ?", playlistName);
 
 					foreach (Playlist p in result)
 					{

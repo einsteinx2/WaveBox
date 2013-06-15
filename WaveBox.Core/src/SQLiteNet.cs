@@ -120,7 +120,7 @@ namespace SQLite
 		{
 			lock (Database.dbBackupLock)
 			{
-				int affectedRows = Insert(obj);
+				int affectedRows = Insert(obj, insertType);
 
 				if (affectedRows > 0)
 				{
@@ -140,7 +140,7 @@ namespace SQLite
 					try
 					{
 						conn = Database.GetQueryLogSqliteConnection();
-						conn.Execute("INSERT INTO query_log (query_string, values_string) VALUES (?, ?)", insertCmd.CommandText, JsonConvert.SerializeObject(vals, Formatting.None));
+						conn.Execute(insertType.QueryText() + " INTO QueryLog (QueryString, ValuesString) VALUES (?, ?)", insertCmd.CommandText, JsonConvert.SerializeObject(vals, Formatting.None));
 					}
 					catch(Exception e)
 					{
@@ -169,7 +169,7 @@ namespace SQLite
 					try
 					{
 						conn = Database.GetQueryLogSqliteConnection();
-						conn.Execute("INSERT INTO query_log (query_string, values_string) VALUES (?, ?)", query, JsonConvert.SerializeObject(args, Formatting.None));
+						conn.Execute("INSERT INTO QueryLog (QueryString, ValuesString) VALUES (?, ?)", query, JsonConvert.SerializeObject(args, Formatting.None));
 					}
 					catch(Exception e)
 					{
@@ -1523,24 +1523,15 @@ namespace SQLite
 
         private PreparedSqlLiteInsertCommand CreateInsertCommand(SQLiteConnection conn, string extra, InsertType insertType)
         {
-			string insertString;
-			switch (insertType)
-			{
-				case InsertType.InsertOrIgnore: insertString = "INSERT OR IGNORE"; break;
-				case InsertType.Replace: insertString = "REPLACE"; break;
-				case InsertType.Insert: 
-				default: insertString = "INSERT"; break;
-			}
-
             var cols = InsertColumns;
             string insertSql;
             if (!cols.Any() && Columns.Count() == 1 && Columns[0].IsAutoInc)
             {
-                insertSql = string.Format(insertString + " {1} INTO \"{0}\" DEFAULT VALUES", TableName, extra);
+				insertSql = string.Format(insertType.QueryText() + " {1} INTO \"{0}\" DEFAULT VALUES", TableName, extra);
             }
             else
             {
-				insertSql = string.Format(insertString + " {3} INTO \"{0}\"({1}) VALUES ({2})", TableName,
+				insertSql = string.Format(insertType.QueryText() + " {3} INTO \"{0}\"({1}) VALUES ({2})", TableName,
                                           string.Join(",", (from c in cols
                                                             select "\"" + c.Name + "\"").ToArray()),
                                           string.Join(",", (from c in cols
@@ -2171,12 +2162,12 @@ namespace SQLite
             {
                 string msg = SQLite3.GetErrmsg(Connection.Handle);
                 SQLite3.Reset(Statement);
-                throw SQLiteException.New(r, msg);
+				throw SQLiteException.New(r, "Query: " + CommandText + "\n" + msg);
             }
             else
             {
                 SQLite3.Reset(Statement);
-                throw SQLiteException.New(r, r.ToString());
+				throw SQLiteException.New(r, "Query: " + CommandText + "\n" + r.ToString());
             }
         }
 

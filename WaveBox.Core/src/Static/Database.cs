@@ -106,7 +106,7 @@ namespace WaveBox.Static
 			try
 			{
 				conn = Database.GetQueryLogSqliteConnection();
-				return conn.ExecuteScalar<long>("SELECT max(query_id) FROM query_log");
+				return conn.ExecuteScalar<long>("SELECT MAX(QueryId) FROM QueryLog");
 			}
 			catch (Exception e)
 			{

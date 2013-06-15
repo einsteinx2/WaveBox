@@ -12,7 +12,7 @@ namespace WaveBox.Model
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		[JsonIgnore]
+		[JsonIgnore, IgnoreRead, IgnoreWrite]
 		public int? ItemId { get { return AlbumId; } set { AlbumId = ItemId; } }
 
 		[JsonIgnore, IgnoreRead, IgnoreWrite]
@@ -83,13 +83,19 @@ namespace WaveBox.Model
 
 		private List<int> SongArtIds()
 		{
+			List<int> songArtIds = new List<int>();
+
 			ISQLiteConnection conn = null;
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				return conn.Query<int>("SELECT ArtItem.art_id FROM song " +
-				                       "LEFT JOIN ArtItem ON song.ItemId = ArtItem.item_id " +
-				                       "WHERE song.AlbumId = ? AND ArtItem.art_id IS NOT NULL GROUP BY ArtItem.art_id", AlbumId);
+				var result = conn.DeferredQuery<Art>("SELECT ArtItem.ArtId FROM Song " +
+				                                  	 "LEFT JOIN ArtItem ON Song.ItemId = ArtItem.ItemId " +
+				                                  	 "WHERE Song.AlbumId = ? AND ArtItem.ArtId IS NOT NULL GROUP BY ArtItem.ArtId", AlbumId);
+				foreach (Art art in result)
+				{
+					songArtIds.Add((int)art.ArtId);
+				}
 			}
 			catch (Exception e)
 			{
@@ -100,18 +106,24 @@ namespace WaveBox.Model
 				conn.Close();
 			}
 			
-			return new List<int>();
+			return songArtIds;
 		}
 
 		private List<int> FolderArtIds()
 		{
+			List<int> folderArtIds = new List<int>();
+
 			ISQLiteConnection conn = null;
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				return conn.Query<int>("SELECT ArtItem.art_id FROM song " +
-									   "LEFT JOIN ArtItem ON song.FolderId = ArtItem.item_id " +
-				                       "WHERE song.AlbumId = ? AND ArtItem.art_id IS NOT NULL GROUP BY ArtItem.art_id", AlbumId);
+				var result = conn.DeferredQuery<Art>("SELECT ArtItem.ArtId FROM Song " +
+				                                     "LEFT JOIN ArtItem ON Song.FolderId = ArtItem.ItemId " +
+				                                     "WHERE Song.AlbumId = ? AND ArtItem.ArtId IS NOT NULL GROUP BY ArtItem.ArtId", AlbumId);
+				foreach (Art art in result)
+				{
+					folderArtIds.Add((int)art.ArtId);
+				}
 			}
 			catch (Exception e)
 			{
@@ -122,7 +134,7 @@ namespace WaveBox.Model
 				conn.Close();
 			}
 			
-			return new List<int>();
+			return folderArtIds;
 		}
 
 		private static bool InsertAlbum(string albumName, int? artistId, int? releaseYear)
@@ -140,6 +152,7 @@ namespace WaveBox.Model
 			{
 				conn = Database.GetSqliteConnection();
 				Album album = new Album();
+				album.AlbumId = itemId;
 				album.AlbumName = albumName;
 				album.ArtistId = artistId;
 				album.ReleaseYear = releaseYear;
@@ -147,7 +160,7 @@ namespace WaveBox.Model
 			}
 			catch (Exception e)
 			{
-				logger.Error(e);
+				logger.Error("Error inserting album " + albumName, e);
 				success = false;
 			}
 			finally
@@ -206,7 +219,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				return conn.Query<Album>("SELECT * FROM album ORDER BY AlbumName");
+				return conn.Query<Album>("SELECT * FROM Album ORDER BY AlbumName");
 			}
 			catch (Exception e)
 			{
@@ -226,7 +239,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				return conn.ExecuteScalar<int>("SELECT count(ItemId) FROM album");
+				return conn.ExecuteScalar<int>("SELECT COUNT(ItemId) FROM Album");
 			}
 			catch (Exception e)
 			{
@@ -267,12 +280,12 @@ namespace WaveBox.Model
 				if (exact)
 				{
 					// Search for exact match
-					return conn.Query<Album>("SELECT * FROM album WHERE " + field + " = ? ORDER BY AlbumName", query);
+					return conn.Query<Album>("SELECT * FROM Album WHERE " + field + " = ? ORDER BY AlbumName", query);
 				}
 				else
 				{
 					// Search for fuzzy match (containing query)
-					return conn.Query<Album>("SELECT * FROM album WHERE " + field + " LIKE ? ORDER BY AlbumName", "%" + query + "%");
+					return conn.Query<Album>("SELECT * FROM Album WHERE " + field + " LIKE ? ORDER BY AlbumName", "%" + query + "%");
 				}
 			}
 			catch (Exception e)
@@ -293,7 +306,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				return conn.Query<Album>("SELECT * FROM album ORDER BY RANDOM() LIMIT " + limit, conn);
+				return conn.Query<Album>("SELECT * FROM Album ORDER BY RANDOM() LIMIT " + limit, conn);
 			}
 			catch (Exception e)
 			{
@@ -324,7 +337,7 @@ namespace WaveBox.Model
 				try
 				{
 					conn = Database.GetSqliteConnection();
-					var result = conn.DeferredQuery<Album>("SELECT * FROM album WHERE ItemId = ?", albumId);
+					var result = conn.DeferredQuery<Album>("SELECT * FROM Album WHERE AlbumId = ?", albumId);
 
 					foreach (Album a in result)
 					{
@@ -354,7 +367,7 @@ namespace WaveBox.Model
 				try
 				{
 					conn = Database.GetSqliteConnection();
-					var result = conn.DeferredQuery<Album>("SELECT * FROM album WHERE AlbumName = ? AND ArtistId = ?", albumName, artistId);
+					var result = conn.DeferredQuery<Album>("SELECT * FROM Album WHERE AlbumName = ? AND ArtistId = ?", albumName, artistId);
 
 					foreach (Album a in result)
 					{

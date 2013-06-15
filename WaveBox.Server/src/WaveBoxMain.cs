@@ -48,14 +48,12 @@ namespace WaveBox
 		private void ServerSetup()
 		{
 			ISQLiteConnection conn = null;
-			IDataReader reader = null;
-
 			try
 			{
 				// Grab server GUID and URL from the database
 				conn = Database.GetSqliteConnection();
-				ServerGuid = conn.ExecuteScalar<string>("SELECT guid FROM server");
-				ServerUrl = conn.ExecuteScalar<string>("SELECT url FROM server");
+				ServerGuid = conn.ExecuteScalar<string>("SELECT Guid FROM Server");
+				ServerUrl = conn.ExecuteScalar<string>("SELECT Url FROM Server");
 			}
 			catch(Exception e)
 			{
@@ -77,7 +75,7 @@ namespace WaveBox
 				try
 				{
 					conn = Database.GetSqliteConnection();
-					int affected = conn.Execute("INSERT INTO server (guid) VALUES (?)", ServerGuid);
+					int affected = conn.Execute("INSERT INTO Server (Guid) VALUES (?)", ServerGuid);
 
 					if (affected == 0)
 					{

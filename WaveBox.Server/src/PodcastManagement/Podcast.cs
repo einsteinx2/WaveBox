@@ -136,7 +136,7 @@ namespace WaveBox.PodcastManagement
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				int affected = conn.ExecuteLogged("DELETE FROM podcast WHERE PodcastId = ?", PodcastId);
+				int affected = conn.ExecuteLogged("DELETE FROM Podcast WHERE PodcastId = ?", PodcastId);
 
 				success = affected > 0;
 			}
@@ -181,7 +181,7 @@ namespace WaveBox.PodcastManagement
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				return conn.Query<PodcastEpisode>("SELECT * FROM PodcastEpisode WHERE PodcastId = @podcastid", PodcastId);
+				return conn.Query<PodcastEpisode>("SELECT * FROM PodcastEpisode WHERE PodcastId = ?", PodcastId);
 			}
 			catch (Exception e)
 			{
@@ -202,7 +202,7 @@ namespace WaveBox.PodcastManagement
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				return conn.Query<Podcast>("SELECT * FROM Podcast ORDER BY PodcastTitle DESC");
+				return conn.Query<Podcast>("SELECT * FROM Podcast ORDER BY Title DESC");
 			}
 			catch (Exception e)
 			{
@@ -221,7 +221,7 @@ namespace WaveBox.PodcastManagement
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				int podcastId = conn.ExecuteScalar<int>("SELECT PodcastId FROM podcast WHERE RssUrl = ?", rss);
+				int podcastId = conn.ExecuteScalar<int>("SELECT PodcastId FROM Podcast WHERE RssUrl = ?", rss);
 
 				return podcastId == 0 ? (int?)null : podcastId;
 			}
@@ -288,7 +288,7 @@ namespace WaveBox.PodcastManagement
 				try
 				{
 					conn = Database.GetSqliteConnection();
-					var result = conn.Query<Podcast>("SELECT * FROM podcast WHERE PodcastId = ? LIMIT 1", podcastId);
+					var result = conn.Query<Podcast>("SELECT * FROM Podcast WHERE PodcastId = ? LIMIT 1", podcastId);
 
 					foreach (var p in result)
 					{

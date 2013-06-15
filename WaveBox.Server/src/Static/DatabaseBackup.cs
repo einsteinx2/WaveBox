@@ -79,7 +79,7 @@ namespace WaveBox
 
 		public static string Backup(out long lastQueryId)
 		{
-			lock (dbBackupLock)
+			lock (Database.dbBackupLock)
 			{
 				lastQueryId = Database.LastQueryLogId();
 				string fileName = BackupFileName(lastQueryId);
@@ -91,7 +91,7 @@ namespace WaveBox
 				}
 
 				// If not, do the backup then return it
-				bool success = Backup((System.Data.SQLite.SQLiteConnection)GetDbConnection(), (System.Data.SQLite.SQLiteConnection)GetBackupDbConnection(lastQueryId));
+				bool success = Backup((System.Data.SQLite.SQLiteConnection)GetDbConnection(Database.DatabasePath()), (System.Data.SQLite.SQLiteConnection)GetBackupDbConnection(lastQueryId));
 				if (success)
 				{
 					return fileName;
@@ -124,7 +124,7 @@ namespace WaveBox
 						{
 							try
 							{
-								IDbCommand q = Database.GetDbCommand("DROP TABLE IF EXISTS " + tableName, destination);
+								IDbCommand q = GetDbCommand("DROP TABLE IF EXISTS " + tableName, destination);
 								q.Prepare();
 								q.ExecuteNonQuery();
 							}

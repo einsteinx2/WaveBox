@@ -9,6 +9,7 @@ using System.Data;
 using System.IO;
 using System.Diagnostics;
 using WaveBox.OperationQueue;
+using Cirrious.MvvmCross.Plugins.Sqlite;
 
 namespace WaveBox.FolderScanning
 {
@@ -65,8 +66,6 @@ namespace WaveBox.FolderScanning
 				return;
 			}
 
-			IDbConnection conn = null;
-			IDataReader reader = null;
 			ArrayList mediaFolderIds = new ArrayList();
 			ArrayList orphanFolderIds = new ArrayList();
 
@@ -74,88 +73,44 @@ namespace WaveBox.FolderScanning
 				mediaFolderIds.Add (mediaFolder.FolderId);
 			}
 
+			ISQLiteConnection conn = null;
 			try 
 			{
-				conn = Database.GetDbConnection();
+				conn = Database.GetSqliteConnection();
 
-				IDbCommand q = Database.GetDbCommand("SELECT * FROM folder", conn);
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				while (reader.Read()) 
+				// Find the orphaned folders
+				var result = conn.DeferredQuery<Folder>("SELECT * FROM Folder");
+				foreach (Folder folder in result)
 				{
-					// storage for stuff we'll get.
-					string path;
-					int? folderId, mediaFolderId;
-
-					// get ordinals
-					int pathOrdinal = reader.GetOrdinal("FolderPath");
-					int folderIdOrdinal = reader.GetOrdinal("FolderId");
-					int mediaFolderIdOrdinal = reader.GetOrdinal("MediaFolderId");
-
-					if (reader.GetValue(pathOrdinal) != DBNull.Value) 
+					if (folder.MediaFolderId != null)
 					{
-						path = reader.GetString(reader.GetOrdinal("FolderPath"));
-					} 
-					else
-					{
-						path = "";
-					}
-
-					if (reader.GetValue(folderIdOrdinal) != DBNull.Value)
-					{
-						folderId = reader.GetInt32(reader.GetOrdinal("FolderId"));
-					} 
-					else 
-					{
-						folderId = null;
-					}
-
-					if (reader.GetValue(mediaFolderIdOrdinal) != DBNull.Value) 
-					{
-						mediaFolderId = reader.GetInt32(reader.GetOrdinal("MediaFolderId"));
-					} 
-					else
-					{
-						mediaFolderId = null;
-					}
-
-					if (mediaFolderId != null)
-					{
-						if (!mediaFolderIds.Contains(mediaFolderId) || !Directory.Exists(path)) 
+						if (!mediaFolderIds.Contains(folder.MediaFolderId) || !Directory.Exists(folder.FolderPath)) 
 						{
-							logger.Info(folderId + " is orphaned");
-							orphanFolderIds.Add(folderId);
+							logger.Info(folder.FolderId + " is orphaned");
+							orphanFolderIds.Add(folder.FolderId);
 						}
 					}
 				}
 
-				foreach (int fid in orphanFolderIds) 
+				// Remove them
+				foreach (int folderId in orphanFolderIds) 
 				{
 					try 
 					{
-						IDbCommand q1 = Database.GetDbCommand("DELETE FROM folder WHERE FolderId = @folderid", conn);
-						q1.AddNamedParam("@folderid", fid);
-
-						q1.Prepare();
-						q1.ExecuteNonQueryLogged();
+						conn.ExecuteLogged("DELETE FROM Folder WHERE FolderId = ?", folderId);
 					} 
 					catch (Exception e) 
 					{
-						logger.Error("Failed to delete orphan " + fid + " : " + e);
+						logger.Error("Failed to delete orphan " + folderId + " : " + e);
 					}
 
 					try
 					{
-						IDbCommand q2 = Database.GetDbCommand("DELETE FROM song WHERE FolderId = @folderid", conn);
-						q2.AddNamedParam("@folderid", fid);
-
-						q2.Prepare();
-						q2.ExecuteNonQueryLogged();
+						conn.ExecuteLogged("DELETE FROM Song WHERE FolderId = ?", folderId);
 					} 
 					catch (Exception e) 
 					{
-						logger.Error("Failed to delete songs for orphan " + fid + " : " + e);
+						logger.Error("Failed to delete songs for orphan " + folderId + " : " + e);
 					}
 				}
 			}
@@ -165,7 +120,7 @@ namespace WaveBox.FolderScanning
 			}
 			finally
 			{
-				Database.Close(conn, reader);
+				conn.Close();
 			}
 		}
 
@@ -176,35 +131,38 @@ namespace WaveBox.FolderScanning
 				return;
 			}
 
-			IDbConnection conn = null;
-			IDataReader reader = null;
 			ArrayList orphanSongIds = new ArrayList();
-			int songid;
-			string path, filename;
 
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT song.ItemId, song.FileName, folder.FolderPath " +
-					"FROM song " + 
-					"LEFT JOIN folder ON song.FolderId = folder.FolderId", conn);
+				conn = Database.GetSqliteConnection();
 
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				while (reader.Read())
+				// Find the orphaned songs
+				var result = conn.DeferredQuery<Song>("SELECT * FROM Song");
+				foreach (Song song in result)
 				{
-					songid = reader.GetInt32(reader.GetOrdinal("ItemId"));
-					filename = reader.GetString(reader.GetOrdinal("FileName"));
-					path = reader.GetString(reader.GetOrdinal("FolderPath")) + Path.DirectorySeparatorChar + filename;
-
 					long timestamp = DateTime.Now.ToUniversalUnixTimestamp();
-					bool exists = File.Exists(path);
+					bool exists = File.Exists(song.FilePath);
 					totalExistsTime += DateTime.Now.ToUniversalUnixTimestamp() - timestamp;
 
 					if (!exists)
 					{
-						orphanSongIds.Add(songid);
+						orphanSongIds.Add(song.ItemId);
+					}
+				}
+
+				// Remove them
+				foreach (int itemId in orphanSongIds)
+				{
+					try
+					{
+						conn.ExecuteLogged("DELETE FROM Song WHERE ItemId = ?", itemId);
+						if (logger.IsInfoEnabled) logger.Info("Song " + itemId + " deleted");
+					}
+					catch (Exception e)
+					{
+						logger.Error("Failed deleting orphan songs : " + e);
 					}
 				}
 			}
@@ -214,28 +172,7 @@ namespace WaveBox.FolderScanning
 			}
 			finally
 			{
-				Database.Close(conn, reader);
-			}
-
-			foreach (int id in orphanSongIds)
-			{
-				try
-				{
-					conn = Database.GetDbConnection();
-					IDbCommand q1 = Database.GetDbCommand("DELETE FROM song WHERE ItemId = @songid", conn);
-					q1.AddNamedParam("@songid", id);
-					q1.Prepare();
-					q1.ExecuteNonQueryLogged();
-					if (logger.IsInfoEnabled) logger.Info("Song " + id + " deleted");
-				}
-				catch (Exception e)
-				{
-					logger.Error("Failed deleting orphan songs : " + e);
-				}
-				finally
-				{
-					Database.Close(conn, reader);
-				}
+				conn.Close();
 			}
 		}
 
@@ -246,24 +183,34 @@ namespace WaveBox.FolderScanning
 				return;
 			}
 
-			IDbConnection conn = null;
-			IDataReader reader = null;
 			ArrayList orphanArtistIds = new ArrayList();
 
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT artist.artist_id " +
-													 "FROM artist " + 
-													 "LEFT JOIN song ON artist.artist_id = song.ArtistId " +
-													 "WHERE song.ArtistId IS NULL", conn);
+				conn = Database.GetSqliteConnection();
 
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				while (reader.Read())
+				// Find the orphaned artists
+				var result = conn.DeferredQuery<Artist>("SELECT Artist.ArtistId FROM Artist " +
+				                                        "LEFT JOIN Song ON Artist.ArtistId = Song.ArtistId " +
+				                                        "WHERE Song.ArtistId IS NULL"); 
+				foreach (Artist artist in result)
 				{
-					orphanArtistIds.Add(reader.GetInt32(0));
+					orphanArtistIds.Add(artist.ArtistId);
+				}
+
+				// Remove them
+				foreach (int artistId in orphanArtistIds)
+				{
+					try
+					{
+						conn.ExecuteLogged("DELETE FROM Artist WHERE ArtistId = ?", artistId);
+						if (logger.IsInfoEnabled) logger.Info("Artist " + artistId + " deleted");
+					}
+					catch (Exception e)
+					{
+						logger.Error("Failed deleting orphan artists" + e);
+					}
 				}
 			}
 			catch (Exception e)
@@ -272,28 +219,7 @@ namespace WaveBox.FolderScanning
 			}
 			finally
 			{
-				Database.Close(conn, reader);
-			}
-
-			foreach (int id in orphanArtistIds)
-			{
-				try
-				{
-					conn = Database.GetDbConnection();
-					IDbCommand q1 = Database.GetDbCommand("DELETE FROM artist WHERE artist_id = @artistid", conn);
-					q1.AddNamedParam("@artistid", id);
-					q1.Prepare();
-					q1.ExecuteNonQueryLogged();
-					if (logger.IsInfoEnabled) logger.Info("Artist " + id + " deleted");
-				}
-				catch (Exception e)
-				{
-					logger.Error("Failed deleting orphan artists" + e);
-				}
-				finally
-				{
-					Database.Close(conn, reader);
-				}
+				conn.Close();
 			}
 		}
 
@@ -304,24 +230,33 @@ namespace WaveBox.FolderScanning
 				return;
 			}
 
-			IDbConnection conn = null;
-			IDataReader reader = null;
 			ArrayList orphanAlbumIds = new ArrayList();
 
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT album.album_id " +
-													 "FROM album " + 
-													 "LEFT JOIN song ON album.album_id = song.AlbumId " +
-				                                     "WHERE song.AlbumId IS NULL", conn);
-
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				while (reader.Read())
+				// Find the orphaned albums
+				conn = Database.GetSqliteConnection();
+				var result = conn.DeferredQuery<Album>("SELECT Album.AlbumId FROM Album " +
+				                                       "LEFT JOIN Song ON Album.AlbumId = Song.AlbumId " + 
+				                                       "WHERE Song.AlbumId IS NULL");
+				foreach (Album album in result)
 				{
-					orphanAlbumIds.Add(reader.GetInt32(0));
+					orphanAlbumIds.Add(album.AlbumId);
+				}
+
+				// Remove them
+				foreach (int albumId in orphanAlbumIds)
+				{
+					try
+					{
+						conn.ExecuteLogged("DELETE FROM Album WHERE AlbumId = ?", albumId);
+						if (logger.IsInfoEnabled) logger.Info("Album " + albumId + " deleted");
+					}
+					catch (Exception e)
+					{
+						logger.Error("Failed deleting orphan albums " + e);
+					}
 				}
 			}
 			catch (Exception e)
@@ -330,28 +265,7 @@ namespace WaveBox.FolderScanning
 			}
 			finally
 			{
-				Database.Close(conn, reader);
-			}
-
-			foreach (int id in orphanAlbumIds)
-			{
-				try
-				{
-					conn = Database.GetDbConnection();
-					IDbCommand q1 = Database.GetDbCommand("DELETE FROM album WHERE album_id = @albumid", conn);
-					q1.AddNamedParam("@albumid", id);
-					q1.Prepare();
-					q1.ExecuteNonQueryLogged();
-					if (logger.IsInfoEnabled) logger.Info("Album " + id + " deleted");
-				}
-				catch (Exception e)
-				{
-					logger.Error("Failed deleting orphan albums " + e);
-				}
-				finally
-				{
-					Database.Close(conn, reader);
-				}
+				conn.Close();
 			}
 		}
 
@@ -362,54 +276,42 @@ namespace WaveBox.FolderScanning
 				return;
 			}
 
-			IDbConnection conn = null;
-			IDataReader reader = null;
 			ArrayList orphanGenreIds = new ArrayList();
 
+			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetDbConnection();
-				IDbCommand q = Database.GetDbCommand("SELECT genre.genre_id " +
-													 "FROM genre " +
-													 "LEFT JOIN song ON genre.genre_id = song.GenreId " +
-													 "WHERE song.GenreId IS NULL", conn);
-
-				q.Prepare();
-				reader = q.ExecuteReader();
-
-				while (reader.Read())
+				// Find orphaned genres
+				conn = Database.GetSqliteConnection();
+				var result = conn.DeferredQuery<Genre>("SELECT Genre.GenreId FROM Genre " +
+				                                       "LEFT JOIN Song ON Genre.GenreId = Song.GenreId " + 
+				                                       "WHERE Song.GenreId IS NULL");
+				foreach (Genre genre in result)
 				{
-					orphanGenreIds.Add(reader.GetInt32(0));
+					orphanGenreIds.Add(genre.GenreId);
+				}
+
+				// Remove them
+				foreach (int genreId in orphanGenreIds)
+				{
+					try
+					{
+						conn.ExecuteLogged("DELETE FROM Genre WHERE GenreId = ?", genreId);
+						if (logger.IsInfoEnabled) logger.Info("Genre " + genreId + " deleted");
+					}
+					catch (Exception e)
+					{
+						logger.Error("Failed deleting orphan genre " + genreId + ": " + e);
+					}
 				}
 			}
 			catch (Exception e)
 			{
-				logger.Error("Failed checking for orphan genres : " + e);
+				logger.Error("Failed checking for orphan genres: " + e);
 			}
 			finally
 			{
-				Database.Close(conn, reader);
-			}
-
-			foreach (int id in orphanGenreIds)
-			{
-				try
-				{
-					conn = Database.GetDbConnection();
-					IDbCommand q1 = Database.GetDbCommand("DELETE FROM genre WHERE genre_id = @genreid", conn);
-					q1.AddNamedParam("@genreid", id);
-					q1.Prepare();
-					q1.ExecuteNonQueryLogged();
-					if (logger.IsInfoEnabled) logger.Info("Genre " + id + " deleted");
-				}
-				catch (Exception e)
-				{
-					logger.Error("Failed deleting orphan genres : " + e);
-				}
-				finally
-				{
-					Database.Close(conn, reader);
-				}
+				conn.Close();
 			}
 		}
 	}

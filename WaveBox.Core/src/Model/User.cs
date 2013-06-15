@@ -92,7 +92,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				return conn.Query<Session>("SELECT RowId, * FROM session WHERE UserId = ?", UserId);
+				return conn.Query<Session>("SELECT RowId, * FROM Session WHERE UserId = ?", UserId);
 			}
 			catch (Exception e)
 			{
@@ -112,7 +112,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				return conn.Query<User>("SELECT * FROM user ORDER BY UserName");
+				return conn.Query<User>("SELECT * FROM User ORDER BY UserName");
 			}
 			catch (Exception e)
 			{
@@ -132,7 +132,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				return conn.Query<User>("SELECT * FROM user WHERE DeleteTime <= @deletetime ORDER BY UserName", DateTime.Now.ToUniversalUnixTimestamp());
+				return conn.Query<User>("SELECT * FROM User WHERE DeleteTime <= ? ORDER BY UserName", DateTime.Now.ToUniversalUnixTimestamp());
 			}
 			catch (Exception e)
 			{
@@ -197,7 +197,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				int affected = conn.Execute("UPDATE user SET PasswordHash = ?, PasswordSalt = ? WHERE UserName = ?", hash, salt, UserName);
+				int affected = conn.Execute("UPDATE User SET PasswordHash = ?, PasswordSalt = ? WHERE UserName = ?", hash, salt, UserName);
 
 				if (affected > 0)
 				{
@@ -221,7 +221,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				int affected = conn.Execute("UPDATE user SET LastfmSession = ? WHERE UserName = ?", sessionKey, UserName);
+				int affected = conn.Execute("UPDATE User SET LastfmSession = ? WHERE UserName = ?", sessionKey, UserName);
 
 				if (affected > 0)
 				{
@@ -287,7 +287,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				int affected = conn.Execute("DELETE FROM user WHERE UserId = ?", UserId);
+				int affected = conn.Execute("DELETE FROM User WHERE UserId = ?", UserId);
 
 				if (affected > 0)
 				{
@@ -313,7 +313,7 @@ namespace WaveBox.Model
 				try
 				{
 					conn = Database.GetSqliteConnection();
-					var result = conn.DeferredQuery<User>("SELECT * FROM user WHERE UserId = ?", userId);
+					var result = conn.DeferredQuery<User>("SELECT * FROM User WHERE UserId = ?", userId);
 
 					foreach (var u in result)
 					{
@@ -340,7 +340,7 @@ namespace WaveBox.Model
 				try
 				{
 					conn = Database.GetSqliteConnection();
-					var result = conn.DeferredQuery<User>("SELECT * FROM user WHERE UserName = ?", userName);
+					var result = conn.DeferredQuery<User>("SELECT * FROM User WHERE UserName = ?", userName);
 
 					foreach (var u in result)
 					{

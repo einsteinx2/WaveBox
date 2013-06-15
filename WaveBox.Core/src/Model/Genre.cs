@@ -62,11 +62,11 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				return conn.Query<Artist>("SELECT artist.* " +
-				                          "FROM genre " + 
-				                          "LEFT JOIN song ON song.GenreId = genre.GenreId " +
-				                          "LEFT JOIN artist ON song.ArtistId = artist.ItemId " +
-				                          "WHERE genre.GenreId = ? GROUP BY artist.ItemId", GenreId);
+				return conn.Query<Artist>("SELECT Artist.* " +
+				                          "FROM Genre " + 
+				                          "LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
+				                          "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+				                          "WHERE Genre.GenreId = ? GROUP BY Artist.ArtistId", GenreId);
 			}
 			catch (Exception e)
 			{
@@ -86,11 +86,11 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				return conn.Query<Album>("SELECT album.* " +
-				                         "FROM genre " + 
-				                         "LEFT JOIN song ON song.GenreId = genre.GenreId " +
-				                         "LEFT JOIN album ON song.AlbumId = album.ItemId " +
-				                         "WHERE genre.GenreId = ? GROUP BY album.ItemId", GenreId);
+				return conn.Query<Album>("SELECT Album.* " +
+				                         "FROM Genre " + 
+				                         "LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
+				                         "LEFT JOIN Album ON Song.AlbumId = Album.ItemId " +
+				                         "WHERE Genre.GenreId = ? GROUP BY Album.ItemId", GenreId);
 			}
 			catch (Exception e)
 			{
@@ -110,10 +110,10 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				return conn.Query<Song>("SELECT song.*, genre.GenreName " +
-				                        "FROM genre " + 
-				                        "LEFT JOIN song ON song.GenreId = genre.GenreId " +
-				                        "WHERE genre.GenreId = ? GROUP BY song.ItemId", conn);
+				return conn.Query<Song>("SELECT Song.*, Genre.GenreName " +
+				                        "FROM Genre " + 
+				                        "LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
+				                        "WHERE Genre.GenreId = ? GROUP BY Song.ItemId", conn);
 			}
 			catch (Exception e)
 			{
@@ -133,11 +133,11 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				return conn.Query<Folder>("SELECT folder.* " +
-				                          "FROM genre " + 
-				                          "LEFT JOIN song ON song.GenreId = genre.GenreId " +
-				                          "LEFT JOIN folder ON song.FolderId = folder.FolderId " +
-				                          "WHERE genre.GenreId = ? GROUP BY folder.FolderId", GenreId);
+				return conn.Query<Folder>("SELECT Folder.* " +
+				                          "FROM Genre " + 
+				                          "LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
+				                          "LEFT JOIN Folder ON Song.FolderId = Folder.FolderId " +
+				                          "WHERE Genre.GenreId = ? GROUP BY Folder.FolderId", GenreId);
 			}
 			catch (Exception e)
 			{
@@ -157,7 +157,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				return conn.Query<Genre>("SELECT * FROM genre ORDER BY GenreName");
+				return conn.Query<Genre>("SELECT * FROM Genre ORDER BY GenreName");
 			}
 			catch (Exception e)
 			{
@@ -189,7 +189,7 @@ namespace WaveBox.Model
 				try
 				{
 					conn = Database.GetSqliteConnection();
-					var result = conn.DeferredQuery<Genre>("SELECT * FROM genre WHERE GenreId = ?", genreId);
+					var result = conn.DeferredQuery<Genre>("SELECT * FROM Genre WHERE GenreId = ?", genreId);
 
 					foreach (Genre g in result)
 					{
@@ -236,7 +236,7 @@ namespace WaveBox.Model
 						try
 						{
 							conn = Database.GetSqliteConnection();
-							var result = conn.DeferredQuery<Genre>("SELECT * FROM genre WHERE GenreName = ?", genreName);
+							var result = conn.DeferredQuery<Genre>("SELECT * FROM Genre WHERE GenreName = ?", genreName);
 
 							foreach (Genre g in result)
 							{

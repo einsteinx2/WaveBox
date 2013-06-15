@@ -21,7 +21,7 @@ namespace WaveBox
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				int affected = conn.ExecuteLogged("INSERT INTO item (ItemType, Timestamp) VALUES (?, ?)", itemType, DateTime.UtcNow.ToUniversalUnixTimestamp());
+				int affected = conn.ExecuteLogged("INSERT INTO Item (ItemType, Timestamp) VALUES (?, ?)", itemType, DateTime.UtcNow.ToUniversalUnixTimestamp());
 
 				if (affected >= 1)
 				{
@@ -63,7 +63,7 @@ namespace WaveBox
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				itemTypeId = conn.ExecuteScalar<int>("SELECT ItemType FROM item WHERE ItemId = ?", itemId);
+				itemTypeId = conn.ExecuteScalar<int>("SELECT ItemType FROM Item WHERE ItemId = ?", itemId);
 			}
 			catch (Exception e)
 			{

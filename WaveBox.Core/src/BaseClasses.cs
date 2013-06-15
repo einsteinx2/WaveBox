@@ -204,6 +204,20 @@ namespace Cirrious.MvvmCross.Plugins.Sqlite
 		Replace
 	}
 
+	static class InsertTypeExtensions 
+	{
+		public static string QueryText(this InsertType insertType)
+		{
+			switch (insertType)
+			{
+				case InsertType.Insert:   return "INSERT";
+				case InsertType.InsertOrIgnore:  return "INSERT OR IGNORE";
+				case InsertType.Replace: return "REPLACE";
+				default: throw new ArgumentOutOfRangeException("InsertType");
+			}
+		}
+	}
+
 	public enum TableMappingType
 	{
 		Read,

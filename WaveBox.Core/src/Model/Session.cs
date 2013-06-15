@@ -50,7 +50,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				int affected = conn.ExecuteLogged("UPDATE session SET UpdateTime = ? WHERE SessionId = ?", unixTime, SessionId);
+				int affected = conn.ExecuteLogged("UPDATE Session SET UpdateTime = ? WHERE SessionId = ?", unixTime, SessionId);
 
 				if (affected > 0)
 				{
@@ -110,7 +110,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				int affected = conn.ExecuteLogged("DELETE FROM session WHERE ROWID = ?", RowId);
+				int affected = conn.ExecuteLogged("DELETE FROM Session WHERE RowId = ?", RowId);
 
 				success = affected > 0;
 			}
@@ -132,7 +132,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				return conn.Query<Session>("SELECT RowId, * FROM session");
+				return conn.Query<Session>("SELECT RowId, * FROM Session");
 			}
 			catch (Exception e)
 			{
@@ -152,7 +152,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				return conn.ExecuteScalar<int>("SELECT count(RowId) FROM session");
+				return conn.ExecuteScalar<int>("SELECT COUNT(RowId) FROM Session");
 			}
 			catch (Exception e)
 			{
@@ -173,7 +173,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				int affected = conn.ExecuteLogged("DELETE FROM session WHERE UserId = ?", userId);
+				int affected = conn.ExecuteLogged("DELETE FROM Session WHERE UserId = ?", userId);
 
 				success = affected > 0;
 			}
@@ -197,7 +197,7 @@ namespace WaveBox.Model
 				try
 				{
 					conn = Database.GetSqliteConnection();
-					var result = conn.DeferredQuery<Session>("SELECT RowId, * FROM session WHERE RowId = ?", rowId);
+					var result = conn.DeferredQuery<Session>("SELECT RowId, * FROM Session WHERE RowId = ?", rowId);
 
 					foreach (var session in result)
 					{
@@ -222,7 +222,7 @@ namespace WaveBox.Model
 				try
 				{
 					conn = Database.GetSqliteConnection();
-					var result = conn.DeferredQuery<Session>("SELECT RowId, * FROM session WHERE SessionId = ?", sessionId);
+					var result = conn.DeferredQuery<Session>("SELECT RowId, * FROM Session WHERE SessionId = ?", sessionId);
 
 					foreach (var session in result)
 					{

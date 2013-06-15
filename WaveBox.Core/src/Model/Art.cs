@@ -213,7 +213,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				string artId = conn.ExecuteScalar<string>("SELECT ArtId FROM art WHERE LastModified = ? AND FilePath = ?", filePath, lastModified);
+				string artId = conn.ExecuteScalar<string>("SELECT ArtId FROM Art WHERE LastModified = ? AND FilePath = ?", filePath, lastModified);
 
 				if (ReferenceEquals(artId, null))
 				{
@@ -295,7 +295,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Database.GetSqliteConnection();
-				int artId = conn.ExecuteScalar<int>("SELECT ArtId FROM art WHERE Md5Hash = ?", hash);
+				int artId = conn.ExecuteScalar<int>("SELECT ArtId FROM Art WHERE Md5Hash = ?", hash);
 				return artId == 0 ? (int?)null : artId;
 			}
 			catch (Exception e)
@@ -404,7 +404,7 @@ namespace WaveBox.Model
 				try
 				{
 					conn = Database.GetSqliteConnection();
-					var result = conn.DeferredQuery<Art>("SELECT * FROM art WHERE ArtId = ?", artId);
+					var result = conn.DeferredQuery<Art>("SELECT * FROM Art WHERE ArtId = ?", artId);
 
 					foreach (Art a in result)
 					{
