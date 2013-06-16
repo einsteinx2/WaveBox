@@ -37,6 +37,8 @@ using WaveBox.Static;
 using Newtonsoft.Json;
 using log4net;
 ////////////
+using Ninject;
+using WaveBox.Core.Injected;
 
 
 #if WINDOWS_PHONE && !USE_CSHARP_SQLITE
@@ -118,7 +120,7 @@ namespace SQLite
 
 		public int InsertLogged(object obj, InsertType insertType = InsertType.Insert)
 		{
-			lock (Database.dbBackupLock)
+			lock (Injection.Kernel.Get<IDatabase>().DbBackupLock)
 			{
 				int affectedRows = Insert(obj, insertType);
 
@@ -139,7 +141,7 @@ namespace SQLite
 					ISQLiteConnection conn = null;
 					try
 					{
-						conn = Database.GetQueryLogSqliteConnection();
+						conn = Injection.Kernel.Get<IDatabase>().GetQueryLogSqliteConnection();
 						conn.Execute(insertType.QueryText() + " INTO QueryLog (QueryString, ValuesString) VALUES (?, ?)", insertCmd.CommandText, JsonConvert.SerializeObject(vals, Formatting.None));
 					}
 					catch(Exception e)
@@ -158,7 +160,7 @@ namespace SQLite
 
 		public int ExecuteLogged(string query, params object[] args)
 		{
-			lock (Database.dbBackupLock)
+			lock (Injection.Kernel.Get<IDatabase>().DbBackupLock)
 			{
 				int affectedRows = Execute(query, args);
 
@@ -168,7 +170,7 @@ namespace SQLite
 					ISQLiteConnection conn = null;
 					try
 					{
-						conn = Database.GetQueryLogSqliteConnection();
+						conn = Injection.Kernel.Get<IDatabase>().GetQueryLogSqliteConnection();
 						conn.Execute("INSERT INTO QueryLog (QueryString, ValuesString) VALUES (?, ?)", query, JsonConvert.SerializeObject(args, Formatting.None));
 					}
 					catch(Exception e)

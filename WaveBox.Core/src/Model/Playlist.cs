@@ -7,6 +7,9 @@ using WaveBox.Static;
 using System.Security.Cryptography;
 using Newtonsoft.Json;
 using Cirrious.MvvmCross.Plugins.Sqlite;
+using WaveBox.Core.Extensions;
+using Ninject;
+using WaveBox.Core.Injected;
 
 namespace WaveBox.Model
 {
@@ -53,7 +56,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				var result = conn.Query<PlaylistItem>("SELECT ItemId FROM PlaylistItem WHERE PlaylistId = ?", PlaylistId);
 				
 				foreach (PlaylistItem playlistItem in result)
@@ -93,7 +96,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 
 				if (PlaylistId == null)
 				{
@@ -133,7 +136,7 @@ namespace WaveBox.Model
 
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.ExecuteScalar<int>("SELECT ItemPosition FROM PlaylistItem " + 
 				                               "WHERE PlaylistId = ? AND ItemType = ? " + 
 				                               "ORDER BY ItemPosition LIMIT 1", PlaylistId, item.ItemTypeId);
@@ -155,7 +158,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				var result = conn.DeferredQuery<PlaylistItem>("SELECT * FROM PlaylistItem WHERE PlaylistId = ? AND ItemPosition = ? LIMIT 1", PlaylistId, index);
 
 				foreach (PlaylistItem playlistItem in result)
@@ -185,7 +188,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				var result = conn.DeferredQuery<PlaylistItem>("SELECT * FROM PlaylistItem WHERE PlaylistId = ? ORDER BY ItemPosition", PlaylistId);
 
 				var items = new List<IMediaItem>();
@@ -245,7 +248,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				conn.BeginTransaction();
 				conn.ExecuteLogged("DELETE FROM PlaylistItem WHERE PlaylistId = ? AND ItemPosition = ?", PlaylistId, index);
 				conn.ExecuteLogged("UPDATE PlaylistItem SET ItemPosition = ItemPosition - 1 WHERE PlaylistId = ? AND ItemPosition > ?", PlaylistId, index);
@@ -270,7 +273,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				conn.BeginTransaction();
 
 				// delete the items at the indicated indices
@@ -320,7 +323,7 @@ namespace WaveBox.Model
 			try
 			{
 				// to do - better way of knowing whether or not a query has been successfully completed.
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				conn.BeginTransaction();
 				conn.ExecuteLogged("UPDATE PlaylistItem SET ItemPosition = ItemPosition + 1 WHERE PlaylistId = ? AND ItemPosition >= ?", PlaylistId, toIndex);
 
@@ -356,7 +359,7 @@ namespace WaveBox.Model
 			{
 				int? id = Item.GenerateItemId(ItemType.PlaylistItem);
 				// to do - better way of knowing whether or not a query has been successfully completed.
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				var playlistItem = new PlaylistItem();
 				playlistItem.PlaylistItemId = id;
 				playlistItem.PlaylistId = PlaylistId;
@@ -404,7 +407,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				conn.ExecuteLogged("DELETE FROM PlaylistItem WHERE PlaylistId = ?", PlaylistId);
 			}
 			catch (Exception e)
@@ -438,7 +441,7 @@ namespace WaveBox.Model
 				ISQLiteConnection conn = null;
 				try
 				{
-					conn = Database.GetSqliteConnection();
+					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 					var result = conn.DeferredQuery<Playlist>("SELECT * FROM Playlist WHERE PlaylistId = ?", playlistId);
 
 					foreach (Playlist p in result)
@@ -463,7 +466,7 @@ namespace WaveBox.Model
 				ISQLiteConnection conn = null;
 				try
 				{
-					conn = Database.GetSqliteConnection();
+					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 					var result = conn.DeferredQuery<Playlist>("SELECT * FROM Playlist WHERE PlaylistName = ?", playlistName);
 
 					foreach (Playlist p in result)

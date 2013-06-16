@@ -1,5 +1,7 @@
 using System;
 using WaveBox.Model;
+using WaveBox.Static;
+using WaveBox.Server.Extensions;
 
 namespace WaveBox.Transcoding
 {
@@ -31,7 +33,7 @@ namespace WaveBox.Transcoding
 			//return " -ss " + OffsetSeconds + " -t " + LengthSeconds + " -i \"" + Item.FilePath + "\" -async 1 -b " + vbitrate + " -s " + width + "x" + height + " -ar 44100 -ac 2 -v 0 -f mpegts -vcodec libx264 -preset superfast -acodec libmp3lame -threads 0 " + OutputPath;
 			//return " -ss " + OffsetSeconds + " -t " + LengthSeconds + " -i \"" + Item.FilePath + "\" -async 1 -b " + vbitrate + " -s " + width + "x" + height + " -ar 44100 -ab " + abitrate + " -ac 2 -v 0 -f mpegts -vcodec libx264 -preset superfast -acodec libmp3lame -threads 0 " + OutputPath;
 
-			return " -ss " + OffsetSeconds + " -t " + LengthSeconds + " -i \"" + Item.FilePath + "\" -async 1 -b " + vbitrate + " -s " + width + "x" + height + " -ar 44100 -ab " + abitrate + " -ac 2 -v 0 -f mpegts -vcodec " + Codec + " -preset superfast -strict experimental -acodec aac -threads 0 " + OutputPath;
+			return " -ss " + OffsetSeconds + " -t " + LengthSeconds + " -i \"" + Item.FilePath() + "\" -async 1 -b " + vbitrate + " -s " + width + "x" + height + " -ar 44100 -ab " + abitrate + " -ac 2 -v 0 -f mpegts -vcodec " + Codec + " -preset superfast -strict experimental -acodec aac -threads 0 " + OutputPath;
 
 			//return "-i \"" + Item.FilePath + "\" -async 1 -b " + vbitrate + " -s " + width + "x" + height + " -ss " + OffsetSeconds + " -t " + LengthSeconds + " -acodec libmp3lame -ar 44100 -ac 2 -ab " + abitrate + " -f mpegts -vcodec libx264 -preset superfast -threads 0 " + OutputPath;
 			//return "-i \"" + Item.FilePath + "\" -async 1 -b " + vbitrate + " -s " + width + "x" + height + " -ss " + OffsetSeconds + " -t " + LengthSeconds + " -acodec libmp3lame -ar 44100 -ac 2 -aq " + "5" + " -f mpegts -vcodec libx264 -preset superfast -threads 0 " + OutputPath;

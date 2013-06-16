@@ -2,6 +2,7 @@ using System;
 using WaveBox.OperationQueue;
 using WaveBox.Model;
 using System.Collections.Generic;
+using WaveBox.Core.Extensions;
 
 namespace WaveBox.Static
 {

@@ -2,6 +2,8 @@ using System;
 using WaveBox.Static;
 using WaveBox.Model;
 using Newtonsoft.Json;
+using Ninject;
+using WaveBox.Core.Injected;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -30,7 +32,7 @@ namespace WaveBox.ApiHandler.Handlers
 		{
 			try
 			{
-				string json = JsonConvert.SerializeObject(new LoginResponse(null, User.SessionId), Settings.JsonFormatting);
+				string json = JsonConvert.SerializeObject(new LoginResponse(null, User.SessionId), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 				Processor.WriteJson(json);
 			}
 			catch (Exception e)

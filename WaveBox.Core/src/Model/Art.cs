@@ -9,6 +9,8 @@ using System.Security.Cryptography;
 using TagLib;
 using Newtonsoft.Json;
 using Cirrious.MvvmCross.Plugins.Sqlite;
+using Ninject;
+using WaveBox.Core.Injected;
 
 namespace WaveBox.Model
 {
@@ -56,7 +58,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				ArtId = itemId;
 				int affected = conn.InsertLogged(this);
 
@@ -85,7 +87,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				int itemId = conn.ExecuteScalar<int>("SELECT ItemId FROM ArtItem WHERE ArtId = ?", artId);
 				return itemId == 0 ? (int?)null : itemId;
 			}
@@ -111,7 +113,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				int artId = conn.ExecuteScalar<int>("SELECT ArtId FROM ArtItem WHERE ItemId = ?", itemId);
 				return artId == 0 ? (int?)null : artId;
 			}
@@ -137,7 +139,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				int artId = conn.ExecuteScalar<int>("SELECT ArtId FROM Art WHERE Md5Hash = ?", hash);
 				return artId == 0 ? (int?)null : artId;
 			}
@@ -165,7 +167,7 @@ namespace WaveBox.Model
 			try
 			{
 				// insert the song into the database
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				string type = replace ? "REPLACE" : "INSERT OR IGNORE";
 				int affected = conn.ExecuteLogged(type + " INTO ArtItem (ArtId, ItemId) VALUES (?, ?)", artId, itemId);
 
@@ -194,7 +196,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				int affected = conn.ExecuteLogged("DELETE FROM ArtItem WHERE ItemId = ?", itemId);
 
 				success = affected > 0;
@@ -222,7 +224,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				int affected = conn.ExecuteLogged("UPDATE ArtItem SET ArtId = ? WHERE ArtId = ?", newArtId, oldArtId);
 
 				success = affected > 0;
@@ -246,7 +248,7 @@ namespace WaveBox.Model
 				ISQLiteConnection conn = null;
 				try
 				{
-					conn = Database.GetSqliteConnection();
+					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 					var result = conn.DeferredQuery<Art>("SELECT * FROM Art WHERE ArtId = ?", artId);
 
 					foreach (Art a in result)

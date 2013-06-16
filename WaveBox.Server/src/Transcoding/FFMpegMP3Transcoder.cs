@@ -1,5 +1,7 @@
 using System;
 using WaveBox.Model;
+using WaveBox.Static;
+using WaveBox.Server.Extensions;
 
 namespace WaveBox.Transcoding
 {
@@ -82,11 +84,11 @@ namespace WaveBox.Transcoding
 		{
 			if (quality > 12)
 			{
-				return "-loglevel quiet -i \"" + Item.FilePath + "\" -acodec " + Codec + " -ab " + (quality * 1024) + " " + OutputPath;
+				return "-loglevel quiet -i \"" + Item.FilePath() + "\" -acodec " + Codec + " -ab " + (quality * 1024) + " " + OutputPath;
 			}
 			else
 			{
-				return "-loglevel quiet -i \"" + Item.FilePath + "\" -acodec " + Codec + " -aq " + quality + " " + OutputPath;
+				return "-loglevel quiet -i \"" + Item.FilePath() + "\" -acodec " + Codec + " -aq " + quality + " " + OutputPath;
 			}
 		}
 	}

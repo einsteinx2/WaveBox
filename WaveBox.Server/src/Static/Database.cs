@@ -4,7 +4,7 @@ using WaveBox.Static;
 using System.IO;
 using WaveBox.Core.Injected;
 
-namespace WaveBox.Server.Static
+namespace WaveBox.Static
 {
 	public class Database : IDatabase
 	{
@@ -12,14 +12,14 @@ namespace WaveBox.Server.Static
 
 		private static readonly string databaseFileName = "wavebox.db";
 		public string DatabaseTemplatePath() { return "res" + Path.DirectorySeparatorChar + databaseFileName; }
-		public string DatabasePath() { return Utility.RootPath() + databaseFileName; }
+		public string DatabasePath() { return ServerUtility.RootPath() + databaseFileName; }
 
 		private static readonly string querylogFileName = "wavebox_querylog.db";
 		public string QuerylogTemplatePath() { return "res" + Path.DirectorySeparatorChar + querylogFileName; }
-		public string QuerylogPath() { return Utility.RootPath() + querylogFileName; }
+		public string QuerylogPath() { return ServerUtility.RootPath() + querylogFileName; }
 
 		private static readonly object dbBackupLock = new object();
-		public object DbBackupLock() { return dbBackupLock; }
+		public object DbBackupLock { get { return dbBackupLock; } }
 
 		public Database()
 		{

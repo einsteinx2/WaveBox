@@ -6,6 +6,9 @@ using WaveBox.ApiHandler.Handlers;
 using WaveBox.Model;
 using WaveBox.Static;
 using WaveBox.TcpServer.Http;
+using WaveBox.Core.Extensions;
+using WaveBox.Core.Injected;
+using Ninject;
 
 namespace WaveBox.ApiHandler
 {
@@ -90,8 +93,8 @@ namespace WaveBox.ApiHandler
 					sessionId = user.SessionId == null ? sessionId : user.SessionId;
 					if (sessionId != null)
 					{
-						// Calculate session timeout time (DateTime.Now UTC + Settings.SessionTimeout minutes)
-						DateTime expire = DateTime.Now.ToUniversalTime().AddMinutes(Settings.SessionTimeout);
+						// Calculate session timeout time (DateTime.Now UTC + Injection.Kernel.Get<IServerSettings>().SessionTimeout minutes)
+						DateTime expire = DateTime.Now.ToUniversalTime().AddMinutes(Injection.Kernel.Get<IServerSettings>().SessionTimeout);
 
 						// Add a delayed header so cookie will be reset on each API call (to prevent timeout)
 						processor.DelayedHeaders["Set-Cookie"] = String.Format("wavebox_session={0}; Expires={1};", sessionId, expire.ToRFC1123());

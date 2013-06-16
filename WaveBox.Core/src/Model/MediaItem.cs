@@ -54,12 +54,6 @@ namespace WaveBox.Model
 		[JsonProperty("artId"), IgnoreRead, IgnoreWrite]
 		public int? ArtId { get { return Art.ArtIdForItemId(ItemId); } }
 
-		[JsonIgnore, IgnoreRead, IgnoreWrite]
-		public string FilePath { get { return new Folder.Factory().CreateFolder((int)FolderId).FolderPath + Path.DirectorySeparatorChar + FileName; } }
-
-		[JsonIgnore, IgnoreRead, IgnoreWrite]
-		public FileStream File { get { return new FileStream(FilePath, FileMode.Open, FileAccess.Read); } }
-
 		/// <summary>
 		/// Public methods
 		/// </summary>

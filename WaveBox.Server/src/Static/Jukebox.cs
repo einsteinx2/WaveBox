@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using WaveBox.Model;
 using Un4seen.Bass;
+using WaveBox.Server.Extensions;
 
 namespace WaveBox.Static
 {
@@ -150,7 +151,7 @@ namespace WaveBox.Static
 					if (logger.IsInfoEnabled) logger.Info("Re-initializing BASS");
 
 					// create the stream
-					string path = item.File.Name;
+					string path = item.File().Name;
 					currentStream = Bass.BASS_StreamCreateFile(path, 0, 0, BASSFlag.BASS_STREAM_PRESCAN);
 
 					if (currentStream == 0)

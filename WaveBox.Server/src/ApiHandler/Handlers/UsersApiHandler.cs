@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using WaveBox.Static;
 using WaveBox.Model;
 using Newtonsoft.Json;
+using WaveBox.Core.Injected;
+using Ninject;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -49,7 +51,7 @@ namespace WaveBox.ApiHandler.Handlers
 					listOfUsers.Add(testUser);
 					try
 					{
-						string json = JsonConvert.SerializeObject(new UsersResponse(null, listOfUsers), Settings.JsonFormatting);
+						string json = JsonConvert.SerializeObject(new UsersResponse(null, listOfUsers), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 						Processor.WriteJson(json);
 					}
 					catch (Exception e)
@@ -61,7 +63,7 @@ namespace WaveBox.ApiHandler.Handlers
 				{
 					try
 					{
-						string json = JsonConvert.SerializeObject(new UsersResponse("Couldn't create user", listOfUsers), Settings.JsonFormatting);
+						string json = JsonConvert.SerializeObject(new UsersResponse("Couldn't create user", listOfUsers), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 						Processor.WriteJson(json);
 					}
 					catch (Exception e)
@@ -82,7 +84,7 @@ namespace WaveBox.ApiHandler.Handlers
 					{
 						try
 						{
-							string json = JsonConvert.SerializeObject(new UsersResponse("Missing parameter 'rowId' for action 'killSession'", null), Settings.JsonFormatting);
+							string json = JsonConvert.SerializeObject(new UsersResponse("Missing parameter 'rowId' for action 'killSession'", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 							Processor.WriteJson(json);
 						}
 						catch (Exception e)
@@ -96,7 +98,7 @@ namespace WaveBox.ApiHandler.Handlers
 					{
 						try
 						{
-							string json = JsonConvert.SerializeObject(new UsersResponse("Invalid integer for 'rowId' for action 'killSession'", null), Settings.JsonFormatting);
+							string json = JsonConvert.SerializeObject(new UsersResponse("Invalid integer for 'rowId' for action 'killSession'", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 							Processor.WriteJson(json);
 						}
 						catch (Exception e)
@@ -115,7 +117,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 					try
 					{
-						string json = JsonConvert.SerializeObject(new UsersResponse(null, listOfUsers), Settings.JsonFormatting);
+						string json = JsonConvert.SerializeObject(new UsersResponse(null, listOfUsers), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 						Processor.WriteJson(json);
 					}
 					catch (Exception e)
@@ -128,7 +130,7 @@ namespace WaveBox.ApiHandler.Handlers
 					// Invalid action
 					try
 					{
-						string json = JsonConvert.SerializeObject(new UsersResponse("Invalid action '" + Uri.Parameters["action"] + "'", null), Settings.JsonFormatting);
+						string json = JsonConvert.SerializeObject(new UsersResponse("Invalid action '" + Uri.Parameters["action"] + "'", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 						Processor.WriteJson(json);
 					}
 					catch (Exception e)
@@ -162,7 +164,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 				try
 				{
-					string json = JsonConvert.SerializeObject(new UsersResponse(null, listOfUsers), Settings.JsonFormatting);
+					string json = JsonConvert.SerializeObject(new UsersResponse(null, listOfUsers), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 					Processor.WriteJson(json);
 				}
 				catch (Exception e)

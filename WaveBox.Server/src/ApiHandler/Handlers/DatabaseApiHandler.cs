@@ -9,6 +9,8 @@ using WaveBox.Static;
 using WaveBox.Model;
 using WaveBox.TcpServer.Http;
 using Cirrious.MvvmCross.Plugins.Sqlite;
+using WaveBox.Core.Injected;
+using Ninject;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -52,7 +54,7 @@ namespace WaveBox.ApiHandler.Handlers
 					try
 					{
 						// Read in entire database file
-						Stream stream = new FileStream(Utility.RootPath() + databaseFileName, FileMode.Open, FileAccess.Read);
+						Stream stream = new FileStream(ServerUtility.RootPath() + databaseFileName, FileMode.Open, FileAccess.Read);
 						long length = stream.Length;
 						int startOffset = 0;
 					
@@ -70,13 +72,13 @@ namespace WaveBox.ApiHandler.Handlers
 						customHeader["WaveBox-LastQueryId"] = databaseLastQueryId.ToString();
 					
 						// Send the database file
-						Processor.WriteFile(stream, startOffset, length, "application/octet-stream", customHeader, true, new FileInfo(Utility.RootPath() + databaseFileName).LastWriteTimeUtc);
+						Processor.WriteFile(stream, startOffset, length, "application/octet-stream", customHeader, true, new FileInfo(ServerUtility.RootPath() + databaseFileName).LastWriteTimeUtc);
                         stream.Close();
 					}
 					catch
 					{
 						// Send JSON on error
-						string json = JsonConvert.SerializeObject(new DatabaseResponse("Could not open backup database " + databaseFileName, null), Settings.JsonFormatting);
+						string json = JsonConvert.SerializeObject(new DatabaseResponse("Could not open backup database " + databaseFileName, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 						Processor.WriteJson(json);
 					}
 				}
@@ -89,7 +91,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 
 					// Send DatabaseResponse containing list of queries
-					string json = JsonConvert.SerializeObject(new DatabaseResponse(null, QueryLog.QueryLogsSinceId(Int32.Parse(id))), Settings.JsonFormatting);
+					string json = JsonConvert.SerializeObject(new DatabaseResponse(null, QueryLog.QueryLogsSinceId(Int32.Parse(id))), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 					Processor.WriteJson(json);
 				}
 				catch (Exception e)

@@ -8,6 +8,7 @@ using WaveBox.Model;
 using WaveBox.Static;
 using System.Collections;
 using System;
+using WaveBox.Core.Extensions;
 
 namespace WaveBox.DeviceSync
 {

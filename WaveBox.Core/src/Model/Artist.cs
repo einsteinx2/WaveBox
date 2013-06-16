@@ -5,6 +5,8 @@ using System.Text;
 using WaveBox.Static;
 using Newtonsoft.Json;
 using Cirrious.MvvmCross.Plugins.Sqlite;
+using Ninject;
+using WaveBox.Core.Injected;
 
 namespace WaveBox.Model
 {
@@ -51,7 +53,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				Artist artist = new Artist();
 				artist.ArtistId = itemId;
 				artist.ArtistName = artistName;
@@ -120,7 +122,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.Query<Artist>("SELECT * FROM Artist ORDER BY ArtistName");
 			}
 			catch (Exception e)
@@ -140,7 +142,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.ExecuteScalar<int>("SELECT COUNT(ArtistId) FROM Artist", conn);
 			}
 			catch (Exception e)
@@ -177,7 +179,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 
 				if (exact)
 				{
@@ -219,7 +221,7 @@ namespace WaveBox.Model
 				ISQLiteConnection conn = null;
 				try
 				{
-					conn = Database.GetSqliteConnection();
+					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 
 					var result = conn.DeferredQuery<Artist>("SELECT * FROM Artist WHERE ArtistId = ?", artistId);
 
@@ -250,7 +252,7 @@ namespace WaveBox.Model
 				ISQLiteConnection conn = null;
 				try
 				{
-					conn = Database.GetSqliteConnection();
+					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 					var result = conn.DeferredQuery<Artist>("SELECT * FROM Artist WHERE ArtistName = ?", artistName);
 
 					foreach (Artist a in result)

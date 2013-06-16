@@ -2,6 +2,8 @@ using System;
 using WaveBox.Static;
 using WaveBox.OperationQueue;
 using WaveBox.SessionManagement;
+using WaveBox.Core.Injected;
+using Ninject;
 
 namespace WaveBox
 {
@@ -52,7 +54,7 @@ namespace WaveBox
 			SessionScrub.Start();
 
 			// Queue up the next one
-			SessionScrub.Queue.queueOperation(new SessionScrubOperation(Settings.SessionScrubInterval));
+			SessionScrub.Queue.queueOperation(new SessionScrubOperation(Injection.Kernel.Get<IServerSettings>().SessionScrubInterval));
 		}
 
 		// No need to cancel this operation

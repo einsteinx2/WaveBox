@@ -8,6 +8,8 @@ using TagLib;
 using Newtonsoft.Json;
 using System.Diagnostics;
 using Cirrious.MvvmCross.Plugins.Sqlite;
+using Ninject;
+using WaveBox.Core.Injected;
 
 namespace WaveBox.Model
 {
@@ -52,7 +54,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.Query<Video>("SELECT * FROM Video");
 			}
 			catch (Exception e)
@@ -72,7 +74,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.ExecuteScalar<int>("SELECT COUNT(ItemId) FROM Video");
 			}
 			catch (Exception e)
@@ -92,7 +94,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.ExecuteScalar<long>("SELECT SUM(FileSize) FROM Video");
 			}
 			catch (Exception e)
@@ -112,7 +114,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.ExecuteScalar<long>("SELECT SUM(Duration) FROM Video");
 			}
 			catch (Exception e)
@@ -151,7 +153,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				if (exact)
 				{
 					// Search for exact match
@@ -180,7 +182,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				conn.InsertLogged(this, InsertType.Replace);
 			}
 			catch (Exception e)
@@ -208,7 +210,7 @@ namespace WaveBox.Model
 				ISQLiteConnection conn = null;
 				try
 				{
-					conn = Database.GetSqliteConnection();
+					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 					var result = conn.DeferredQuery<Video>("SELECT * FROM Video WHERE ItemId = ?", videoId);
 
 					foreach (Video v in result)

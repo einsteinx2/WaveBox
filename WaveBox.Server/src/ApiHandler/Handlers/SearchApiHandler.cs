@@ -4,6 +4,8 @@ using System.Web;
 using WaveBox.Static;
 using WaveBox.Model;
 using Newtonsoft.Json;
+using Ninject;
+using WaveBox.Core.Injected;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -108,20 +110,20 @@ namespace WaveBox.ApiHandler.Handlers
 					}
 
 					// Return all results
-					string json = JsonConvert.SerializeObject(new SearchResponse(error, artists, albums, songs, videos), Settings.JsonFormatting);
+					string json = JsonConvert.SerializeObject(new SearchResponse(error, artists, albums, songs, videos), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 					Processor.WriteJson(json);
 				}
 				else
 				{
 					// Return error JSON for empty query
-					string json = JsonConvert.SerializeObject(new SearchResponse("Query cannot be empty", artists, albums, songs, videos), Settings.JsonFormatting);
+					string json = JsonConvert.SerializeObject(new SearchResponse("Query cannot be empty", artists, albums, songs, videos), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 					Processor.WriteJson(json);
 				}
 			}
 			else
 			{
 				// Return error JSON for no query parameter
-				string json = JsonConvert.SerializeObject(new SearchResponse("No search query provided", artists, albums, songs, videos), Settings.JsonFormatting);
+				string json = JsonConvert.SerializeObject(new SearchResponse("No search query provided", artists, albums, songs, videos), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 				Processor.WriteJson(json);
 			}
 		}

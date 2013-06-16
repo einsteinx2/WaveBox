@@ -3,6 +3,8 @@ using WaveBox.Model;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using WaveBox.Static;
+using WaveBox.Core.Injected;
+using Ninject;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -79,7 +81,7 @@ namespace WaveBox.ApiHandler.Handlers
 			// Return all results
 			try
 			{
-				string json = JsonConvert.SerializeObject(new GenresResponse(null, listOfGenres, listOfFolders, listOfArtists, listOfAlbums, listOfSongs), Settings.JsonFormatting);
+				string json = JsonConvert.SerializeObject(new GenresResponse(null, listOfGenres, listOfFolders, listOfArtists, listOfAlbums, listOfSongs), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 				Processor.WriteJson(json);
 			}
 			catch (Exception e)

@@ -110,11 +110,8 @@
     <Reference Include="System.Data.SQLite">
       <HintPath>lib\System.Data.SQLite.dll</HintPath>
     </Reference>
-    <Reference Include="Ninject.Common">
-      <HintPath>lib\Ninject.Common.dll</HintPath>
-    </Reference>
-    <Reference Include="Ninject.NetFx">
-      <HintPath>lib\Ninject.NetFx.dll</HintPath>
+    <Reference Include="Ninject">
+      <HintPath>lib\Ninject.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -196,6 +193,9 @@
     <Compile Include="src\Lastfm.cs" />
     <Compile Include="src\Static\DatabaseBackup.cs" />
     <Compile Include="src\Static\Database.cs" />
+    <Compile Include="src\Extensions\IMediaItemExtensions.cs" />
+    <Compile Include="src\Static\ServerUtility.cs" />
+    <Compile Include="src\Static\ServerSettings.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
@@ -304,8 +304,7 @@
     <None Include="lib\taglib-sharp.dll" />
     <None Include="lib\System.Data.SQLite.dll" />
     <None Include="lib\System.Data.SQLite.Linq.dll" />
-    <None Include="lib\Ninject.Common.dll" />
-    <None Include="lib\Ninject.NetFx.dll" />
+    <None Include="lib\Ninject.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -319,6 +318,7 @@
   <ItemGroup />
   <ItemGroup>
     <Folder Include="src\Static\" />
+    <Folder Include="src\Extensions\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WaveBox.Core\WaveBox.Core.csproj">

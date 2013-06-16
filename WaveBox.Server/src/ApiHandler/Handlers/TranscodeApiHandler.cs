@@ -9,6 +9,9 @@ using WaveBox.Static;
 using WaveBox.TcpServer.Http;
 using WaveBox.Transcoding;
 using Newtonsoft.Json;
+using WaveBox.Server.Extensions;
+using WaveBox.Core.Injected;
+using Ninject;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -84,9 +87,9 @@ namespace WaveBox.ApiHandler.Handlers
 					}
 					
 					// Return an error if no item exists
-					if ((item == null) || (!File.Exists(item.FilePath)))
+					if ((item == null) || (!File.Exists(item.FilePath())))
 					{
-						string json = JsonConvert.SerializeObject(new TranscodeResponse("No media item exists with ID: " + id), Settings.JsonFormatting);
+						string json = JsonConvert.SerializeObject(new TranscodeResponse("No media item exists with ID: " + id), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 						Processor.WriteJson(json);
 						return;
 					}
@@ -253,7 +256,7 @@ namespace WaveBox.ApiHandler.Handlers
 					// Send the file if either there is no transcoder and the original file exists OR
 					// it's a direct transcoder and the base stream exists OR
 					// it's a file transcoder and the transcoded file exists
-					if ((object)Transcoder == null && File.Exists(item.FilePath) || 
+					if ((object)Transcoder == null && File.Exists(item.FilePath()) || 
 						(Transcoder.IsDirect && (object)stream != null) ||
 						(!Transcoder.IsDirect && File.Exists(Transcoder.OutputPath)))
 					{
@@ -295,7 +298,7 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 			else
 			{
-				string json = JsonConvert.SerializeObject(new TranscodeResponse("Missing required parameter 'id'"), Settings.JsonFormatting);
+				string json = JsonConvert.SerializeObject(new TranscodeResponse("Missing required parameter 'id'"), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 				Processor.WriteJson(json);
 			}
 		}

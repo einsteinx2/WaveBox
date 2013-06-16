@@ -3,6 +3,8 @@ using WaveBox.Static;
 using System.Collections.Generic;
 using System.Linq;
 using Cirrious.MvvmCross.Plugins.Sqlite;
+using Ninject;
+using WaveBox.Core.Injected;
 
 namespace WaveBox.Model
 {
@@ -37,7 +39,7 @@ namespace WaveBox.Model
 			try
 			{
 				// insert the genre into the database
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				GenreId = itemId;
 				int affected = conn.InsertLogged(this);
 
@@ -61,7 +63,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.Query<Artist>("SELECT Artist.* " +
 				                          "FROM Genre " + 
 				                          "LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
@@ -85,7 +87,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.Query<Album>("SELECT Album.* " +
 				                         "FROM Genre " + 
 				                         "LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
@@ -109,7 +111,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.Query<Song>("SELECT Song.*, Genre.GenreName " +
 				                        "FROM Genre " + 
 				                        "LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
@@ -132,7 +134,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.Query<Folder>("SELECT Folder.* " +
 				                          "FROM Genre " + 
 				                          "LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
@@ -156,7 +158,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.Query<Genre>("SELECT * FROM Genre ORDER BY GenreName");
 			}
 			catch (Exception e)
@@ -188,7 +190,7 @@ namespace WaveBox.Model
 				ISQLiteConnection conn = null;
 				try
 				{
-					conn = Database.GetSqliteConnection();
+					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 					var result = conn.DeferredQuery<Genre>("SELECT * FROM Genre WHERE GenreId = ?", genreId);
 
 					foreach (Genre g in result)
@@ -235,7 +237,7 @@ namespace WaveBox.Model
 						ISQLiteConnection conn = null;
 						try
 						{
-							conn = Database.GetSqliteConnection();
+							conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 							var result = conn.DeferredQuery<Genre>("SELECT * FROM Genre WHERE GenreName = ?", genreName);
 
 							foreach (Genre g in result)

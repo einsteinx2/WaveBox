@@ -7,6 +7,8 @@ using WaveBox.Model;
 using Newtonsoft.Json;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using System.IO;
+using Ninject;
+using WaveBox.Core.Injected;
 
 namespace WaveBox.Model
 {
@@ -85,7 +87,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				List<Folder> folders = conn.Query<Folder>("SELECT FolderId FROM Folder WHERE ParentFolderId = ?", FolderId);
 				folders.Sort(CompareFolderByName);
 				return folders;
@@ -137,7 +139,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 
 				FolderId = itemId;
 				if (!isMediaFolder)
@@ -166,7 +168,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				int id = conn.ExecuteScalar<int>("SELECT FolderId FROM Folder WHERE FolderPath = ?", parentFolderPath);
 
 				if (id == 0)
@@ -195,12 +197,14 @@ namespace WaveBox.Model
 
 		public static List<Folder> MediaFolders()
 		{
-			if (Settings.MediaFolders == null) 
+			IServerSettings serverSettings = Injection.Kernel.Get<IServerSettings>();
+
+			if (serverSettings.MediaFolders == null) 
 			{
 				ISQLiteConnection conn = null;
 				try 
 				{
-					conn = Database.GetSqliteConnection();
+					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 					return conn.Query<Folder>("SELECT * FROM Folder WHERE ParentFolderId IS NULL");
 				} 
 				catch (Exception e) 
@@ -214,7 +218,7 @@ namespace WaveBox.Model
 			} 
 			else
 			{
-				return Settings.MediaFolders;
+				return serverSettings.MediaFolders;
 			}
 
 			return new List<Folder>();
@@ -251,7 +255,7 @@ namespace WaveBox.Model
 				ISQLiteConnection conn = null;
 				try
 				{
-					conn = Database.GetSqliteConnection();
+					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 
 					List<Folder> folder = conn.Query<Folder>("SELECT * FROM Folder WHERE FolderId = ? LIMIT 1", folderId);
 					if (folder.Count > 0)
@@ -294,8 +298,8 @@ namespace WaveBox.Model
 				ISQLiteConnection conn = null;
 				try
 				{
-					conn = Database.GetSqliteConnection();
-					if (folder.IsMediaFolder() || Settings.MediaFolders == null)
+					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+					if (folder.IsMediaFolder() || Injection.Kernel.Get<IServerSettings>().MediaFolders == null)
 					{
 						int folderId = conn.ExecuteScalar<int>("SELECT FolderId FROM Folder WHERE FolderName = ? AND ParentFolderId IS NULL", folder.FolderName);
 						folder.FolderId = folderId == 0 ? (int?)null : folderId;
@@ -317,44 +321,6 @@ namespace WaveBox.Model
 					conn.Close();
 				}
 
-				return folder;
-			}
-
-			public Folder CreateFolder(string path, bool mediafolder)
-			{
-				if (path == null || path == "")
-				{
-					// No path so just return a folder
-					return new Folder();
-				}
-
-				ISQLiteConnection conn = null;
-				try
-				{
-					conn = Database.GetSqliteConnection();
-					IList<Folder> result = conn.Query<Folder>("SELECT * FROM Folder WHERE FolderPath = ? AND MediaFolderId IS NULL", path);
-
-					foreach (Folder f in result)
-					{
-						if (path.Equals(f.FolderPath))
-						{
-							return f;
-						}
-					}
-				}
-				catch (Exception e)
-				{
-					logger.Error(e);
-				}
-				finally
-				{
-					conn.Close();
-				}
-
-				// If not in database, return a folder object with the specified parameters
-				Folder folder = new Folder();
-				folder.FolderPath = path;
-				folder.FolderName = Path.GetFileName(path);
 				return folder;
 			}
 		}

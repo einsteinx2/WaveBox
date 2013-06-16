@@ -7,6 +7,9 @@ using WaveBox.Static;
 using WaveBox.Model;
 using System.Security.Cryptography;
 using Cirrious.MvvmCross.Plugins.Sqlite;
+using WaveBox.Core.Extensions;
+using Ninject;
+using WaveBox.Core.Injected;
 
 namespace WaveBox.Model
 {
@@ -58,7 +61,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.ExecuteScalar<string>("SELECT User.UserName FROM Session JOIN User USING (UserId) WHERE SessionId = ?", sessionId);
 			}
 			catch (Exception e)
@@ -91,7 +94,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.Query<Session>("SELECT RowId, * FROM Session WHERE UserId = ?", UserId);
 			}
 			catch (Exception e)
@@ -111,7 +114,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.Query<User>("SELECT * FROM User ORDER BY UserName");
 			}
 			catch (Exception e)
@@ -131,7 +134,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.Query<User>("SELECT * FROM User WHERE DeleteTime <= ? ORDER BY UserName", DateTime.Now.ToUniversalUnixTimestamp());
 			}
 			catch (Exception e)
@@ -196,7 +199,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				int affected = conn.Execute("UPDATE User SET PasswordHash = ?, PasswordSalt = ? WHERE UserName = ?", hash, salt, UserName);
 
 				if (affected > 0)
@@ -220,7 +223,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				int affected = conn.Execute("UPDATE User SET LastfmSession = ? WHERE UserName = ?", sessionKey, UserName);
 
 				if (affected > 0)
@@ -286,7 +289,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				int affected = conn.Execute("DELETE FROM User WHERE UserId = ?", UserId);
 
 				if (affected > 0)
@@ -312,7 +315,7 @@ namespace WaveBox.Model
 				ISQLiteConnection conn = null;
 				try
 				{
-					conn = Database.GetSqliteConnection();
+					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 					var result = conn.DeferredQuery<User>("SELECT * FROM User WHERE UserId = ?", userId);
 
 					foreach (var u in result)
@@ -339,7 +342,7 @@ namespace WaveBox.Model
 				ISQLiteConnection conn = null;
 				try
 				{
-					conn = Database.GetSqliteConnection();
+					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 					var result = conn.DeferredQuery<User>("SELECT * FROM User WHERE UserName = ?", userName);
 
 					foreach (var u in result)
@@ -375,7 +378,7 @@ namespace WaveBox.Model
 				ISQLiteConnection conn = null;
 				try
 				{
-					conn = Database.GetSqliteConnection();
+					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 					var u = new User();
 					u.UserId = itemId;
 					u.UserName = userName;

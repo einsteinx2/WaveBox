@@ -9,6 +9,9 @@ using WaveBox.Static;
 using WaveBox.Transcoding;
 using WaveBox.TcpServer.Http;
 using Newtonsoft.Json;
+using WaveBox.Server.Extensions;
+using WaveBox.Core.Injected;
+using Ninject;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -65,9 +68,9 @@ namespace WaveBox.ApiHandler.Handlers
 					}
 
 					// Return an error if none exists
-					if ((item == null) || (!File.Exists(item.FilePath)))
+					if ((item == null) || (!File.Exists(item.FilePath())))
 					{
-						string json = JsonConvert.SerializeObject(new TranscodeHlsResponse("No media item exists with ID: " + id), Settings.JsonFormatting);
+						string json = JsonConvert.SerializeObject(new TranscodeHlsResponse("No media item exists with ID: " + id), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 						Processor.WriteJson(json);
 						return;
 					}
@@ -96,7 +99,7 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 			else
 			{
-				string json = JsonConvert.SerializeObject(new TranscodeHlsResponse("Missing required parameter 'id'"), Settings.JsonFormatting);
+				string json = JsonConvert.SerializeObject(new TranscodeHlsResponse("Missing required parameter 'id'"), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 				Processor.WriteJson(json);
 			}
 		}

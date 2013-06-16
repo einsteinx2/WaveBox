@@ -5,6 +5,8 @@ using System.Text;
 using WaveBox.Static;
 using Newtonsoft.Json;
 using Cirrious.MvvmCross.Plugins.Sqlite;
+using Ninject;
+using WaveBox.Core.Injected;
 
 namespace WaveBox.Model
 {
@@ -91,7 +93,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				var result = conn.DeferredQuery<Art>("SELECT ArtItem.ArtId FROM Song " +
 				                                  	 "LEFT JOIN ArtItem ON Song.ItemId = ArtItem.ItemId " +
 				                                  	 "WHERE Song.AlbumId = ? AND ArtItem.ArtId IS NOT NULL GROUP BY ArtItem.ArtId", AlbumId);
@@ -119,7 +121,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				var result = conn.DeferredQuery<Art>("SELECT ArtItem.ArtId FROM Song " +
 				                                     "LEFT JOIN ArtItem ON Song.FolderId = ArtItem.ItemId " +
 				                                     "WHERE Song.AlbumId = ? AND ArtItem.ArtId IS NOT NULL GROUP BY ArtItem.ArtId", AlbumId);
@@ -153,7 +155,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				Album album = new Album();
 				album.AlbumId = itemId;
 				album.AlbumName = albumName;
@@ -216,7 +218,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.Query<Album>("SELECT * FROM Album ORDER BY AlbumName");
 			}
 			catch (Exception e)
@@ -236,7 +238,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.ExecuteScalar<int>("SELECT COUNT(ItemId) FROM Album");
 			}
 			catch (Exception e)
@@ -273,7 +275,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 
 				if (exact)
 				{
@@ -303,7 +305,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.Query<Album>("SELECT * FROM Album ORDER BY RANDOM() LIMIT " + limit, conn);
 			}
 			catch (Exception e)
@@ -334,7 +336,7 @@ namespace WaveBox.Model
 				ISQLiteConnection conn = null;
 				try
 				{
-					conn = Database.GetSqliteConnection();
+					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 					var result = conn.DeferredQuery<Album>("SELECT * FROM Album WHERE AlbumId = ?", albumId);
 
 					foreach (Album a in result)
@@ -364,7 +366,7 @@ namespace WaveBox.Model
 				ISQLiteConnection conn = null;
 				try
 				{
-					conn = Database.GetSqliteConnection();
+					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 					var result = conn.DeferredQuery<Album>("SELECT * FROM Album WHERE AlbumName = ? AND ArtistId = ?", albumName, artistId);
 
 					foreach (Album a in result)

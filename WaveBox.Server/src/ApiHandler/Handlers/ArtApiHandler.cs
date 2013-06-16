@@ -10,6 +10,10 @@ using WaveBox.Static;
 using WaveBox.TcpServer.Http;
 using TagLib;
 using System.Linq;
+using WaveBox.Core.Extensions;
+using WaveBox.Server.Extensions;
+using Ninject;
+using WaveBox.Core.Injected;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -73,7 +77,7 @@ namespace WaveBox.ApiHandler.Handlers
 				if (size != Int32.MaxValue)
 				{
 					bool imageMagickFailed = false;
-					if (Utility.DetectOS() != Utility.OS.Windows)
+					if (ServerUtility.DetectOS() != ServerUtility.OS.Windows)
 					{
 						// First try ImageMagick
 						try
@@ -89,7 +93,7 @@ namespace WaveBox.ApiHandler.Handlers
 					}
 
 					// If ImageMagick dll isn't loaded, or this is Windows,  
-					if (imageMagickFailed || Utility.DetectOS() == Utility.OS.Windows)
+					if (imageMagickFailed || ServerUtility.DetectOS() == ServerUtility.OS.Windows)
 					{
 						logger.Info("Using GDI to resize image");
 						// Resize image, put it in memory stream
@@ -236,7 +240,7 @@ namespace WaveBox.ApiHandler.Handlers
 			TagLib.File f = null;
 			try
 			{
-				f = TagLib.File.Create(song.FilePath);
+				f = TagLib.File.Create(song.FilePath());
 				byte[] data = f.Tag.Pictures[0].Data.Data;
 
 				stream = new MemoryStream(data);
@@ -272,7 +276,7 @@ namespace WaveBox.ApiHandler.Handlers
 		{
 			string artPath = null;
 
-			foreach (string fileName in Settings.FolderArtNames)
+			foreach (string fileName in Injection.Kernel.Get<IServerSettings>().FolderArtNames)
 			{
 				string path = folder.FolderPath + Path.DirectorySeparatorChar + fileName;
 				if (System.IO.File.Exists(path))

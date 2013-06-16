@@ -8,6 +8,9 @@ using WaveBox.Model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Schema;
 using WaveBox.TcpServer.Http;
+using Ninject;
+using WaveBox.Core.Injected;
+using WaveBox.Core;
 
 namespace WaveBox.ApiHandler
 {
@@ -36,31 +39,31 @@ namespace WaveBox.ApiHandler
 				bool success = false;
 				try
 				{
-					success = Settings.WriteSettings(json);
-					Settings.Reload();
+					success = Injection.Kernel.Get<IServerSettings>().WriteSettings(json);
+					Injection.Kernel.Get<IServerSettings>().Reload();
 				}
 				catch (JsonException)
 				{
 					// Failure if invalid JSON provided
-					Processor.WriteJson(JsonConvert.SerializeObject(new SettingsResponse("Invalid JSON", Settings.SettingsModel), Settings.JsonFormatting));
+					Processor.WriteJson(JsonConvert.SerializeObject(new SettingsResponse("Invalid JSON", Injection.Kernel.Get<IServerSettings>().SettingsModel), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 					return;
 				}
 				
 				// If settings wrote successfully, return success object
 				if (success)
 				{
-					Processor.WriteJson(JsonConvert.SerializeObject(new SettingsResponse(null, Settings.SettingsModel), Settings.JsonFormatting));
+					Processor.WriteJson(JsonConvert.SerializeObject(new SettingsResponse(null, Injection.Kernel.Get<IServerSettings>().SettingsModel), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 				}
 				else
 				{
 					// If no settings changed, report a 'harmless' error
-					Processor.WriteJson(JsonConvert.SerializeObject(new SettingsResponse("No settings were changed", Settings.SettingsModel), Settings.JsonFormatting));
+					Processor.WriteJson(JsonConvert.SerializeObject(new SettingsResponse("No settings were changed", Injection.Kernel.Get<IServerSettings>().SettingsModel), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 				}
 			}
 			else
 			{
 				// If no parameter provided, return settings
-				Processor.WriteJson(JsonConvert.SerializeObject(new SettingsResponse(null, Settings.SettingsModel), Settings.JsonFormatting));
+				Processor.WriteJson(JsonConvert.SerializeObject(new SettingsResponse(null, Injection.Kernel.Get<IServerSettings>().SettingsModel), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 			}
 		}
 		
@@ -70,9 +73,9 @@ namespace WaveBox.ApiHandler
 			public string Error { get; set; }
 
 			[JsonProperty("settings")]
-			public SettingsData Settings { get; set; }
+			public ServerSettingsData Settings { get; set; }
 			
-			public SettingsResponse(string error, SettingsData settings)
+			public SettingsResponse(string error, ServerSettingsData settings)
 			{
 				Error = error;
 				Settings = settings;

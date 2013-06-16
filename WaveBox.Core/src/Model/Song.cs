@@ -10,6 +10,8 @@ using Newtonsoft.Json;
 using System.Diagnostics;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using System.Collections;
+using Ninject;
+using WaveBox.Core.Injected;
 
 namespace WaveBox.Model
 {
@@ -59,7 +61,7 @@ namespace WaveBox.Model
 			try
 			{
 				// insert the song into the database
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				conn.InsertLogged(this, InsertType.Replace);
 			}
 			catch (Exception e)
@@ -81,7 +83,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 
 				StringBuilder sb = new StringBuilder("SELECT Song.*, Artist.ArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
 				                                     "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
@@ -119,7 +121,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.Query<Song>("SELECT Song.*, Artist.ArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
 				                        "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
 				                        "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
@@ -143,7 +145,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.ExecuteScalar<int>("SELECT COUNT(ItemId) FROM Song");
 			}
 			catch (Exception e)
@@ -164,7 +166,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.ExecuteScalar<long>("SELECT SUM(FileSize) FROM Song");
 			}
 			catch (Exception e)
@@ -185,7 +187,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.ExecuteScalar<long>("SELECT SUM(Duration) FROM Song");
 			}
 			catch (Exception e)
@@ -227,7 +229,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 
 				List<Song> songs;
 				if (exact)
@@ -278,7 +280,7 @@ namespace WaveBox.Model
 				ISQLiteConnection conn = null;
 				try
 				{
-					conn = Database.GetSqliteConnection();
+					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 					IEnumerable result = conn.DeferredQuery<Song>("SELECT Song.*, Artist.ArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
 					                                              "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
 					                                              "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +

@@ -1,5 +1,7 @@
 using System;
 using Mono.Zeroconf;
+using WaveBox.Core.Injected;
+using Ninject;
 
 namespace WaveBox.Static
 {
@@ -38,7 +40,7 @@ namespace WaveBox.Static
 				ZeroConfService.Name = Name;
 				ZeroConfService.RegType = RegType;
 				ZeroConfService.ReplyDomain = ReplyDomain;
-				ZeroConfService.Port = (short)Settings.Port;
+				ZeroConfService.Port = (short)Injection.Kernel.Get<IServerSettings>().Port;
 
 				TxtRecord record = new TxtRecord();
 				record.Add(ServerUrlKey, serverUrl);

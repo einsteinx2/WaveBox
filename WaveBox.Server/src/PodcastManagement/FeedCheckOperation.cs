@@ -2,6 +2,8 @@ using System;
 using WaveBox.OperationQueue;
 using WaveBox.PodcastManagement;
 using WaveBox.Static;
+using WaveBox.Core.Injected;
+using Ninject;
 
 namespace WaveBox
 {
@@ -42,7 +44,7 @@ namespace WaveBox
 			{
 				podcast.DownloadNewEpisodes();
 			}
-			PodcastManagement.DownloadQueue.FeedChecks.queueOperation(new FeedCheckOperation(Settings.PodcastCheckInterval));
+			PodcastManagement.DownloadQueue.FeedChecks.queueOperation(new FeedCheckOperation(Injection.Kernel.Get<IServerSettings>().PodcastCheckInterval));
 		}
 
 		public void Cancel()

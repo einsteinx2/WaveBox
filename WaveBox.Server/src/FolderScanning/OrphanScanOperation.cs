@@ -10,6 +10,10 @@ using System.IO;
 using System.Diagnostics;
 using WaveBox.OperationQueue;
 using Cirrious.MvvmCross.Plugins.Sqlite;
+using WaveBox.Core.Extensions;
+using WaveBox.Server.Extensions;
+using WaveBox.Core.Injected;
+using Ninject;
 
 namespace WaveBox.FolderScanning
 {
@@ -80,7 +84,7 @@ namespace WaveBox.FolderScanning
 			ArrayList mediaFolderIds = new ArrayList();
 			ArrayList orphanFolderIds = new ArrayList();
 
-			foreach (Folder mediaFolder in Settings.MediaFolders)
+			foreach (Folder mediaFolder in Injection.Kernel.Get<IServerSettings>().MediaFolders)
 			{
 				mediaFolderIds.Add (mediaFolder.FolderId);
 			}
@@ -88,7 +92,7 @@ namespace WaveBox.FolderScanning
 			ISQLiteConnection conn = null;
 			try 
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 
 				// Find the orphaned folders
 				var result = conn.DeferredQuery<Folder>("SELECT * FROM Folder");
@@ -107,7 +111,7 @@ namespace WaveBox.FolderScanning
 					{
 						// Check if it's in the list of root media folders.  If not, it's an orphan
 						bool success = false;
-						foreach (Folder f in Settings.MediaFolders)
+						foreach (Folder f in Injection.Kernel.Get<IServerSettings>().MediaFolders)
 						{
 							if (f.FolderPath == folder.FolderPath)
 							{
@@ -169,14 +173,14 @@ namespace WaveBox.FolderScanning
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 
 				// Find the orphaned songs
 				var result = conn.DeferredQuery<Song>("SELECT * FROM Song");
 				foreach (Song song in result)
 				{
 					long timestamp = DateTime.Now.ToUniversalUnixTimestamp();
-					bool exists = File.Exists(song.FilePath);
+					bool exists = File.Exists(song.FilePath());
 					totalExistsTime += DateTime.Now.ToUniversalUnixTimestamp() - timestamp;
 
 					if (!exists)
@@ -221,7 +225,7 @@ namespace WaveBox.FolderScanning
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 
 				// Find the orphaned artists
 				var result = conn.DeferredQuery<Artist>("SELECT Artist.ArtistId FROM Artist " +
@@ -269,7 +273,7 @@ namespace WaveBox.FolderScanning
 			try
 			{
 				// Find the orphaned albums
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				var result = conn.DeferredQuery<Album>("SELECT Album.AlbumId FROM Album " +
 				                                       "LEFT JOIN Song ON Album.AlbumId = Song.AlbumId " + 
 				                                       "WHERE Song.AlbumId IS NULL");
@@ -315,7 +319,7 @@ namespace WaveBox.FolderScanning
 			try
 			{
 				// Find orphaned genres
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				var result = conn.DeferredQuery<Genre>("SELECT Genre.GenreId FROM Genre " +
 				                                       "LEFT JOIN Song ON Genre.GenreId = Song.GenreId " + 
 				                                       "WHERE Song.GenreId IS NULL");
@@ -361,7 +365,7 @@ namespace WaveBox.FolderScanning
 			try
 			{
 				// Check for videos which don't have a folder path, meaning that they're orphaned
-				conn = Database.GetSqliteConnection();
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				var result = conn.DeferredQuery<Video>("SELECT Video.ItemId FROM Video " +
 				                                       "LEFT JOIN Folder ON Video.FolderId = Folder.FolderId " +
 				                                       "WHERE Folder.FolderPath IS NULL");

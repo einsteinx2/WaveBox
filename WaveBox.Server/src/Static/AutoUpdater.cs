@@ -4,6 +4,7 @@ using System.Threading;
 using System.Net;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using WaveBox.Core.Extensions;
 
 namespace WaveBox.Static
 {
