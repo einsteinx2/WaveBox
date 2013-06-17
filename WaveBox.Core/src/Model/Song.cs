@@ -167,7 +167,13 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				return conn.ExecuteScalar<long>("SELECT SUM(FileSize) FROM Song");
+
+				// Check if at least 1 song exists, to prevent exception if summing null
+				int exists = conn.ExecuteScalar<int>("SELECT * FROM Song LIMIT 1");
+				if (exists > 0)
+				{
+					return conn.ExecuteScalar<long>("SELECT SUM(FileSize) FROM Song");
+				}
 			}
 			catch (Exception e)
 			{
@@ -188,7 +194,13 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				return conn.ExecuteScalar<long>("SELECT SUM(Duration) FROM Song");
+
+				// Check if at least 1 song exists, to prevent exception if summing null
+				int exists = conn.ExecuteScalar<int>("SELECT * FROM Song LIMIT 1");
+				if (exists > 0)
+				{
+					return conn.ExecuteScalar<long>("SELECT SUM(Duration) FROM Song");
+				}
 			}
 			catch (Exception e)
 			{
