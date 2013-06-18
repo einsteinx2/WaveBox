@@ -52,8 +52,9 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
+				// Not logged, because sessions aren't needed in the backup database anyway
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				int affected = conn.ExecuteLogged("UPDATE Session SET UpdateTime = ? WHERE SessionId = ?", unixTime, SessionId);
+				int affected = conn.Execute("UPDATE Session SET UpdateTime = ? WHERE SessionId = ?", unixTime, SessionId);
 
 				if (affected > 0)
 				{
