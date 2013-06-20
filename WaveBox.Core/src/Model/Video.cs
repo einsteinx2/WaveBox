@@ -17,7 +17,7 @@ namespace WaveBox.Model
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public static readonly string[] ValidExtensions = { ".m4v", ".mp4", ".mpg", ".mkv", ".avi" };
+		public static readonly string[] ValidExtensions = { "m4v", "mp4", "mpg", "mkv", "avi" };
 
 		[JsonIgnore, IgnoreRead, IgnoreWrite]
 		public override ItemType ItemType { get { return ItemType.Video; } }
