@@ -239,7 +239,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				return conn.ExecuteScalar<int>("SELECT COUNT(ItemId) FROM Album");
+				return conn.ExecuteScalar<int>("SELECT COUNT(AlbumId) FROM Album");
 			}
 			catch (Exception e)
 			{

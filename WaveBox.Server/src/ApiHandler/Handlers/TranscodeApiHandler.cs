@@ -65,7 +65,7 @@ namespace WaveBox.ApiHandler.Handlers
 					// Optionally estimate content length
 					if (Uri.Parameters.ContainsKey("estimateContentLength"))
 					{
-						estimateContentLength = Utility.IsTrue(Uri.Parameters["estimateContentLength"]);
+						estimateContentLength = Uri.Parameters["estimateContentLength"].IsTrue();
 					}
 
 					// Get the media item associated with this id
@@ -97,7 +97,7 @@ namespace WaveBox.ApiHandler.Handlers
 					// Optionally add isDirect parameter
 					if (Uri.Parameters.ContainsKey("isDirect"))
 					{
-						isDirect = Utility.IsTrue(Uri.Parameters["isDirect"]);
+						isDirect = Uri.Parameters["isDirect"].IsTrue();
 					}
 
 					// Handle the Range header to start from later in the file
