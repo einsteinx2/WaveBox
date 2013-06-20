@@ -19,7 +19,7 @@ namespace WaveBox.Model
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public static readonly string[] ValidExtensions = { ".mp3", ".m4a", ".flac", ".wv", ".mpc", ".ogg", ".wma" };
+		public static readonly string[] ValidExtensions = { "mp3", "m4a", "flac", "wv", "mpc", "ogg", "wma" };
 
 		[JsonIgnore]
 		public override ItemType ItemType { get { return ItemType.Song; } }
