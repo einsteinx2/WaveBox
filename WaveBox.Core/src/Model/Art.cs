@@ -16,7 +16,7 @@ namespace WaveBox.Model
 {
 	public class Art
 	{
-		public static readonly string[] ValidExtensions = { ".jpg", ".jpeg", ".png", ".bmp", ".gif" };
+		public static readonly string[] ValidExtensions = { "jpg", "jpeg", "png", "bmp", "gif" };
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		/// <summary>
