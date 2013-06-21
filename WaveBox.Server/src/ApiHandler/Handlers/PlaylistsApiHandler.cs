@@ -128,9 +128,10 @@ namespace WaveBox.ApiHandler.Handlers
 								}
 								listOfMediaItems = playlist.ListOfMediaItems();
 							}
+							break;
 						
 						case "list":
-							default:
+						default:
 							listOfMediaItems = playlist.ListOfMediaItems();
 							break;
 					}
