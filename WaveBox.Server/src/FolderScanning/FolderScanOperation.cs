@@ -286,7 +286,7 @@ namespace WaveBox.FolderScanning
 						
 						foreach (MediaItem m in items)
 						{
-							if(m.ArtId == null)
+							if (m.ArtId == null)
 							{
 								if (logger.IsInfoEnabled) logger.Info("Updating art id for item " + m.ItemId + ". (" + (m.ArtId == null ? "null" : m.ArtId.ToString()) + " -> " + newArtId + ")");
 								Art.UpdateArtItemRelationship(newArtId, m.ItemId, false);
@@ -321,10 +321,6 @@ namespace WaveBox.FolderScanning
 
 		public Song CreateSong(string filePath, int? folderId, TagLib.File file)
 		{
-			// We need to check to make sure the tag isn't corrupt before handing off to this method, anyway, so just feed in the tag
-			// file that we checked for corruption.
-			//TagLib.File file = TagLib.File.Create(fsFile.FullName);
-
 			int? itemId = Item.GenerateItemId(ItemType.Song);
 			if (itemId == null)
 			{
@@ -448,9 +444,9 @@ namespace WaveBox.FolderScanning
 			try
 			{
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				string artId = conn.ExecuteScalar<string>("SELECT ArtId FROM Art WHERE LastModified = ? AND FilePath = ?", filePath, lastModified);
+				string artId = conn.ExecuteScalar<string>("SELECT ArtId FROM Art WHERE LastModified = ? AND FilePath = ?", lastModified, filePath);
 
-				if (ReferenceEquals(artId, null))
+				if (!ReferenceEquals(artId, null))
 				{
 					needsUpdating = false;
 				}
@@ -660,10 +656,6 @@ namespace WaveBox.FolderScanning
 
 		private Video CreateVideo(string filePath, int? folderId, TagLib.File file)
 		{
-			// We need to check to make sure the tag isn't corrupt before handing off to this method, anyway, so just feed in the tag
-			// file that we checked for corruption.
-			//TagLib.File file = TagLib.File.Create(fsFile.FullName);
-
 			int? itemId = Item.GenerateItemId(ItemType.Video);
 			if (itemId == null)
 			{
@@ -674,8 +666,6 @@ namespace WaveBox.FolderScanning
 			video.ItemId = itemId;
 
 			FileInfo fsFile = new FileInfo(filePath);
-			//TagLib.Tag tag = file.Tag;
-			//var lol = file.Properties.Codecs;
 			video.FolderId = folderId;
 
 			video.FileType = video.FileType.FileTypeForTagLibMimeType(file.MimeType);
