@@ -94,7 +94,7 @@ namespace WaveBox.Model
 				conn.Close();
 			}
 
-			return itemIds.ToString().MD5();
+			return itemIds.ToString().MD5().Replace("-", string.Empty);
 		}
 
 		public void UpdateDatabase()
@@ -116,15 +116,17 @@ namespace WaveBox.Model
 					PlaylistCount = 0;
 					PlaylistDuration = 0;
 					LastUpdateTime = DateTime.Now.ToUniversalUnixTimestamp();
+					Md5Hash = CalculateHash();
 
 					conn.ExecuteLogged("INSERT INTO Playlist (PlaylistId, PlaylistName, PlaylistCount, PlaylistDuration, Md5Hash, LastUpdateTime) " +
-					                   "VALUES (?, ?, ?, ?, ?, ?)", PlaylistId, PlaylistName == null ? "" : PlaylistName, PlaylistCount, PlaylistDuration, CalculateHash(), LastUpdateTime);
+					                   "VALUES (?, ?, ?, ?, ?, ?)", PlaylistId, PlaylistName == null ? "" : PlaylistName, PlaylistCount, PlaylistDuration, Md5Hash, LastUpdateTime);
 				}
 				else
 				{
 					LastUpdateTime = DateTime.Now.ToUniversalUnixTimestamp();
+					Md5Hash = CalculateHash();
 					conn.ExecuteLogged("UPDATE Playlist SET PlaylistName = ?, PlaylistCount = ?, PlaylistDuration = ?, Md5Hash = ?, LastUpdateTime = ? " +
-					                   "WHERE PlaylistId = ?", PlaylistName == null ? "" : PlaylistName, PlaylistCount, PlaylistDuration, PlaylistId == 0 ? "" : CalculateHash(), LastUpdateTime, PlaylistId);
+					                   "WHERE PlaylistId = ?", PlaylistName == null ? "" : PlaylistName, PlaylistCount, PlaylistDuration, Md5Hash, LastUpdateTime, PlaylistId);
 				}
 			}
 			catch (Exception e)
@@ -510,8 +512,9 @@ namespace WaveBox.Model
 						PlaylistCount++;
 						PlaylistDuration += (int)item.Duration;
 						LastUpdateTime = DateTime.Now.ToUniversalUnixTimestamp();
+						Md5Hash = CalculateHash();
 						conn.ExecuteLogged("UPDATE Playlist SET PlaylistName = ?, PlaylistCount = ?, PlaylistDuration = ?, Md5Hash = ?, LastUpdateTime = ? " +
-						                   "WHERE PlaylistId = ?", PlaylistName == null ? "" : PlaylistName, PlaylistCount, PlaylistDuration, PlaylistId == 0 ? "" : CalculateHash(), LastUpdateTime, PlaylistId);
+						                   "WHERE PlaylistId = ?", PlaylistName == null ? "" : PlaylistName, PlaylistCount, PlaylistDuration, Md5Hash, LastUpdateTime, PlaylistId);
 
 						conn.Commit();
 					}

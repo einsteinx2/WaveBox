@@ -134,6 +134,9 @@ namespace WaveBox.ApiHandler.Handlers
 							listOfMediaItems = playlist.ListOfMediaItems();
 							break;
 					}
+
+					// Return the playlist so the client can use the info
+					listOfPlaylists.Add(playlist);
 				}
 			}
 			else if (action.Equals("create"))
@@ -167,6 +170,7 @@ namespace WaveBox.ApiHandler.Handlers
 						}
 
 						listOfMediaItems = playlist.ListOfMediaItems();
+						listOfPlaylists.Add(playlist);
 					}
 					else
 					{
