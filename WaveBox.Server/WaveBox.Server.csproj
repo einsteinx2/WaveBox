@@ -196,6 +196,7 @@
     <Compile Include="src\Extensions\IMediaItemExtensions.cs" />
     <Compile Include="src\Static\ServerUtility.cs" />
     <Compile Include="src\Static\ServerSettings.cs" />
+    <Compile Include="src\ApiHandler\Handlers\PlaylistsApiHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">

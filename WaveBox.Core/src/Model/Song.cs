@@ -285,7 +285,7 @@ namespace WaveBox.Model
 		 * Factory
 		 */
 
-		public class Factory
+		public new class Factory
 		{
 			public Song CreateSong(int songId)
 			{

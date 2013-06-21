@@ -13,8 +13,6 @@ namespace WaveBox.Model
 {
 	public class MediaItem : IMediaItem
 	{
-		//private static Logger logger = LogManager.GetCurrentClassLogger();
-
 		[JsonIgnore, IgnoreRead, IgnoreWrite]
 		public virtual ItemType ItemType { get { return ItemType.Unknown; } }
 
@@ -101,6 +99,30 @@ namespace WaveBox.Model
 		public override int GetHashCode()
 		{
 			return ItemId.GetHashCode();
+		}
+
+		public class Factory
+		{
+			public Factory()
+			{
+			}
+
+			public MediaItem CreateMediaItem(int itemId)
+			{
+				MediaItem item = null;
+				ItemType type = Item.ItemTypeForItemId(itemId);
+				switch (type)
+				{
+					case ItemType.Song:
+						item = new Song.Factory().CreateSong(itemId);
+						break;
+					case ItemType.Video:
+						item = new Video.Factory().CreateVideo(itemId);
+						break;
+				}
+
+				return item;
+			}
 		}
 	}
 }

@@ -215,7 +215,7 @@ namespace WaveBox.Model
 			return x.FileName.CompareTo(y.FileName);
 		}
 
-		public class Factory
+		public new class Factory
 		{
 			public Video CreateVideo(int videoId)
 			{

@@ -8,7 +8,7 @@ namespace WaveBox.Model
 
 		public int? PlaylistId { get; set; }
 
-		public ItemType? ItemType { get; set; }
+		public ItemType ItemType { get; set; }
 
 		public int? ItemId { get; set; }
 

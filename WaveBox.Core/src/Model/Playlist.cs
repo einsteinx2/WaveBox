@@ -49,6 +49,26 @@ namespace WaveBox.Model
 		{
 		}
 
+		public static List<Playlist> AllPlaylists()
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+				return conn.Query<Playlist>("SELECT * FROM Playlist");
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				conn.Close();
+			}
+
+			return new List<Playlist>();
+		}
+
 		public string CalculateHash()
 		{
 			StringBuilder itemIds = new StringBuilder();
@@ -57,7 +77,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				var result = conn.Query<PlaylistItem>("SELECT ItemId FROM PlaylistItem WHERE PlaylistId = ?", PlaylistId);
+				var result = conn.DeferredQuery<PlaylistItem>("SELECT ItemId FROM PlaylistItem WHERE PlaylistId = ?", PlaylistId);
 				
 				foreach (PlaylistItem playlistItem in result)
 				{
@@ -75,20 +95,6 @@ namespace WaveBox.Model
 			}
 
 			return itemIds.ToString().MD5();
-		}
-
-		public void UpdateProperties(int itemsAdded, int durationAdded)
-		{
-			// update playlist count
-			int? playlistCount = PlaylistCount;
-			PlaylistCount = playlistCount + itemsAdded;
-
-			// update last update time
-			LastUpdateTime = DateTime.Now.ToUniversalUnixTimestamp() - (new DateTime(1970, 1, 1).ToUniversalUnixTimestamp());
-
-			// update playlist duration
-			int? playlistDuration = PlaylistDuration;
-			PlaylistDuration = (playlistDuration + durationAdded);
 		}
 
 		public void UpdateDatabase()
@@ -109,13 +115,14 @@ namespace WaveBox.Model
 					PlaylistId = itemId;
 					PlaylistCount = 0;
 					PlaylistDuration = 0;
-					LastUpdateTime = DateTime.Now.ToUniversalUnixTimestamp() - (new DateTime(1970, 1, 1).ToUniversalUnixTimestamp());
+					LastUpdateTime = DateTime.Now.ToUniversalUnixTimestamp();
 
 					conn.ExecuteLogged("INSERT INTO Playlist (PlaylistId, PlaylistName, PlaylistCount, PlaylistDuration, Md5Hash, LastUpdateTime) " +
 					                   "VALUES (?, ?, ?, ?, ?, ?)", PlaylistId, PlaylistName == null ? "" : PlaylistName, PlaylistCount, PlaylistDuration, CalculateHash(), LastUpdateTime);
 				}
 				else
 				{
+					LastUpdateTime = DateTime.Now.ToUniversalUnixTimestamp();
 					conn.ExecuteLogged("UPDATE Playlist SET PlaylistName = ?, PlaylistCount = ?, PlaylistDuration = ?, Md5Hash = ?, LastUpdateTime = ? " +
 					                   "WHERE PlaylistId = ?", PlaylistName == null ? "" : PlaylistName, PlaylistCount, PlaylistDuration, PlaylistId == 0 ? "" : CalculateHash(), LastUpdateTime, PlaylistId);
 				}
@@ -194,13 +201,17 @@ namespace WaveBox.Model
 				var items = new List<IMediaItem>();
 				foreach (PlaylistItem playlistItem in result)
 				{
-					switch (playlistItem.ItemType)
+					if (!ReferenceEquals(playlistItem.ItemId, null))
 					{
-						case ItemType.Song: items.Add(new Song.Factory().CreateSong((int)playlistItem.ItemId)); break;
-						case ItemType.Video: items.Add(new Video.Factory().CreateVideo((int)playlistItem.ItemId)); break;
-						default: break;
+						IMediaItem item = new MediaItem.Factory().CreateMediaItem((int)playlistItem.ItemId);
+						if (!ReferenceEquals(item, null))
+						{
+							items.Add(item);
+						}
 					}
 				}
+
+				return items;
 			}
 			catch (Exception e)
 			{
@@ -279,18 +290,19 @@ namespace WaveBox.Model
 				// delete the items at the indicated indices
 				foreach (int index in indices)
 				{
+					logger.Info("Deleting row at ItemPosition: " + index);
 					conn.ExecuteLogged("DELETE FROM PlaylistItem WHERE PlaylistId = ? AND ItemPosition = ?", PlaylistId, index);
 				}
 
 				// select the id of all members of the playlist
-				var result = conn.Query<PlaylistItem>("SELECT * FROM PlaylistItem WHERE PlaylistId = ?", PlaylistId);
+				var result = conn.Query<PlaylistItem>("SELECT * FROM PlaylistItem WHERE PlaylistId = ? ORDER BY ItemPosition", PlaylistId);
 
 				// update the values of each index in the array to be the new index
 				for (int i = 0; i < result.Count; i++) 
 				{
 					var item = result[i];
 
-					conn.ExecuteLogged("UPDATE playlist_item SET PlaylistItemId = ? WHERE PlaylistItemId = ? AND PlaylistId = ?", i + 1, item.PlaylistItemId, PlaylistId);
+					conn.ExecuteLogged("UPDATE PlaylistItem SET ItemPosition = ? WHERE PlaylistItemId = ? AND PlaylistId = ?", i, item.PlaylistItemId, PlaylistId);
 				}
 
 				conn.Commit();
@@ -312,12 +324,13 @@ namespace WaveBox.Model
 		public void MoveMediaItem(int fromIndex, int toIndex)
 		{
 			// make sure the input is within bounds and is not null
-			if (fromIndex == 0 || toIndex == 0 ||
-				fromIndex > PlaylistCount || fromIndex < 0 ||
+			if (fromIndex >= PlaylistCount || fromIndex < 0 ||
 				toIndex < 0 || toIndex == fromIndex)
 			{
 				return;
 			}
+
+			logger.Info("Moving media item");
 
 			ISQLiteConnection conn = null;
 			try
@@ -325,14 +338,32 @@ namespace WaveBox.Model
 				// to do - better way of knowing whether or not a query has been successfully completed.
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				conn.BeginTransaction();
-				conn.ExecuteLogged("UPDATE PlaylistItem SET ItemPosition = ItemPosition + 1 WHERE PlaylistId = ? AND ItemPosition >= ?", PlaylistId, toIndex);
 
-				// conditional rollback here
+				// Get the item out of the way to prevent constraint violations
+				conn.ExecuteLogged("UPDATE PlaylistItem SET ItemPosition = " + Int32.MaxValue + " WHERE PlaylistId = ? AND ItemPosition = ?", PlaylistId, fromIndex);
 
-				// If the fromIndex is higher than toIndex, compensate for the position update above
-				fromIndex = fromIndex < toIndex ? fromIndex : fromIndex - 1;
+				if (fromIndex > toIndex)
+				{
+					// Do this as a reversed loop because a single update statement can have a constraint violation
+					for (int position = fromIndex - 1; position >= toIndex; position--)
+					{
+						logger.Info("Updating position " + position + " to " + (position + 1));
+						conn.ExecuteLogged("UPDATE PlaylistItem SET ItemPosition = ItemPosition + 1 WHERE PlaylistId = ? AND ItemPosition = ?", PlaylistId, position);
+					}
+					// conditional rollback here
+				}
+				else
+				{
+					// Do this as a reversed loop because a single update statement can have a constraint violation
+					for (int position = fromIndex + 1; position <= toIndex; position++)
+					{
+						logger.Info("Updating position " + position + " to " + (position + 1));
+						conn.ExecuteLogged("UPDATE PlaylistItem SET ItemPosition = ItemPosition - 1 WHERE PlaylistId = ? AND ItemPosition = ?", PlaylistId, position);
+					}
+					// conditional rollback here
+				}
 
-				conn.ExecuteLogged("UPDATE PlaylistItem SET ItemPosition = ? WHERE PlaylistId = ? AND ItemPosition = ?", toIndex, PlaylistId, fromIndex);
+				conn.ExecuteLogged("UPDATE PlaylistItem SET ItemPosition = ? WHERE PlaylistId = ? AND ItemPosition = ?", toIndex, PlaylistId, Int32.MaxValue);
 
 				// conditional rollback here
 
@@ -352,7 +383,7 @@ namespace WaveBox.Model
 			}
 		}
 
-		public void AddMediaItem(IMediaItem item, bool updateDatabase)
+		public void AddMediaItem(IMediaItem item, bool updateDatabase = true)
 		{
 			ISQLiteConnection conn = null;
 			try
@@ -366,7 +397,18 @@ namespace WaveBox.Model
 				playlistItem.ItemType = item.ItemType;
 				playlistItem.ItemId = item.ItemId;
 				playlistItem.ItemPosition = PlaylistCount == null ? 0 : PlaylistCount;
-				conn.Insert(playlistItem);
+				int affected = conn.Insert(playlistItem);
+
+				if (affected > 0)
+				{
+					PlaylistCount++;
+					PlaylistDuration += (int)item.Duration;
+				}
+
+				if (updateDatabase)
+				{
+					UpdateDatabase();
+				}
 			}
 			catch (Exception e)
 			{
@@ -385,21 +427,112 @@ namespace WaveBox.Model
 				return;
 			}
 
-			int duration = 0;
 			foreach (IMediaItem item in items)
 			{
 				AddMediaItem(item, false);
-
-				duration += (item.Duration == null ? 0 : (int)item.Duration);
 			}
 
-			UpdateProperties(items.Count, duration);
 			UpdateDatabase();
+		}
+
+		public void AddMediaItem(int itemId, bool updateDatabase = true)
+		{
+			IMediaItem item = new MediaItem.Factory().CreateMediaItem(itemId);
+
+			if (!ReferenceEquals(item, null))
+			{
+				AddMediaItem(item, updateDatabase);
+			}
+		}
+
+		public void AddMediaItems(List<int> itemIds)
+		{
+			List<IMediaItem> items = new List<IMediaItem>();
+			foreach (int itemId in itemIds)
+			{
+				logger.Info("Checking item id " + itemId);
+				IMediaItem item = new MediaItem.Factory().CreateMediaItem(itemId);
+				if (!ReferenceEquals(item, null))
+				{
+					logger.Info("Found item " + item);
+					items.Add(item);
+				}
+			}
+
+			AddMediaItems(items);
+		}
+
+		public void InsertMediaItem(int itemId, int index)
+		{
+			IMediaItem item = new MediaItem.Factory().CreateMediaItem(itemId);
+			InsertMediaItem(item, index);
 		}
 
 		public void InsertMediaItem(IMediaItem item, int index)
 		{
+			// make sure the input is within bounds and is not null
+			if (ReferenceEquals(item, null) || index > PlaylistCount || index < 0 || ReferenceEquals(PlaylistId, null))
+			{
+				return;
+			}
 
+			ISQLiteConnection conn = null;
+			try
+			{
+				int? id = Item.GenerateItemId(ItemType.PlaylistItem);
+
+				if (!ReferenceEquals(id, null))
+				{
+					// to do - better way of knowing whether or not a query has been successfully completed.
+					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+					conn.BeginTransaction();
+					for (int position = (int)PlaylistCount - 1; position >= index; position--)
+					{
+						logger.Info("Updating position " + position + " to " + (position + 1));
+						conn.ExecuteLogged("UPDATE PlaylistItem SET ItemPosition = ItemPosition + 1 WHERE PlaylistId = ? AND ItemPosition = ?", PlaylistId, position);
+					}
+
+					// conditional rollback here
+
+					// Insert the new item
+					var playlistItem = new PlaylistItem();
+					playlistItem.PlaylistItemId = id;
+					playlistItem.PlaylistId = PlaylistId;
+					playlistItem.ItemType = item.ItemType;
+					playlistItem.ItemId = item.ItemId;
+					playlistItem.ItemPosition = index;
+					int affected = conn.Insert(playlistItem);
+
+					// conditional rollback here
+
+					if (affected > 0)
+					{
+						PlaylistCount++;
+						PlaylistDuration += (int)item.Duration;
+						LastUpdateTime = DateTime.Now.ToUniversalUnixTimestamp();
+						conn.ExecuteLogged("UPDATE Playlist SET PlaylistName = ?, PlaylistCount = ?, PlaylistDuration = ?, Md5Hash = ?, LastUpdateTime = ? " +
+						                   "WHERE PlaylistId = ?", PlaylistName == null ? "" : PlaylistName, PlaylistCount, PlaylistDuration, PlaylistId == 0 ? "" : CalculateHash(), LastUpdateTime, PlaylistId);
+
+						conn.Commit();
+					}
+					else
+					{
+						conn.Rollback();
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				if (!ReferenceEquals(conn, null))
+				{
+					conn.Rollback();
+				}
+				logger.Error(e);
+			}
+			finally
+			{
+				conn.Close();
+			}
 		}
 
 		public void ClearPlaylist()
@@ -426,12 +559,35 @@ namespace WaveBox.Model
 
 		public void CreatePlaylist()
 		{
-			UpdateDatabase();
+			if (ReferenceEquals(PlaylistId, null))
+			{
+				UpdateDatabase();
+			}
 		}
 
 		public void DeletePlaylist()
 		{
+			if (ReferenceEquals(PlaylistId, null))
+			    return;
 
+			ISQLiteConnection conn = null;
+			try
+			{
+				// Delete the entry from the Playlist table
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+				conn.ExecuteLogged("DELETE FROM Playlist WHERE PlaylistId = ?", PlaylistId);
+
+				// Clear the playlist items
+				ClearPlaylist();
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				conn.Close();
+			}
 		}
 
 		public class Factory

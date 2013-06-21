@@ -2164,12 +2164,12 @@ namespace SQLite
             {
                 string msg = SQLite3.GetErrmsg(Connection.Handle);
                 SQLite3.Reset(Statement);
-				throw SQLiteException.New(r, "Query: " + CommandText + "\n" + msg);
+				throw SQLiteException.New(r, "Query: " + CommandText + "\n" + "Values: " + string.Join(", ", source) + "\n" + msg);
             }
             else
             {
                 SQLite3.Reset(Statement);
-				throw SQLiteException.New(r, "Query: " + CommandText + "\n" + r.ToString());
+				throw SQLiteException.New(r, "Query: " + CommandText + "\n" + "Values: " + string.Join(", ", source) + "\n" + r.ToString());
             }
         }
 

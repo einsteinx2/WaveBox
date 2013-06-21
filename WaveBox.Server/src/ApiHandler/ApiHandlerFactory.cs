@@ -144,6 +144,8 @@ namespace WaveBox.ApiHandler
 							return new UsersApiHandler(uriW, processor, user);
 						case "videos":
 							return new VideosApiHandler(uriW, processor, user);
+						case "playlists":
+							return new PlaylistsApiHandler(uriW, processor, user);
 						default:
 							return new ErrorApiHandler(uriW, processor);
 					}
