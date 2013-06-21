@@ -150,7 +150,7 @@ namespace SQLite
 					}
 					finally
 					{
-						conn.Close();
+						Injection.Kernel.Get<IDatabase>().CloseQueryLogSqliteConnection(conn);
 					}
 				}
 
@@ -179,7 +179,7 @@ namespace SQLite
 					}
 					finally
 					{
-						conn.Close();
+						Injection.Kernel.Get<IDatabase>().CloseQueryLogSqliteConnection(conn);
 					}
 				}
 

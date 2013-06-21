@@ -51,7 +51,7 @@ namespace WaveBox.PodcastManagement
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 
 			if (File.Exists(FilePath))
@@ -90,7 +90,7 @@ namespace WaveBox.PodcastManagement
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 		}
 
@@ -137,7 +137,7 @@ namespace WaveBox.PodcastManagement
 				}
 				finally
 				{
-					conn.Close();
+					Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 				}
 
 				return new PodcastEpisode();

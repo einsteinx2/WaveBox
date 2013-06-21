@@ -42,7 +42,7 @@ namespace WaveBox
 					}
 					finally
 					{
-						conn.Close();
+						Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 					}
 				}
 			}
@@ -52,7 +52,7 @@ namespace WaveBox
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 
 			return itemId;
@@ -73,7 +73,7 @@ namespace WaveBox
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 
 			return ItemTypeExtensions.ItemTypeForId(itemTypeId);
