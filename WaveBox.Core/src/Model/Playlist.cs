@@ -63,7 +63,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 
 			return new List<Playlist>();
@@ -534,7 +534,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 		}
 
@@ -589,7 +589,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 		}
 

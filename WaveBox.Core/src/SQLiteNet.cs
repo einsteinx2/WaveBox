@@ -359,10 +359,10 @@ namespace SQLite
                 _mappings = new Dictionary<string, TableMapping>();
             }
             TableMapping map;
-            if (!_mappings.TryGetValue(type.FullName, out map))
+			if (!_mappings.TryGetValue(type.FullName + mappingType, out map))
             {
 				map = new TableMapping(type, mappingType);
-                _mappings[type.FullName] = map;
+				_mappings[type.FullName + mappingType] = map;
             }
             return map;
         }

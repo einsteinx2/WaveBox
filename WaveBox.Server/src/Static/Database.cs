@@ -93,35 +93,23 @@ namespace WaveBox.Static
 			}
 		}
 
-		public string caller()
-		{
-			StackTrace stackTrace = new StackTrace();
-			StackFrame stackFrame = stackTrace.GetFrame(2);
-			MethodBase methodBase = stackFrame.GetMethod();
-			return methodBase.Name;
-		}
-
 		public ISQLiteConnection GetSqliteConnection()
 		{
-			//logger.Info(caller() + " grabbed a connection");
 			return mainPool.GetSqliteConnection();
 		}
 
 		public void CloseSqliteConnection(ISQLiteConnection conn)
 		{
-			//logger.Info(caller() + " closed a connection");
 			mainPool.CloseSqliteConnection(conn);
 		}
 
 		public ISQLiteConnection GetQueryLogSqliteConnection()
 		{
-			//return new SQLite.SQLiteConnection(QuerylogPath());
 			return logPool.GetSqliteConnection();
 		}
 
 		public void CloseQueryLogSqliteConnection(ISQLiteConnection conn)
 		{
-			//conn.Close();
 			logPool.CloseSqliteConnection(conn);
 		}
 

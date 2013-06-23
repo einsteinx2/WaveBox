@@ -5,6 +5,8 @@ using System.Net;
 using WaveBox.Core.Injected;
 using Ninject;
 using System.Web;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace WaveBox
 {
@@ -209,6 +211,14 @@ namespace WaveBox
 				default:
 				return "";
 			}
+		}
+
+		public static string CallerMethodName()
+		{
+			StackTrace stackTrace = new StackTrace();
+			StackFrame stackFrame = stackTrace.GetFrame(2);
+			MethodBase methodBase = stackFrame.GetMethod();
+			return methodBase.Name;
 		}
 	}
 }
