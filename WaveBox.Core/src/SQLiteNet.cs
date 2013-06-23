@@ -1437,6 +1437,7 @@ namespace SQLite
 				Type ignoreType = mappingType == TableMappingType.Read ? typeof (IgnoreReadAttribute) : typeof (IgnoreWriteAttribute);
 				var ignore = p.GetCustomAttributes(ignoreType, true).Length > 0;
 #else
+				Type ignoreType = mappingType == TableMappingType.Read ? typeof (IgnoreReadAttribute) : typeof (IgnoreWriteAttribute);
 				var ignore = p.GetCustomAttributes (ignoreType, true).Count() > 0;
 #endif
                 if (p.CanWrite && !ignore)
@@ -2802,7 +2803,7 @@ namespace SQLite
             var r = Prepare2(db, query, query.Length, out stmt, IntPtr.Zero);
             if (r != Result.OK)
             {
-                throw SQLiteException.New(r, GetErrmsg(db));
+                throw SQLiteException.New(r, query + "\n" + GetErrmsg(db));
             }
             return stmt;
         }

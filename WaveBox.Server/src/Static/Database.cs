@@ -5,6 +5,8 @@ using System.IO;
 using WaveBox.Core.Injected;
 using System.Collections.Generic;
 using System.Threading;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace WaveBox.Static
 {
@@ -91,23 +93,35 @@ namespace WaveBox.Static
 			}
 		}
 
+		public string caller()
+		{
+			StackTrace stackTrace = new StackTrace();
+			StackFrame stackFrame = stackTrace.GetFrame(2);
+			MethodBase methodBase = stackFrame.GetMethod();
+			return methodBase.Name;
+		}
+
 		public ISQLiteConnection GetSqliteConnection()
 		{
+			//logger.Info(caller() + " grabbed a connection");
 			return mainPool.GetSqliteConnection();
 		}
 
 		public void CloseSqliteConnection(ISQLiteConnection conn)
 		{
+			//logger.Info(caller() + " closed a connection");
 			mainPool.CloseSqliteConnection(conn);
 		}
 
 		public ISQLiteConnection GetQueryLogSqliteConnection()
 		{
+			//return new SQLite.SQLiteConnection(QuerylogPath());
 			return logPool.GetSqliteConnection();
 		}
 
 		public void CloseQueryLogSqliteConnection(ISQLiteConnection conn)
 		{
+			//conn.Close();
 			logPool.CloseSqliteConnection(conn);
 		}
 
@@ -166,12 +180,12 @@ namespace WaveBox.Static
 					{
 						// We got a connection, so increment the counter
 						usedConnections++;
-						logger.Info("Got a connection for " + databasePath + " availableConnections: " + availableConnections.Count + " usedConnections: " + usedConnections);
+						//logger.Info("Got a connection for " + databasePath + " availableConnections: " + availableConnections.Count + " usedConnections: " + usedConnections);
 						return conn;
 					}
 				}
 
-				logger.Info("Couldn't get connection for " + databasePath);
+				//logger.Error("Couldn't get connection for " + databasePath);
 
 				// If no connection available, sleep for 50ms and try again
 				Thread.Sleep(50);
@@ -190,7 +204,7 @@ namespace WaveBox.Static
 					// Make the connection available and decrement the counter
 					availableConnections.Push(conn);
 					usedConnections--;
-					logger.Info("Closed connection for " + databasePath + " availableConnections: " + availableConnections.Count + " usedConnections: " + usedConnections);
+					//logger.Info("Closed connection for " + databasePath + " availableConnections: " + availableConnections.Count + " usedConnections: " + usedConnections);
 				}
 			}
 		}

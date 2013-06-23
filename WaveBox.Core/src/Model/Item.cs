@@ -40,10 +40,6 @@ namespace WaveBox
 					{
 						logger.Error(e);
 					}
-					finally
-					{
-						Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-					}
 				}
 			}
 			catch (Exception e)
