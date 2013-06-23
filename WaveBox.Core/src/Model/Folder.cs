@@ -88,7 +88,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				List<Folder> folders = conn.Query<Folder>("SELECT FolderId FROM Folder WHERE ParentFolderId = ?", FolderId);
+				List<Folder> folders = conn.Query<Folder>("SELECT * FROM Folder WHERE ParentFolderId = ?", FolderId);
 				folders.Sort(CompareFolderByName);
 				return folders;
 			}
