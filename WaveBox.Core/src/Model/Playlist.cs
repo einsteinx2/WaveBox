@@ -91,7 +91,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 
 			return itemIds.ToString().MD5().Replace("-", string.Empty);
@@ -135,7 +135,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 		}
 
@@ -156,7 +156,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 
 			return 0;
@@ -186,7 +186,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 
 			return new MediaItem();
@@ -221,7 +221,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 
 			return new List<IMediaItem>();
@@ -277,7 +277,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 		}
 
@@ -319,7 +319,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 		}
 
@@ -381,7 +381,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 		}
 
@@ -418,7 +418,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 		}
 
@@ -552,7 +552,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 
 			PlaylistCount = 0;
@@ -614,7 +614,7 @@ namespace WaveBox.Model
 				}
 				finally
 				{
-					conn.Close();
+					Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 				}
 
 				return new Playlist();
@@ -639,7 +639,7 @@ namespace WaveBox.Model
 				}
 				finally
 				{
-					conn.Close();
+					Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 				}
 
 				Playlist playlist = new Playlist();

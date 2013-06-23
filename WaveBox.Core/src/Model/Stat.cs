@@ -55,7 +55,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 			
 			return success;

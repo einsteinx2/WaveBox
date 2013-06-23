@@ -16,8 +16,10 @@ namespace WaveBox.Core.Injected
 		void DatabaseSetup();
 
 		ISQLiteConnection GetSqliteConnection();
+		void CloseSqliteConnection(ISQLiteConnection conn);
 
 		ISQLiteConnection GetQueryLogSqliteConnection();
+		void CloseQueryLogSqliteConnection(ISQLiteConnection conn);
 
 		long LastQueryLogId();
 	}

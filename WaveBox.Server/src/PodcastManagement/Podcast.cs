@@ -50,7 +50,7 @@ namespace WaveBox.PodcastManagement
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 		}
 
@@ -114,7 +114,7 @@ namespace WaveBox.PodcastManagement
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 		}
 
@@ -148,7 +148,7 @@ namespace WaveBox.PodcastManagement
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 
 			if (Directory.Exists(PodcastMediaDirectory + Path.DirectorySeparatorChar + Title))
@@ -191,7 +191,7 @@ namespace WaveBox.PodcastManagement
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 
 			return new List<PodcastEpisode>();
@@ -212,7 +212,7 @@ namespace WaveBox.PodcastManagement
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 			return new List<Podcast>();
 		}
@@ -233,7 +233,7 @@ namespace WaveBox.PodcastManagement
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 
 			return null;
@@ -303,7 +303,7 @@ namespace WaveBox.PodcastManagement
 				}
 				finally
 				{
-					conn.Close();
+					Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 				}
 
 				var podcast = new Podcast();

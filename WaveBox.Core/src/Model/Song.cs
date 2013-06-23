@@ -70,7 +70,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 
 			Art.UpdateArtItemRelationship(ArtId, ItemId, true);
@@ -109,7 +109,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 
 			// We had an exception somehow, so return an empty list
@@ -133,7 +133,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 
 			// We had an exception somehow, so return an empty list
@@ -154,7 +154,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 
 			// We had an exception somehow, so return 0
@@ -181,7 +181,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 
 			// We had an exception somehow, so return 0
@@ -208,7 +208,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 
 			// We had an exception somehow, so return 0
@@ -263,7 +263,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 
 			// We had an exception somehow, so return an empty list
@@ -311,7 +311,7 @@ namespace WaveBox.Model
 				}
 				finally
 				{
-					conn.Close();
+					Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 				}
 
 				// No record found, so return an empty Song object

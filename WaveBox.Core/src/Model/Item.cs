@@ -40,10 +40,6 @@ namespace WaveBox
 					{
 						logger.Error(e);
 					}
-					finally
-					{
-						conn.Close();
-					}
 				}
 			}
 			catch (Exception e)
@@ -52,7 +48,7 @@ namespace WaveBox
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 
 			return itemId;
@@ -73,7 +69,7 @@ namespace WaveBox
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 
 			return ItemTypeExtensions.ItemTypeForId(itemTypeId);

@@ -41,7 +41,7 @@ namespace WaveBox.Model
 			finally
 			{
 				// Ensure database closed
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseQueryLogSqliteConnection(conn);
 			}
 		}
 
@@ -62,7 +62,7 @@ namespace WaveBox.Model
 			finally
 			{
 				// Ensure database closed
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseQueryLogSqliteConnection(conn);
 			}
 
 			return new List<QueryLog>();

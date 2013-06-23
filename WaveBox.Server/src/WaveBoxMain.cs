@@ -63,7 +63,7 @@ namespace WaveBox
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 
 			// If it doesn't exist, generate a new one
@@ -91,7 +91,7 @@ namespace WaveBox
 				}
 				finally
 				{
-					conn.Close();
+					Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 				}
 			}
 		}

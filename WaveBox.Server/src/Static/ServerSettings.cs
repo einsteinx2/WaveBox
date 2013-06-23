@@ -399,7 +399,7 @@ namespace WaveBox.Static
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 
 			// If not in database, return a folder object with the specified parameters

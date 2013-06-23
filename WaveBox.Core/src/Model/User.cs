@@ -70,7 +70,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 
 			return null;
@@ -103,7 +103,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 
 			return new List<Session>();
@@ -123,7 +123,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 
 			return new List<User>();
@@ -143,7 +143,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 
 			return new List<User>();
@@ -214,7 +214,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 		}
 
@@ -237,7 +237,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 		}
 
@@ -304,7 +304,7 @@ namespace WaveBox.Model
 			}
 			finally
 			{
-				conn.Close();
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 		}
 
@@ -329,7 +329,7 @@ namespace WaveBox.Model
 				}
 				finally
 				{
-					conn.Close();
+					Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 				}
 
 				var user = new User();
@@ -356,7 +356,7 @@ namespace WaveBox.Model
 				}
 				finally
 				{
-					conn.Close();
+					Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 				}
 
 				var user = new User();
@@ -397,7 +397,7 @@ namespace WaveBox.Model
 				}
 				finally
 				{
-					conn.Close();
+					Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 				}
 
 				return new User();
