@@ -26,7 +26,7 @@ namespace WaveBox.Static
 		public object DbBackupLock { get { return dbBackupLock; } }
 
 		// Sqlite connection pool
-		private static readonly int MAX_CONNECTIONS = 10;
+		private static readonly int MAX_CONNECTIONS = 100;
 		private SqliteConnectionPool mainPool;
 		private SqliteConnectionPool logPool;
 
@@ -128,7 +128,7 @@ namespace WaveBox.Static
 			}
 			finally
 			{
-				CloseSqliteConnection(conn);
+				CloseQueryLogSqliteConnection(conn);
 			}
 
 			return -1;
@@ -162,6 +162,8 @@ namespace WaveBox.Static
 					{
 						// There are no available connections, and we have room for more open connections, so make a new one
 						conn = new SQLite.SQLiteConnection(databasePath);
+						// Five second busy timeout
+						conn.BusyTimeout = new TimeSpan(0, 0, 5); 
 					}
 
 					if (!ReferenceEquals(conn, null))

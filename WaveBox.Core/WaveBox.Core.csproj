@@ -111,5 +111,8 @@
     <None Include="lib\Cirrious.MvvmCross.Plugins.Sqlite.dll" />
     <None Include="lib\Cirrious.MvvmCross.dll" />
     <None Include="lib\Ninject.dll" />
+    <None Include="WaveBox.Core.dll.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

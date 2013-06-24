@@ -176,6 +176,8 @@ namespace Cirrious.MvvmCross.Plugins.Sqlite
 
         void Close();
 
+		TimeSpan BusyTimeout { get; set; }
+
 		/*
 		 * WaveBox
 		 */
