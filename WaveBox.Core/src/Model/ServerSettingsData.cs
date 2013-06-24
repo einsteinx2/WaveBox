@@ -27,9 +27,6 @@ namespace WaveBox.Model
 		[JsonProperty("podcastCheckInterval")]
 		public int PodcastCheckInterval { get; set; }
 
-		[JsonProperty("sessionScrubInterval")]
-		public int SessionScrubInterval { get; set; }
-
 		[JsonProperty("sessionTimeout")]
 		public int SessionTimeout { get; set; }
 

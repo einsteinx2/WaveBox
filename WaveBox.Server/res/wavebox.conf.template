@@ -31,9 +31,6 @@
 	// Defines how long a session may remain idle before being purged by the session scrubber (in minutes)
 	"sessionTimeout": {setting-sessionTimeout},
 
-	// Defines how often WaveBox will purge unused sessions (in minutes)
-	"sessionScrubInterval": {setting-sessionScrubInterval},
-
 	// Choose whether to enable pretty formatting for API responses. Setting to false reduces the response size
 	"prettyJson": {setting-prettyJson},
 	
