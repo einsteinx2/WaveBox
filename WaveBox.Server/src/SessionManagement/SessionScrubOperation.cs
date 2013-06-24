@@ -53,8 +53,8 @@ namespace WaveBox
 		{
 			SessionScrub.Start();
 
-			// Queue up the next one
-			SessionScrub.Queue.queueOperation(new SessionScrubOperation(Injection.Kernel.Get<IServerSettings>().SessionScrubInterval));
+			// Queue up the next one in one hour
+			SessionScrub.Queue.queueOperation(new SessionScrubOperation(60));
 		}
 
 		// No need to cancel this operation
