@@ -26,8 +26,6 @@ namespace WaveBox.Core.Injected
 
 		int PodcastCheckInterval { get; }
 
-		int SessionScrubInterval { get; }
-
 		int SessionTimeout { get; }
 
 		List<Folder> MediaFolders { get; }

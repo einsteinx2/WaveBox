@@ -38,14 +38,11 @@ namespace WaveBox.Static
 
 		public int PodcastCheckInterval { get { return settingsModel.PodcastCheckInterval; } }
 
-		public int SessionScrubInterval { get { return settingsModel.SessionScrubInterval; } }
-
 		public int SessionTimeout { get { return settingsModel.SessionTimeout; } }
 
 		public List<Folder> MediaFolders { get; private set; }
 
 		public List<string> FolderArtNames { get { return settingsModel.FolderArtNames; } }
-
 
 		public void Reload()
 		{
@@ -199,18 +196,6 @@ namespace WaveBox.Static
 
 			try
 			{
-				int? sessionScrubIntervalTemp = json.sessionScrubInterval;
-				if (sessionScrubIntervalTemp != null)
-				{
-					settingsModel.SessionScrubInterval = (int)sessionScrubIntervalTemp;
-					settingsChanged = true;
-					if (logger.IsInfoEnabled) logger.Info("Setting 'sessionScrubInterval': " + settingsModel.SessionScrubInterval);
-				}
-			}
-			catch { }
-
-			try
-			{
 				int? sessionTimeoutTemp = json.sessionTimeout;
 				if (sessionTimeoutTemp != null)
 				{
@@ -291,7 +276,6 @@ namespace WaveBox.Static
 					.Replace("{setting-podcastFolder}", settingsModel.PodcastFolder)
 					.Replace("{setting-podcastCheckInterval}", settingsModel.PodcastCheckInterval.ToString())
 					.Replace("{setting-sessionTimeout}", settingsModel.SessionTimeout.ToString())
-					.Replace("{setting-sessionScrubInterval}", settingsModel.SessionScrubInterval.ToString())
 					.Replace("{setting-prettyJson}", settingsModel.PrettyJson.ToString().ToLower())
 					.Replace("{setting-folderArtNames}", settingsModel.FolderArtNames.ToCSV(true));
 			}
