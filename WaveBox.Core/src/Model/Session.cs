@@ -137,7 +137,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				return conn.Query<Session>("SELECT RowId, * FROM Session");
+				return conn.Query<Session>("SELECT RowId AS RowId, * FROM Session");
 			}
 			catch (Exception e)
 			{
@@ -202,7 +202,7 @@ namespace WaveBox.Model
 				try
 				{
 					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-					var result = conn.DeferredQuery<Session>("SELECT RowId, * FROM Session WHERE RowId = ?", rowId);
+					var result = conn.DeferredQuery<Session>("SELECT RowId AS RowId, * FROM Session WHERE RowId = ?", rowId);
 
 					foreach (var session in result)
 					{
@@ -227,7 +227,7 @@ namespace WaveBox.Model
 				try
 				{
 					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-					var result = conn.DeferredQuery<Session>("SELECT RowId, * FROM Session WHERE SessionId = ?", sessionId);
+					var result = conn.DeferredQuery<Session>("SELECT RowId AS RowId, * FROM Session WHERE SessionId = ?", sessionId);
 
 					foreach (var session in result)
 					{
