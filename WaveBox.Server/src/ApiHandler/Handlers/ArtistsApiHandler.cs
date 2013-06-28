@@ -32,62 +32,158 @@ namespace WaveBox.ApiHandler.Handlers
 		/// </summary>
 		public void Process()
 		{
-			// Return lists to be passed as JSON
-			List<Artist> listOfArtists = new List<Artist>();
-			List<Song> listOfSongs = new List<Song>();
-			List<Album> listOfAlbums = new List<Album>();
+			// Lists of artists, albums, songs to be returned via handler
+			IList<Artist> artists = new List<Artist>();
+			IList<Album> albums = new List<Album>();
+			IList<Song> songs = new List<Song>();
 
-			// Last.fm integration
-			// Info regarding artist
+			// Optional Last.fm info
 			string lastfmInfo = null;
-			// Enable/disable Last.fm info
-			bool includeLfm = false;
 
-			// Try to get the artist id
-			bool success = false;
+			// Fetch artist ID from parameters
 			int id = 0;
 			if (Uri.Parameters.ContainsKey("id"))
 			{
-				success = Int32.TryParse(Uri.Parameters["id"], out id);
-			}
-
-			// Optionally use Last.fm to gather information
-			if (Uri.Parameters.ContainsKey("lastfmInfo"))
-			{
-				bool.TryParse(Uri.Parameters["lastfmInfo"], out includeLfm);
-			}
-
-			// On valid key, return a specific artist, and a list of their albums
-			if (success)
-			{
-				Artist artist = new Artist.Factory().CreateArtist(id);
-				listOfArtists.Add(artist);
-				listOfAlbums = artist.ListOfAlbums();
-
-				// Grab Last.fm data if requested
-				if (includeLfm == true)
+				if (!Int32.TryParse(Uri.Parameters["id"], out id))
 				{
-					lastfmInfo = Lastfm.GetArtistInfo(artist);
+					string json = JsonConvert.SerializeObject(new ArtistsResponse("Parameter 'id' requires a valid integer", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+					Processor.WriteJson(json);
+					return;
 				}
 
-				// If requested, include list of songs in response as well
-				string includeSongs;
-				Uri.Parameters.TryGetValue("includeSongs", out includeSongs);
-				if ((object)includeSongs != null && includeSongs.ToLower() == "true")
+				// Add artist by ID to the list
+				Artist a = new Artist.Factory().CreateArtist(id);
+				artists.Add(a);
+
+				// Add artist's albums to response
+				albums = a.ListOfAlbums();
+
+				// If requested, add artist's songs to response
+				if (Uri.Parameters.ContainsKey("includeSongs"))
 				{
-					listOfSongs = artist.ListOfSongs();
+					if (Uri.Parameters["includeSongs"].IsTrue())
+					{
+						songs = a.ListOfSongs();
+					}
+				}
+
+				// If requested, add artist's Last.fm info to response
+				if (Uri.Parameters.ContainsKey("lastfmInfo"))
+				{
+					if (Uri.Parameters["lastfmInfo"].IsTrue())
+					{
+						lastfmInfo = Lastfm.GetArtistInfo(a);
+					}
 				}
 			}
-			else
+			// Check for a request for range of artists
+			else if (Uri.Parameters.ContainsKey("range"))
 			{
-				// On invalid key, return all artists
-				listOfArtists = Artist.AllArtists();
+				string[] range = Uri.Parameters["range"].Split(',');
+
+				// Ensure valid range was parsed
+				if (range.Length != 2)
+				{
+					string json = JsonConvert.SerializeObject(new ArtistsResponse("Parameter 'range' requires a valid, comma-separated character tuple", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+					Processor.WriteJson(json);
+					return;
+				}
+
+				// Validate as characters
+				char start, end;
+				if (!Char.TryParse(range[0], out start) || !Char.TryParse(range[1], out end))
+				{
+					string json = JsonConvert.SerializeObject(new ArtistsResponse("Parameter 'range' requires characters which are single alphanumeric values", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+					Processor.WriteJson(json);
+					return;
+				}
+
+				// Grab range of artists
+				artists = Artist.RangeArtists(start, end);
+			}
+
+			// Check for a request to limit/paginate artists, like SQL
+			// Note: can be combined with range or all artists
+			if (Uri.Parameters.ContainsKey("limit") && !Uri.Parameters.ContainsKey("id"))
+			{
+				string[] limit = Uri.Parameters["limit"].Split(',');
+
+				// Ensure valid limit was parsed
+				if (limit.Length < 1 || limit.Length > 2 )
+				{
+					string json = JsonConvert.SerializeObject(new ArtistsResponse("Parameter 'limit' requires a single integer, or a valid, comma-separated integer tuple", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+					Processor.WriteJson(json);
+					return;
+				}
+
+				// Validate as integers
+				int index = 0;
+				int duration = Int32.MinValue;
+				if (!Int32.TryParse(limit[0], out index))
+				{
+					string json = JsonConvert.SerializeObject(new ArtistsResponse("Parameter 'limit' requires a valid integer start index", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+					Processor.WriteJson(json);
+					return;
+				}
+
+				// Ensure positive index
+				if (index < 0)
+				{
+					string json = JsonConvert.SerializeObject(new ArtistsResponse("Parameter 'limit' requires a non-negative integer start index", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+					Processor.WriteJson(json);
+					return;
+				}
+
+				// Check for duration
+				if (limit.Length == 2)
+				{
+					if (!Int32.TryParse(limit[1], out duration))
+					{
+						string json = JsonConvert.SerializeObject(new ArtistsResponse("Parameter 'limit' requires a valid integer duration", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+						Processor.WriteJson(json);
+						return;
+					}
+
+					// Ensure positive duration
+					if (duration < 0)
+					{
+						string json = JsonConvert.SerializeObject(new ArtistsResponse("Parameter 'limit' requires a non-negative integer duration", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+						Processor.WriteJson(json);
+						return;
+					}
+				}
+
+				// Check if results list already populated by range
+				if (artists.Count > 0)
+				{
+					// No duration?  Return just specified number of artists
+					if (duration == Int32.MinValue)
+					{
+						artists = artists.Skip(0).Take(index).ToList();
+					}
+					else
+					{
+						// Else, return artists starting at index, up to count duration
+						artists = artists.Skip(index).Take(duration).ToList();
+					}
+				}
+				else
+				{
+					// If no artists in list, grab directly using model method
+					artists = Artist.LimitArtists(index, duration);
+				}
+			}
+
+			// Finally, if no artists already in list, send the whole list
+			if (artists.Count == 0)
+			{
+				artists = Artist.AllArtists();
 			}
 
 			try
 			{
-				// Write JSON to HTTP response
-				string json = JsonConvert.SerializeObject(new ArtistsResponse(null, listOfArtists, listOfAlbums, listOfSongs, lastfmInfo), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+				// Send it!
+				string json = JsonConvert.SerializeObject(new ArtistsResponse(null, artists, albums, songs), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 				Processor.WriteJson(json);
 			}
 			catch (Exception e)
@@ -102,18 +198,18 @@ namespace WaveBox.ApiHandler.Handlers
 			public string Error { get; set; }
 
 			[JsonProperty("artists")]
-			public List<Artist> Artists { get; set; }
+			public IList<Artist> Artists { get; set; }
 
 			[JsonProperty("albums")]
-			public List<Album> Albums { get; set; }
+			public IList<Album> Albums { get; set; }
 
 			[JsonProperty("songs")]
-			public List<Song> Songs { get; set; }
+			public IList<Song> Songs { get; set; }
 
 			[JsonProperty("lastfmInfo")]
 			public dynamic LastfmInfo { get; set; }
 
-			public ArtistsResponse(string error, List<Artist> artists, List<Album> albums, List<Song> songs)
+			public ArtistsResponse(string error, IList<Artist> artists, IList<Album> albums, IList<Song> songs)
 			{
 				Error = error;
 				Artists = artists;
@@ -122,7 +218,7 @@ namespace WaveBox.ApiHandler.Handlers
 				LastfmInfo = null;
 			}
 
-			public ArtistsResponse(string error, List<Artist> artists, List<Album> albums, List<Song> songs, string lastfmInfo)
+			public ArtistsResponse(string error, IList<Artist> artists, IList<Album> albums, IList<Song> songs, string lastfmInfo)
 			{
 				Error = error;
 				Artists = artists;

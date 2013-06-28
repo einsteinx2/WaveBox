@@ -95,8 +95,8 @@ namespace WaveBox.Model
 			{
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				var result = conn.DeferredQuery<Art>("SELECT ArtItem.ArtId FROM Song " +
-				                                  	 "LEFT JOIN ArtItem ON Song.ItemId = ArtItem.ItemId " +
-				                                  	 "WHERE Song.AlbumId = ? AND ArtItem.ArtId IS NOT NULL GROUP BY ArtItem.ArtId", AlbumId);
+													 "LEFT JOIN ArtItem ON Song.ItemId = ArtItem.ItemId " +
+													 "WHERE Song.AlbumId = ? AND ArtItem.ArtId IS NOT NULL GROUP BY ArtItem.ArtId", AlbumId);
 				foreach (Art art in result)
 				{
 					songArtIds.Add((int)art.ArtId);
@@ -123,8 +123,8 @@ namespace WaveBox.Model
 			{
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				var result = conn.DeferredQuery<Art>("SELECT ArtItem.ArtId FROM Song " +
-				                                     "LEFT JOIN ArtItem ON Song.FolderId = ArtItem.ItemId " +
-				                                     "WHERE Song.AlbumId = ? AND ArtItem.ArtId IS NOT NULL GROUP BY ArtItem.ArtId", AlbumId);
+													 "LEFT JOIN ArtItem ON Song.FolderId = ArtItem.ItemId " +
+													 "WHERE Song.AlbumId = ? AND ArtItem.ArtId IS NOT NULL GROUP BY ArtItem.ArtId", AlbumId);
 				foreach (Art art in result)
 				{
 					folderArtIds.Add((int)art.ArtId);
@@ -284,14 +284,14 @@ namespace WaveBox.Model
 					// Search for exact match
 					return conn.Query<Album>("SELECT Album.*, Artist.ArtistName FROM Album " +
 											"LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
-											"WHERE " + field + " = ? ORDER BY AlbumName", query);
+											"WHERE Album." + field + " = ? ORDER BY AlbumName", query);
 				}
 				else
 				{
 					// Search for fuzzy match (containing query)
 					return conn.Query<Album>("SELECT Album.*, Artist.ArtistName FROM Album " +
 											"LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
-											"WHERE " + field + " LIKE ? ORDER BY AlbumName", "%" + query + "%");
+											"WHERE Album." + field + " LIKE ? ORDER BY AlbumName", "%" + query + "%");
 				}
 			}
 			catch (Exception e)
