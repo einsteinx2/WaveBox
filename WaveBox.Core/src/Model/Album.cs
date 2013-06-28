@@ -78,7 +78,7 @@ namespace WaveBox.Model
 					// There are multiple different art ids for the songs, but only one folder art, so use that. Likely this is a compilation album
 					return folderArtIds[0];
 				}
-				else 
+				else
 				{
 					// There are multiple song and folder art ids, so let's just return the first song art id for now
 					return songArtIds[0];
@@ -110,7 +110,7 @@ namespace WaveBox.Model
 			{
 				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
-			
+
 			return songArtIds;
 		}
 
@@ -138,7 +138,7 @@ namespace WaveBox.Model
 			{
 				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
-			
+
 			return folderArtIds;
 		}
 
@@ -219,7 +219,9 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				return conn.Query<Album>("SELECT * FROM Album ORDER BY AlbumName");
+				return conn.Query<Album>("SELECT Album.*, Artist.ArtistName FROM Album " +
+										"LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
+										"ORDER BY AlbumName");
 			}
 			catch (Exception e)
 			{
@@ -252,7 +254,7 @@ namespace WaveBox.Model
 
 			return 0;
 		}
-		
+
 		public static List<Album> SearchAlbums(string field, string query, bool exact = true)
 		{
 			if (query == null)
@@ -280,12 +282,16 @@ namespace WaveBox.Model
 				if (exact)
 				{
 					// Search for exact match
-					return conn.Query<Album>("SELECT * FROM Album WHERE " + field + " = ? ORDER BY AlbumName", query);
+					return conn.Query<Album>("SELECT Album.*, Artist.ArtistName FROM Album " +
+											"LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
+											"WHERE " + field + " = ? ORDER BY AlbumName", query);
 				}
 				else
 				{
 					// Search for fuzzy match (containing query)
-					return conn.Query<Album>("SELECT * FROM Album WHERE " + field + " LIKE ? ORDER BY AlbumName", "%" + query + "%");
+					return conn.Query<Album>("SELECT Album.*, Artist.ArtistName FROM Album " +
+											"LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
+											"WHERE " + field + " LIKE ? ORDER BY AlbumName", "%" + query + "%");
 				}
 			}
 			catch (Exception e)
@@ -306,7 +312,9 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				return conn.Query<Album>("SELECT * FROM Album ORDER BY RANDOM() LIMIT " + limit, conn);
+				return conn.Query<Album>("SELECT Album.*, Artist.ArtistName FROM Album " +
+										"LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
+										"ORDER BY RANDOM() LIMIT " + limit);
 			}
 			catch (Exception e)
 			{
@@ -317,6 +325,85 @@ namespace WaveBox.Model
 				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 
+			return new List<Album>();
+		}
+
+		// Return a list of albums titled between a range of (a-z, A-Z, 0-9 characters)
+		public static List<Album> RangeAlbums(char start, char end)
+		{
+			// Ensure characters are alphanumeric, return empty list if either is not
+			if (!Char.IsLetterOrDigit(start) || !Char.IsLetterOrDigit(end))
+			{
+				return new List<Album>();
+			}
+
+			string s = start.ToString();
+			// Add 1 to character to make end inclusive
+			string en = Convert.ToChar((int)end + 1).ToString();
+
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+
+				List<Album> albums;
+				albums = conn.Query<Album>("SELECT Album.*, Artist.ArtistName FROM Album " +
+										"LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
+										"WHERE Album.AlbumName BETWEEN LOWER(?) AND LOWER(?) " +
+										"OR Album.AlbumName BETWEEN UPPER(?) AND UPPER(?)", s, en, s, en);
+
+				albums.Sort(Album.CompareAlbumsByName);
+				return albums;
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+			}
+
+			// We had an exception somehow, so return an empty list
+			return new List<Album>();
+		}
+
+		// Return a list of albums using SQL LIMIT x,y where X is starting index and Y is duration
+		public static List<Album> LimitAlbums(int index, int duration = Int32.MinValue)
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+
+				// Begin building query
+				List<Album> albums;
+
+				string query = "SELECT Album.*, Artist.ArtistName FROM Album " +
+								"LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
+								"LIMIT ? ";
+
+				// Add duration to LIMIT if needed
+				if (duration != Int32.MinValue && duration > 0)
+				{
+					query += ", ?";
+				}
+
+				// Run query, sort, send it back
+				albums = conn.Query<Album>(query, index, duration);
+				albums.Sort(Album.CompareAlbumsByName);
+				return albums;
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+			}
+
+			// We had an exception somehow, so return an empty list
 			return new List<Album>();
 		}
 
@@ -337,7 +424,9 @@ namespace WaveBox.Model
 				try
 				{
 					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-					var result = conn.DeferredQuery<Album>("SELECT * FROM Album WHERE AlbumId = ?", albumId);
+					var result = conn.DeferredQuery<Album>("SELECT Album.*, Artist.ArtistName FROM Album " +
+															"LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
+															"WHERE AlbumId = ?", albumId);
 
 					foreach (Album a in result)
 					{
@@ -367,7 +456,9 @@ namespace WaveBox.Model
 				try
 				{
 					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-					var result = conn.DeferredQuery<Album>("SELECT * FROM Album WHERE AlbumName = ? AND ArtistId = ?", albumName, artistId);
+					var result = conn.DeferredQuery<Album>("SELECT Album.*, Artist.ArtistName FROM Album " +
+															"LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
+															"WHERE AlbumName = ? AND ArtistId = ?", albumName, artistId);
 
 					foreach (Album a in result)
 					{
