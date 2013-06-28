@@ -32,6 +32,8 @@ namespace WaveBox.ApiHandler.Handlers
 		{
 			try
 			{
+				logger.Info(String.Format("Authenticated user, generated new session: [user: {0}, key: {1}]", User.UserName, User.SessionId));
+
 				string json = JsonConvert.SerializeObject(new LoginResponse(null, User.SessionId), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 				Processor.WriteJson(json);
 			}
