@@ -49,6 +49,27 @@ namespace WaveBox.Model
 		{
 		}
 		
+		public override void InsertMediaItem()
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+				conn.InsertLogged(this, InsertType.Replace);
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+			}
+
+			Art.UpdateArtItemRelationship(ArtId, ItemId, true);
+			Art.UpdateArtItemRelationship(ArtId, FolderId, false); // Only update a folder art relationship if it has no folder art
+		}
+
 		public static List<Video> AllVideos()
 		{
 			ISQLiteConnection conn = null;
@@ -189,13 +210,31 @@ namespace WaveBox.Model
 			return new List<Video>();
 		}
 
-		public override void InsertMediaItem()
+		// Return a list of videos titled between a range of (a-z, A-Z, 0-9 characters)
+		public static List<Video> RangeVideos(char start, char end)
 		{
+			// Ensure characters are alphanumeric, return empty list if either is not
+			if (!Char.IsLetterOrDigit(start) || !Char.IsLetterOrDigit(end))
+			{
+				return new List<Video>();
+			}
+
+			string s = start.ToString();
+			// Add 1 to character to make end inclusive
+			string en = Convert.ToChar((int)end + 1).ToString();
+
 			ISQLiteConnection conn = null;
 			try
 			{
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				conn.InsertLogged(this, InsertType.Replace);
+
+				List<Video> videos;
+				videos = conn.Query<Video>("SELECT * FROM Video " +
+										"WHERE Video.FileName BETWEEN LOWER(?) AND LOWER(?) " +
+										"OR Video.FileName BETWEEN UPPER(?) AND UPPER(?)", s, en, s, en);
+
+				videos.Sort(Video.CompareVideosByFileName);
+				return videos;
 			}
 			catch (Exception e)
 			{
@@ -206,8 +245,45 @@ namespace WaveBox.Model
 				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 
-			Art.UpdateArtItemRelationship(ArtId, ItemId, true);
-			Art.UpdateArtItemRelationship(ArtId, FolderId, false); // Only update a folder art relationship if it has no folder art
+			// We had an exception somehow, so return an empty list
+			return new List<Video>();
+		}
+
+		// Return a list of videos using SQL LIMIT x,y where X is starting index and Y is duration
+		public static List<Video> LimitVideos(int index, int duration = Int32.MinValue)
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+
+				// Begin building query
+				List<Video> videos;
+
+				string query = "SELECT * FROM Video LIMIT ? ";
+
+				// Add duration to LIMIT if needed
+				if (duration != Int32.MinValue && duration > 0)
+				{
+					query += ", ?";
+				}
+
+				// Run query, sort, send it back
+				videos = conn.Query<Video>(query, index, duration);
+				videos.Sort(Video.CompareVideosByFileName);
+				return videos;
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+			}
+
+			// We had an exception somehow, so return an empty list
+			return new List<Video>();
 		}
 
 		public static int CompareVideosByFileName(Video x, Video y)
