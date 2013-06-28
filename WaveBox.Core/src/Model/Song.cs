@@ -86,10 +86,10 @@ namespace WaveBox.Model
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 
 				StringBuilder sb = new StringBuilder("SELECT Song.*, Artist.ArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
-				                                     "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
-				                                     "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
-				                                     "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " + 
-				                                     "WHERE");
+													 "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+													 "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
+													 "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
+													 "WHERE");
 
 				for (int i = 0; i < songIds.Count; i++)
 				{
@@ -123,9 +123,9 @@ namespace WaveBox.Model
 			{
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.Query<Song>("SELECT Song.*, Artist.ArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
-				                        "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
-				                        "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
-				                        "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId");
+										"LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+										"LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
+										"LEFT JOIN Genre ON Song.GenreId = Genre.GenreId");
 			}
 			catch (Exception e)
 			{
@@ -270,6 +270,88 @@ namespace WaveBox.Model
 			return new List<Song>();
 		}
 
+		// Return a list of songs titled between a range of (a-z, A-Z, 0-9 characters)
+		public static List<Song> RangeSongs(char start, char end)
+		{
+			// Ensure characters are alphanumeric, return empty list if either is not
+			if (!Char.IsLetterOrDigit(start) || !Char.IsLetterOrDigit(end))
+			{
+				return new List<Song>();
+			}
+
+			string s = start.ToString();
+			// Add 1 to character to make end inclusive
+			string en = Convert.ToChar((int)end + 1).ToString();
+
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+
+				List<Song> songs;
+				songs = conn.Query<Song>("SELECT Song.*, Artist.ArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
+										"LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+										"LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
+										"LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
+										"WHERE Song.SongName BETWEEN LOWER(?) AND LOWER(?) " +
+										"OR Song.SongName BETWEEN UPPER(?) AND UPPER(?)", s, en, s, en);
+
+				songs.Sort(Song.CompareSongsByDiscAndTrack);
+				return songs;
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+			}
+
+			// We had an exception somehow, so return an empty list
+			return new List<Song>();
+		}
+
+		// Return a list of songs using SQL LIMIT x,y where X is starting index and Y is duration
+		public static List<Song> LimitSongs(int index, int duration = Int32.MinValue)
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+
+				// Begin building query
+				List<Song> songs;
+				string query = "SELECT Song.*, Artist.ArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
+								"LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+								"LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
+								"LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
+								"LIMIT ? ";
+
+				// Add duration to LIMIT if needed
+				if (duration != Int32.MinValue && duration > 0)
+				{
+					query += ", ?";
+				}
+
+				// Run query, sort, send it back
+				songs = conn.Query<Song>(query, index, duration);
+				songs.Sort(Song.CompareSongsByDiscAndTrack);
+				return songs;
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+			}
+
+			// We had an exception somehow, so return an empty list
+			return new List<Song>();
+		}
+
 		public static int CompareSongsByDiscAndTrack(Song x, Song y)
 		{
 			if (x.DiscNumber == y.DiscNumber && x.TrackNumber == y.TrackNumber) return 0;
@@ -294,10 +376,10 @@ namespace WaveBox.Model
 				{
 					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 					IEnumerable result = conn.DeferredQuery<Song>("SELECT Song.*, Artist.ArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
-					                                              "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
-					                                              "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
-					                                              "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
-					                                              "WHERE Song.ItemId = ? LIMIT 1", songId);
+																  "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+																  "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
+																  "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
+																  "WHERE Song.ItemId = ? LIMIT 1", songId);
 
 					foreach (Song song in result)
 					{
