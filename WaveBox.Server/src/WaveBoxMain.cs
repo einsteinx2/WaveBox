@@ -17,7 +17,6 @@ using WaveBox.Model;
 using WaveBox.Static;
 using WaveBox.SessionManagement;
 using WaveBox.TcpServer.Http;
-using WaveBox.TcpServer.Mpd;
 using WaveBox.TcpServer;
 using WaveBox.Transcoding;
 using WaveBox.DeviceSync;
@@ -39,9 +38,6 @@ namespace WaveBox
 
 		// HTTP server, which serves up the API
 		private HttpServer httpServer;
-
-		// MPD server, which controls the Jukebox
-		//private MpdServer mpdServer;
 
 		/// <summary>
 		/// ServerSetup is used to generate a GUID which can be associated with the URL forwarding service, to 
@@ -167,10 +163,6 @@ namespace WaveBox
 				logger.Warn(e);
 			}
 
-			// Start the MPD server
-			//mpdServer = new MpdServer(Injection.Kernel.Get<IServerSettings>().MpdPort);
-			//StartTcpServer(mpdServer);
-
 			// Start ZeroConf
 			try
 			{
@@ -236,7 +228,6 @@ namespace WaveBox
 		public void Stop()
 		{
 			httpServer.Stop();
-			//mpdServer.Stop();
 
 			// Disable any Nat routes
 			Nat.Stop();
@@ -259,7 +250,6 @@ namespace WaveBox
 		{
 			Stop();
 			StartTcpServer(httpServer);
-			//StartTcpServer(mpdServer);
 		}
 	}
 }
