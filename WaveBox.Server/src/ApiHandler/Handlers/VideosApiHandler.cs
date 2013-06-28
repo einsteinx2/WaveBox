@@ -33,31 +33,130 @@ namespace WaveBox.ApiHandler.Handlers
 		public void Process()
 		{
 			// Return list of videos
-			List<Video> listOfVideos = new List<Video>();
+			IList<Video> videos = new List<Video>();
 
-			// Try to fetch video ID
-			bool success = false;
+			// Fetch video ID from parameters
 			int id = 0;
 			if (Uri.Parameters.ContainsKey("id"))
 			{
-				success = Int32.TryParse(Uri.Parameters["id"], out id);
+				if (!Int32.TryParse(Uri.Parameters["id"], out id))
+				{
+					string json = JsonConvert.SerializeObject(new VideosResponse("Parameter 'id' requires a valid integer", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+					Processor.WriteJson(json);
+					return;
+				}
+
+				// Add video by ID to the list
+				videos.Add(new Video.Factory().CreateVideo(id));
+			}
+			// Check for a request for range of videos
+			else if (Uri.Parameters.ContainsKey("range"))
+			{
+				string[] range = Uri.Parameters["range"].Split(',');
+
+				// Ensure valid range was parsed
+				if (range.Length != 2)
+				{
+					string json = JsonConvert.SerializeObject(new VideosResponse("Parameter 'range' requires a valid, comma-separated character tuple", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+					Processor.WriteJson(json);
+					return;
+				}
+
+				// Validate as characters
+				char start, end;
+				if (!Char.TryParse(range[0], out start) || !Char.TryParse(range[1], out end))
+				{
+					string json = JsonConvert.SerializeObject(new VideosResponse("Parameter 'range' requires characters which are single alphanumeric values", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+					Processor.WriteJson(json);
+					return;
+				}
+
+				// Grab range of videos
+				videos = Video.RangeVideos(start, end);
 			}
 
-			// On successful ID, grab one video
-			if (success)
+			// Check for a request to limit/paginate videos, like SQL
+			// Note: can be combined with range or all videos
+			if (Uri.Parameters.ContainsKey("limit") && !Uri.Parameters.ContainsKey("id"))
 			{
-				listOfVideos.Add(new Video.Factory().CreateVideo(id));
-			}
-			else
-			{
-				// Else, grab all videos
-				listOfVideos = Video.AllVideos();
+				string[] limit = Uri.Parameters["limit"].Split(',');
+
+				// Ensure valid limit was parsed
+				if (limit.Length < 1 || limit.Length > 2 )
+				{
+					string json = JsonConvert.SerializeObject(new VideosResponse("Parameter 'limit' requires a single integer, or a valid, comma-separated integer tuple", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+					Processor.WriteJson(json);
+					return;
+				}
+
+				// Validate as integers
+				int index = 0;
+				int duration = Int32.MinValue;
+				if (!Int32.TryParse(limit[0], out index))
+				{
+					string json = JsonConvert.SerializeObject(new VideosResponse("Parameter 'limit' requires a valid integer start index", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+					Processor.WriteJson(json);
+					return;
+				}
+
+				// Ensure positive index
+				if (index < 0)
+				{
+					string json = JsonConvert.SerializeObject(new VideosResponse("Parameter 'limit' requires a non-negative integer start index", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+					Processor.WriteJson(json);
+					return;
+				}
+
+				// Check for duration
+				if (limit.Length == 2)
+				{
+					if (!Int32.TryParse(limit[1], out duration))
+					{
+						string json = JsonConvert.SerializeObject(new VideosResponse("Parameter 'limit' requires a valid integer duration", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+						Processor.WriteJson(json);
+						return;
+					}
+
+					// Ensure positive duration
+					if (duration < 0)
+					{
+						string json = JsonConvert.SerializeObject(new VideosResponse("Parameter 'limit' requires a non-negative integer duration", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+						Processor.WriteJson(json);
+						return;
+					}
+				}
+
+				// Check if results list already populated by range
+				if (videos.Count > 0)
+				{
+					// No duration?  Return just specified number of videos
+					if (duration == Int32.MinValue)
+					{
+						videos = videos.Skip(0).Take(index).ToList();
+					}
+					else
+					{
+						// Else, return videos starting at index, up to count duration
+						videos = videos.Skip(index).Take(duration).ToList();
+					}
+				}
+				else
+				{
+					// If no videos in list, grab directly using model method
+					videos = Video.LimitVideos(index, duration);
+				}
 			}
 
-			// Return video list in a response
+			// Finally, if no videos already in list, send the whole list
+			if (videos.Count == 0)
+			{
+				videos = Video.AllVideos();
+			}
+
 			try
 			{
-				string json = JsonConvert.SerializeObject(new VideosResponse(null, listOfVideos), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+				// Send it!
+				string json = JsonConvert.SerializeObject(new VideosResponse(null, videos), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 				Processor.WriteJson(json);
 			}
 			catch (Exception e)
@@ -72,9 +171,9 @@ namespace WaveBox.ApiHandler.Handlers
 			public string Error { get; set; }
 
 			[JsonProperty("videos")]
-			public List<Video> Videos { get; set; }
+			public IList<Video> Videos { get; set; }
 
-			public VideosResponse(string error, List<Video> videos)
+			public VideosResponse(string error, IList<Video> videos)
 			{
 				Error = error;
 				Videos = videos;
