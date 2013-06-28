@@ -247,12 +247,20 @@ namespace WaveBox.Model
 				if (exact)
 				{
 					// Search for exact match
-					songs = conn.Query<Song>("SELECT * FROM Song WHERE " + field + " = ?", query);
+					songs = conn.Query<Song>("SELECT Song.*, Artist.ArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
+											"LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+											"LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
+											"LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
+											"WHERE Song." + field + " = ?", query);
 				}
 				else
 				{
 					// Search for fuzzy match (containing query)
-					songs = conn.Query<Song>("SELECT * FROM Song WHERE " + field + " LIKE ?", "%" + query + "%");
+					songs = conn.Query<Song>("SELECT Song.*, Artist.ArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
+											"LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+											"LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
+											"LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
+											"WHERE Song." + field + " LIKE ?", "%" + query + "%");
 				}
 				songs.Sort(Song.CompareSongsByDiscAndTrack);
 				return songs;
