@@ -34,33 +34,134 @@ namespace WaveBox.ApiHandler.Handlers
 		public void Process()
 		{
 			// List of songs and albums to be returned via handler
-			List<Song> songs = new List<Song>();
-			List<Album> albums = new List<Album>();
+			IList<Song> songs = new List<Song>();
+			IList<Album> albums = new List<Album>();
 
-			// Try to get the album id
-			bool success = false;
+			// Fetch album ID from parameters
 			int id = 0;
 			if (Uri.Parameters.ContainsKey("id"))
 			{
-				success = Int32.TryParse(Uri.Parameters["id"], out id);
+				if (!Int32.TryParse(Uri.Parameters["id"], out id))
+				{
+					string json = JsonConvert.SerializeObject(new AlbumsResponse("Parameter 'id' requires a valid integer", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+					Processor.WriteJson(json);
+					return;
+				}
+
+				// Add album by ID to the list
+				Album a = new Album.Factory().CreateAlbum(id);
+				albums.Add(a);
+
+				// Add album's songs to response
+				songs = a.ListOfSongs();
+			}
+			// Check for a request for range of songs
+			else if (Uri.Parameters.ContainsKey("range"))
+			{
+				string[] range = Uri.Parameters["range"].Split(',');
+
+				// Ensure valid range was parsed
+				if (range.Length != 2)
+				{
+					string json = JsonConvert.SerializeObject(new AlbumsResponse("Parameter 'range' requires a valid, comma-separated character tuple", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+					Processor.WriteJson(json);
+					return;
+				}
+
+				// Validate as characters
+				char start, end;
+				if (!Char.TryParse(range[0], out start) || !Char.TryParse(range[1], out end))
+				{
+					string json = JsonConvert.SerializeObject(new AlbumsResponse("Parameter 'range' requires characters which are single alphanumeric values", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+					Processor.WriteJson(json);
+					return;
+				}
+
+				// Grab range of albums
+				albums = Album.RangeAlbums(start, end);
 			}
 
-			// Return specific album on success, with its songs
-			if (success)
+			// Check for a request to limit/paginate songs, like SQL
+			// Note: can be combined with range or all albums
+			if (Uri.Parameters.ContainsKey("limit") && !Uri.Parameters.ContainsKey("id"))
 			{
-				Album album = new Album.Factory().CreateAlbum(id);
-				albums.Add(album);
-				songs = album.ListOfSongs();
+				string[] limit = Uri.Parameters["limit"].Split(',');
+
+				// Ensure valid limit was parsed
+				if (limit.Length < 1 || limit.Length > 2 )
+				{
+					string json = JsonConvert.SerializeObject(new AlbumsResponse("Parameter 'limit' requires a single integer, or a valid, comma-separated integer tuple", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+					Processor.WriteJson(json);
+					return;
+				}
+
+				// Validate as integers
+				int index = 0;
+				int duration = Int32.MinValue;
+				if (!Int32.TryParse(limit[0], out index))
+				{
+					string json = JsonConvert.SerializeObject(new AlbumsResponse("Parameter 'limit' requires a valid integer start index", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+					Processor.WriteJson(json);
+					return;
+				}
+
+				// Ensure positive index
+				if (index < 0)
+				{
+					string json = JsonConvert.SerializeObject(new AlbumsResponse("Parameter 'limit' requires a non-negative integer start index", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+					Processor.WriteJson(json);
+					return;
+				}
+
+				// Check for duration
+				if (limit.Length == 2)
+				{
+					if (!Int32.TryParse(limit[1], out duration))
+					{
+						string json = JsonConvert.SerializeObject(new AlbumsResponse("Parameter 'limit' requires a valid integer duration", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+						Processor.WriteJson(json);
+						return;
+					}
+
+					// Ensure positive duration
+					if (duration < 0)
+					{
+						string json = JsonConvert.SerializeObject(new AlbumsResponse("Parameter 'limit' requires a non-negative integer duration", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+						Processor.WriteJson(json);
+						return;
+					}
+				}
+
+				// Check if results list already populated by range
+				if (albums.Count > 0)
+				{
+					// No duration?  Return just specified number of albums
+					if (duration == Int32.MinValue)
+					{
+						albums = albums.Skip(0).Take(index).ToList();
+					}
+					else
+					{
+						// Else, return albums starting at index, up to count duration
+						albums = albums.Skip(index).Take(duration).ToList();
+					}
+				}
+				else
+				{
+					// If no albums in list, grab directly using model method
+					albums = Album.LimitAlbums(index, duration);
+				}
 			}
-			else
+
+			// Finally, if no albums already in list, send the whole list
+			if (albums.Count == 0)
 			{
-				// On failure, return list of all albums
 				albums = Album.AllAlbums();
 			}
 
 			try
 			{
-				// Serialize AlbumsResponse object, write to HTTP response
+				// Send it!
 				string json = JsonConvert.SerializeObject(new AlbumsResponse(null, albums, songs), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 				Processor.WriteJson(json);
 			}
@@ -76,12 +177,12 @@ namespace WaveBox.ApiHandler.Handlers
 			public string Error { get; set; }
 
 			[JsonProperty("albums")]
-			public List<Album> Albums { get; set; }
+			public IList<Album> Albums { get; set; }
 
 			[JsonProperty("songs")]
-			public List<Song> Songs { get; set; }
+			public IList<Song> Songs { get; set; }
 
-			public AlbumsResponse(string error, List<Album> albums, List<Song> songs)
+			public AlbumsResponse(string error, IList<Album> albums, IList<Song> songs)
 			{
 				Error = error;
 				Albums = albums;
