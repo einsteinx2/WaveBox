@@ -95,7 +95,7 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				return conn.Query<Session>("SELECT RowId, * FROM Session WHERE UserId = ?", UserId);
+				return conn.Query<Session>("SELECT RowId AS RowId, * FROM Session WHERE UserId = ?", UserId);
 			}
 			catch (Exception e)
 			{
@@ -115,7 +115,14 @@ namespace WaveBox.Model
 			try
 			{
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				return conn.Query<User>("SELECT * FROM User ORDER BY UserName");
+				List<User> users = conn.Query<User>("SELECT * FROM User ORDER BY UserName");
+
+				foreach (User u in users)
+				{
+					u.Sessions = u.ListOfSessions();
+				}
+
+				return users;
 			}
 			catch (Exception e)
 			{
@@ -320,6 +327,7 @@ namespace WaveBox.Model
 
 					foreach (var u in result)
 					{
+						u.Sessions = u.ListOfSessions();
 						return u;
 					}
 				}
@@ -347,6 +355,7 @@ namespace WaveBox.Model
 
 					foreach (var u in result)
 					{
+						u.Sessions = u.ListOfSessions();
 						return u;
 					}
 				}
