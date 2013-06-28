@@ -187,7 +187,7 @@ namespace WaveBox.Model
 					return conn.Query<Artist>("SELECT * FROM Artist WHERE " + field + " = ? ORDER BY ArtistName", query);
 				}
 				else
-				{	
+				{
 					// Search for fuzzy match (containing query)
 					return conn.Query<Artist>("SELECT * FROM Artist WHERE " + field + " LIKE ? ORDER BY ArtistName", "%" + query + "%");
 				}
@@ -201,6 +201,82 @@ namespace WaveBox.Model
 				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 
+			return new List<Artist>();
+		}
+
+		// Return a list of artists titled between a range of (a-z, A-Z, 0-9 characters)
+		public static List<Artist> RangeArtists(char start, char end)
+		{
+			// Ensure characters are alphanumeric, return empty list if either is not
+			if (!Char.IsLetterOrDigit(start) || !Char.IsLetterOrDigit(end))
+			{
+				return new List<Artist>();
+			}
+
+			string s = start.ToString();
+			// Add 1 to character to make end inclusive
+			string en = Convert.ToChar((int)end + 1).ToString();
+
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+
+				List<Artist> artists;
+				artists = conn.Query<Artist>("SELECT * FROM Artist " +
+										"WHERE Artist.ArtistName BETWEEN LOWER(?) AND LOWER(?) " +
+										"OR Artist.ArtistName BETWEEN UPPER(?) AND UPPER(?)", s, en, s, en);
+
+				artists.Sort(Artist.CompareArtistsByName);
+				return artists;
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+			}
+
+			// We had an exception somehow, so return an empty list
+			return new List<Artist>();
+		}
+
+		// Return a list of artists using SQL LIMIT x,y where X is starting index and Y is duration
+		public static List<Artist> LimitArtists(int index, int duration = Int32.MinValue)
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+
+				// Begin building query
+				List<Artist> artists;
+
+				string query = "SELECT * FROM Artist LIMIT ? ";
+
+				// Add duration to LIMIT if needed
+				if (duration != Int32.MinValue && duration > 0)
+				{
+					query += ", ?";
+				}
+
+				// Run query, sort, send it back
+				artists = conn.Query<Artist>(query, index, duration);
+				artists.Sort(Artist.CompareArtistsByName);
+				return artists;
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+			}
+
+			// We had an exception somehow, so return an empty list
 			return new List<Artist>();
 		}
 		
