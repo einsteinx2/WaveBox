@@ -1,10 +1,11 @@
 using System;
-using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Web;
+using Newtonsoft.Json;
+using Ninject;
+using WaveBox.Core.Injected;
 using WaveBox.Model;
 using WaveBox.Static;
-using WaveBox.Core.Injected;
-using Ninject;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -146,7 +147,7 @@ namespace WaveBox.ApiHandler.Handlers
 				string name = null;
 				if (Uri.Parameters.ContainsKey("name"))
 				{
-					name = Uri.Parameters["name"];
+					name = HttpUtility.UrlDecode(Uri.Parameters["name"]);
 				}
 
 				if (ReferenceEquals(name, null))
