@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using Cirrious.MvvmCross.Plugins.Sqlite;
+using Newtonsoft.Json;
+using Ninject;
+using TagLib;
+using WaveBox.Core.Injected;
 using WaveBox.Model;
 using WaveBox.Static;
-using TagLib;
-using Newtonsoft.Json;
-using System.Diagnostics;
-using Cirrious.MvvmCross.Plugins.Sqlite;
-using Ninject;
-using WaveBox.Core.Injected;
 
 namespace WaveBox.Model
 {

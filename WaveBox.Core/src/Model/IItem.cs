@@ -1,7 +1,7 @@
 using System;
 using System.IO;
-using Newtonsoft.Json;
 using Cirrious.MvvmCross.Plugins.Sqlite;
+using Newtonsoft.Json;
 
 namespace WaveBox.Model
 {
