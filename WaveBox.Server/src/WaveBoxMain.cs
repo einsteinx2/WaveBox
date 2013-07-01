@@ -20,6 +20,7 @@ using WaveBox.Core.Injected;
 using WaveBox.DeviceSync;
 using WaveBox.Model;
 using WaveBox.SessionManagement;
+using WaveBox.Service;
 using WaveBox.Static;
 using WaveBox.TcpServer.Http;
 using WaveBox.TcpServer;
@@ -120,6 +121,18 @@ namespace WaveBox
 			// Perform initial setup of Settings, Database
 			Injection.Kernel.Get<IDatabase>().DatabaseSetup();
 			Injection.Kernel.Get<IServerSettings>().SettingsSetup();
+
+			// Start services
+			try
+			{
+				ServiceManager.AddList(Injection.Kernel.Get<IServerSettings>().Services);
+				ServiceManager.StartAll();
+			}
+			catch (Exception e)
+			{
+				logger.Warn("Could not start WaveBox services, please check services in your configuration");
+				logger.Warn(e);
+			}
 
 			// If configured, start NAT routing
 			try
@@ -227,6 +240,10 @@ namespace WaveBox
 		/// </summary>
 		public void Stop()
 		{
+			// Stop all running services
+			ServiceManager.StopAll();
+			ServiceManager.Clear();
+
 			httpServer.Stop();
 
 			// Disable any Nat routes
@@ -248,8 +265,8 @@ namespace WaveBox
 		/// </summary>
 		public void Restart()
 		{
-			Stop();
-			StartTcpServer(httpServer);
+			this.Stop();
+			this.Start();
 		}
 	}
 }

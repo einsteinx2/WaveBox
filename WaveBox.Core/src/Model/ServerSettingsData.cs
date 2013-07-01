@@ -35,6 +35,8 @@ namespace WaveBox.Model
 
 		[JsonProperty("folderArtNames")]
 		public List<string> FolderArtNames { get; set; }
+
+		[JsonProperty("services")]
+		public List<string> Services { get; set; }
 	}
 }
-

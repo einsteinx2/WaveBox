@@ -10,6 +10,7 @@ using Ninject;
 using WaveBox.Core.Injected;
 using WaveBox.Core;
 using WaveBox.Model;
+using WaveBox.Service;
 
 namespace WaveBox.Static
 {
@@ -43,6 +44,8 @@ namespace WaveBox.Static
 		public List<Folder> MediaFolders { get; private set; }
 
 		public List<string> FolderArtNames { get { return settingsModel.FolderArtNames; } }
+
+		public List<string> Services { get { return settingsModel.Services; } }
 
 		public void Reload()
 		{
@@ -218,6 +221,23 @@ namespace WaveBox.Static
 						if (logger.IsInfoEnabled) logger.Info("\t" + artName);
 					}
 					settingsModel.FolderArtNames = folderArtNamesTemp;
+					settingsChanged = true;
+				}
+			}
+			catch { }
+
+			try
+			{
+				if (json.services != null)
+				{
+					List<string> servicesTemp = new List<string>();
+					if (logger.IsInfoEnabled) logger.Info("Setting 'services':");
+					foreach (string service in json.services)
+					{
+						servicesTemp.Add(service);
+						if (logger.IsInfoEnabled) logger.Info("\t" + service);
+					}
+					settingsModel.Services = servicesTemp;
 					settingsChanged = true;
 				}
 			}

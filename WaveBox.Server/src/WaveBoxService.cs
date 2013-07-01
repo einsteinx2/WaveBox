@@ -14,6 +14,7 @@ using Ninject;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Injected;
 using WaveBox.Server.Extensions;
+using WaveBox.Service;
 using WaveBox.Static;
 using WaveBox.Transcoding;
 
@@ -162,6 +163,9 @@ namespace WaveBox
 		protected override void OnStop()
 		{
 			if (logger.IsInfoEnabled) logger.Info("Stopping...");
+
+			// Stop all running services
+			ServiceManager.StopAll();
 
 			// Abort main thread, nullify the WaveBox object
 			init.Abort();

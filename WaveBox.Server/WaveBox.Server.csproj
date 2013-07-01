@@ -160,6 +160,11 @@
     <Compile Include="src\PodcastManagement\FeedCheckOperation.cs" />
     <Compile Include="src\PodcastManagement\Podcast.cs" />
     <Compile Include="src\PodcastManagement\PodcastEpisode.cs" />
+    <Compile Include="src\Service\IService.cs" />
+    <Compile Include="src\Service\ServiceFactory.cs" />
+    <Compile Include="src\Service\ServiceManager.cs" />
+    <Compile Include="src\Service\Services\CronService.cs" />
+    <Compile Include="src\Service\Services\HttpService.cs" />
     <Compile Include="src\SessionManagement\SessionScrub.cs" />
     <Compile Include="src\SessionManagement\SessionScrubOperation.cs" />
     <Compile Include="src\Static\AutoUpdater.cs" />
