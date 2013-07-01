@@ -162,6 +162,7 @@ namespace WaveBox.Static
 					{
 						// There are no available connections, and we have room for more open connections, so make a new one
 						conn = new SQLite.SQLiteConnection(databasePath);
+						conn.Execute("PRAGMA synchronous = OFF");
 						// Five second busy timeout
 						conn.BusyTimeout = new TimeSpan(0, 0, 5); 
 					}
