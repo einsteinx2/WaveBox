@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
-using WaveBox.Static;
-using WaveBox.Model;
+using System.Linq;
 using System.Security.Cryptography;
-using TagLib;
-using Newtonsoft.Json;
+using System.Text;
 using Cirrious.MvvmCross.Plugins.Sqlite;
+using Newtonsoft.Json;
 using Ninject;
+using TagLib;
 using WaveBox.Core.Injected;
+using WaveBox.Model;
+using WaveBox.Static;
 
 namespace WaveBox.Model
 {
@@ -44,7 +44,6 @@ namespace WaveBox.Model
 
 		public Art()
 		{
-
 		}
 
 		public void InsertArt()

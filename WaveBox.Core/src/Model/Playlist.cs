@@ -3,13 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using WaveBox.Static;
 using System.Security.Cryptography;
-using Newtonsoft.Json;
 using Cirrious.MvvmCross.Plugins.Sqlite;
-using WaveBox.Core.Extensions;
+using Newtonsoft.Json;
 using Ninject;
+using WaveBox.Core.Extensions;
 using WaveBox.Core.Injected;
+using WaveBox.Static;
 
 namespace WaveBox.Model
 {
@@ -43,7 +43,6 @@ namespace WaveBox.Model
 
 		[JsonProperty("lastUpdateTime")]
 		public long? LastUpdateTime { get; set; }
-
 
 		public Playlist()
 		{
@@ -119,14 +118,14 @@ namespace WaveBox.Model
 					Md5Hash = CalculateHash();
 
 					conn.ExecuteLogged("INSERT INTO Playlist (PlaylistId, PlaylistName, PlaylistCount, PlaylistDuration, Md5Hash, LastUpdateTime) " +
-					                   "VALUES (?, ?, ?, ?, ?, ?)", PlaylistId, PlaylistName == null ? "" : PlaylistName, PlaylistCount, PlaylistDuration, Md5Hash, LastUpdateTime);
+										"VALUES (?, ?, ?, ?, ?, ?)", PlaylistId, PlaylistName == null ? "" : PlaylistName, PlaylistCount, PlaylistDuration, Md5Hash, LastUpdateTime);
 				}
 				else
 				{
 					LastUpdateTime = DateTime.Now.ToUniversalUnixTimestamp();
 					Md5Hash = CalculateHash();
 					conn.ExecuteLogged("UPDATE Playlist SET PlaylistName = ?, PlaylistCount = ?, PlaylistDuration = ?, Md5Hash = ?, LastUpdateTime = ? " +
-					                   "WHERE PlaylistId = ?", PlaylistName == null ? "" : PlaylistName, PlaylistCount, PlaylistDuration, Md5Hash, LastUpdateTime, PlaylistId);
+										"WHERE PlaylistId = ?", PlaylistName == null ? "" : PlaylistName, PlaylistCount, PlaylistDuration, Md5Hash, LastUpdateTime, PlaylistId);
 				}
 			}
 			catch (Exception e)
@@ -147,8 +146,8 @@ namespace WaveBox.Model
 			{
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.ExecuteScalar<int>("SELECT ItemPosition FROM PlaylistItem " + 
-				                               "WHERE PlaylistId = ? AND ItemType = ? " + 
-				                               "ORDER BY ItemPosition LIMIT 1", PlaylistId, item.ItemTypeId);
+												"WHERE PlaylistId = ? AND ItemType = ? " + 
+												"ORDER BY ItemPosition LIMIT 1", PlaylistId, item.ItemTypeId);
 			}
 			catch (Exception e)
 			{
@@ -174,9 +173,14 @@ namespace WaveBox.Model
 				{
 					switch (playlistItem.ItemType)
 					{
-						case ItemType.Song: return new Song.Factory().CreateSong((int)playlistItem.ItemId); 
-						case ItemType.Video: return new Video.Factory().CreateVideo((int)playlistItem.ItemId);
-						default: break;
+						case ItemType.Song:
+							return new Song.Factory().CreateSong((int)playlistItem.ItemId);
+							break;
+						case ItemType.Video:
+							return new Video.Factory().CreateVideo((int)playlistItem.ItemId);
+							break;
+						default:
+							break;
 					}
 				}
 			}
@@ -514,7 +518,7 @@ namespace WaveBox.Model
 						LastUpdateTime = DateTime.Now.ToUniversalUnixTimestamp();
 						Md5Hash = CalculateHash();
 						conn.ExecuteLogged("UPDATE Playlist SET PlaylistName = ?, PlaylistCount = ?, PlaylistDuration = ?, Md5Hash = ?, LastUpdateTime = ? " +
-						                   "WHERE PlaylistId = ?", PlaylistName == null ? "" : PlaylistName, PlaylistCount, PlaylistDuration, Md5Hash, LastUpdateTime, PlaylistId);
+										   "WHERE PlaylistId = ?", PlaylistName == null ? "" : PlaylistName, PlaylistCount, PlaylistDuration, Md5Hash, LastUpdateTime, PlaylistId);
 
 						conn.Commit();
 					}
@@ -571,7 +575,9 @@ namespace WaveBox.Model
 		public void DeletePlaylist()
 		{
 			if (ReferenceEquals(PlaylistId, null))
-			    return;
+			{
+				return;
+			}
 
 			ISQLiteConnection conn = null;
 			try

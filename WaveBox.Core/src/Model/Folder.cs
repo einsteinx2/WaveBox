@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
-using WaveBox.Static;
-using WaveBox.Model;
-using Newtonsoft.Json;
 using Cirrious.MvvmCross.Plugins.Sqlite;
-using System.IO;
+using Newtonsoft.Json;
 using Ninject;
 using WaveBox.Core.Injected;
+using WaveBox.Model;
+using WaveBox.Static;
 
 namespace WaveBox.Model
 {
@@ -49,7 +49,6 @@ namespace WaveBox.Model
 
 		public Folder()
 		{
-
 		}
 
 		public Folder ParentFolder()
@@ -112,7 +111,8 @@ namespace WaveBox.Model
 			{
 				return true;
 			}
-			else return false;
+			
+			return false;
 		}
 
 		private Folder MediaFolder()

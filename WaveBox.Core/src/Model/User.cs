@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Newtonsoft.Json;
-using WaveBox.Static;
-using WaveBox.Model;
 using System.Security.Cryptography;
 using Cirrious.MvvmCross.Plugins.Sqlite;
-using WaveBox.Core.Extensions;
+using Newtonsoft.Json;
 using Ninject;
+using WaveBox.Core.Extensions;
 using WaveBox.Core.Injected;
+using WaveBox.Model;
+using WaveBox.Static;
 
 namespace WaveBox.Model
 {
@@ -53,7 +53,6 @@ namespace WaveBox.Model
 	
 		public User()
 		{
-
 		}
 
 		public static string UserNameForSessionid(string sessionId)
@@ -162,14 +161,7 @@ namespace WaveBox.Model
 		}
 
 		// Compute password hash using PBKDF2
-		private static string ComputePasswordHash(string password, string salt)
-		{
-			// Hash using predefined iterations
-			return ComputePasswordHash(password, salt, HashIterations);
-		}
-
-		// Compute password hash using PBKDF2
-		private static string ComputePasswordHash(string password, string salt, int iterations)
+		private static string ComputePasswordHash(string password, string salt, int iterations = HashIterations)
 		{
 			// Convert salt to byte array
 			byte[] saltBytes = Encoding.UTF8.GetBytes(salt);
@@ -290,7 +282,9 @@ namespace WaveBox.Model
 		public void Delete()
 		{
 			if (ReferenceEquals(UserId, null))
+			{
 				return;
+			}
 
 			// Delete the user
 			ISQLiteConnection conn = null;

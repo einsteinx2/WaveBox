@@ -1,6 +1,6 @@
 using System;
-using Newtonsoft.Json;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace WaveBox.Model
 {

@@ -1,8 +1,8 @@
 using System;
-using WaveBox.OperationQueue;
-using WaveBox.Model;
 using System.Collections.Generic;
 using WaveBox.Core.Extensions;
+using WaveBox.Model;
+using WaveBox.OperationQueue;
 
 namespace WaveBox.Static
 {
@@ -43,4 +43,3 @@ namespace WaveBox.Static
 		}
 	}
 }
-

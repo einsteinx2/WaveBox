@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.IO;
+using Cirrious.MvvmCross.Plugins.Sqlite;
+using Newtonsoft.Json;
+using Ninject;
+using TagLib;
+using WaveBox.Core.Injected;
 using WaveBox.Model;
 using WaveBox.Static;
-using System.IO;
-using TagLib;
-using Newtonsoft.Json;
-using System.Diagnostics;
-using Cirrious.MvvmCross.Plugins.Sqlite;
-using System.Collections;
-using Ninject;
-using WaveBox.Core.Injected;
 
 namespace WaveBox.Model
 {
@@ -362,13 +362,20 @@ namespace WaveBox.Model
 
 		public static int CompareSongsByDiscAndTrack(Song x, Song y)
 		{
-			if (x.DiscNumber == y.DiscNumber && x.TrackNumber == y.TrackNumber) return 0;
-
+			if (x.DiscNumber == y.DiscNumber && x.TrackNumber == y.TrackNumber)
+			{
+				return 0;
+			}
 			// if the disc numbers are equal, we have to compare by track
-			else if (x.DiscNumber == y.DiscNumber) return x.TrackNumber > y.TrackNumber ? 1 : -1;
-
+			else if (x.DiscNumber == y.DiscNumber)
+			{
+				return x.TrackNumber > y.TrackNumber ? 1 : -1;
+			}
 			// if the disc numbers are not equal, the one with the higher disc number is greater.
-			else return x.DiscNumber > y.DiscNumber ? 1 : -1;
+			else
+			{
+				return x.DiscNumber > y.DiscNumber ? 1 : -1;
+			}
 		}
 
 		/*

@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using WaveBox.Model;
-using WaveBox.Static;
 using Cirrious.MvvmCross.Plugins.Sqlite;
+using Ninject;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Injected;
-using Ninject;
+using WaveBox.Model;
+using WaveBox.Static;
 
 namespace WaveBox
 {
@@ -115,4 +115,3 @@ namespace WaveBox
 		}
 	}
 }
-
