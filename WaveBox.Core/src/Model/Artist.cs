@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using WaveBox.Static;
-using Newtonsoft.Json;
 using Cirrious.MvvmCross.Plugins.Sqlite;
+using Newtonsoft.Json;
 using Ninject;
 using WaveBox.Core.Injected;
+using WaveBox.Static;
 
 namespace WaveBox.Model
 {
@@ -38,7 +38,6 @@ namespace WaveBox.Model
 		
 		public Artist()
 		{
-
 		}
 
 		private static bool InsertArtist(string artistName)

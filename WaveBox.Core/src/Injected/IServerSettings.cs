@@ -32,7 +32,6 @@ namespace WaveBox.Core.Injected
 
 		List<string> FolderArtNames { get; }
 
-
 		void Reload();
 
 		bool WriteSettings(string jsonString);

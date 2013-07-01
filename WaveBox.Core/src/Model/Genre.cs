@@ -1,10 +1,10 @@
 using System;
-using WaveBox.Static;
 using System.Collections.Generic;
 using System.Linq;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using Ninject;
 using WaveBox.Core.Injected;
+using WaveBox.Static;
 
 namespace WaveBox.Model
 {
@@ -18,7 +18,6 @@ namespace WaveBox.Model
 
 		public Genre()
 		{
-
 		}
 
 		public void InsertGenre()
@@ -65,10 +64,10 @@ namespace WaveBox.Model
 			{
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.Query<Artist>("SELECT Artist.* " +
-				                          "FROM Genre " + 
-				                          "LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
-				                          "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
-				                          "WHERE Genre.GenreId = ? GROUP BY Artist.ArtistId", GenreId);
+										"FROM Genre " + 
+										"LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
+										"LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+										"WHERE Genre.GenreId = ? GROUP BY Artist.ArtistId", GenreId);
 			}
 			catch (Exception e)
 			{
@@ -89,10 +88,10 @@ namespace WaveBox.Model
 			{
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.Query<Album>("SELECT Album.* " +
-				                         "FROM Genre " + 
-				                         "LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
-				                         "LEFT JOIN Album ON Song.AlbumId = Album.ItemId " +
-				                         "WHERE Genre.GenreId = ? GROUP BY Album.ItemId", GenreId);
+										 "FROM Genre " + 
+										 "LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
+										 "LEFT JOIN Album ON Song.AlbumId = Album.ItemId " +
+										 "WHERE Genre.GenreId = ? GROUP BY Album.ItemId", GenreId);
 			}
 			catch (Exception e)
 			{
@@ -113,9 +112,9 @@ namespace WaveBox.Model
 			{
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.Query<Song>("SELECT Song.*, Genre.GenreName " +
-				                        "FROM Genre " + 
-				                        "LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
-				                        "WHERE Genre.GenreId = ? GROUP BY Song.ItemId", conn);
+										"FROM Genre " + 
+										"LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
+										"WHERE Genre.GenreId = ? GROUP BY Song.ItemId", conn);
 			}
 			catch (Exception e)
 			{
@@ -136,10 +135,10 @@ namespace WaveBox.Model
 			{
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				return conn.Query<Folder>("SELECT Folder.* " +
-				                          "FROM Genre " + 
-				                          "LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
-				                          "LEFT JOIN Folder ON Song.FolderId = Folder.FolderId " +
-				                          "WHERE Genre.GenreId = ? GROUP BY Folder.FolderId", GenreId);
+										  "FROM Genre " + 
+										  "LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
+										  "LEFT JOIN Folder ON Song.FolderId = Folder.FolderId " +
+										  "WHERE Genre.GenreId = ? GROUP BY Folder.FolderId", GenreId);
 			}
 			catch (Exception e)
 			{
@@ -265,4 +264,3 @@ namespace WaveBox.Model
 		}
 	}
 }
-

@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using WaveBox.Static;
-using Newtonsoft.Json;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using Ninject;
+using Newtonsoft.Json;
 using WaveBox.Core.Injected;
+using WaveBox.Static;
 
 namespace WaveBox.Model
 {
@@ -48,7 +48,6 @@ namespace WaveBox.Model
 		public int? DetermineArtId()
 		{
 			// Return the art id (if any) for this album, based on the current best art id using either a song art id or the folder art id
-
 			List<int> songArtIds = SongArtIds();
 			if (songArtIds.Count == 1)
 			{
@@ -426,7 +425,7 @@ namespace WaveBox.Model
 					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 					var result = conn.DeferredQuery<Album>("SELECT Album.*, Artist.ArtistName FROM Album " +
 															"LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
-															"WHERE AlbumId = ?", albumId);
+															"WHERE Album.AlbumId = ?", albumId);
 
 					foreach (Album a in result)
 					{
@@ -458,7 +457,7 @@ namespace WaveBox.Model
 					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 					var result = conn.DeferredQuery<Album>("SELECT Album.*, Artist.ArtistName FROM Album " +
 															"LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
-															"WHERE AlbumName = ? AND ArtistId = ?", albumName, artistId);
+															"WHERE Album.AlbumName = ? AND Album.ArtistId = ?", albumName, artistId);
 
 					foreach (Album a in result)
 					{

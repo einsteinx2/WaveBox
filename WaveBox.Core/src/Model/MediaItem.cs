@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
-using System.IO;
+using Cirrious.MvvmCross.Plugins.Sqlite;
+using Newtonsoft.Json;
 using WaveBox.Model;
 using WaveBox.Static;
-using System.Diagnostics;
-using Newtonsoft.Json;
-using Cirrious.MvvmCross.Plugins.Sqlite;
 
 namespace WaveBox.Model
 {
@@ -62,7 +62,6 @@ namespace WaveBox.Model
 
 		public virtual void InsertMediaItem()
 		{
-
 		}
 
 		public override bool Equals(Object obj)

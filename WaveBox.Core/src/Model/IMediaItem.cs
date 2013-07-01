@@ -1,7 +1,7 @@
 using System;
 using System.IO;
-using Newtonsoft.Json;
 using Cirrious.MvvmCross.Plugins.Sqlite;
+using Newtonsoft.Json;
 
 namespace WaveBox.Model
 {
@@ -9,22 +9,22 @@ namespace WaveBox.Model
 	{
 		[JsonProperty("folderId")]
 		int? FolderId { get; set; }
-		
+
 		[JsonProperty("fileType"), IgnoreRead, IgnoreWrite]
 		FileType FileType { get; set; }
-		
+
 		[JsonProperty("duration")]
 		int? Duration { get; set; }
-		
+
 		[JsonProperty("bitrate")]
 		int? Bitrate { get; set; }
-		
+
 		[JsonProperty("fileSize")]
 		long? FileSize { get; set; }
-		
+
 		[JsonProperty("lastModified")]
 		long? LastModified { get; set; }
-		
+
 		[JsonProperty("fileName")]
 		string FileName { get; set; }
 
