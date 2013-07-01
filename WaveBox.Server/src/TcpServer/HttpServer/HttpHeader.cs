@@ -8,8 +8,6 @@ namespace WaveBox.TcpServer.Http
 {
 	public class HttpHeader
 	{
-		//private static Logger logger = LogManager.GetCurrentClassLogger();
-
 		public long ContentLength { get; set; }
 		public HttpStatusCode StatusCode { get; set; }
 		public string ContentType { get; set; }

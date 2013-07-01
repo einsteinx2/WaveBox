@@ -38,10 +38,10 @@ namespace WaveBox.Static
 				// Compose the registration request URL
 				string urlString = "http://register.wavebox.es" + 
 					"?host=" + Uri.EscapeUriString(serverUrl) + 
-						"&serverId=" + Uri.EscapeUriString(serverGuid) + 
-						"&port=" + Injection.Kernel.Get<IServerSettings>().Port + 
-						"&isSecure=0" + 
-						"&localIp=" + LocalIPAddress().ToString();
+					"&serverId=" + Uri.EscapeUriString(serverGuid) + 
+					"&port=" + Injection.Kernel.Get<IServerSettings>().Port + 
+					"&isSecure=0" + 
+					"&localIp=" + LocalIPAddress().ToString();
 
 				if (logger.IsInfoEnabled) logger.Info("Registering URL: " + urlString);
 
@@ -61,4 +61,3 @@ namespace WaveBox.Static
 		}
 	}
 }
-

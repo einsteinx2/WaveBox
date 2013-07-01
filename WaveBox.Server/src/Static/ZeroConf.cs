@@ -1,7 +1,7 @@
 using System;
 using Mono.Zeroconf;
-using WaveBox.Core.Injected;
 using Ninject;
+using WaveBox.Core.Injected;
 
 namespace WaveBox.Static
 {
@@ -68,4 +68,3 @@ namespace WaveBox.Static
 		}
 	}
 }
-

@@ -1,14 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.IO;
-using System.Text;
-using System.Web;
-using WaveBox.Model;
-using Newtonsoft.Json;
-using System.Security.Cryptography;
-using System.Web.Services;
 using System.Net.Sockets;
+using System.Net;
+using System.Security.Cryptography;
+using System.Text;
+using System.Web.Services;
+using System.Web;
+using Newtonsoft.Json;
+using WaveBox.Model;
+using WaveBox.Static;
 
 namespace WaveBox
 {
@@ -165,11 +166,10 @@ namespace WaveBox
 			}
 
 			sig += secret;
-			sig = md5(sig);
+			sig = sig.MD5();
 
 			parameters.Add("api_sig", sig);
 			parameters.Add("format", "json");
-
 
 			// using the API signature that was just added to the parameter dictionary, compile the command.
 			enumerator = parameters.GetEnumerator();
@@ -203,12 +203,9 @@ namespace WaveBox
 		private void GetSessionKeyAndUpdateUser(string token)
 		{
 			string apiSigSource = "api_key" + apiKey + "method" + "auth.getSession" + "token" + token + secret;
-			string apiSig = md5 (apiSigSource);
+			string apiSig = apiSigSource.MD5();
 			dynamic jsonResponse;
-			string requestUrl = "http://ws.audioscrobbler.com/2.0/?method=auth.getSession&format=json" + 
-				string.Format("&api_key={0}", apiKey) + 
-				string.Format("&token={0}", token) + 
-				string.Format("&api_sig={0}", apiSig);
+			string requestUrl = String.Format("http://ws.audioscrobbler.com/2.0/?method=auth.getSession&format=json&api_key={0}&token={1}&api_sig={2}", apiKey, token, apiSig);
 
 			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(requestUrl);
 
@@ -229,18 +226,6 @@ namespace WaveBox
 		}
 
 		/// <summary>
-		/// Md5 the specified input.
-		/// </summary>
-		/// <param name='input'>
-		/// Input.
-		/// </param>
-		private static string md5(string input)
-		{
-			MD5CryptoServiceProvider m = new MD5CryptoServiceProvider();
-			return BitConverter.ToString(m.ComputeHash(Encoding.ASCII.GetBytes(input))).Replace("-", string.Empty);
-		}
-
-		/// <summary>
 		/// Creates the auth URL.
 		/// </summary>
 		private void CreateAuthUrl()
@@ -249,8 +234,7 @@ namespace WaveBox
 			dynamic jsonResponse;
 
 			// Get a last.fm request token
-			string requestUrl = "http://ws.audioscrobbler.com/2.0/?method=auth.gettoken&format=json" + 
-				string.Format("&api_key={0}", apiKey);
+			string requestUrl = String.Format("http://ws.audioscrobbler.com/2.0/?method=auth.gettoken&format=json&api_key={0}", apiKey);
 
 			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(requestUrl);
 
@@ -269,8 +253,8 @@ namespace WaveBox
 			}
 
 			string url = "http://www.last.fm/api/auth/?" + 
-				string.Format ("api_key={0}", apiKey) + 
-				string.Format ("&token={0}", requestToken);
+			string.Format ("api_key={0}", apiKey) + 
+			string.Format ("&token={0}", requestToken);
 
 			authUrl = url;
 		}
@@ -310,8 +294,6 @@ namespace WaveBox
 				NetworkStream stream = s.GetStream();
 				stream.Write(headerBytes, 0, headerBytes.Length);
 
-				//if (logger.IsInfoEnabled) logger.Info(req.ToString());
-
 				byte[] receive = new byte[256];
 				MemoryStream m = new MemoryStream();
 				int numRead = 0;
@@ -324,18 +306,16 @@ namespace WaveBox
 				byte[] finalByteArray = m.ToArray();
 				resp = Encoding.UTF8.GetString(finalByteArray, 0, finalByteArray.Length);
 
-				//if (logger.IsInfoEnabled) logger.Info(resp);
 				stream.Close();
 				s.Close();
 			} 
-
 			catch (Exception e)
 			{
 				logger.Error(e);
 			}
 
 			return resp;
-	}
+		}
 
 		public static LfmScrobbleType ScrobbleTypeForString(string input)
 		{
@@ -379,4 +359,3 @@ namespace WaveBox
 		INVALID = 3
 	}
 }
-

@@ -1,16 +1,16 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.IO;
-using WaveBox.Static;
 using System.Net;
+using System.Threading;
 using System.Web;
 using System.Xml;
-using WaveBox.Model;
-using System.Collections.Generic;
-using System.Threading;
 using Cirrious.MvvmCross.Plugins.Sqlite;
-using WaveBox.Core.Injected;
 using Ninject;
+using WaveBox.Core.Injected;
+using WaveBox.Model;
+using WaveBox.Static;
 
 namespace WaveBox.PodcastManagement
 {
@@ -71,7 +71,9 @@ namespace WaveBox.PodcastManagement
 		{
 			EpisodeId = Item.GenerateItemId(ItemType.PodcastEpisode);
 			if (ReferenceEquals(EpisodeId, null))
+			{
 				return;
+			}
 
 			ISQLiteConnection conn = null;
 			try
@@ -109,11 +111,6 @@ namespace WaveBox.PodcastManagement
 				podcastEpisode.Author = episode.SelectSingleNode("itunes:author", mgr).InnerText;
 				podcastEpisode.Subtitle = episode.SelectSingleNode("itunes:subtitle", mgr).InnerText;
 				podcastEpisode.MediaUrl = episode.SelectSingleNode("enclosure").Attributes["url"].InnerText;
-				//if (logger.IsInfoEnabled) logger.Info(episode.SelectSingleNode("title").InnerText);
-				//if (logger.IsInfoEnabled) logger.Info(episode.SelectSingleNode("itunes:author", mgr).InnerText);
-				//if (logger.IsInfoEnabled) logger.Info(episode.SelectSingleNode("itunes:subtitle", mgr).InnerText);
-				//if (logger.IsInfoEnabled) logger.Info(episode.SelectSingleNode("enclosure").Attributes["url"].InnerText);
-				//if (logger.IsInfoEnabled) logger.Info();
 
 				return podcastEpisode;
 			}
@@ -145,4 +142,3 @@ namespace WaveBox.PodcastManagement
 		}
 	}
 }
-

@@ -62,10 +62,6 @@ namespace WaveBox.ApiHandler.Handlers
 				{
 					switch (action)
 					{
-						case "delete":
-							playlist.DeletePlaylist();
-							break;
-
 						case "add":
 							// Try to get the itemIds to add them to the playlist if necessary
 							List<int> itemIds = ParseItemIds();
@@ -79,20 +75,9 @@ namespace WaveBox.ApiHandler.Handlers
 								listOfMediaItems = playlist.ListOfMediaItems();
 							}
 							break;
-
-						case "remove":
-							List<int> removeIndexes = ParseIndexes();
-							if (removeIndexes.Count == 0)
-							{
-								error = "No indexes supplied";
-							}
-							else
-							{
-								playlist.RemoveMediaItemAtIndexes(removeIndexes);
-								listOfMediaItems = playlist.ListOfMediaItems();
-							}
+						case "delete":
+							playlist.DeletePlaylist();
 							break;
-
 						case "move":
 							List<int> moveIndexes = ParseIndexes();
 							if (moveIndexes.Count == 0 || moveIndexes.Count % 2 != 0)
@@ -111,7 +96,6 @@ namespace WaveBox.ApiHandler.Handlers
 								listOfMediaItems = playlist.ListOfMediaItems();
 							}
 							break;
-						
 						case "insert":
 							List<int> insertItemIds = ParseItemIds();
 							List<int> insertIndexes = ParseIndexes();
@@ -130,7 +114,18 @@ namespace WaveBox.ApiHandler.Handlers
 								listOfMediaItems = playlist.ListOfMediaItems();
 							}
 							break;
-						
+						case "remove":
+							List<int> removeIndexes = ParseIndexes();
+							if (removeIndexes.Count == 0)
+							{
+								error = "No indexes supplied";
+							}
+							else
+							{
+								playlist.RemoveMediaItemAtIndexes(removeIndexes);
+								listOfMediaItems = playlist.ListOfMediaItems();
+							}
+							break;
 						case "list":
 						default:
 							listOfMediaItems = playlist.ListOfMediaItems();
@@ -260,4 +255,3 @@ namespace WaveBox.ApiHandler.Handlers
 		}
 	}
 }
-

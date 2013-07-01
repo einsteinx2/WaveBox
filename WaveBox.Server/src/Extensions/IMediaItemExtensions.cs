@@ -1,6 +1,6 @@
 using System;
-using WaveBox.Model;
 using System.IO;
+using WaveBox.Model;
 
 namespace WaveBox.Server.Extensions
 {

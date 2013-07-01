@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
-using WaveBox.Static;
-using WaveBox.Model;
-using System.Data;
-using System.IO;
-using System.Diagnostics;
-using WaveBox.OperationQueue;
 using Cirrious.MvvmCross.Plugins.Sqlite;
-using WaveBox.Core.Extensions;
-using WaveBox.Server.Extensions;
-using WaveBox.Core.Injected;
 using Ninject;
+using WaveBox.Core.Extensions;
+using WaveBox.Core.Injected;
+using WaveBox.Model;
+using WaveBox.OperationQueue;
+using WaveBox.Server.Extensions;
+using WaveBox.Static;
 
 namespace WaveBox.FolderScanning
 {
@@ -229,8 +229,8 @@ namespace WaveBox.FolderScanning
 
 				// Find the orphaned artists
 				var result = conn.DeferredQuery<Artist>("SELECT Artist.ArtistId FROM Artist " +
-				                                        "LEFT JOIN Song ON Artist.ArtistId = Song.ArtistId " +
-				                                        "WHERE Song.ArtistId IS NULL"); 
+														"LEFT JOIN Song ON Artist.ArtistId = Song.ArtistId " +
+														"WHERE Song.ArtistId IS NULL"); 
 				foreach (Artist artist in result)
 				{
 					orphanArtistIds.Add(artist.ArtistId);
@@ -275,8 +275,8 @@ namespace WaveBox.FolderScanning
 				// Find the orphaned albums
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				var result = conn.DeferredQuery<Album>("SELECT Album.AlbumId FROM Album " +
-				                                       "LEFT JOIN Song ON Album.AlbumId = Song.AlbumId " + 
-				                                       "WHERE Song.AlbumId IS NULL");
+														"LEFT JOIN Song ON Album.AlbumId = Song.AlbumId " + 
+														"WHERE Song.AlbumId IS NULL");
 				foreach (Album album in result)
 				{
 					orphanAlbumIds.Add(album.AlbumId);
@@ -321,8 +321,8 @@ namespace WaveBox.FolderScanning
 				// Find orphaned genres
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				var result = conn.DeferredQuery<Genre>("SELECT Genre.GenreId FROM Genre " +
-				                                       "LEFT JOIN Song ON Genre.GenreId = Song.GenreId " + 
-				                                       "WHERE Song.GenreId IS NULL");
+														"LEFT JOIN Song ON Genre.GenreId = Song.GenreId " + 
+														"WHERE Song.GenreId IS NULL");
 				foreach (Genre genre in result)
 				{
 					orphanGenreIds.Add(genre.GenreId);
@@ -367,8 +367,8 @@ namespace WaveBox.FolderScanning
 				// Check for videos which don't have a folder path, meaning that they're orphaned
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				var result = conn.DeferredQuery<Video>("SELECT Video.ItemId FROM Video " +
-				                                       "LEFT JOIN Folder ON Video.FolderId = Folder.FolderId " +
-				                                       "WHERE Folder.FolderPath IS NULL");
+														"LEFT JOIN Folder ON Video.FolderId = Folder.FolderId " +
+														"WHERE Folder.FolderPath IS NULL");
 
 				foreach (Video video in result) 
 				{

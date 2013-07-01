@@ -1,7 +1,7 @@
 using System;
-using System.Threading;
-using System.IO;
 using System.Diagnostics;
+using System.IO;
+using System.Threading;
 using WaveBox.Model;
 
 namespace WaveBox.Transcoding
@@ -86,4 +86,3 @@ namespace WaveBox.Transcoding
 		void CancelTranscode();
 	}
 }
-

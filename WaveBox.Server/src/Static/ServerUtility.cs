@@ -1,12 +1,12 @@
 using System;
-using System.Runtime.InteropServices;
-using WaveBox.Static;
-using System.Net;
-using WaveBox.Core.Injected;
-using Ninject;
-using System.Web;
 using System.Diagnostics;
+using System.Net;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Web;
+using Ninject;
+using WaveBox.Core.Injected;
+using WaveBox.Static;
 
 namespace WaveBox
 {
@@ -200,16 +200,16 @@ namespace WaveBox
 			switch (DetectOS())
 			{
 				case OS.Windows:
-				return Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + "\\WaveBox\\";
+					return Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData) + "\\WaveBox\\";
 				case OS.MacOSX:
-				return Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "/Library/Application Support/WaveBox/";
+					return Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "/Library/Application Support/WaveBox/";
 				case OS.Linux:
 				case OS.BSD:
 				case OS.Solaris:
 				case OS.Unix:
-				return Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "/.wavebox/";
+					return Environment.GetFolderPath(Environment.SpecialFolder.Personal) + "/.wavebox/";
 				default:
-				return "";
+					return "";
 			}
 		}
 
@@ -222,4 +222,3 @@ namespace WaveBox
 		}
 	}
 }
-

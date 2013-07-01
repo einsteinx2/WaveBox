@@ -1,19 +1,19 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Runtime.InteropServices;
+using Ninject;
+using TagLib;
+using WaveBox.Core.Extensions;
+using WaveBox.Core.Injected;
 using WaveBox.Model;
+using WaveBox.Server.Extensions;
 using WaveBox.Static;
 using WaveBox.TcpServer.Http;
-using TagLib;
-using System.Linq;
-using WaveBox.Core.Extensions;
-using WaveBox.Server.Extensions;
-using Ninject;
-using WaveBox.Core.Injected;
 
 namespace WaveBox.ApiHandler.Handlers
 {

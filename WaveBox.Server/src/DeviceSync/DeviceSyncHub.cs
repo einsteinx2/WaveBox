@@ -1,14 +1,14 @@
+using System;
+using System.Collections;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Collections.Concurrent;
-using System.Linq;
+using WaveBox.Core.Extensions;
 using WaveBox.Model;
 using WaveBox.Static;
-using System.Collections;
-using System;
-using WaveBox.Core.Extensions;
 
 namespace WaveBox.DeviceSync
 {
@@ -75,9 +75,9 @@ namespace WaveBox.DeviceSync
 			lock (groups)
 			{
 				IList<Connection> matchedConnection = (from grp in groups.Values 
-				                       		  		   from conn in grp.Connections
-				                  	          		   where conn.ConnectionId == connectionId
-				                 	          		   select conn).ToList();
+													from conn in grp.Connections
+													where conn.ConnectionId == connectionId
+													select conn).ToList();
 
 				if (matchedConnection.Count > 0)
 				{
@@ -263,7 +263,7 @@ namespace WaveBox.DeviceSync
 			logger.Info("RemoteToggleShuffle");
 
 			return Task.Factory.StartNew(() => 
-		    {
+			{
 				Connection conn = ConnectionForId(Context.ConnectionId);
 				if (conn != null)
 				{
@@ -348,4 +348,3 @@ namespace WaveBox.DeviceSync
 		}
 	}
 }
-
