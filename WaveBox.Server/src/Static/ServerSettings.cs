@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using WaveBox.Model;
 using Cirrious.MvvmCross.Plugins.Sqlite;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 using Ninject;
 using WaveBox.Core.Injected;
 using WaveBox.Core;
+using WaveBox.Model;
 
 namespace WaveBox.Static
 {
@@ -211,7 +211,7 @@ namespace WaveBox.Static
 				if (json.folderArtNames != null)
 				{
 					List<string> folderArtNamesTemp = new List<string>();
-					if (logger.IsInfoEnabled) logger.Info("Setting 'folderArtNames':");
+					if (logger.IsInfoEnabled) logger.Info("Setting 'folderArtNames': ");
 					foreach (string artName in json.folderArtNames)
 					{
 						folderArtNamesTemp.Add(artName);
@@ -248,7 +248,7 @@ namespace WaveBox.Static
 			}
 
 			// Begin template creation with an auto-generated line stating WaveBox version and date/time generated
-			StringBuilder templateBuilder = new StringBuilder("// WaveBox auto-generated file on " + DateTime.Now.ToString("MM/dd/yyyy, hh:mm:sstt") + "\r\n");
+			StringBuilder templateBuilder = new StringBuilder("// WaveBox auto-generated file on " + DateTime.Now.ToString("MM/dd/yyyy, hh:mm:sstt") + "\n");
 
 			// Add the template to templateBuilder
 			templateBuilder.Append(template);
@@ -402,7 +402,10 @@ namespace WaveBox.Static
 
 			Action<char> AppendDiscardingWhitespace = (c) => 
 			{
-				if(c != '\t' && c != ' ') js.Append(c);
+				if (c != '\t' && c != ' ')
+				{
+					js.Append(c);
+				}
 			};
 
 			while ((line = reader.ReadLine()) != null)
@@ -418,7 +421,6 @@ namespace WaveBox.Static
 					}
 					catch
 					{
-						//curr == '"' || curr == ','
 						if (line.Length == 1 || !inBlockComment)
 						{
 							AppendDiscardingWhitespace(curr);
@@ -476,6 +478,7 @@ namespace WaveBox.Static
 					}
 				}
 			}
+
 			return js.ToString();
 		}
 	}

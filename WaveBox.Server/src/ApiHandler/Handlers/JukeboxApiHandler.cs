@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using WaveBox.Model;
-using WaveBox.Static;
-using WaveBox.TcpServer.Http;
 using Newtonsoft.Json;
 using Ninject;
 using WaveBox.Core.Injected;
+using WaveBox.Model;
+using WaveBox.Static;
+using WaveBox.TcpServer.Http;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -53,7 +53,7 @@ namespace WaveBox.ApiHandler.Handlers
 								Uri.Parameters.TryGetValue("index", out indexString);
 								Int32.TryParse(indexString, out index);
 							}
-							
+
 							if (indexString == null)
 							{
 								Jukebox.Play();
@@ -307,7 +307,6 @@ namespace WaveBox.ApiHandler.Handlers
 
 			public JukeboxResponse(string error, bool _includePlaylist, bool _includeStatus)
 			{
-
 				Error = error;
 				includePlaylist = _includePlaylist;
 				includeStatus = _includeStatus;

@@ -1,21 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using WaveBox.Model;
-using WaveBox.Static;
-using System.IO;
-using System.ComponentModel;
-using System.Threading.Tasks;
-using System.Diagnostics;
-using WaveBox.OperationQueue;
-using TagLib;
-using Cirrious.MvvmCross.Plugins.Sqlite;
-using System.Security.Cryptography;
 using System.Collections;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
+using Cirrious.MvvmCross.Plugins.Sqlite;
+using Ninject;
+using TagLib;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Injected;
-using Ninject;
+using WaveBox.Model;
+using WaveBox.OperationQueue;
+using WaveBox.Static;
 
 namespace WaveBox.FolderScanning
 {
@@ -41,7 +41,7 @@ namespace WaveBox.FolderScanning
 
 		public override void Start()
 		{
-			ProcessFolder(FolderPath);
+			this.ProcessFolder(FolderPath);
 
 			if (logger.IsInfoEnabled) logger.Info("---------------- FOLDER SCAN ----------------");
 			if (logger.IsInfoEnabled) logger.Info("folders inserted: " + testNumberOfFoldersInserted);
@@ -57,7 +57,7 @@ namespace WaveBox.FolderScanning
 		public void ProcessFolder(int folderId)
 		{
 			Folder folder = new Folder.Factory().CreateFolder(folderId);
-			ProcessFolder(folder.FolderPath);
+			this.ProcessFolder(folder.FolderPath);
 		}
 
 		public void ProcessFolder(string folderPath)
@@ -83,40 +83,6 @@ namespace WaveBox.FolderScanning
 						topFolder.InsertFolder(false);
 					}
 
-					/*
-					// Check the folder art
-					string artPath = topFolder.ArtPath;
-					if (Art.FileNeedsUpdating(artPath, topFolder.FolderId))
-					{
-						// Find the old art id, if it exists
-						int? oldArtId = topFolder.ArtId;
-						int? newArtId = new Art(artPath).ArtId;
-
-						if ((object)oldArtId == null)
-						{
-							// Insert the relationship
-							Art.UpdateArtItemRelationship(newArtId, topFolder.FolderId, true);
-						}
-						else
-						{
-							Art oldArt = new Art((int)oldArtId);
-
-							// Check if the previous folder art was actually from embedded tag art
-							if ((object)oldArt.FilePath == null)
-							{
-								// This was embedded tag art, so only update the folder's relationship
-								Art.UpdateArtItemRelationship(newArtId, topFolder.FolderId, true);
-							}
-							else
-							{
-								// Update any existing references, that would include both this folder
-								// and any children that were using this art in lieu of embedded art
-								Art.UpdateItemsToNewArtId(oldArtId, newArtId);
-							}
-						}
-					}
-					*/
-
 					testGetDirectoriesTime.Start();
 					string[] directories = Directory.GetDirectories(folderPath);
 					testGetDirectoriesTime.Stop();
@@ -140,9 +106,9 @@ namespace WaveBox.FolderScanning
 					}
 
 					Parallel.ForEach(Directory.GetFiles(folderPath), currentFile =>
-						{
-							ProcessFile(currentFile, topFolder.FolderId);
-						});
+					{
+						ProcessFile(currentFile, topFolder.FolderId);
+					});
 				}
 			}
 			catch (FileNotFoundException e)
@@ -197,12 +163,12 @@ namespace WaveBox.FolderScanning
 						}
 						catch (TagLib.CorruptFileException)// e)
 						{
-							logger.Error(file + " has a corrupt tag and will not be inserted. ");// + e);
+							logger.Error(file + " has a corrupt tag and will not be inserted. ");
 							return;
 						}
 						catch (Exception e)
 						{
-							logger.Error("Error processing file " + file + ":	" + e);
+							logger.Error("Error processing file " + file + ": " + e);
 						}
 
 						if (f == null)
@@ -257,9 +223,6 @@ namespace WaveBox.FolderScanning
 
 							// Insert the relationship
 							Art.UpdateArtItemRelationship(newArtId, folder.FolderId, true);
-
-							// If there was no old art id, there will be no items that have said non-existent art id.
-							//Art.UpdateItemsToNewArtId(oldArtId, newArtId);
 						}
 						else
 						{
@@ -696,4 +659,3 @@ namespace WaveBox.FolderScanning
 		}
 	}
 }
-

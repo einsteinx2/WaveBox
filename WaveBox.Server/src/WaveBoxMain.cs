@@ -1,6 +1,4 @@
-﻿using Mono.Unix.Native;
-using Mono.Unix;
-using Mono.Zeroconf;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
@@ -12,18 +10,20 @@ using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Text;
 using System.Threading;
-using System;
+using Cirrious.MvvmCross.Plugins.Sqlite;
+using Microsoft.Owin.Hosting;
+using Mono.Unix.Native;
+using Mono.Unix;
+using Mono.Zeroconf;
+using Ninject;
+using WaveBox.Core.Injected;
+using WaveBox.DeviceSync;
 using WaveBox.Model;
-using WaveBox.Static;
 using WaveBox.SessionManagement;
+using WaveBox.Static;
 using WaveBox.TcpServer.Http;
 using WaveBox.TcpServer;
 using WaveBox.Transcoding;
-using WaveBox.DeviceSync;
-using Microsoft.Owin.Hosting;
-using Cirrious.MvvmCross.Plugins.Sqlite;
-using WaveBox.Core.Injected;
-using Ninject;
 
 namespace WaveBox
 {

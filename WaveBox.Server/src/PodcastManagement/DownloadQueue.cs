@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Net;
-using System.IO;
 using System.Diagnostics;
+using System.IO;
+using System.Net;
 using WaveBox.OperationQueue;
 
 namespace WaveBox.PodcastManagement
@@ -89,7 +89,6 @@ namespace WaveBox.PodcastManagement
 			}
 			else return null;
 		}
-
 
 		public static bool RemovePodcast(long podcastId)
 		{
@@ -198,7 +197,6 @@ namespace WaveBox.PodcastManagement
 				{
 					contentLength = e.TotalBytesToReceive;
 				}
-				//if (logger.IsInfoEnabled) logger.Info(ep.Title + ": " + ((double)e.BytesReceived / (double)e.TotalBytesToReceive) * 100 + "%");
 				totalBytesRead = e.BytesReceived;
 			});
 
@@ -236,4 +234,3 @@ namespace WaveBox.PodcastManagement
 		}
 	}
 }
-

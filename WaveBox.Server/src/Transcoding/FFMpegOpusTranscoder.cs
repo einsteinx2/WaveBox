@@ -1,7 +1,7 @@
 using System;
-using WaveBox.Model;
 using System.Diagnostics;
 using System.IO;
+using WaveBox.Model;
 using WaveBox.Static;
 using WaveBox.Server.Extensions;
 
@@ -12,21 +12,20 @@ namespace WaveBox.Transcoding
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		public override TranscodeType Type { get { return TranscodeType.OPUS; } }
-	   
+
 		// Placeholder for ffmpeg opus support
 		public override string Codec { get { return "libopus"; } }
 
 		public override string Command { get { return "ffmpeg"; } }
-		
+
 		public override string OutputExtension { get { return "opus"; } }
-		
+
 		public override string MimeType { get { return "audio/opus"; } }
 
 		private Process FfmpegProcess;
-		
+
 		public FFMpegOpusTranscoder(IMediaItem item, uint quality, bool isDirect, uint offsetSeconds, uint lengthSeconds) : base(item, quality, isDirect, offsetSeconds, lengthSeconds)
 		{
-			
 		}
 
 		public override void Run()
@@ -36,7 +35,7 @@ namespace WaveBox.Transcoding
 				string ffmpegArguments = "-loglevel quiet -i \"" + Item.FilePath() + "\" -f wav -";
 				if (logger.IsInfoEnabled) logger.Info("Forking the process");
 				if (logger.IsInfoEnabled) logger.Info("ffmpeg " + ffmpegArguments);
-				
+
 				// Create the ffmpeg process
 				FfmpegProcess = new Process();
 				FfmpegProcess.StartInfo.FileName = "ffmpeg";
@@ -44,7 +43,6 @@ namespace WaveBox.Transcoding
 				FfmpegProcess.StartInfo.UseShellExecute = false;
 				FfmpegProcess.StartInfo.RedirectStandardOutput = true;
 				FfmpegProcess.StartInfo.RedirectStandardError = true;
-
 
 				// Create the opusenc object
 				if (logger.IsInfoEnabled) logger.Info("opusenc " + Arguments);
@@ -71,7 +69,6 @@ namespace WaveBox.Transcoding
 					{
 						input.Write(buffer, 0, bytesRead);
 					}
-					//if (logger.IsInfoEnabled) logger.Info("{0} bytes written to buffer ({1} this iteration)", totalWritten, bytesRead);
 
 					if (bytesRead == 0 && FfmpegProcess.HasExited)
 					{
@@ -80,12 +77,12 @@ namespace WaveBox.Transcoding
 						break;
 					}
 				}
-				
+
 				if (logger.IsInfoEnabled) logger.Info("Waiting for processes to finish");
-				
+
 				// Block until done
 				TranscodeProcess.WaitForExit();
-				
+
 				if (logger.IsInfoEnabled) logger.Info("Process finished");
 			}
 			catch (Exception e) 
@@ -114,15 +111,15 @@ namespace WaveBox.Transcoding
 				{
 					TranscoderDelegate.TranscodeFailed(this);
 				}
-				
+
 				return;
 			}
-			
+
 			if (TranscodeProcess != null)
 			{
 				int exitValue = TranscodeProcess.ExitCode;
-				if (logger.IsInfoEnabled) logger.Info("exit value " + exitValue);
-				
+				if (logger.IsInfoEnabled) logger.Info("Exit value " + exitValue);
+
 				if (exitValue == 0)
 				{
 					State = TranscodeState.Finished;
@@ -143,7 +140,7 @@ namespace WaveBox.Transcoding
 				}
 			}
 		}
-		
+
 		public override string Arguments
 		{
 			get 
@@ -172,6 +169,7 @@ namespace WaveBox.Transcoding
 						options = OpusencOptions(codec, Quality);
 						break;
 				}
+
 				return options;
 			}
 		}
@@ -199,6 +197,7 @@ namespace WaveBox.Transcoding
 						bitrate = Quality;
 						break;
 				}
+
 				return bitrate;
 			}
 		}
@@ -220,4 +219,3 @@ namespace WaveBox.Transcoding
 		}
 	}
 }
-

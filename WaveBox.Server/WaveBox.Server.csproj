@@ -131,6 +131,7 @@
     <Compile Include="src\ApiHandler\Handlers\GenresApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\JukeboxApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\LoginApiHandler.cs" />
+    <Compile Include="src\ApiHandler\Handlers\PlaylistsApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\PodcastApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\ScrobbleApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\SearchApiHandler.cs" />
@@ -147,13 +148,35 @@
     <Compile Include="src\ApiHandler\IApiHandler.cs" />
     <Compile Include="src\ApiHandler\UriWrapper.cs" />
     <Compile Include="src\AssemblyInfo.cs" />
+    <Compile Include="src\DeviceSync\DeviceSyncHub.cs" />
+    <Compile Include="src\DeviceSync\DeviceSyncStartup.cs" />
+    <Compile Include="src\DeviceSync\RawConnection.cs" />
+    <Compile Include="src\Extensions\IMediaItemExtensions.cs" />
+    <Compile Include="src\FolderScanning\FolderScanOperation.cs" />
+    <Compile Include="src\FolderScanning\OrphanScanOperation.cs" />
     <Compile Include="src\ImageMagickInterop.cs" />
+    <Compile Include="src\Lastfm.cs" />
     <Compile Include="src\PodcastManagement\DownloadQueue.cs" />
     <Compile Include="src\PodcastManagement\FeedCheckOperation.cs" />
     <Compile Include="src\PodcastManagement\Podcast.cs" />
     <Compile Include="src\PodcastManagement\PodcastEpisode.cs" />
     <Compile Include="src\SessionManagement\SessionScrub.cs" />
     <Compile Include="src\SessionManagement\SessionScrubOperation.cs" />
+    <Compile Include="src\Static\AutoUpdater.cs" />
+    <Compile Include="src\Static\Database.cs" />
+    <Compile Include="src\Static\DatabaseBackup.cs" />
+    <Compile Include="src\Static\DynamicDns.cs" />
+    <Compile Include="src\Static\FileManager.cs" />
+    <Compile Include="src\Static\Jukebox.cs" />
+    <Compile Include="src\Static\Nat.cs" />
+    <Compile Include="src\Static\ServerSettings.cs" />
+    <Compile Include="src\Static\ServerUtility.cs" />
+    <Compile Include="src\Static\ZeroConf.cs" />
+    <Compile Include="src\TcpServer\AbstractTcpServer.cs" />
+    <Compile Include="src\TcpServer\HttpServer\HttpHeader.cs" />
+    <Compile Include="src\TcpServer\HttpServer\HttpProcessor.cs" />
+    <Compile Include="src\TcpServer\HttpServer\HttpServer.cs" />
+    <Compile Include="src\TcpServer\HttpServer\IHttpProcessor.cs" />
     <Compile Include="src\Transcoding\AbstractTranscoder.cs" />
     <Compile Include="src\Transcoding\FFMpegAACTranscoder.cs" />
     <Compile Include="src\Transcoding\FFMpegMP3Transcoder.cs" />
@@ -161,6 +184,7 @@
     <Compile Include="src\Transcoding\FFMpegOGGTranscoder.cs" />
     <Compile Include="src\Transcoding\FFMpegOpusTranscoder.cs" />
     <Compile Include="src\Transcoding\FFMpegX264Transcoder.cs" />
+    <Compile Include="src\Transcoding\ITranscoder.cs" />
     <Compile Include="src\Transcoding\ITranscoderDelegate.cs" />
     <Compile Include="src\Transcoding\TranscodeManager.cs" />
     <Compile Include="src\Transcoding\VideoTranscoder.cs" />
@@ -168,30 +192,6 @@
     <Compile Include="src\WaveBoxService.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="src\DeviceSync\DeviceSyncStartup.cs" />
-    <Compile Include="src\DeviceSync\DeviceSyncHub.cs" />
-    <Compile Include="src\DeviceSync\RawConnection.cs" />
-    <Compile Include="src\Static\AutoUpdater.cs" />
-    <Compile Include="src\Static\Jukebox.cs" />
-    <Compile Include="src\Static\Nat.cs" />
-    <Compile Include="src\TcpServer\AbstractTcpServer.cs" />
-    <Compile Include="src\TcpServer\HttpServer\HttpHeader.cs" />
-    <Compile Include="src\TcpServer\HttpServer\HttpProcessor.cs" />
-    <Compile Include="src\TcpServer\HttpServer\HttpServer.cs" />
-    <Compile Include="src\TcpServer\HttpServer\IHttpProcessor.cs" />
-    <Compile Include="src\Static\ZeroConf.cs" />
-    <Compile Include="src\FolderScanning\FolderScanOperation.cs" />
-    <Compile Include="src\FolderScanning\OrphanScanOperation.cs" />
-    <Compile Include="src\Static\FileManager.cs" />
-    <Compile Include="src\Static\DynamicDns.cs" />
-    <Compile Include="src\Transcoding\ITranscoder.cs" />
-    <Compile Include="src\Lastfm.cs" />
-    <Compile Include="src\Static\DatabaseBackup.cs" />
-    <Compile Include="src\Static\Database.cs" />
-    <Compile Include="src\Extensions\IMediaItemExtensions.cs" />
-    <Compile Include="src\Static\ServerUtility.cs" />
-    <Compile Include="src\Static\ServerSettings.cs" />
-    <Compile Include="src\ApiHandler\Handlers\PlaylistsApiHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">

@@ -1,14 +1,12 @@
 using System;
 using WaveBox.Model;
-using WaveBox.Static;
 using WaveBox.Server.Extensions;
+using WaveBox.Static;
 
 namespace WaveBox.Transcoding
 {
 	public class FFMpegOGGTranscoder : AbstractTranscoder
 	{
-		//private static Logger logger = LogManager.GetCurrentClassLogger();
-
 		public override TranscodeType Type { get { return TranscodeType.OGG; } }
 
 		public override string Codec { get { return "libvorbis"; } }
@@ -21,7 +19,6 @@ namespace WaveBox.Transcoding
 
 		public FFMpegOGGTranscoder(IMediaItem item, uint quality, bool isDirect, uint offsetSeconds, uint lengthSeconds) : base(item, quality, isDirect, offsetSeconds, lengthSeconds)
 		{
-			
 		}
 
 		public override string Arguments
@@ -51,6 +48,7 @@ namespace WaveBox.Transcoding
 						options = FFMpegOptionsWith(Quality);
 						break;
 				}
+
 				return options;
 			}
 		}
@@ -78,6 +76,7 @@ namespace WaveBox.Transcoding
 						bitrate = Quality;
 						break;
 				}
+
 				return bitrate;
 			}
 		}
@@ -95,4 +94,3 @@ namespace WaveBox.Transcoding
 		}
 	}
 }
-

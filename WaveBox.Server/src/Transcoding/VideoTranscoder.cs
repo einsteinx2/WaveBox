@@ -5,8 +5,6 @@ namespace WaveBox.Transcoding
 {
 	public abstract class VideoTranscoder : AbstractTranscoder
 	{
-		//private static Logger logger = LogManager.GetCurrentClassLogger();
-
 		public uint? Width { get; set; } 
 		
 		public uint? Height { get; set; } 
@@ -37,7 +35,7 @@ namespace WaveBox.Transcoding
 				uint? width = Width;
 				uint? height = Height;
 				uint totalBitrate = TotalBitrateForQuality(Quality);
-				
+
 				if ((object)width == null && (object)height == null)
 				{
 					// If neither width nor height are specified, use the original values from the video
@@ -62,7 +60,7 @@ namespace WaveBox.Transcoding
 						width = (uint)((float)height * video.AspectRatio);
 					}
 				}
-				
+
 				// The user entered an actual bitrate number, so calculate the audio and video bitrates
 				uint abitrate = CalculateAudioBitrate(totalBitrate);
 				uint vbitrate = totalBitrate - abitrate;
@@ -74,9 +72,9 @@ namespace WaveBox.Transcoding
 		{
 			switch (quality)
 			{
-				case (uint)TranscodeQuality.Low:     return 256;
-				case (uint)TranscodeQuality.Medium:  return 512;
-				case (uint)TranscodeQuality.High:    return 1024;
+				case (uint)TranscodeQuality.Low: return 256;
+				case (uint)TranscodeQuality.Medium: return 512;
+				case (uint)TranscodeQuality.High: return 1024;
 				case (uint)TranscodeQuality.Extreme: return 2048;
 				default: return quality;
 			}
@@ -185,4 +183,3 @@ namespace WaveBox.Transcoding
 		}
 	}
 }
-

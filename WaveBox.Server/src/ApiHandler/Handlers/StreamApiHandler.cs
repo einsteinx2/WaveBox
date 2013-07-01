@@ -4,14 +4,14 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Threading;
+using Newtonsoft.Json;
+using Ninject;
+using WaveBox.Core.Injected;
 using WaveBox.Model;
+using WaveBox.Server.Extensions;
 using WaveBox.Static;
 using WaveBox.TcpServer.Http;
 using WaveBox.Transcoding;
-using Newtonsoft.Json;
-using WaveBox.Server.Extensions;
-using WaveBox.Core.Injected;
-using Ninject;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -46,76 +46,77 @@ namespace WaveBox.ApiHandler.Handlers
 				success = Int32.TryParse(Uri.Parameters["id"], out id);
 			}
 
-			if (success)
-			{
-				try
-				{
-					// Get the media item associated with this id
-					ItemType itemType = Item.ItemTypeForItemId(id);
-					IMediaItem item = null;
-					if (itemType == ItemType.Song)
-					{
-						item = new Song.Factory().CreateSong(id);
-						if (logger.IsInfoEnabled) logger.Info("Preparing audio stream: " + item.FileName);
-					}
-					else if (itemType == ItemType.Video)
-					{
-						item = new Video.Factory().CreateVideo(id);
-						if (logger.IsInfoEnabled) logger.Info("Preparing video stream: " + item.FileName);
-					}
-
-					// Return an error if none exists
-					if ((item == null) || (!File.Exists(item.FilePath())))
-					{
-						string json = JsonConvert.SerializeObject(new StreamResponse("No media item exists with ID: " + id), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-						Processor.WriteJson(json);
-						return;
-					}
-
-					// Prepare file stream
-					Stream stream = item.File();
-					long length = stream.Length;
-					int startOffset = 0;
-					long? limitToSize = null;
-
-					// Handle the Range header to start from later in the file
-					if (Processor.HttpHeaders.ContainsKey("Range"))
-					{
-						string range = (string)Processor.HttpHeaders["Range"];
-						var split = range.Split(new char[]{'-', '='});
-						string start = split[1];
-						string end = split.Length > 2 ? split[2] : null;
-
-						if (logger.IsInfoEnabled) logger.Info("Range header: " + range + "  Resuming from " + start);
-						startOffset = Convert.ToInt32(start);
-						if (!ReferenceEquals(end, null))
-							limitToSize = (Convert.ToInt64(end) + 1) - startOffset;
-					}
-
-					// Send the file
-					Processor.WriteFile(stream, startOffset, length, item.FileType.MimeType(), null, true, new FileInfo(item.FilePath()).LastWriteTimeUtc, limitToSize);
-					stream.Close();
-					
-					if (logger.IsInfoEnabled) logger.Info("Successfully streamed file!");
-				}
-				catch (Exception e)
-				{
-					logger.Error(e);
-				}
-			}
-			else
+			if (!success)
 			{
 				// For missing ID parameter, print JSON error
 				string json = JsonConvert.SerializeObject(new StreamResponse("Missing required parameter 'id'"), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 				Processor.WriteJson(json);
+				return;
+			}
+
+			try
+			{
+				// Get the media item associated with this id
+				ItemType itemType = Item.ItemTypeForItemId(id);
+				IMediaItem item = null;
+				if (itemType == ItemType.Song)
+				{
+					item = new Song.Factory().CreateSong(id);
+					if (logger.IsInfoEnabled) logger.Info("Preparing audio stream: " + item.FileName);
+				}
+				else if (itemType == ItemType.Video)
+				{
+					item = new Video.Factory().CreateVideo(id);
+					if (logger.IsInfoEnabled) logger.Info("Preparing video stream: " + item.FileName);
+				}
+
+				// Return an error if none exists
+				if ((item == null) || (!File.Exists(item.FilePath())))
+				{
+					string json = JsonConvert.SerializeObject(new StreamResponse("No media item exists with ID: " + id), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+					Processor.WriteJson(json);
+					return;
+				}
+
+				// Prepare file stream
+				Stream stream = item.File();
+				long length = stream.Length;
+				int startOffset = 0;
+				long? limitToSize = null;
+
+				// Handle the Range header to start from later in the file
+				if (Processor.HttpHeaders.ContainsKey("Range"))
+				{
+					string range = (string)Processor.HttpHeaders["Range"];
+					var split = range.Split(new char[]{'-', '='});
+					string start = split[1];
+					string end = split.Length > 2 ? split[2] : null;
+
+					if (logger.IsInfoEnabled) logger.Info("Range header: " + range + "  Resuming from " + start);
+					startOffset = Convert.ToInt32(start);
+					if (!ReferenceEquals(end, null))
+					{
+						limitToSize = (Convert.ToInt64(end) + 1) - startOffset;
+					}
+				}
+
+				// Send the file
+				Processor.WriteFile(stream, startOffset, length, item.FileType.MimeType(), null, true, new FileInfo(item.FilePath()).LastWriteTimeUtc, limitToSize);
+				stream.Close();
+
+				if (logger.IsInfoEnabled) logger.Info("Successfully streamed file!");
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
 			}
 		}
-		
+
 		private class StreamResponse
 		{
 			[JsonProperty("error")]
 			public string Error { get; set; }
-			
+
 			public StreamResponse(string error)
 			{
 				Error = error;

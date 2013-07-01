@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Newtonsoft.Json;
+using Ninject;
+using WaveBox.Core.Injected;
 using WaveBox.Static;
 using WaveBox.TcpServer.Http;
-using Newtonsoft.Json;
-using WaveBox.Core.Injected;
-using Ninject;
 
 namespace WaveBox.ApiHandler.Handlers
 {

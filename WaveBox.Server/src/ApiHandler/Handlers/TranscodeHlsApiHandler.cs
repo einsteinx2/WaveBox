@@ -4,14 +4,14 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Threading;
-using WaveBox.Model;
-using WaveBox.Static;
-using WaveBox.Transcoding;
-using WaveBox.TcpServer.Http;
 using Newtonsoft.Json;
-using WaveBox.Server.Extensions;
-using WaveBox.Core.Injected;
 using Ninject;
+using WaveBox.Core.Injected;
+using WaveBox.Model;
+using WaveBox.Server.Extensions;
+using WaveBox.Static;
+using WaveBox.TcpServer.Http;
+using WaveBox.Transcoding;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -46,61 +46,59 @@ namespace WaveBox.ApiHandler.Handlers
 				success = Int32.TryParse(Uri.Parameters["id"], out id);
 			}
 
-			if (success)
-			{
-				try
-				{
-					// Get the media item associated with this id
-					ItemType itemType = Item.ItemTypeForItemId(id);
-					IMediaItem item = null;
-					if (itemType == ItemType.Song)
-					{
-						item = new Song.Factory().CreateSong(id);
-						if (logger.IsInfoEnabled) logger.Info("HLS transcoding for songs not currently supported");
-
-						// CURRENTLY DO NOT SUPPORT HLS STREAMING FOR SONGS
-						return;
-					}
-					else if (itemType == ItemType.Video)
-					{
-						item = new Video.Factory().CreateVideo(id);
-						if (logger.IsInfoEnabled) logger.Info("Preparing video stream: " + item.FileName);
-					}
-
-					// Return an error if none exists
-					if ((item == null) || (!File.Exists(item.FilePath())))
-					{
-						string json = JsonConvert.SerializeObject(new TranscodeHlsResponse("No media item exists with ID: " + id), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-						Processor.WriteJson(json);
-						return;
-					}
-
-					// Generate the playlist file
-					string response = null;
-					string[] transQualities = Uri.Parameters.ContainsKey("transQuality") ? Uri.Parameters["transQuality"].Split(',') : new string[] {"Medium"};
-					if (transQualities.Length == 1)
-					{
-						// This is a single playlist
-						response = GeneratePlaylist(item, transQualities[0]);
-					}
-					else
-					{
-						// This is a multi playlist
-						response = GenerateMultiPlaylist(item, transQualities);
-					}
-
-					Processor.WriteText(response, "application/x-mpegURL");
-					if (logger.IsInfoEnabled) logger.Info("Successfully HLS transcoded file!");
-				}
-				catch (Exception e)
-				{
-					logger.Error(e);
-				}
-			}
-			else
+			if (!success)
 			{
 				string json = JsonConvert.SerializeObject(new TranscodeHlsResponse("Missing required parameter 'id'"), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 				Processor.WriteJson(json);
+			}
+
+			try
+			{
+				// Get the media item associated with this id
+				ItemType itemType = Item.ItemTypeForItemId(id);
+				IMediaItem item = null;
+				if (itemType == ItemType.Song)
+				{
+					item = new Song.Factory().CreateSong(id);
+					if (logger.IsInfoEnabled) logger.Info("HLS transcoding for songs not currently supported");
+
+					// CURRENTLY DO NOT SUPPORT HLS STREAMING FOR SONGS
+					return;
+				}
+				else if (itemType == ItemType.Video)
+				{
+					item = new Video.Factory().CreateVideo(id);
+					if (logger.IsInfoEnabled) logger.Info("Preparing video stream: " + item.FileName);
+				}
+
+				// Return an error if none exists
+				if ((item == null) || (!File.Exists(item.FilePath())))
+				{
+					string json = JsonConvert.SerializeObject(new TranscodeHlsResponse("No media item exists with ID: " + id), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+					Processor.WriteJson(json);
+					return;
+				}
+
+				// Generate the playlist file
+				string response = null;
+				string[] transQualities = Uri.Parameters.ContainsKey("transQuality") ? Uri.Parameters["transQuality"].Split(',') : new string[] {"Medium"};
+				if (transQualities.Length == 1)
+				{
+					// This is a single playlist
+					response = GeneratePlaylist(item, transQualities[0]);
+				}
+				else
+				{
+					// This is a multi playlist
+					response = GenerateMultiPlaylist(item, transQualities);
+				}
+
+				Processor.WriteText(response, "application/x-mpegURL");
+				if (logger.IsInfoEnabled) logger.Info("Successfully HLS transcoded file!");
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
 			}
 		}
 

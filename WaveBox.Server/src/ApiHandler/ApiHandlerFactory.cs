@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Ninject;
 using WaveBox.ApiHandler.Handlers;
 using WaveBox.Model;
 using WaveBox.Static;
 using WaveBox.TcpServer.Http;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Injected;
-using Ninject;
 
 namespace WaveBox.ApiHandler
 {
@@ -173,19 +173,6 @@ namespace WaveBox.ApiHandler
 					user = null;
 				}
 			}
-			// For the time being, our users API call does not require an individual username or password,
-			// so this check will break it.  Leaving this disabled until further work is done. - mdlayher, 5/13/13
-			/*
-			else if (action == "users")
-			{
-				// Must use username and password, but don't create a session
-				user = new User(username);
-				if (user.UserId == null || !user.Authenticate(password))
-				{
-					user = null;
-				}
-			}
-			*/
 			else
 			{
 				// Must use sessionId

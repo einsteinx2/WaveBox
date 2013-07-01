@@ -1,17 +1,17 @@
 using System;
 using Mono.Nat;
-using WaveBox.Core.Injected;
 using Ninject;
+using WaveBox.Core.Injected;
 
 namespace WaveBox.Static
 {
 	public enum NatStatus
 	{
-		NotInitialized            = 0,
-		WaitingForDevice          = 1,
-		DeviceFound               = 2,
+		NotInitialized = 0,
+		WaitingForDevice = 1,
+		DeviceFound = 2,
 		PortForwardedSuccessfully = 3,
-		PortForwardingFailed      = 4
+		PortForwardingFailed = 4
 	}
 
 	public static class Nat
@@ -67,16 +67,6 @@ namespace WaveBox.Static
 				Nat.Status = NatStatus.PortForwardingFailed;
 				logger.Error("Port mapping failed", e);
 			}
-
-			/*// Retrieve the details for the port map for external port 3000
-			Mapping m = device.GetSpecificMapping(Protocol.Tcp, 3000);
-			
-			// Get all the port mappings on the device and delete them
-			foreach (Mapping mp in device.GetAllMappings())
-				device.DeletePortMap(mp);
-			
-			// Get the external IP address
-			IPAddress externalIP = device.GetExternalIP();*/
 		}
 		
 		private static void DeviceLost(object sender, DeviceEventArgs args)
@@ -97,4 +87,3 @@ namespace WaveBox.Static
 		}
 	}
 }
-

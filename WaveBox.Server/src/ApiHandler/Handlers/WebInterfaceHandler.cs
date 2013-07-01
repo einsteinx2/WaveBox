@@ -55,38 +55,37 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 			}
 
-			if (logger.IsInfoEnabled) logger.Info("path: " + path);
+			if (logger.IsInfoEnabled) logger.Info("Path: " + path);
 
 			// Make sure the file exists
-			if (File.Exists(path))
+			if (!File.Exists(path))
 			{
-				if (logger.IsInfoEnabled) logger.Info("serving file at path: " + path);
-
-				// Serve up files inside html directory
-				FileStream file = new FileStream(path, FileMode.Open, FileAccess.Read);
-				int startOffset = 0;
-
-				// Handle the Range header to start from later in the file
-				if (Processor.HttpHeaders.ContainsKey("Range"))
-				{
-					string range = (string)Processor.HttpHeaders["Range"];
-					string start = range.Split(new char[]{'-', '='})[1];
-					if (logger.IsInfoEnabled) logger.Info("Connection retried.  Resuming from " + start);
-					startOffset = Convert.ToInt32(start);
-				}
-
-				long length = file.Length - startOffset;
-
-				Processor.WriteFile(file, startOffset, length, HttpHeader.MimeTypeForExtension(Path.GetExtension(path)), null, true, new FileInfo(path).LastWriteTimeUtc);
-				file.Close();
-			}
-			else
-			{
-				if (logger.IsInfoEnabled) logger.Info("file at path does not exist: " + path);
+				if (logger.IsInfoEnabled) logger.Info("File does not exist: " + path);
 
 				// File not found
 				Processor.WriteErrorHeader();
+				return;
 			}
+
+			if (logger.IsInfoEnabled) logger.Info("Serving file: " + path);
+
+			// Serve up files inside html directory
+			FileStream file = new FileStream(path, FileMode.Open, FileAccess.Read);
+			int startOffset = 0;
+
+			// Handle the Range header to start from later in the file
+			if (Processor.HttpHeaders.ContainsKey("Range"))
+			{
+				string range = (string)Processor.HttpHeaders["Range"];
+				string start = range.Split(new char[]{'-', '='})[1];
+				if (logger.IsInfoEnabled) logger.Info("Connection retried.  Resuming from " + start);
+				startOffset = Convert.ToInt32(start);
+			}
+
+			long length = file.Length - startOffset;
+
+			Processor.WriteFile(file, startOffset, length, HttpHeader.MimeTypeForExtension(Path.GetExtension(path)), null, true, new FileInfo(path).LastWriteTimeUtc);
+			file.Close();
 		}
 	}
 }

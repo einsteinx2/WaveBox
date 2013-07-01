@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.IO;
-using System.Diagnostics;
-using WaveBox.Model;
-using WaveBox.Static;
-using WaveBox.OperationQueue;
+using Ninject;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Injected;
-using Ninject;
+using WaveBox.Model;
+using WaveBox.OperationQueue;
+using WaveBox.Static;
 
 namespace WaveBox.SessionManagement
 {
