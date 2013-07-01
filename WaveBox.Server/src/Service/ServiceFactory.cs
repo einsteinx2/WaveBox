@@ -19,6 +19,8 @@ namespace WaveBox.Service
 					return new CronService();
 				case "http":
 					return new HttpService();
+				case "nat":
+					return new NatService();
 				default:
 					return null;
 			}

@@ -134,20 +134,6 @@ namespace WaveBox
 				logger.Warn(e);
 			}
 
-			// If configured, start NAT routing
-			try
-			{
-				if (Injection.Kernel.Get<IServerSettings>().NatEnable)
-				{
-					Nat.Start();
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Warn("natEnable not set in configuration, disabling NAT");
-				logger.Warn(e);
-			}
-
 			// Register server with registration service
 			ServerSetup();
 			DynamicDns.RegisterUrl(ServerUrl, ServerGuid);
@@ -245,9 +231,6 @@ namespace WaveBox
 			ServiceManager.Clear();
 
 			httpServer.Stop();
-
-			// Disable any Nat routes
-			Nat.Stop();
 
 			// Dispose of ImageMagick
 			try
