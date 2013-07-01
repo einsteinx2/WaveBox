@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Xml;
-using WaveBox.Static;
-using WaveBox.Model;
-using System.Collections.Concurrent;
 using Cirrious.MvvmCross.Plugins.Sqlite;
-using WaveBox.Core.Injected;
 using Ninject;
+using WaveBox.Core.Injected;
+using WaveBox.Model;
+using WaveBox.Static;
 
 namespace WaveBox.PodcastManagement
 {
@@ -33,7 +33,7 @@ namespace WaveBox.PodcastManagement
 		public Podcast()
 		{
 		}
-		
+
 		/* Instance methods */
 		public void AddToDatabase()
 		{
@@ -199,7 +199,7 @@ namespace WaveBox.PodcastManagement
 
 		/* Class methods */
 		public static List<Podcast> ListOfStoredPodcasts()
-		{	
+		{
 			ISQLiteConnection conn = null;
 			try
 			{
@@ -313,4 +313,3 @@ namespace WaveBox.PodcastManagement
 		}
 	}
 }
-

@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using WaveBox.Model;
 using Un4seen.Bass;
+using WaveBox.Model;
 using WaveBox.Server.Extensions;
 
 namespace WaveBox.Static
@@ -225,8 +225,7 @@ namespace WaveBox.Static
 
 		private static void BassInit()
 		{
-			// if we are initializing, we want to make sure that we're not
-			// already initialized.
+			// if we are initializing, we want to make sure that we're not already initialized.
 			if (IsInitialized)
 			{
 				if (logger.IsInfoEnabled) logger.Info("Freeing BASS");

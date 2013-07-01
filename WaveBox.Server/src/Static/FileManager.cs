@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
-using WaveBox.Static;
-using WaveBox.Model;
-using WaveBox.FolderScanning;
-using System.IO;
-using WaveBox.OperationQueue;
-using WaveBox.Core.Injected;
 using Ninject;
+using WaveBox.Core.Injected;
+using WaveBox.FolderScanning;
+using WaveBox.Model;
+using WaveBox.OperationQueue;
+using WaveBox.Static;
 
 namespace WaveBox.Static
 {
@@ -36,7 +36,7 @@ namespace WaveBox.Static
 			foreach (Folder folder in mediaFolders)
 			{
 				// Sanity check, for my sanity.  Why start a scanning operation if the folder doesn't exist?
-				if(Directory.Exists(folder.FolderPath))
+				if (Directory.Exists(folder.FolderPath))
 				{
 					// Launch the folder scan operation
 					scanQueue.queueOperation(new FolderScanning.FolderScanOperation(folder.FolderPath, 0));
@@ -98,7 +98,6 @@ namespace WaveBox.Static
 
 					// Confirm watcher addition
 					if (logger.IsInfoEnabled) logger.Info("File system watcher added for: " + folder.FolderPath);
-					//watcherList.Add(watch);
 				}
 				else
 				{
@@ -121,8 +120,6 @@ namespace WaveBox.Static
 		/// </summary>
 		private static void OnChanged(object source, FileSystemEventArgs e)
 		{
-			// Specify what is done when a file is changed, created, or deleted.
-			//if (logger.IsInfoEnabled) logger.Info("File: " + e.FullPath + " " + e.ChangeType);
 		}
 
 		/// <summary>
@@ -150,7 +147,7 @@ namespace WaveBox.Static
 			// Else, edge-case?  Might pick up something weird like a named pipe or socket with a valid media extension.
 			else
 			{
-				if (logger.IsInfoEnabled) logger.Info("warning: unknown object detected in filesystem at " + e.FullPath + ", ignoring...");
+				if (logger.IsInfoEnabled) logger.Warn("Unknown object detected in filesystem at " + e.FullPath + ", ignoring...");
 			}
 		}
 

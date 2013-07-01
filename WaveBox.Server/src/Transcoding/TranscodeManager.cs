@@ -1,9 +1,9 @@
 using System;
-using System.IO;
-using System.Diagnostics;
 using System.Collections.Generic;
-using WaveBox.Model;
+using System.Diagnostics;
+using System.IO;
 using System.Threading;
+using WaveBox.Model;
 
 namespace WaveBox.Transcoding
 {
@@ -11,11 +11,14 @@ namespace WaveBox.Transcoding
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		private TranscodeManager() { }
 		private static readonly TranscodeManager instance = new TranscodeManager();
 		public static TranscodeManager Instance { get { return instance; } }
 
 		private IList<ITranscoder> transcoders = new List<ITranscoder>();
+
+		private TranscodeManager()
+		{
+		}
 
 		public ITranscoder TranscodeSong(IMediaItem song, TranscodeType type, uint quality, bool isDirect, uint offsetSeconds, uint lengthSeconds)
 		{
@@ -60,9 +63,9 @@ namespace WaveBox.Transcoding
 						transcoder = new FFMpegMpegtsTranscoder(video, quality, isDirect, width, height, maintainAspect, offsetSeconds, lengthSeconds);
 						break;
 				}
-				
+
 				transcoder = StartTranscoder(transcoder);
-				
+
 				return transcoder;
 			}
 		}
@@ -76,11 +79,11 @@ namespace WaveBox.Transcoding
 				if (!transcoder.IsDirect && transcoders.Contains(transcoder))
 				{
 					if (logger.IsInfoEnabled) logger.Info("Using existing transcoder");
-					
+
 					// Get the existing transcoder
 					int index = transcoders.IndexOf(transcoder);
 					transcoder = transcoders[index];
-					
+
 					// Increment the reference count
 					transcoder.ReferenceCount++;
 				}
@@ -90,7 +93,7 @@ namespace WaveBox.Transcoding
 
 					// Add the transcoder to the array
 					transcoders.Add(transcoder);
-					
+
 					// Increment the reference count
 					transcoder.ReferenceCount++;
 
@@ -98,6 +101,7 @@ namespace WaveBox.Transcoding
 					transcoder.StartTranscode();
 				}
 			}
+
 			return transcoder;
 		}
 
@@ -128,10 +132,10 @@ namespace WaveBox.Transcoding
 			lock (transcoders)
 			{
 				if (logger.IsInfoEnabled) logger.Info("Consumed transcoder for " + transcoder.Item.FileName);
-				
+
 				// Decrement the reference count
 				transcoder.ReferenceCount--;
-				
+
 				if (transcoder.ReferenceCount == 0) 
 				{
 					// No other clients need this file, remove it
@@ -150,7 +154,9 @@ namespace WaveBox.Transcoding
 		{
 			// Do nothing if the transcoder is null or is a stdout transcoder
 			if ((object)transcoder == null)
+			{
 				return;
+			}
 
 			lock (transcoders)
 			{
@@ -194,4 +200,3 @@ namespace WaveBox.Transcoding
 		}
 	}
 }
-

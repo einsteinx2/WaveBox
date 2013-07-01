@@ -1,17 +1,17 @@
 using System;
-using WaveBox.Model;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using WaveBox.Static;
-using WaveBox.Core.Injected;
 using Ninject;
+using WaveBox.Core.Injected;
+using WaveBox.Model;
+using WaveBox.Static;
 
 namespace WaveBox.ApiHandler.Handlers
 {
 	public class GenresApiHandler : IApiHandler
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-		
+
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 
@@ -35,7 +35,6 @@ namespace WaveBox.ApiHandler.Handlers
 			List<Artist> listOfArtists = new List<Artist>();
 			List<Album> listOfAlbums = new List<Album>();
 			List<Song> listOfSongs = new List<Song>();
-			//List<Video> listOfVideos = new List<Video>();
 
 			// Try to get the folder id
 			bool success = false;
@@ -97,22 +96,19 @@ namespace WaveBox.ApiHandler.Handlers
 
 			[JsonProperty("genres")]
 			public List<Genre> Genres { get; set; }
-			
+
 			[JsonProperty("folders")]
 			public List<Folder> Folders { get; set; }
-			
+
 			[JsonProperty("artists")]
 			public List<Artist> Artists { get; set; }
 
 			[JsonProperty("albums")]
 			public List<Album> Albums { get; set; }
-			
+
 			[JsonProperty("songs")]
 			public List<Song> Songs { get; set; }
-			
-			//[JsonProperty("videos")]
-			//public List<Video> Videos { get; set; }
-			
+
 			public GenresResponse(string error, List<Genre> genres, List<Folder> folders, List<Artist> artists, List<Album> albums, List<Song> songs)
 			{
 				Error = error;

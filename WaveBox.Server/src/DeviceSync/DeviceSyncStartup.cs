@@ -1,7 +1,7 @@
-using Microsoft.AspNet.SignalR;
-using Owin;
 using System;
+using Microsoft.AspNet.SignalR;
 using Microsoft.Owin.Diagnostics;
+using Owin;
 
 namespace WaveBox.DeviceSync
 {

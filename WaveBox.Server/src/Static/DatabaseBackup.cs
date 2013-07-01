@@ -1,12 +1,12 @@
 using System;
-using System.Runtime.InteropServices;
-using WaveBox.Static;
+using System.Data.SQLite;
 using System.Data;
 using System.IO;
-using System.Data.SQLite;
 using System.Reflection;
-using WaveBox.Core.Injected;
+using System.Runtime.InteropServices;
 using Ninject;
+using WaveBox.Core.Injected;
+using WaveBox.Static;
 
 namespace WaveBox
 {
@@ -15,7 +15,6 @@ namespace WaveBox
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		// Backup SQLite database (modified code from: http://sqlite.phxsoftware.com/forums/t/2403.aspx)
-		//
 
 		public static string BackupFileName(long queryId) { return "wavebox_backup_" + queryId + ".db"; }
 		public static string BackupPath(long queryId) { return ServerUtility.RootPath() + BackupFileName(queryId); }
@@ -135,8 +134,10 @@ namespace WaveBox
 								logger.Error("Error deleting user table in backup: " + e);
 							}
 						}
+
 						return true;
 					}
+
 					return false;
 				}
 				catch (Exception e)
@@ -170,4 +171,3 @@ namespace WaveBox
 		}
 	}
 }
-

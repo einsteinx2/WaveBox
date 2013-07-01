@@ -10,12 +10,12 @@ using System.Threading;
 using System.Web;
 using Mono.Unix.Native;
 using Mono.Unix;
-using WaveBox.Static;
-using WaveBox.Transcoding;
-using WaveBox.Server.Extensions;
+using Ninject;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Injected;
-using Ninject;
+using WaveBox.Server.Extensions;
+using WaveBox.Static;
+using WaveBox.Transcoding;
 
 namespace WaveBox
 {
@@ -197,7 +197,6 @@ namespace WaveBox
 
 				if (logger.IsInfoEnabled) logger.Info("Deleted temp folder: " + TempFolder + " (" + i + " files)");
 			}
-
 
 			// Stop the server
 			wavebox.Stop();

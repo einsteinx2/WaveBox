@@ -2,19 +2,19 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.Serialization.Formatters;
 using System.Threading;
 using System.Linq;
 using System.Text;
-using WaveBox;
-using WaveBox.TcpServer.Http;
-using WaveBox.Static;
-using WaveBox.Model;
-using WaveBox.Transcoding;
 using Newtonsoft.Json;
-using System.Runtime.Serialization.Formatters;
+using Ninject;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Injected;
-using Ninject;
+using WaveBox.Model;
+using WaveBox.Static;
+using WaveBox.TcpServer.Http;
+using WaveBox.Transcoding;
+using WaveBox;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -51,7 +51,6 @@ namespace WaveBox.ApiHandler.Handlers
 		/// </summary>
 		public void Process()
 		{
-			if (logger.IsInfoEnabled) logger.Info("OK!");
 			try
 			{
 				// Allocate an array of various statistics about the running process
@@ -108,7 +107,7 @@ namespace WaveBox.ApiHandler.Handlers
 							// Update to the latest query log ID
 							statusCache.LastQueryId = queryLogId;
 
-							logger.Info("Gathering extended status metrics from database");
+							if (logger.IsInfoEnabled) logger.Info("Gathering extended status metrics from database");
 
 							// Get count of artists
 							statusCache.Cache["artistCount"] = Artist.CountArtists();
@@ -127,11 +126,7 @@ namespace WaveBox.ApiHandler.Handlers
 							// Get total video duration
 							statusCache.Cache["videoDuration"] = Video.TotalVideoDuration();
 
-							logger.Info("Metric gathering complete, cached results!");
-						}
-						else
-						{
-							logger.Info("Extended status metrics already cached!");
+							if (logger.IsInfoEnabled) logger.Info("Metric gathering complete, cached results!");
 						}
 
 						// Append cached status dictionary to status

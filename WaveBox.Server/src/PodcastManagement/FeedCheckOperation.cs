@@ -1,16 +1,14 @@
 using System;
+using Ninject;
+using WaveBox.Core.Injected;
 using WaveBox.OperationQueue;
 using WaveBox.PodcastManagement;
 using WaveBox.Static;
-using WaveBox.Core.Injected;
-using Ninject;
 
 namespace WaveBox
 {
 	public class FeedCheckOperation : IDelayedOperation
 	{
-		//private static Logger logger = LogManager.GetCurrentClassLogger();
-
 		// property backing ivars
 		DelayedOperationState state = DelayedOperationState.None;
 		string operationType = "PodcastFeedCheck";
@@ -20,6 +18,7 @@ namespace WaveBox
 		{ 
 			get { return state; }
 		}
+
 		public DateTime RunDateTime { get; set; }
 		public bool IsReady 
 		{ 
@@ -35,6 +34,7 @@ namespace WaveBox
 				}
 			}
 		}
+
 		public string OperationType { get { return operationType; } }
 		
 		public void Run()
@@ -70,4 +70,3 @@ namespace WaveBox
 		}
 	}
 }
-

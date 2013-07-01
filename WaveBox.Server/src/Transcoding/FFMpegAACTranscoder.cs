@@ -1,7 +1,7 @@
 using System;
 using WaveBox.Model;
-using WaveBox.Static;
 using WaveBox.Server.Extensions;
+using WaveBox.Static;
 
 namespace WaveBox.Transcoding
 {
@@ -19,7 +19,6 @@ namespace WaveBox.Transcoding
 
 		public FFMpegAACTranscoder(IMediaItem item, uint quality, bool isDirect, uint offsetSeconds, uint lengthSeconds) : base(item, quality, isDirect, offsetSeconds, lengthSeconds)
 		{
-			
 		}
 
 		public override string Arguments
@@ -49,6 +48,7 @@ namespace WaveBox.Transcoding
 						options = FFMpegOptionsWith(Quality);
 						break;
 				}
+
 				return options;
 			}
 		}
@@ -76,6 +76,7 @@ namespace WaveBox.Transcoding
 						bitrate = Quality;
 						break;
 				}
+
 				return bitrate;
 			}
 		}

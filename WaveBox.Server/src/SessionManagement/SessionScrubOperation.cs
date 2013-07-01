@@ -1,9 +1,9 @@
 using System;
-using WaveBox.Static;
+using Ninject;
+using WaveBox.Core.Injected;
 using WaveBox.OperationQueue;
 using WaveBox.SessionManagement;
-using WaveBox.Core.Injected;
-using Ninject;
+using WaveBox.Static;
 
 namespace WaveBox
 {
@@ -60,13 +60,11 @@ namespace WaveBox
 		// No need to cancel this operation
 		public void Cancel()
 		{
-
 		}
 
 		// ... Or restart it
 		public void Restart()
 		{
-
 		}
 
 		/// <summary>

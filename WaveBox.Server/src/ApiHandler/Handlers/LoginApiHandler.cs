@@ -1,9 +1,9 @@
 using System;
-using WaveBox.Static;
-using WaveBox.Model;
 using Newtonsoft.Json;
 using Ninject;
 using WaveBox.Core.Injected;
+using WaveBox.Model;
+using WaveBox.Static;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -59,4 +59,3 @@ namespace WaveBox.ApiHandler.Handlers
 		}
 	}
 }
-

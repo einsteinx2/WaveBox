@@ -1,16 +1,16 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Collections;
+using System.Diagnostics;
 using System.IO;
-using System.Net;
 using System.Net.Sockets;
+using System.Net;
 using System.Text;
 using System.Threading;
 using WaveBox;
-using System.Diagnostics;
-using WaveBox.Transcoding;
-using WaveBox.TcpServer.Http;
 using WaveBox.Core.Extensions;
+using WaveBox.TcpServer.Http;
+using WaveBox.Transcoding;
 
 // offered to the public domain for any use with no restriction
 // and also with no warranty of any kind, please enjoy. - David Jeske. 
@@ -363,13 +363,17 @@ namespace WaveBox.TcpServer.Http
 			// TODO: make sure content length is correct when doing range requests on transcoded files
 			long contentLength = length - actualStartOffset;
 			if (!ReferenceEquals(limitToBytes, null) && contentLength > limitToBytes)
+			{
 				contentLength = (long)limitToBytes;
+			}
 
 			bool isPartial = startOffset != 0 || !ReferenceEquals(limitToBytes, null);
 			if (isPartial)
 			{
 				if (ReferenceEquals(customHeaders, null))
+				{
 					customHeaders = new Dictionary<string, string>();
+				}
 
 				string contentRange = "bytes " + startOffset + "-" + (startOffset + contentLength - 1) + "/" + length;
 				customHeaders["Content-Range"] = contentRange;
@@ -409,9 +413,9 @@ namespace WaveBox.TcpServer.Http
 						if (logger.IsInfoEnabled)
 						{
 							logger.Info(String.Format("[ {0,10} / {1,10} | {2:000}% | {3:00.00000} Mbps ]",
-							    totalBytesWritten,
+								totalBytesWritten,
 								(contentLength + startOffset),
-							    ((Convert.ToDouble(totalBytesWritten) / Convert.ToDouble(contentLength + startOffset)) * 100),
+								((Convert.ToDouble(totalBytesWritten) / Convert.ToDouble(contentLength + startOffset)) * 100),
 								Math.Round((((double)(sinceLastReport * 8) / 1024) / 1024) / (double)(sw.ElapsedMilliseconds / 1000), 5)
 							));
 						}
@@ -445,7 +449,7 @@ namespace WaveBox.TcpServer.Http
 						Thread.Sleep(250);
 					}
 				}
-				catch(IOException e)
+				catch (IOException e)
 				{
 					if (e.InnerException.GetType() == typeof(System.Net.Sockets.SocketException))
 					{
@@ -467,14 +471,18 @@ namespace WaveBox.TcpServer.Http
 		{
 			// If null, use current time
 			if (ReferenceEquals(lastModified, null))
+			{
 				return DateTime.UtcNow;
+			}
 
 			// Make sure we're using UTC
 			DateTime lastMod = ((DateTime)lastModified).ToUniversalTime();
 
 			// If the time is later than now, use now
 			if (DateTime.Compare(DateTime.UtcNow, lastMod) < 0)
+			{
 				lastMod = DateTime.UtcNow;
+			}
 
 			return lastMod;
 		}

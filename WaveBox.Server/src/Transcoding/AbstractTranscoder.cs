@@ -1,8 +1,8 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using WaveBox.Model;
-using System.Diagnostics;
 
 namespace WaveBox.Transcoding
 {
@@ -38,9 +38,9 @@ namespace WaveBox.Transcoding
 		public abstract string Arguments { get; }
 
 		public uint OffsetSeconds { get; set; }
-		
+
 		public uint LengthSeconds { get; set; }
-		
+
 		public Thread TranscodeThread { get; set; }
 		public Process TranscodeProcess { get; set; }
 
@@ -98,7 +98,7 @@ namespace WaveBox.Transcoding
 		{
 			if (TranscodeProcess != null)
 			{
-				if (logger.IsInfoEnabled) logger.Info("cancelling transcode for " + Item.FileName);
+				if (logger.IsInfoEnabled) logger.Info("Cancelling transcode for " + Item.FileName);
 
 				// Kill the process
 				TranscodeProcess.Kill();
@@ -185,7 +185,7 @@ namespace WaveBox.Transcoding
 			if (TranscodeProcess != null)
 			{
 				int exitValue = TranscodeProcess.ExitCode;
-				if (logger.IsInfoEnabled) logger.Info("exit value " + exitValue);
+				if (logger.IsInfoEnabled) logger.Info("Exit value " + exitValue);
 
 				if (exitValue == 0)
 				{
@@ -266,4 +266,3 @@ namespace WaveBox.Transcoding
 		}
 	}
 }
-
