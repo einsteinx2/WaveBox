@@ -97,9 +97,6 @@ namespace WaveBox
 			// Temporary: create test user
 			new User.Factory().CreateUser("test", "test", null);
 
-			// Start the UserManager
-			UserManager.Setup();
-
 			return;
 		}
 

@@ -165,8 +165,8 @@
     <Compile Include="src\Service\Services\CronService.cs" />
     <Compile Include="src\Service\Services\Cron\DownloadQueue.cs" />
     <Compile Include="src\Service\Services\Cron\FeedCheckOperation.cs" />
-    <Compile Include="src\Service\Services\Cron\SessionScrub.cs" />
-    <Compile Include="src\Service\Services\Cron\SessionScrubOperation.cs" />
+    <Compile Include="src\Service\Services\Cron\UserPurge.cs" />
+    <Compile Include="src\Service\Services\Cron\UserPurgeOperation.cs" />
     <Compile Include="src\Service\Services\DynamicDnsService.cs" />
     <Compile Include="src\Service\Services\FileManagerService.cs" />
     <Compile Include="src\Service\Services\HttpService.cs" />

@@ -30,9 +30,9 @@ namespace WaveBox.Service.Services
 			DownloadQueue.FeedChecks.queueOperation(new FeedCheckOperation(0));
 			DownloadQueue.FeedChecks.startQueue();
 
-			// Start session scrub operation
-			SessionScrub.Queue.queueOperation(new SessionScrubOperation(0));
-			SessionScrub.Queue.startQueue();
+			// Start user and session purge operation
+			UserPurge.Queue.queueOperation(new UserPurgeOperation(0));
+			UserPurge.Queue.startQueue();
 			return true;
 		}
 
@@ -40,7 +40,7 @@ namespace WaveBox.Service.Services
 		{
 			// Stop all queues
 			DownloadQueue.FeedChecks = null;
-			SessionScrub.Queue = null;
+			UserPurge.Queue = null;
 			return true;
 		}
 	}
