@@ -17,6 +17,8 @@ namespace WaveBox.Service.Services
 
 		public bool Required { get { return false; } set { } }
 
+		public bool Running { get; set; }
+
 		// Hard coded release update check URL for now
 		private const string ReleaseUpdateCheckUrl = "http://waveboxapp.com/release_updates.json";
 
@@ -44,6 +46,7 @@ namespace WaveBox.Service.Services
 			Stop();
 			CheckForUpdate(null);
 
+			this.Running = true;
 			return true;
 		}
 
@@ -62,6 +65,7 @@ namespace WaveBox.Service.Services
 				timer = null;
 			}
 
+			this.Running = false;
 			return true;
 		}
 

@@ -17,7 +17,7 @@ namespace WaveBox.Service.Services
 
 		public bool Required { get { return true; } set { } }
 
-		private bool ready = false;
+		public bool Running { get; set; }
 
 		private IList<ITranscoder> transcoders = new List<ITranscoder>();
 
@@ -28,22 +28,22 @@ namespace WaveBox.Service.Services
 		public bool Start()
 		{
 			// Ready to roll!
-			ready = true;
+			this.Running = true;
 			return true;
 		}
 
 		public bool Stop()
 		{
 			// Stop all transcodes
-			ready = false;
 			this.CancelAllTranscodes();
 
+			this.Running = false;
 			return true;
 		}
 
 		public ITranscoder TranscodeSong(IMediaItem song, TranscodeType type, uint quality, bool isDirect, uint offsetSeconds, uint lengthSeconds)
 		{
-			if (!this.ready)
+			if (!this.Running)
 			{
 				logger.Error("TranscodeService is not running!");
 				return null;
@@ -77,7 +77,7 @@ namespace WaveBox.Service.Services
 
 		public ITranscoder TranscodeVideo(IMediaItem video, TranscodeType type, uint quality, bool isDirect, uint? width, uint? height, bool maintainAspect, uint offsetSeconds, uint lengthSeconds)
 		{
-			if (!this.ready)
+			if (!this.Running)
 			{
 				logger.Error("TranscodeService is not running!");
 				return null;

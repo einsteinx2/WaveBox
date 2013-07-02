@@ -25,6 +25,8 @@ namespace WaveBox.Service.Services
 
 		public bool Required { get { return false; } set { } }
 
+		public bool Running { get; set; }
+
 		public NatStatus Status { get; set; }
 
 		private INatDevice Device { get; set; }
@@ -45,6 +47,7 @@ namespace WaveBox.Service.Services
 			// Start searching for upnp enabled routers
 			NatUtility.StartDiscovery();
 
+			this.Running = true;
 			return true;
 		}
 
@@ -56,6 +59,7 @@ namespace WaveBox.Service.Services
 				Status = NatStatus.NotInitialized;
 			}
 
+			this.Running = false;
 			return true;
 		}
 		

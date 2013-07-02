@@ -20,6 +20,8 @@ namespace WaveBox.Service.Services
 
 		public bool Required { get { return false; } set { } }
 
+		public bool Running { get; set; }
+
 		// Server GUID and URL for Dynamic DNS
 		public string ServerGuid { get; set; }
 		public string ServerUrl { get; set; }
@@ -34,6 +36,7 @@ namespace WaveBox.Service.Services
 			ServerGuid = ServerUtility.GetServerGuid();
 			this.RegisterUrl(ServerUrl, ServerGuid);
 
+			this.Running = true;
 			return true;
 		}
 
@@ -42,6 +45,7 @@ namespace WaveBox.Service.Services
 			ServerUrl = null;
 			ServerGuid = null;
 
+			this.Running = false;
 			return true;
 		}
 

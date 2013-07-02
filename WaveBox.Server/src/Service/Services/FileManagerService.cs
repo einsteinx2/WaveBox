@@ -21,6 +21,8 @@ namespace WaveBox.Service.Services
 
 		public bool Required { get { return true; } set { } }
 
+		public bool Running { get; set; }
+
 		// Our list of media folders and the scanning queue which uses them
 		private static List<Folder> mediaFolders;
 		private static DelayedOperationQueue scanQueue;
@@ -114,6 +116,7 @@ namespace WaveBox.Service.Services
 			// Collect garbage now to conserve resources
 			GC.Collect();
 
+			this.Running = true;
 			return true;
 		}
 
@@ -121,6 +124,7 @@ namespace WaveBox.Service.Services
 		{
 			scanQueue.stopQueue();
 
+			this.Running = false;
 			return true;
 		}
 

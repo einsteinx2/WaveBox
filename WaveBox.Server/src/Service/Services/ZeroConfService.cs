@@ -15,6 +15,8 @@ namespace WaveBox.Service.Services
 
 		public bool Required { get { return false; } set { } }
 
+		public bool Running { get; set; }
+
 		private string Hostname { get { return System.Environment.MachineName; } }
 		private const string RegType = "_wavebox._tcp";
 		private const string ReplyDomain = "local.";
@@ -56,6 +58,8 @@ namespace WaveBox.Service.Services
 				ZeroConf.TxtRecord = record;
 
 				ZeroConf.Register();
+
+				this.Running = true;
 			}
 			catch (Exception e)
 			{
@@ -78,6 +82,7 @@ namespace WaveBox.Service.Services
 				ZeroConf = null;
 			}
 
+			this.Running = false;
 			return true;
 		}
 	}

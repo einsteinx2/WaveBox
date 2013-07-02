@@ -205,7 +205,14 @@ namespace WaveBox.Service
 			if ((object)service == null)
 			{
 				logger.Error("Service is null, cannot start");
-				return success;
+				return false;
+			}
+
+			// Check if it's already running
+			if (service.Running)
+			{
+				if (logger.IsInfoEnabled) logger.Info("  - Already running: " + service.Name);
+				return true;
 			}
 
 			if (service.Start())
@@ -242,7 +249,14 @@ namespace WaveBox.Service
 			if ((object)service == null)
 			{
 				logger.Error("Failed to stop service: " + service.Name);
-				return success;
+				return false;
+			}
+
+			// Check if it's already stopped
+			if (!service.Running)
+			{
+				if (logger.IsInfoEnabled) logger.Info("  - Already stopped: " + service.Name);
+				return true;
 			}
 
 			if (service.Stop())

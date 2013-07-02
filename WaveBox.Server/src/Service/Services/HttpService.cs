@@ -20,6 +20,8 @@ namespace WaveBox.Service.Services
 
 		public bool Required { get { return true; } set { } }
 
+		public bool Running { get; set; }
+
 		private int Port { get { return Injection.Kernel.Get<IServerSettings>().Port; } set { } }
 
 		private TcpListener Listener { get; set; }
@@ -40,6 +42,7 @@ namespace WaveBox.Service.Services
 
 				// Start accepting TCP clients
 				Listener.BeginAcceptTcpClient(AcceptClientCallback, null);
+				this.Running = true;
 			}
 			// Catch socket exceptions
 			catch (System.Net.Sockets.SocketException e)
@@ -86,6 +89,7 @@ namespace WaveBox.Service.Services
 				}
 			}
 
+			this.Running = false;
 			return true;
 		}
 

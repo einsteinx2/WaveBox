@@ -17,6 +17,8 @@ namespace WaveBox.Service.Services
 
 		public bool Required { get { return true; } set { } }
 
+		public bool Running { get; set; }
+
 		public CronService()
 		{
 		}
@@ -33,6 +35,8 @@ namespace WaveBox.Service.Services
 			// Start user and session purge operation
 			UserPurge.Queue.queueOperation(new UserPurgeOperation(0));
 			UserPurge.Queue.startQueue();
+
+			this.Running = true;
 			return true;
 		}
 
@@ -41,6 +45,8 @@ namespace WaveBox.Service.Services
 			// Stop all queues
 			DownloadQueue.FeedChecks = null;
 			UserPurge.Queue = null;
+
+			this.Running = false;
 			return true;
 		}
 	}

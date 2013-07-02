@@ -10,6 +10,9 @@ namespace WaveBox.Service
 		// Whether or not service is absolutely required for WaveBox to run
 		bool Required { get; set; }
 
+		// Whether or not service is already running
+		bool Running { get; set; }
+
 		// Service control methods
 		bool Start();
 		bool Stop();
