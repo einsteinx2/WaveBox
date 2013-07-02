@@ -125,6 +125,10 @@ namespace WaveBox
 			// Start services
 			try
 			{
+				// Start default, required services
+				ServiceManager.AddList(new List<string>{"cron", "http"});
+
+				// Start additional services
 				ServiceManager.AddList(Injection.Kernel.Get<IServerSettings>().Services);
 				ServiceManager.StartAll();
 			}

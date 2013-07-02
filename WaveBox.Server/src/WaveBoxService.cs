@@ -164,9 +164,6 @@ namespace WaveBox
 		{
 			if (logger.IsInfoEnabled) logger.Info("Stopping...");
 
-			// Stop all running services
-			ServiceManager.StopAll();
-
 			// Abort main thread, nullify the WaveBox object
 			init.Abort();
 

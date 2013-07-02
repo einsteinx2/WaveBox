@@ -21,7 +21,7 @@ namespace WaveBox.Service.Services
 		// Logger
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public string Name { get { return "NAT"; } set { } }
+		public string Name { get { return "nat"; } set { } }
 
 		public NatStatus Status { get; set; }
 

@@ -18,11 +18,21 @@ namespace WaveBox.Service
 		/// </summary>
 		public static bool Add(string name, bool autostart = false)
 		{
+			// Ensure lowercase names
+			name = name.ToLower();
+
 			// Check if service is disabled
 			if (name[0] == '!')
 			{
-				logger.Info("Skipping disabled service: " + name);
+				if (logger.IsInfoEnabled) logger.Info("Skipping disabled service: " + name);
 				return true;
+			}
+
+			// Check if service is already present in list
+			if (regServices.Any(x => x.Name == name))
+			{
+				if (logger.IsInfoEnabled) logger.Info("Skipping duplicate service: " + name);
+				return false;
 			}
 
 			// Generate service from name
@@ -80,6 +90,17 @@ namespace WaveBox.Service
 		{
 			if (logger.IsInfoEnabled) logger.Info("Clearing all registered services...");
 			regServices.Clear();
+
+			return true;
+		}
+
+		/// <summary>
+		/// Attempt to restart all currently registered services
+		/// </summary>
+		public static bool RestartAll()
+		{
+			StopAll();
+			StartAll();
 
 			return true;
 		}
