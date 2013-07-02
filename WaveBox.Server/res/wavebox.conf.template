@@ -47,6 +47,9 @@
 		// dynamicdns - Enables easy access to WaveBox through a predefined address.
 		"{setting-services-dynamicdns}",
 
+		// jukebox - Enables music to be played over the server's audio device.
+		"{setting-services-jukebox}",
+
 		// nat - Enables NAT for UPnP/NAT-PMP and automatic router port forwarding.
 		"{setting-services-nat}",
 

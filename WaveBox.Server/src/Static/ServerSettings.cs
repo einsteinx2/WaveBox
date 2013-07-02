@@ -290,7 +290,7 @@ namespace WaveBox.Static
 					.Replace("{setting-crashReportEnable}", settingsModel.CrashReportEnable.ToString().ToLower());
 
 				// For services, only enable them if specified in JSON. Disable otherwise
-				List<string> services = new List<string>{"autoupdate", "devicesync", "dynamicdns", "nat", "zeroconf"};
+				List<string> services = new List<string>{"autoupdate", "devicesync", "dynamicdns", "jukebox", "nat", "zeroconf"};
 				foreach (string s in services)
 				{
 					if (settingsModel.Services.Contains(s))
