@@ -131,7 +131,7 @@ namespace WaveBox.ApiHandler.Handlers
 					{
 						// This is a file request so use the range header to specify where in the file to return
 						startOffset = Convert.ToInt32(start);
-						if (!ReferenceEquals(end, null))
+						if (!ReferenceEquals(end, null) && end.Length > 0)
 						{
 							limitToSize = (Convert.ToInt64(end) + 1) - startOffset;
 						}
