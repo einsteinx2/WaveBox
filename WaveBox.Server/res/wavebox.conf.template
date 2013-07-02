@@ -42,7 +42,7 @@
 		"{setting-services-autoupdate}",
 
 		// devicesync - Enables sync of WaveBox state between devices.
-		//"{setting-services-devicesync}",
+		"{setting-services-devicesync}",
 
 		// dynamicdns - Enables easy access to WaveBox through a predefined address.
 		"{setting-services-dynamicdns}",

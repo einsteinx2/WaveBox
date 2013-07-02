@@ -10,7 +10,7 @@ using WaveBox.Core.Extensions;
 using WaveBox.Model;
 using WaveBox.Static;
 
-namespace WaveBox.DeviceSync
+namespace WaveBox.Service.Services.DeviceSync
 {
 	public class DeviceSyncHub : Hub
 	{

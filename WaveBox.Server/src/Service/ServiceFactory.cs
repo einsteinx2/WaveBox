@@ -19,6 +19,8 @@ namespace WaveBox.Service
 					return new AutoUpdateService();
 				case "cron":
 					return new CronService();
+				case "devicesync":
+					return new DeviceSyncService();
 				case "dynamicdns":
 					return new DynamicDnsService();
 				case "filemanager":

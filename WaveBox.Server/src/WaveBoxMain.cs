@@ -11,13 +11,11 @@ using System.ServiceProcess;
 using System.Text;
 using System.Threading;
 using Cirrious.MvvmCross.Plugins.Sqlite;
-using Microsoft.Owin.Hosting;
 using Mono.Unix.Native;
 using Mono.Unix;
 using Mono.Zeroconf;
 using Ninject;
 using WaveBox.Core.Injected;
-using WaveBox.DeviceSync;
 using WaveBox.Model;
 using WaveBox.Service;
 using WaveBox.Static;
@@ -80,16 +78,6 @@ namespace WaveBox
 				logger.Warn(e);
 			}
 
-			// Start the SignalR server for real time device state syncing
-			try
-			{
-				WebApplication.Start<DeviceSyncStartup>("http://localhost:" + Injection.Kernel.Get<IServerSettings>().WsPort + "/");
-			}
-			catch (Exception e)
-			{
-				logger.Warn("Could not start WaveBox SignalR server, please check wsPort in your configuration");
-				logger.Warn(e);
-			}
 
 			// Temporary: create test user
 			new User.Factory().CreateUser("test", "test", null);

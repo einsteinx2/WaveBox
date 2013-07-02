@@ -148,9 +148,6 @@
     <Compile Include="src\ApiHandler\IApiHandler.cs" />
     <Compile Include="src\ApiHandler\UriWrapper.cs" />
     <Compile Include="src\AssemblyInfo.cs" />
-    <Compile Include="src\DeviceSync\DeviceSyncHub.cs" />
-    <Compile Include="src\DeviceSync\DeviceSyncStartup.cs" />
-    <Compile Include="src\DeviceSync\RawConnection.cs" />
     <Compile Include="src\Extensions\IMediaItemExtensions.cs" />
     <Compile Include="src\FolderScanning\FolderScanOperation.cs" />
     <Compile Include="src\FolderScanning\OrphanScanOperation.cs" />
@@ -167,6 +164,10 @@
     <Compile Include="src\Service\Services\Cron\FeedCheckOperation.cs" />
     <Compile Include="src\Service\Services\Cron\UserPurge.cs" />
     <Compile Include="src\Service\Services\Cron\UserPurgeOperation.cs" />
+    <Compile Include="src\Service\Services\DeviceSyncService.cs" />
+    <Compile Include="src\Service\Services\DeviceSync\DeviceSyncHub.cs" />
+    <Compile Include="src\Service\Services\DeviceSync\DeviceSyncStartup.cs" />
+    <Compile Include="src\Service\Services\DeviceSync\RawConnection.cs" />
     <Compile Include="src\Service\Services\DynamicDnsService.cs" />
     <Compile Include="src\Service\Services\FileManagerService.cs" />
     <Compile Include="src\Service\Services\HttpService.cs" />
