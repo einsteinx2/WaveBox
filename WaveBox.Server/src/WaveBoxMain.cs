@@ -67,12 +67,20 @@ namespace WaveBox
 				ServiceManager.AddList(new List<string>{"cron", "http"});
 
 				// Start additional services
-				ServiceManager.AddList(Injection.Kernel.Get<IServerSettings>().Services);
+				if (Injection.Kernel.Get<IServerSettings>().Services != null)
+				{
+					ServiceManager.AddList(Injection.Kernel.Get<IServerSettings>().Services);
+				}
+				else
+				{
+					logger.Warn("No services specified in configuration file!");
+				}
+
 				ServiceManager.StartAll();
 			}
 			catch (Exception e)
 			{
-				logger.Warn("Could not start WaveBox services, please check services in your configuration");
+				logger.Warn("Could not start one or more WaveBox services, please check services in your configuration");
 				logger.Warn(e);
 			}
 

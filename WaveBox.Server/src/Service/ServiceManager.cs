@@ -122,8 +122,15 @@ namespace WaveBox.Service
 		/// </summary>
 		public static bool RestartAll()
 		{
-			StopAll();
-			StartAll();
+			if (!StopAll())
+			{
+				return false;
+			}
+
+			if (!StartAll())
+			{
+				return false;
+			}
 
 			return true;
 		}
@@ -197,18 +204,30 @@ namespace WaveBox.Service
 			bool success = false;
 			if ((object)service == null)
 			{
-				logger.Error("Failed to start service: " + service.Name);
+				logger.Error("Service is null, cannot start");
 				return success;
 			}
 
 			if (service.Start())
 			{
-				if (logger.IsInfoEnabled) logger.Info("  - Started: " + service.Name);
+				string output = "  - Started: " + service.Name;
+				if (service.Required)
+				{
+					output += " *";
+				}
+				if (logger.IsInfoEnabled) logger.Info(output);
 				success = true;
 			}
 			else
 			{
 				logger.Error("  ! Failed to start: " + service.Name);
+
+				// Check if service was required
+				if (service.Required)
+				{
+					logger.Error("Service " + service.Name + " is required, exiting now!");
+					Environment.Exit(-1);
+				}
 			}
 
 			return success;
