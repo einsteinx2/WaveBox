@@ -4,24 +4,51 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using WaveBox.Model;
+using WaveBox.Service;
+using WaveBox.Transcoding;
 
-namespace WaveBox.Transcoding
+namespace WaveBox.Service.Services
 {
-	public class TranscodeManager
+	public class TranscodeService : IService
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		private static readonly TranscodeManager instance = new TranscodeManager();
-		public static TranscodeManager Instance { get { return instance; } }
+		public string Name { get { return "transcode"; } set { } }
+
+		public bool Required { get { return true; } set { } }
+
+		private bool ready = false;
 
 		private IList<ITranscoder> transcoders = new List<ITranscoder>();
 
-		private TranscodeManager()
+		public TranscodeService()
 		{
+		}
+
+		public bool Start()
+		{
+			// Ready to roll!
+			ready = true;
+			return true;
+		}
+
+		public bool Stop()
+		{
+			// Stop all transcodes
+			ready = false;
+			this.CancelAllTranscodes();
+
+			return true;
 		}
 
 		public ITranscoder TranscodeSong(IMediaItem song, TranscodeType type, uint quality, bool isDirect, uint offsetSeconds, uint lengthSeconds)
 		{
+			if (!this.ready)
+			{
+				logger.Error("TranscodeService is not running!");
+				return null;
+			}
+
 			if (logger.IsInfoEnabled) logger.Info("Asked to transcode song: " + song.FileName);
 			lock (transcoders) 
 			{
@@ -50,6 +77,12 @@ namespace WaveBox.Transcoding
 
 		public ITranscoder TranscodeVideo(IMediaItem video, TranscodeType type, uint quality, bool isDirect, uint? width, uint? height, bool maintainAspect, uint offsetSeconds, uint lengthSeconds)
 		{
+			if (!this.ready)
+			{
+				logger.Error("TranscodeService is not running!");
+				return null;
+			}
+
 			if (logger.IsInfoEnabled) logger.Info("Asked to transcode video: " + video.FileName);
 			lock (transcoders) 
 			{

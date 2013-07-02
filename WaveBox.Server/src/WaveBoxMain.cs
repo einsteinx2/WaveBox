@@ -63,7 +63,7 @@ namespace WaveBox
 			try
 			{
 				// Start default, required services
-				ServiceManager.AddList(new List<string>{"cron", "filemanager", "http"});
+				ServiceManager.AddList(new List<string>{"cron", "filemanager", "http", "transcode"});
 
 				// Start additional services
 				if (Injection.Kernel.Get<IServerSettings>().Services != null)

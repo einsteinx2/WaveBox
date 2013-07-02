@@ -167,11 +167,6 @@ namespace WaveBox
 			// Abort main thread, nullify the WaveBox object
 			init.Abort();
 
-			// Stop any active transcodes
-			if (logger.IsInfoEnabled) logger.Info("Cancelling any active transcodes...");
-			TranscodeManager.Instance.CancelAllTranscodes();
-			if (logger.IsInfoEnabled) logger.Info("All transcodes canceled");
-
 			// Destroy temp folder
 			if (Directory.Exists(TempFolder))
 			{

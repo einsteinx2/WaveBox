@@ -27,6 +27,8 @@ namespace WaveBox.Service
 					return new HttpService();
 				case "nat":
 					return new NatService();
+				case "transcode":
+					return new TranscodeService();
 				case "zeroconf":
 					return new ZeroConfService();
 				default:
