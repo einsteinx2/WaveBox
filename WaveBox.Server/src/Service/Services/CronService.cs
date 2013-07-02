@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using Ninject;
 using WaveBox.Core.Injected;
+using WaveBox.Service.Services.Cron;
+using WaveBox.Service.Services.Cron;
 using WaveBox.Static;
 
 namespace WaveBox.Service.Services
@@ -22,11 +24,24 @@ namespace WaveBox.Service.Services
 
 		public bool Start()
 		{
+			// FOR NOW: Use the pre-existing delayed operation queues.  Once more work has been done, cron will
+			// run a unified timer and spin each of these off as needed
+
+			// Start podcast download queue
+			DownloadQueue.FeedChecks.queueOperation(new FeedCheckOperation(0));
+			DownloadQueue.FeedChecks.startQueue();
+
+			// Start session scrub operation
+			SessionScrub.Queue.queueOperation(new SessionScrubOperation(0));
+			SessionScrub.Queue.startQueue();
 			return true;
 		}
 
 		public bool Stop()
 		{
+			// Stop all queues
+			DownloadQueue.FeedChecks = null;
+			SessionScrub.Queue = null;
 			return true;
 		}
 	}

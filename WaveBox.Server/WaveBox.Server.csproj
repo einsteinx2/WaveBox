@@ -156,8 +156,6 @@
     <Compile Include="src\FolderScanning\OrphanScanOperation.cs" />
     <Compile Include="src\ImageMagickInterop.cs" />
     <Compile Include="src\Lastfm.cs" />
-    <Compile Include="src\PodcastManagement\DownloadQueue.cs" />
-    <Compile Include="src\PodcastManagement\FeedCheckOperation.cs" />
     <Compile Include="src\PodcastManagement\Podcast.cs" />
     <Compile Include="src\PodcastManagement\PodcastEpisode.cs" />
     <Compile Include="src\Service\IService.cs" />
@@ -165,6 +163,10 @@
     <Compile Include="src\Service\ServiceManager.cs" />
     <Compile Include="src\Service\Services\AutoUpdateService.cs" />
     <Compile Include="src\Service\Services\CronService.cs" />
+    <Compile Include="src\Service\Services\Cron\DownloadQueue.cs" />
+    <Compile Include="src\Service\Services\Cron\FeedCheckOperation.cs" />
+    <Compile Include="src\Service\Services\Cron\SessionScrub.cs" />
+    <Compile Include="src\Service\Services\Cron\SessionScrubOperation.cs" />
     <Compile Include="src\Service\Services\DynamicDnsService.cs" />
     <Compile Include="src\Service\Services\HttpService.cs" />
     <Compile Include="src\Service\Services\Http\HttpHeader.cs" />
@@ -172,8 +174,6 @@
     <Compile Include="src\Service\Services\Http\IHttpProcessor.cs" />
     <Compile Include="src\Service\Services\NatService.cs" />
     <Compile Include="src\Service\Services\ZeroConfService.cs" />
-    <Compile Include="src\SessionManagement\SessionScrub.cs" />
-    <Compile Include="src\SessionManagement\SessionScrubOperation.cs" />
     <Compile Include="src\Static\Database.cs" />
     <Compile Include="src\Static\DatabaseBackup.cs" />
     <Compile Include="src\Static\FileManager.cs" />

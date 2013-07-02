@@ -7,6 +7,7 @@ using Cirrious.MvvmCross.Plugins.Sqlite;
 using Ninject;
 using WaveBox.Core.Injected;
 using WaveBox.Model;
+using WaveBox.Service.Services.Cron;
 using WaveBox.Static;
 
 namespace WaveBox.PodcastManagement

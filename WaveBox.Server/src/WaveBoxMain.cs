@@ -19,7 +19,6 @@ using Ninject;
 using WaveBox.Core.Injected;
 using WaveBox.DeviceSync;
 using WaveBox.Model;
-using WaveBox.SessionManagement;
 using WaveBox.Service;
 using WaveBox.Static;
 using WaveBox.Transcoding;
@@ -95,20 +94,6 @@ namespace WaveBox
 				logger.Warn(e);
 			}
 
-			// Start ZeroConf
-			// todo: allow ZeroConfService to get Server Url
-			/*
-			try
-			{
-				ZeroConf.PublishZeroConf(ServerUrl, Injection.Kernel.Get<IServerSettings>().Port);
-			}
-			catch (Exception e)
-			{
-				logger.Warn("Could not start WaveBox ZeroConf, please check port in your configuration");
-				logger.Warn(e);
-			}
-			*/
-
 			// Temporary: create test user
 			new User.Factory().CreateUser("test", "test", null);
 
@@ -118,14 +103,6 @@ namespace WaveBox
 			// Start file manager, calculate time it takes to run.
 			if (logger.IsInfoEnabled) logger.Info("Scanning media directories...");
 			FileManager.Setup();
-
-			// Start podcast download queue
-			PodcastManagement.DownloadQueue.FeedChecks.queueOperation(new FeedCheckOperation(0));
-			PodcastManagement.DownloadQueue.FeedChecks.startQueue();
-
-			// Start session scrub operation
-			SessionScrub.Queue.queueOperation(new SessionScrubOperation(0));
-			SessionScrub.Queue.startQueue();
 
 			return;
 		}
