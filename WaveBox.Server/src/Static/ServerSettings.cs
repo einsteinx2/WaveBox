@@ -121,30 +121,6 @@ namespace WaveBox.Static
 
 			try
 			{
-				bool? crashReportEnable = json.crashReportEnable;
-				if (crashReportEnable != null)
-				{
-					settingsModel.CrashReportEnable = (bool)crashReportEnable;
-					settingsChanged = true;
-					if (logger.IsInfoEnabled) logger.Info("Setting 'crashReportEnable': " + settingsModel.CrashReportEnable);
-				}
-			}
-			catch { }
-
-			try
-			{
-				bool? natEnable = json.natEnable;
-				if (natEnable != null)
-				{
-					settingsModel.NatEnable = (bool)natEnable;
-					settingsChanged = true;
-					if (logger.IsInfoEnabled) logger.Info("Setting 'natEnable': " + settingsModel.NatEnable);
-				}
-			}
-			catch { }
-
-			try
-			{
 				if (json.mediaFolders != null)
 				{
 					List<string> mediaFoldersTemp = new List<string>();
@@ -226,6 +202,20 @@ namespace WaveBox.Static
 			}
 			catch { }
 
+			// Advanced configuration
+
+			try
+			{
+				bool? crashReportEnable = json.crashReportEnable;
+				if (crashReportEnable != null)
+				{
+					settingsModel.CrashReportEnable = (bool)crashReportEnable;
+					settingsChanged = true;
+					if (logger.IsInfoEnabled) logger.Info("Setting 'crashReportEnable': " + settingsModel.CrashReportEnable);
+				}
+			}
+			catch { }
+
 			try
 			{
 				if (json.services != null)
@@ -290,14 +280,29 @@ namespace WaveBox.Static
 				templateBuilder
 					.Replace("{setting-port}", settingsModel.Port.ToString())
 					.Replace("{setting-wsPort}", settingsModel.WsPort.ToString())
-					.Replace("{setting-crashReportEnable}", settingsModel.CrashReportEnable.ToString().ToLower())
-					.Replace("{setting-natEnable}", settingsModel.NatEnable.ToString().ToLower())
 					.Replace("{setting-mediaFolders}", settingsModel.MediaFolders.ToCSV(true))
 					.Replace("{setting-podcastFolder}", settingsModel.PodcastFolder)
 					.Replace("{setting-podcastCheckInterval}", settingsModel.PodcastCheckInterval.ToString())
 					.Replace("{setting-sessionTimeout}", settingsModel.SessionTimeout.ToString())
 					.Replace("{setting-prettyJson}", settingsModel.PrettyJson.ToString().ToLower())
-					.Replace("{setting-folderArtNames}", settingsModel.FolderArtNames.ToCSV(true));
+					.Replace("{setting-folderArtNames}", settingsModel.FolderArtNames.ToCSV(true))
+					// Advanced configuration
+					.Replace("{setting-crashReportEnable}", settingsModel.CrashReportEnable.ToString().ToLower());
+
+				// For services, only enable them if specified in JSON. Disable otherwise
+				List<string> services = new List<string>{"autoupdate", "devicesync", "dynamicdns", "nat", "zeroconf"};
+				foreach (string s in services)
+				{
+					if (settingsModel.Services.Contains(s))
+					{
+						templateBuilder.Replace("{setting-services-" + s + "}", s);
+					}
+					else
+					{
+						// If no match, disable this setting
+						templateBuilder.Replace("{setting-services-" + s + "}", "!" + s);
+					}
+				}
 			}
 			catch (Exception e)
 			{
