@@ -27,6 +27,8 @@ namespace WaveBox.Service
 					return new FileManagerService();
 				case "http":
 					return new HttpService();
+				case "jukebox":
+					return new JukeboxService();
 				case "nat":
 					return new NatService();
 				case "transcode":
