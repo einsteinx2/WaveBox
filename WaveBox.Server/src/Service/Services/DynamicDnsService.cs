@@ -30,7 +30,8 @@ namespace WaveBox.Service.Services
 
 		public bool Start()
 		{
-			this.ServerSetup();
+			ServerUrl = ServerUtility.GetServerUrl();
+			ServerGuid = ServerUtility.GetServerGuid();
 			this.RegisterUrl(ServerUrl, ServerGuid);
 
 			return true;
@@ -91,59 +92,6 @@ namespace WaveBox.Service.Services
 		public void RegisterUrlCompleted(object sender, DownloadDataCompletedEventArgs e)
 		{
 			// Do nothing for now, check for success and handle failures later
-		}
-
-		/// <summary>
-		/// ServerSetup is used to generate a GUID which can be associated with the URL forwarding service, to 
-		/// uniquely map an instance of WaveBox
-		/// </summary>
-		private void ServerSetup()
-		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				// Grab server GUID and URL from the database
-				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				ServerGuid = conn.ExecuteScalar<string>("SELECT Guid FROM Server");
-				ServerUrl = conn.ExecuteScalar<string>("SELECT Url FROM Server");
-			}
-			catch (Exception e)
-			{
-				logger.Error("Exception loading server info", e);
-			}
-			finally
-			{
-				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-			}
-
-			// If it doesn't exist, generate a new one
-			if ((object)ServerGuid == null)
-			{
-				// Generate the GUID
-				Guid guid = Guid.NewGuid();
-				ServerGuid = guid.ToString();
-
-				// Store the GUID in the database
-				try
-				{
-					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-					int affected = conn.Execute("INSERT INTO Server (Guid) VALUES (?)", ServerGuid);
-
-					if (affected == 0)
-					{
-						ServerGuid = null;
-					}
-				}
-				catch (Exception e)
-				{
-					logger.Error("Exception saving guid", e);
-					ServerGuid = null;
-				}
-				finally
-				{
-					Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-				}
-			}
 		}
 	}
 }

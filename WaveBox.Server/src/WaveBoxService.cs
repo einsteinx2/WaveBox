@@ -167,11 +167,6 @@ namespace WaveBox
 			// Abort main thread, nullify the WaveBox object
 			init.Abort();
 
-			// Shut off ZeroConf
-			if (logger.IsInfoEnabled) logger.Info("Turning off ZeroConf...");
-			ZeroConf.DisposeZeroConf();
-			if (logger.IsInfoEnabled) logger.Info("ZeroConf off");
-
 			// Stop any active transcodes
 			if (logger.IsInfoEnabled) logger.Info("Cancelling any active transcodes...");
 			TranscodeManager.Instance.CancelAllTranscodes();
