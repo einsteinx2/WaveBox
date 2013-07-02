@@ -12,6 +12,8 @@ using WaveBox.Core.Extensions;
 using WaveBox.Core.Injected;
 using WaveBox.Model;
 using WaveBox.Static;
+using WaveBox.Service;
+using WaveBox.Service.Services;
 using WaveBox.Service.Services.Http;
 using WaveBox.Transcoding;
 using WaveBox;
@@ -65,6 +67,9 @@ namespace WaveBox.ApiHandler.Handlers
 				// Get current query log ID
 				long queryLogId = Injection.Kernel.Get<IDatabase>().LastQueryLogId();
 
+				// Get auto updater instance, if available
+				AutoUpdateService autoUpdater = (AutoUpdateService)ServiceManager.GetInstance("autoupdate");
+
 				// Get process ID
 				status["pid"] = proc.Id;
 				// Get uptime of WaveBox instance
@@ -91,11 +96,14 @@ namespace WaveBox.ApiHandler.Handlers
 				status["transcoders"] = Enum.GetNames(typeof(TranscodeType)).ToList().ToCSV();
 				// Get last query log ID
 				status["lastQueryLogId"] = queryLogId;
-				// todo: Make service properties accessible somehow
-				// Get whether an update is available or not
-				//status["isUpdateAvailable"] = AutoUpdater.IsUpdateAvailable;
-				// Get the list of updates for display to the user
-				//status["updateList"] = AutoUpdater.Updates;
+				// If auto updater running...
+				if (autoUpdater != null)
+				{
+					// Get whether an update is available or not
+					status["isUpdateAvailable"] = autoUpdater.IsUpdateAvailable;
+					// Get the list of updates for display to the user
+					status["updateList"] = autoUpdater.Updates;
+				}
 
 				// Call for extended status, which uses some database intensive calls
 				if (Uri.Parameters.ContainsKey("extended"))

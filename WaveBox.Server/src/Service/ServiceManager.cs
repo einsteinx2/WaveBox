@@ -11,7 +11,7 @@ namespace WaveBox.Service
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		// List of all services maintained by the manager
-		private static List<IService> regServices = new List<IService>();
+		private static Dictionary<string, IService> Services = new Dictionary<string, IService>();
 
 		/// <summary>
 		/// Add a new service, by name, to the manager, optionally starting it automatically
@@ -29,7 +29,7 @@ namespace WaveBox.Service
 			}
 
 			// Check if service is already present in list
-			if (regServices.Any(x => x.Name == name))
+			if (Services.Keys.Any(x => x == name))
 			{
 				if (logger.IsInfoEnabled) logger.Info("Skipping duplicate service: " + name);
 				return false;
@@ -47,7 +47,7 @@ namespace WaveBox.Service
 			}
 
 			// Add service to list
-			regServices.Add(service);
+			Services.Add(name, service);
 			if (logger.IsInfoEnabled) logger.Info("Registered new service: " + service.Name);
 
 			// Autostart if requested
@@ -89,9 +89,24 @@ namespace WaveBox.Service
 		public static bool Clear()
 		{
 			if (logger.IsInfoEnabled) logger.Info("Clearing all registered services...");
-			regServices.Clear();
+			Services.Clear();
 
 			return true;
+		}
+
+		/// <summary>
+		/// Return the registered instance of a running IService object, by its name
+		/// <summary>
+		public static IService GetInstance(string name)
+		{
+			// Ensure service is already present in list
+			if (!Services.Keys.Any(x => x == name))
+			{
+				return null;
+			}
+
+			// Return this object from the list
+			return Services.Values.Where(x => x.Name == name).Single();
 		}
 
 		/// <summary>
@@ -114,7 +129,7 @@ namespace WaveBox.Service
 			bool success = true;
 
 			// Start all services
-			foreach (IService s in regServices)
+			foreach (IService s in Services.Values)
 			{
 				if (!Start(s))
 				{
@@ -145,7 +160,7 @@ namespace WaveBox.Service
 			bool success = true;
 
 			// Stop all services
-			foreach (IService s in regServices)
+			foreach (IService s in Services.Values)
 			{
 				if (!Stop(s))
 				{
