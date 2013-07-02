@@ -94,6 +94,8 @@ namespace WaveBox.ApiHandler.Handlers
 				status["mediaTypes"] = Enum.GetNames(typeof(FileType)).Where(x => x != "Unknown").ToList().ToCSV();
 				// Get list of transcoders available
 				status["transcoders"] = Enum.GetNames(typeof(TranscodeType)).ToList().ToCSV();
+				// Get list of services
+				status["services"] = ServiceManager.GetServices().ToCSV();
 				// Get last query log ID
 				status["lastQueryLogId"] = queryLogId;
 				// If auto updater running...

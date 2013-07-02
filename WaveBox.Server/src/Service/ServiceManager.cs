@@ -110,6 +110,14 @@ namespace WaveBox.Service
 		}
 
 		/// <summary>
+		/// Return string list of registered services
+		/// </summary>
+		public static List<string> GetServices()
+		{
+			return Services.Keys.ToList();
+		}
+
+		/// <summary>
 		/// Attempt to restart all currently registered services
 		/// </summary>
 		public static bool RestartAll()
