@@ -14,7 +14,7 @@ namespace WaveBox.Service
 		private static List<string> RequiredServices = new List<string>{"cron", "filemanager", "http", "transcode"};
 
 		// List of all services maintained by the manager
-		private static Dictionary<string, IService> Services = new Dictionary<string, IService>();
+		private static List<IService> Services = new List<IService>();
 
 		/// <summary>
 		/// Add a new service, by name, to the manager, optionally starting it automatically
@@ -32,7 +32,7 @@ namespace WaveBox.Service
 			}
 
 			// Check if service is already present in list
-			if (Services.Keys.Contains(name))
+			if (Services.Any(x => x.Name == name))
 			{
 				if (logger.IsInfoEnabled) logger.Info("Skipping duplicate service: " + name);
 				return false;
@@ -50,7 +50,7 @@ namespace WaveBox.Service
 			}
 
 			// Add service to list
-			Services.Add(name, service);
+			Services.Add(service);
 			if (logger.IsInfoEnabled) logger.Info("Registered new service: " + service.Name);
 
 			// Autostart if requested
@@ -103,13 +103,13 @@ namespace WaveBox.Service
 		public static IService GetInstance(string name)
 		{
 			// Ensure service is already present in list
-			if (!Services.Keys.Contains(name))
+			if (!Services.Any(x => x.Name == name))
 			{
 				return null;
 			}
 
 			// Return this object from the list
-			return Services.Values.Where(x => x.Name == name).Single();
+			return Services.Where(x => x.Name == name).Single();
 		}
 
 		/// <summary>
@@ -117,7 +117,7 @@ namespace WaveBox.Service
 		/// </summary>
 		public static List<string> GetServices()
 		{
-			return Services.Keys.ToList();
+			return Services.Select(x => x.Name).ToList();
 		}
 
 		/// <summary>
@@ -149,14 +149,14 @@ namespace WaveBox.Service
 			// Add all required services
 			foreach (string s in RequiredServices)
 			{
-				if (!Services.Keys.Contains(s))
+				if (!Services.Any(x => x.Name == s))
 				{
 					Add(s);
 				}
 			}
 
 			// Start all services
-			foreach (IService s in Services.Values)
+			foreach (IService s in Services)
 			{
 				if (!Start(s))
 				{
@@ -187,7 +187,7 @@ namespace WaveBox.Service
 			bool success = true;
 
 			// Stop all services
-			foreach (IService s in Services.Values)
+			foreach (IService s in Services)
 			{
 				if (!Stop(s))
 				{
