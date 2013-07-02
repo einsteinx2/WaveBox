@@ -47,7 +47,6 @@ namespace WaveBox.Service.Services
 			// Start searching for upnp enabled routers
 			NatUtility.StartDiscovery();
 
-			this.Running = true;
 			return true;
 		}
 
@@ -59,7 +58,6 @@ namespace WaveBox.Service.Services
 				Status = NatStatus.NotInitialized;
 			}
 
-			this.Running = false;
 			return true;
 		}
 		

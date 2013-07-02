@@ -116,7 +116,6 @@ namespace WaveBox.Service.Services
 			// Collect garbage now to conserve resources
 			GC.Collect();
 
-			this.Running = true;
 			return true;
 		}
 
@@ -124,7 +123,6 @@ namespace WaveBox.Service.Services
 		{
 			scanQueue.stopQueue();
 
-			this.Running = false;
 			return true;
 		}
 

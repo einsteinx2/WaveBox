@@ -42,7 +42,6 @@ namespace WaveBox.Service.Services
 
 				// Start accepting TCP clients
 				Listener.BeginAcceptTcpClient(AcceptClientCallback, null);
-				this.Running = true;
 			}
 			// Catch socket exceptions
 			catch (System.Net.Sockets.SocketException e)
@@ -89,7 +88,6 @@ namespace WaveBox.Service.Services
 				}
 			}
 
-			this.Running = false;
 			return true;
 		}
 

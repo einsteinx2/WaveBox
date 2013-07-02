@@ -36,7 +36,6 @@ namespace WaveBox.Service.Services
 			UserPurge.Queue.queueOperation(new UserPurgeOperation(0));
 			UserPurge.Queue.startQueue();
 
-			this.Running = true;
 			return true;
 		}
 
@@ -46,7 +45,6 @@ namespace WaveBox.Service.Services
 			DownloadQueue.FeedChecks = null;
 			UserPurge.Queue = null;
 
-			this.Running = false;
 			return true;
 		}
 	}

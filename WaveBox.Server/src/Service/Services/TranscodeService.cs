@@ -37,7 +37,6 @@ namespace WaveBox.Service.Services
 			// Stop all transcodes
 			this.CancelAllTranscodes();
 
-			this.Running = false;
 			return true;
 		}
 

@@ -58,8 +58,6 @@ namespace WaveBox.Service.Services
 				ZeroConf.TxtRecord = record;
 
 				ZeroConf.Register();
-
-				this.Running = true;
 			}
 			catch (Exception e)
 			{
@@ -82,7 +80,6 @@ namespace WaveBox.Service.Services
 				ZeroConf = null;
 			}
 
-			this.Running = false;
 			return true;
 		}
 	}

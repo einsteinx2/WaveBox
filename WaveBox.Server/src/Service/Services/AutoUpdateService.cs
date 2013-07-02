@@ -46,7 +46,6 @@ namespace WaveBox.Service.Services
 			Stop();
 			CheckForUpdate(null);
 
-			this.Running = true;
 			return true;
 		}
 
@@ -65,7 +64,6 @@ namespace WaveBox.Service.Services
 				timer = null;
 			}
 
-			this.Running = false;
 			return true;
 		}
 

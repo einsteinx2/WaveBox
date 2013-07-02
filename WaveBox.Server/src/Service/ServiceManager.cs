@@ -32,7 +32,7 @@ namespace WaveBox.Service
 			}
 
 			// Check if service is already present in list
-			if (Services.Keys.Any(x => x == name))
+			if (Services.Keys.Contains(name))
 			{
 				if (logger.IsInfoEnabled) logger.Info("Skipping duplicate service: " + name);
 				return false;
@@ -103,7 +103,7 @@ namespace WaveBox.Service
 		public static IService GetInstance(string name)
 		{
 			// Ensure service is already present in list
-			if (!Services.Keys.Any(x => x == name))
+			if (!Services.Keys.Contains(name))
 			{
 				return null;
 			}
@@ -235,6 +235,7 @@ namespace WaveBox.Service
 					output += " *";
 				}
 				if (logger.IsInfoEnabled) logger.Info(output);
+				service.Running = true;
 				success = true;
 			}
 			else
@@ -274,6 +275,7 @@ namespace WaveBox.Service
 			if (service.Stop())
 			{
 				if (logger.IsInfoEnabled) logger.Info("  - Stopped: " + service.Name);
+				service.Running = false;
 				success = true;
 			}
 			else
