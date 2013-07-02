@@ -10,6 +10,9 @@ namespace WaveBox.Service
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+		// List of required services which will run at all times
+		private static List<string> RequiredServices = new List<string>{"cron", "filemanager", "http", "transcode"};
+
 		// List of all services maintained by the manager
 		private static Dictionary<string, IService> Services = new Dictionary<string, IService>();
 
@@ -142,6 +145,15 @@ namespace WaveBox.Service
 		{
 			if (logger.IsInfoEnabled) logger.Info("Starting all registered services...");
 			bool success = true;
+
+			// Add all required services
+			foreach (string s in RequiredServices)
+			{
+				if (!Services.Keys.Contains(s))
+				{
+					Add(s);
+				}
+			}
 
 			// Start all services
 			foreach (IService s in Services.Values)

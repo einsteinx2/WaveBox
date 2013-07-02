@@ -30,9 +30,6 @@ namespace WaveBox
 		// Logger
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		// List of required services
-		public static List<string> RequiredServices = new List<string>{"cron", "filemanager", "http", "transcode"};
-
 		/// <summary>
 		/// The main program for WaveBox.  Launches the HTTP server, initializes settings, creates default user,
 		/// begins file scan, and then sleeps forever while other threads handle the work.
@@ -65,10 +62,7 @@ namespace WaveBox
 			// Start services
 			try
 			{
-				// Start default, required services
-				ServiceManager.AddList(RequiredServices);
-
-				// Start additional services
+				// Start user defined services
 				if (Injection.Kernel.Get<IServerSettings>().Services != null)
 				{
 					ServiceManager.AddList(Injection.Kernel.Get<IServerSettings>().Services);
