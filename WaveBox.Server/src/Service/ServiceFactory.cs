@@ -15,6 +15,8 @@ namespace WaveBox.Service
 		{
 			switch (service)
 			{
+				case "autoupdate":
+					return new AutoUpdateService();
 				case "cron":
 					return new CronService();
 				case "dynamicdns":

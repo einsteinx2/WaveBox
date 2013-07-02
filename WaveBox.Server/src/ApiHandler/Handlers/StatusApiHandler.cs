@@ -91,10 +91,11 @@ namespace WaveBox.ApiHandler.Handlers
 				status["transcoders"] = Enum.GetNames(typeof(TranscodeType)).ToList().ToCSV();
 				// Get last query log ID
 				status["lastQueryLogId"] = queryLogId;
+				// todo: Make service properties accessible somehow
 				// Get whether an update is available or not
-				status["isUpdateAvailable"] = AutoUpdater.IsUpdateAvailable;
+				//status["isUpdateAvailable"] = AutoUpdater.IsUpdateAvailable;
 				// Get the list of updates for display to the user
-				status["updateList"] = AutoUpdater.Updates;
+				//status["updateList"] = AutoUpdater.Updates;
 
 				// Call for extended status, which uses some database intensive calls
 				if (Uri.Parameters.ContainsKey("extended"))

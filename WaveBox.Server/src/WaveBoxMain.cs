@@ -119,9 +119,6 @@ namespace WaveBox
 			SessionScrub.Queue.queueOperation(new SessionScrubOperation(0));
 			SessionScrub.Queue.startQueue();
 
-			// Start checking for updates
-			AutoUpdater.Start();
-
 			return;
 		}
 
