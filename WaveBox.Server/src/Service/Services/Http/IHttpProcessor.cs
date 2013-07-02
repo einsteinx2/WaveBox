@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using WaveBox.Transcoding;
 
-namespace WaveBox
+namespace WaveBox.Service.Services.Http
 {
 	public interface IHttpProcessor
 	{

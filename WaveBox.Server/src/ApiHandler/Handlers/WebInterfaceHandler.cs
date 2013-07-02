@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
-using WaveBox.TcpServer.Http;
+using WaveBox.Service.Services.Http;
 
 namespace WaveBox.ApiHandler.Handlers
 {

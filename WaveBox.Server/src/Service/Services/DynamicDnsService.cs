@@ -18,6 +18,8 @@ namespace WaveBox.Service.Services
 		// Service name
 		public string Name { get { return "dynamicdns"; } set { } }
 
+		public bool Required { get { return false; } set { } }
+
 		// Server GUID and URL for Dynamic DNS
 		public string ServerGuid { get; set; }
 		public string ServerUrl { get; set; }

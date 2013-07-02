@@ -166,6 +166,9 @@
     <Compile Include="src\Service\Services\CronService.cs" />
     <Compile Include="src\Service\Services\DynamicDnsService.cs" />
     <Compile Include="src\Service\Services\HttpService.cs" />
+    <Compile Include="src\Service\Services\Http\HttpHeader.cs" />
+    <Compile Include="src\Service\Services\Http\HttpProcessor.cs" />
+    <Compile Include="src\Service\Services\Http\IHttpProcessor.cs" />
     <Compile Include="src\Service\Services\NatService.cs" />
     <Compile Include="src\SessionManagement\SessionScrub.cs" />
     <Compile Include="src\SessionManagement\SessionScrubOperation.cs" />
@@ -177,11 +180,6 @@
     <Compile Include="src\Static\ServerSettings.cs" />
     <Compile Include="src\Static\ServerUtility.cs" />
     <Compile Include="src\Static\ZeroConf.cs" />
-    <Compile Include="src\TcpServer\AbstractTcpServer.cs" />
-    <Compile Include="src\TcpServer\HttpServer\HttpHeader.cs" />
-    <Compile Include="src\TcpServer\HttpServer\HttpProcessor.cs" />
-    <Compile Include="src\TcpServer\HttpServer\HttpServer.cs" />
-    <Compile Include="src\TcpServer\HttpServer\IHttpProcessor.cs" />
     <Compile Include="src\Transcoding\AbstractTranscoder.cs" />
     <Compile Include="src\Transcoding\FFMpegAACTranscoder.cs" />
     <Compile Include="src\Transcoding\FFMpegMP3Transcoder.cs" />

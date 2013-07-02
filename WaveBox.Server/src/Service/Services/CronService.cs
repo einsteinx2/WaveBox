@@ -14,7 +14,7 @@ namespace WaveBox.Service.Services
 
 		public string Name { get { return "cron"; } set { } }
 
-		private int Port { get { return Injection.Kernel.Get<IServerSettings>().Port; } set { } }
+		public bool Required { get { return true; } set { } }
 
 		public CronService()
 		{

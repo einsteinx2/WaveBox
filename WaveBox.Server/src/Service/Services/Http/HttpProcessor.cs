@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading;
 using WaveBox;
 using WaveBox.Core.Extensions;
-using WaveBox.TcpServer.Http;
 using WaveBox.Transcoding;
 
 // offered to the public domain for any use with no restriction
@@ -20,14 +19,13 @@ using WaveBox.Transcoding;
 using WaveBox.ApiHandler;
 using WaveBox.Static;
 
-namespace WaveBox.TcpServer.Http
+namespace WaveBox.Service.Services.Http
 {
 	public class HttpProcessor : IHttpProcessor
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		public TcpClient Socket { get; set; }
-		public HttpServer Srv { get; set; }
 
 		private Stream InputStream { get; set; }
 
@@ -43,11 +41,10 @@ namespace WaveBox.TcpServer.Http
 
 		private static int MAX_POST_SIZE = 10 * 1024 * 1024; // 10MB
 
-		public HttpProcessor(TcpClient s, HttpServer srv) 
+		public HttpProcessor(TcpClient s)
 		{
 			HttpHeaders = new Hashtable();
 			Socket = s;
-			Srv = srv;
 		}
 
 		private string streamReadLine(Stream inputStream) 

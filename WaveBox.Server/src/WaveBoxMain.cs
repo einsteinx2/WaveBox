@@ -22,8 +22,6 @@ using WaveBox.Model;
 using WaveBox.SessionManagement;
 using WaveBox.Service;
 using WaveBox.Static;
-using WaveBox.TcpServer.Http;
-using WaveBox.TcpServer;
 using WaveBox.Transcoding;
 
 namespace WaveBox
@@ -32,10 +30,6 @@ namespace WaveBox
 	{
 		// Logger
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
-		// HTTP server, which serves up the API
-		private HttpServer httpServer;
-
 
 		/// <summary>
 		/// The main program for WaveBox.  Launches the HTTP server, initializes settings, creates default user,
@@ -80,19 +74,6 @@ namespace WaveBox
 			{
 				logger.Warn("Could not start WaveBox services, please check services in your configuration");
 				logger.Warn(e);
-			}
-
-			// Start the HTTP server
-			try
-			{
-				httpServer = new HttpServer(Injection.Kernel.Get<IServerSettings>().Port);
-				StartTcpServer(httpServer);
-			}
-			catch (Exception e)
-			{
-				logger.Error("Could not start WaveBox HTTP server, please check port in your configuration");
-				logger.Error(e);
-				Environment.Exit(-1);
 			}
 
 			// Start the SignalR server for real time device state syncing
@@ -145,30 +126,6 @@ namespace WaveBox
 		}
 
 		/// <summary>
-		/// Initialize TCP server threads
-		/// </summary>
-		private void StartTcpServer(AbstractTcpServer server)
-		{
-			// Thread for server to run
-			Thread t = null;
-
-			// Attempt to start the server thread
-			try
-			{
-				t = new Thread(new ThreadStart(server.Listen));
-				t.IsBackground = true;
-				t.Start();
-			}
-			// Catch any exceptions
-			catch (Exception e)
-			{
-				// Print the message, quit.
-				logger.Error(e);
-				Environment.Exit(-1);
-			}
-		}
-
-		/// <summary>
 		/// Stop the WaveBox main
 		/// </summary>
 		public void Stop()
@@ -176,8 +133,6 @@ namespace WaveBox
 			// Stop all running services
 			ServiceManager.StopAll();
 			ServiceManager.Clear();
-
-			httpServer.Stop();
 
 			// Dispose of ImageMagick
 			try

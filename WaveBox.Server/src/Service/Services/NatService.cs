@@ -23,6 +23,8 @@ namespace WaveBox.Service.Services
 
 		public string Name { get { return "nat"; } set { } }
 
+		public bool Required { get { return false; } set { } }
+
 		public NatStatus Status { get; set; }
 
 		private INatDevice Device { get; set; }
