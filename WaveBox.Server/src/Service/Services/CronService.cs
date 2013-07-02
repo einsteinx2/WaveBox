@@ -5,7 +5,6 @@ using System.Text;
 using Ninject;
 using WaveBox.Core.Injected;
 using WaveBox.Service.Services.Cron;
-using WaveBox.Service.Services.Cron;
 using WaveBox.Static;
 
 namespace WaveBox.Service.Services

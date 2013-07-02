@@ -63,7 +63,7 @@ namespace WaveBox
 			try
 			{
 				// Start default, required services
-				ServiceManager.AddList(new List<string>{"cron", "http"});
+				ServiceManager.AddList(new List<string>{"cron", "filemanager", "http"});
 
 				// Start additional services
 				if (Injection.Kernel.Get<IServerSettings>().Services != null)
@@ -99,10 +99,6 @@ namespace WaveBox
 
 			// Start the UserManager
 			UserManager.Setup();
-
-			// Start file manager, calculate time it takes to run.
-			if (logger.IsInfoEnabled) logger.Info("Scanning media directories...");
-			FileManager.Setup();
 
 			return;
 		}

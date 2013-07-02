@@ -168,6 +168,7 @@
     <Compile Include="src\Service\Services\Cron\SessionScrub.cs" />
     <Compile Include="src\Service\Services\Cron\SessionScrubOperation.cs" />
     <Compile Include="src\Service\Services\DynamicDnsService.cs" />
+    <Compile Include="src\Service\Services\FileManagerService.cs" />
     <Compile Include="src\Service\Services\HttpService.cs" />
     <Compile Include="src\Service\Services\Http\HttpHeader.cs" />
     <Compile Include="src\Service\Services\Http\HttpProcessor.cs" />
@@ -176,7 +177,6 @@
     <Compile Include="src\Service\Services\ZeroConfService.cs" />
     <Compile Include="src\Static\Database.cs" />
     <Compile Include="src\Static\DatabaseBackup.cs" />
-    <Compile Include="src\Static\FileManager.cs" />
     <Compile Include="src\Static\Jukebox.cs" />
     <Compile Include="src\Static\ServerSettings.cs" />
     <Compile Include="src\Static\ServerUtility.cs" />

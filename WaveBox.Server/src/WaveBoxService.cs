@@ -172,9 +172,6 @@ namespace WaveBox
 			TranscodeManager.Instance.CancelAllTranscodes();
 			if (logger.IsInfoEnabled) logger.Info("All transcodes canceled");
 
-			// Stop the file manager operation queue thread
-			FileManager.Stop();
-
 			// Destroy temp folder
 			if (Directory.Exists(TempFolder))
 			{
