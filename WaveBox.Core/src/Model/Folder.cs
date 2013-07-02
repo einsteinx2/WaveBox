@@ -71,14 +71,40 @@ namespace WaveBox.Model
 			return mediaItems;
 		}
 
-		public List<Song> ListOfSongs()
+		public List<Song> ListOfSongs(bool recursive = false)
 		{
-			return Song.SearchSongs("FolderId", FolderId.ToString());
+			var listOfSongs = new List<Song>();
+
+			// Recursively add media in all subfolders to the list.
+			listOfSongs.AddRange(Song.SearchSongs("FolderId", FolderId.ToString()));
+
+			if (recursive == true)
+			{
+				foreach (var subf in ListOfSubFolders())
+				{
+					listOfSongs.AddRange(subf.ListOfSongs(true));
+				}
+			}
+
+			return listOfSongs;
 		}
 
-		public List<Video> ListOfVideos()
+		public List<Video> ListOfVideos(bool recursive = false)
 		{
-			return Video.SearchVideos("FolderId", FolderId.ToString());
+			var listOfVideos = new List<Video>();
+
+			// Recursively add media in all subfolders to the list.
+			listOfVideos.AddRange(Video.SearchVideos("FolderId", FolderId.ToString()));
+
+			if (recursive == true)
+			{
+				foreach (var subf in ListOfSubFolders())
+				{
+					listOfVideos.AddRange(subf.ListOfVideos(true));
+				}
+			}
+
+			return listOfVideos;
 		}
 
 		public List<Folder> ListOfSubFolders()

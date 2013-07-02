@@ -72,7 +72,49 @@ namespace WaveBox.ApiHandler.Handlers
 							}
 							else
 							{
-								playlist.AddMediaItems(itemIds);
+								Console.WriteLine(itemIds.Count);
+								for (int i = 0; i < itemIds.Count; i++)
+								{
+									int itemId = itemIds[i];
+									Console.WriteLine("itemId: {0}", itemId);
+									List<IMediaItem> songs = null;
+									switch(Item.ItemTypeForItemId(itemId))
+									{
+										case ItemType.Folder:
+											Console.WriteLine("folder");
+											// get all the media items underneath this folder and add them
+											songs = new Folder.Factory().CreateFolder(itemId).ListOfSongs(true).ConvertAll(x => (IMediaItem)x);
+											foreach (Song song in songs)
+											{
+												Console.WriteLine(song.SongName);
+											}
+											playlist.AddMediaItems(songs);
+											break;
+
+										case ItemType.Artist:
+											songs = new Artist.Factory().CreateArtist(itemId).ListOfSongs().ConvertAll(x => (IMediaItem)x);
+											playlist.AddMediaItems(songs);
+											break;
+
+										case ItemType.Album:
+											songs = new Album.Factory().CreateAlbum(itemId).ListOfSongs().ConvertAll(x => (IMediaItem)x);
+											playlist.AddMediaItems(songs);
+											break;
+
+										case ItemType.Song:
+											playlist.AddMediaItem(new Song.Factory().CreateSong(itemId));
+											break;
+
+										case ItemType.Video:
+											playlist.AddMediaItem(new Video.Factory().CreateVideo(itemId));
+											break;
+
+										default:
+											error = String.Format("Invalid item type at index {0}", i);
+											break;
+									}
+
+								}
 								listOfMediaItems = playlist.ListOfMediaItems();
 							}
 							break;

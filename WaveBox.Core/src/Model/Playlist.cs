@@ -175,10 +175,8 @@ namespace WaveBox.Model
 					{
 						case ItemType.Song:
 							return new Song.Factory().CreateSong((int)playlistItem.ItemId);
-							break;
 						case ItemType.Video:
 							return new Video.Factory().CreateVideo((int)playlistItem.ItemId);
-							break;
 						default:
 							break;
 					}

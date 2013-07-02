@@ -37,6 +37,7 @@ namespace WaveBox.ApiHandler.Handlers
 			List<Song> listOfSongs = new List<Song>();
 			List<Video> listOfVideos = new List<Video>();
 			Folder containingFolder = null;
+			bool recursive = false;
 
 			// Try to get the folder id
 			bool success = false;
@@ -52,31 +53,14 @@ namespace WaveBox.ApiHandler.Handlers
 				containingFolder = new Folder.Factory().CreateFolder(id);
 				listOfFolders = containingFolder.ListOfSubFolders();
 
-				// Recursively add media items from sub-folders
 				if (Uri.Parameters.ContainsKey("recursiveMedia") && Uri.Parameters["recursiveMedia"].IsTrue())
 				{
-					listOfSongs = new List<Song>();
-					listOfVideos = new List<Video>();
+					recursive = true;
+				}
 
-					// Recursively add media in all subfolders to the list.
-					Action<Folder> recurse = null;
-					recurse = f =>
-					{
-						listOfSongs.AddRange(f.ListOfSongs());
-						listOfVideos.AddRange(f.ListOfVideos());
-						foreach (var subf in f.ListOfSubFolders())
-						{
-							recurse(subf);
-						}
-					};
-					recurse(containingFolder);
-				}
-				else 
-				{
-					// If not recursing, grab media in current folder
-					listOfSongs = containingFolder.ListOfSongs();
-					listOfVideos = containingFolder.ListOfVideos();
-				}
+				// Get it, son.
+				listOfSongs = containingFolder.ListOfSongs(recursive);
+				listOfVideos = containingFolder.ListOfVideos(recursive);
 			}
 			else
 			{
