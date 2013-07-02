@@ -17,6 +17,8 @@ namespace WaveBox.Service
 			{
 				case "cron":
 					return new CronService();
+				case "dynamicdns":
+					return new DynamicDnsService();
 				case "http":
 					return new HttpService();
 				case "nat":

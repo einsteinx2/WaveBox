@@ -33,65 +33,9 @@ namespace WaveBox
 		// Logger
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		// Server GUID and URL, for publishing
-		public string ServerGuid { get; set; }
-		public string ServerUrl { get; set; }
-
 		// HTTP server, which serves up the API
 		private HttpServer httpServer;
 
-		/// <summary>
-		/// ServerSetup is used to generate a GUID which can be associated with the URL forwarding service, to 
-		/// uniquely map an instance of WaveBox
-		/// </summary>
-		private void ServerSetup()
-		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				// Grab server GUID and URL from the database
-				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				ServerGuid = conn.ExecuteScalar<string>("SELECT Guid FROM Server");
-				ServerUrl = conn.ExecuteScalar<string>("SELECT Url FROM Server");
-			}
-			catch (Exception e)
-			{
-				logger.Error("exception loading server info", e);
-			}
-			finally
-			{
-				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-			}
-
-			// If it doesn't exist, generate a new one
-			if ((object)ServerGuid == null)
-			{
-				// Generate the GUID
-				Guid guid = Guid.NewGuid();
-				ServerGuid = guid.ToString();
-
-				// Store the GUID in the database
-				try
-				{
-					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-					int affected = conn.Execute("INSERT INTO Server (Guid) VALUES (?)", ServerGuid);
-
-					if (affected == 0)
-					{
-						ServerGuid = null;
-					}
-				}
-				catch (Exception e)
-				{
-					logger.Error("exception saving guid", e);
-					ServerGuid = null;
-				}
-				finally
-				{
-					Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-				}
-			}
-		}
 
 		/// <summary>
 		/// The main program for WaveBox.  Launches the HTTP server, initializes settings, creates default user,
@@ -138,10 +82,6 @@ namespace WaveBox
 				logger.Warn(e);
 			}
 
-			// Register server with registration service
-			ServerSetup();
-			DynamicDns.RegisterUrl(ServerUrl, ServerGuid);
-
 			// Start the HTTP server
 			try
 			{
@@ -167,6 +107,8 @@ namespace WaveBox
 			}
 
 			// Start ZeroConf
+			// todo: allow ZeroConfService to get Server Url
+			/*
 			try
 			{
 				ZeroConf.PublishZeroConf(ServerUrl, Injection.Kernel.Get<IServerSettings>().Port);
@@ -176,6 +118,7 @@ namespace WaveBox
 				logger.Warn("Could not start WaveBox ZeroConf, please check port in your configuration");
 				logger.Warn(e);
 			}
+			*/
 
 			// Temporary: create test user
 			new User.Factory().CreateUser("test", "test", null);

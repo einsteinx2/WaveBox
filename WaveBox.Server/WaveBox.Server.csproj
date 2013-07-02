@@ -164,6 +164,7 @@
     <Compile Include="src\Service\ServiceFactory.cs" />
     <Compile Include="src\Service\ServiceManager.cs" />
     <Compile Include="src\Service\Services\CronService.cs" />
+    <Compile Include="src\Service\Services\DynamicDnsService.cs" />
     <Compile Include="src\Service\Services\HttpService.cs" />
     <Compile Include="src\Service\Services\NatService.cs" />
     <Compile Include="src\SessionManagement\SessionScrub.cs" />
@@ -171,7 +172,6 @@
     <Compile Include="src\Static\AutoUpdater.cs" />
     <Compile Include="src\Static\Database.cs" />
     <Compile Include="src\Static\DatabaseBackup.cs" />
-    <Compile Include="src\Static\DynamicDns.cs" />
     <Compile Include="src\Static\FileManager.cs" />
     <Compile Include="src\Static\Jukebox.cs" />
     <Compile Include="src\Static\ServerSettings.cs" />
