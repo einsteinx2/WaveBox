@@ -17,7 +17,7 @@ namespace WaveBox.ApiHandler.Handlers
 		private UriWrapper Uri { get; set; }
 
 		/// <summary>
-		/// Constructor for FoldersApiHandler
+		/// Constructor for PlaylistsApiHandler
 		/// </summary>
 		public PlaylistsApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
 		{
@@ -26,11 +26,11 @@ namespace WaveBox.ApiHandler.Handlers
 		}
 
 		/// <summary>
-		/// Process returns a JSON response list of folders
+		/// Process returns a JSON response list of playlists
 		/// </summary>
 		public void Process()
 		{
-			// Generate return lists of folders, songs, videos
+			// Generate return lists of playlists, media items in them
 			string error = null;
 			List<Playlist> listOfPlaylists = new List<Playlist>();
 			List<IMediaItem> listOfMediaItems = new List<IMediaItem>();
@@ -71,72 +71,43 @@ namespace WaveBox.ApiHandler.Handlers
 							}
 							else
 							{
-								Console.WriteLine(itemIds.Count);
 								for (int i = 0; i < itemIds.Count; i++)
 								{
 									int itemId = itemIds[i];
-									Console.WriteLine("itemId: {0}", itemId);
 									List<IMediaItem> songs = null;
 									switch(Item.ItemTypeForItemId(itemId))
 									{
 										case ItemType.Folder:
-											Console.WriteLine("folder");
 											// get all the media items underneath this folder and add them
 											songs = new Folder.Factory().CreateFolder(itemId).ListOfSongs(true).ConvertAll(x => (IMediaItem)x);
-											foreach (Song song in songs)
-											{
-												Console.WriteLine(song.SongName);
-											}
 											playlist.AddMediaItems(songs);
 											break;
-
 										case ItemType.Artist:
 											songs = new Artist.Factory().CreateArtist(itemId).ListOfSongs().ConvertAll(x => (IMediaItem)x);
 											playlist.AddMediaItems(songs);
 											break;
-
 										case ItemType.Album:
 											songs = new Album.Factory().CreateAlbum(itemId).ListOfSongs().ConvertAll(x => (IMediaItem)x);
 											playlist.AddMediaItems(songs);
 											break;
-
 										case ItemType.Song:
 											playlist.AddMediaItem(new Song.Factory().CreateSong(itemId));
 											break;
-
 										case ItemType.Video:
 											playlist.AddMediaItem(new Video.Factory().CreateVideo(itemId));
 											break;
-
 										default:
-											error = String.Format("Invalid item type at index {0}", i);
+											error = "Invalid item type at index: " + i;
 											break;
 									}
-
 								}
+
+								// Grab everything just put in the playlist
 								listOfMediaItems = playlist.ListOfMediaItems();
 							}
 							break;
 						case "delete":
 							playlist.DeletePlaylist();
-							break;
-						case "move":
-							List<int> moveIndexes = ParseIndexes();
-							if (moveIndexes.Count == 0 || moveIndexes.Count % 2 != 0)
-							{
-								error = "Incorrect number of indexes supplied";
-							}
-							else
-							{
-								for (int i = 0; i < moveIndexes.Count; i+=2)
-								{
-									int fromIndex = moveIndexes[i];
-									int toIndex = moveIndexes[i+1];
-									logger.Info("Calling move media item fromIndex: " + fromIndex + " toIndex: " + toIndex);
-									playlist.MoveMediaItem(fromIndex, toIndex);
-								}
-								listOfMediaItems = playlist.ListOfMediaItems();
-							}
 							break;
 						case "insert":
 							List<int> insertItemIds = ParseItemIds();
@@ -156,6 +127,27 @@ namespace WaveBox.ApiHandler.Handlers
 								listOfMediaItems = playlist.ListOfMediaItems();
 							}
 							break;
+						case "list":
+							listOfMediaItems = playlist.ListOfMediaItems();
+							break;
+						case "move":
+							List<int> moveIndexes = ParseIndexes();
+							if (moveIndexes.Count == 0 || moveIndexes.Count % 2 != 0)
+							{
+								error = "Incorrect number of indexes supplied";
+							}
+							else
+							{
+								for (int i = 0; i < moveIndexes.Count; i += 2)
+								{
+									int fromIndex = moveIndexes[i];
+									int toIndex = moveIndexes[i+1];
+									logger.Info("Calling move media item fromIndex: " + fromIndex + " toIndex: " + toIndex);
+									playlist.MoveMediaItem(fromIndex, toIndex);
+								}
+								listOfMediaItems = playlist.ListOfMediaItems();
+							}
+							break;
 						case "remove":
 							List<int> removeIndexes = ParseIndexes();
 							if (removeIndexes.Count == 0)
@@ -168,9 +160,8 @@ namespace WaveBox.ApiHandler.Handlers
 								listOfMediaItems = playlist.ListOfMediaItems();
 							}
 							break;
-						case "list":
 						default:
-							listOfMediaItems = playlist.ListOfMediaItems();
+							error = "Invalid action: " + action;
 							break;
 					}
 
