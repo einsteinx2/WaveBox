@@ -34,6 +34,12 @@ namespace WaveBox.Service.Services
 		{
 			ServerUrl = ServerUtility.GetServerUrl();
 			ServerGuid = ServerUtility.GetServerGuid();
+
+			if (ServerUrl == null || ServerGuid == null)
+			{
+				return false;
+			}
+
 			this.RegisterUrl(ServerUrl, ServerGuid);
 
 			return true;
