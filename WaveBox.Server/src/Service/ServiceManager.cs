@@ -162,7 +162,6 @@ namespace WaveBox.Service
 				{
 					logger.Error("Failed to start service from list: " + s.Name);
 					success = false;
-					break;
 				}
 			}
 
