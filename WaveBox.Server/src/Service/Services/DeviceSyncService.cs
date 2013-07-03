@@ -13,6 +13,8 @@ namespace WaveBox.Service.Services
 {
 	public class DeviceSyncService : IService
 	{
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
 		public string Name { get { return "devicesync"; } set { } }
 
 		public bool Required { get { return false; } set { } }

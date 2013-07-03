@@ -33,7 +33,7 @@ namespace WaveBox.Service.Services
 			string serverUrl = ServerUtility.GetServerUrl();
 			if ((object)serverUrl == null)
 			{
-				logger.Error("Could not start ZeroConf service, due to null server URL");
+				logger.Error("Could not start ZeroConf service, due to null ServerUrl");
 				return false;
 			}
 
