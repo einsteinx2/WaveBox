@@ -7,7 +7,9 @@ using Ninject;
 using WaveBox.Core.Injected;
 using WaveBox.Model;
 using WaveBox.Static;
-using WaveBox.TcpServer.Http;
+using WaveBox.Service;
+using WaveBox.Service.Services;
+using WaveBox.Service.Services.Http;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -18,6 +20,8 @@ namespace WaveBox.ApiHandler.Handlers
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 
+		private JukeboxService Jukebox = null;
+
 		/// <summary>
 		/// Constructor for JukeboxApiHandler class
 		/// </summary>
@@ -25,6 +29,8 @@ namespace WaveBox.ApiHandler.Handlers
 		{
 			Processor = processor;
 			Uri = uri;
+
+			Jukebox = (JukeboxService)ServiceManager.GetInstance("jukebox");
 		}
 
 		/// <summary>
@@ -32,6 +38,14 @@ namespace WaveBox.ApiHandler.Handlers
 		/// </summary>
 		public void Process()
 		{
+			// Ensure Jukebox service is ready
+			if ((object)Jukebox == null)
+			{
+				string json = JsonConvert.SerializeObject(new JukeboxResponse("JukeboxService is not running!", false, false), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+				Processor.WriteJson(json);
+				return;
+			}
+
 			int index = 0;
 			string s = "";
 
@@ -70,7 +84,7 @@ namespace WaveBox.ApiHandler.Handlers
 							Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, false, true), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 							break;
 						case "stop":
-							Jukebox.Stop();
+							Jukebox.StopPlayback();
 							Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, false, true), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 							break;
 						case "prev":
@@ -238,12 +252,14 @@ namespace WaveBox.ApiHandler.Handlers
 
 		private class JukeboxStatus
 		{
+			private JukeboxService Jukebox = (JukeboxService)ServiceManager.GetInstance("jukebox");
+
 			[JsonProperty("state")]
 			public string State
 			{
 				get
 				{
-					return Jukebox.State.ToString();
+					return JukeboxService.State.ToString();
 				}
 			}
 
@@ -252,7 +268,7 @@ namespace WaveBox.ApiHandler.Handlers
 			{
 				get
 				{
-					return Jukebox.CurrentIndex;
+					return JukeboxService.CurrentIndex;
 				}
 			}
 
@@ -268,6 +284,8 @@ namespace WaveBox.ApiHandler.Handlers
 
 		private class JukeboxResponse
 		{
+			private JukeboxService Jukebox = (JukeboxService)ServiceManager.GetInstance("jukebox");
+
 			bool includePlaylist, includeStatus;
 
 			[JsonProperty("error")]

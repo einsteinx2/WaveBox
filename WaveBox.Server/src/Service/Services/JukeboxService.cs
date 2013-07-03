@@ -5,8 +5,9 @@ using System.Text;
 using Un4seen.Bass;
 using WaveBox.Model;
 using WaveBox.Server.Extensions;
+using WaveBox.Service;
 
-namespace WaveBox.Static
+namespace WaveBox.Service.Services
 {
 	public enum JukeboxState
 	{
@@ -15,9 +16,17 @@ namespace WaveBox.Static
 		Play
 	}
 
-	public static class Jukebox
+	public class JukeboxService : IService
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+		public string Name { get { return "jukebox"; } set { } }
+
+		public bool Required { get { return false; } set { } }
+
+		public List<string> Dependencies { get { return new List<string>(); } set { } }
+
+		public bool Running { get; set; }
 
 		public static bool IsInitialized { get; set; }
 
@@ -38,7 +47,11 @@ namespace WaveBox.Static
 
 		private static int? currentStream;
 
-		static Jukebox()
+		public JukeboxService()
+		{
+		}
+
+		public bool Start()
 		{
 			playlist = new Playlist.Factory().CreatePlaylist(PLAYLIST_NAME);
 			if (playlist.PlaylistId == null)
@@ -46,9 +59,16 @@ namespace WaveBox.Static
 				// playlist doesn't exist, so create it.
 				playlist.CreatePlaylist();
 			}
+
+			return true;
 		}
 
-		public static double Progress()
+		public bool Stop()
+		{
+			return true;
+		}
+
+		public double Progress()
 		{
 			if (IsInitialized && currentStream != null)
 			{
@@ -60,7 +80,7 @@ namespace WaveBox.Static
 			return 0.0;
 		}
 
-		public static float Volume()
+		public float Volume()
 		{
 			if (IsInitialized && currentStream != null)
 			{
@@ -70,7 +90,7 @@ namespace WaveBox.Static
 			return 0.0f;
 		}
 
-		public static void Play()
+		public void Play()
 		{
 			if (currentStream != null)
 			{
@@ -79,7 +99,7 @@ namespace WaveBox.Static
 			}
 		}
 
-		public static void Pause()
+		public void Pause()
 		{
 			if (State == JukeboxState.Play && currentStream != 0)
 			{
@@ -89,7 +109,7 @@ namespace WaveBox.Static
 		}
 
 		// Overload for pause toggle
-		public static void Pause(bool toggle)
+		public void Pause(bool toggle)
 		{
 			if (toggle)
 			{
@@ -104,7 +124,7 @@ namespace WaveBox.Static
 			}
 		}
 
-		public static void Stop()
+		public void StopPlayback()
 		{
 			if (IsInitialized)
 			{
@@ -113,13 +133,13 @@ namespace WaveBox.Static
 			}
 		}
 
-		public static void Prev()
+		public void Prev()
 		{
 			CurrentIndex = CurrentIndex - 1 < 0 ? 0 : CurrentIndex - 1;
 			PlaySongAtIndex(CurrentIndex);
 		}
 
-		public static void Next()
+		public void Next()
 		{
 			CurrentIndex = CurrentIndex + 1;
 
@@ -134,7 +154,7 @@ namespace WaveBox.Static
 			}
 		}
 
-		public static void PlaySongAtIndex(int index)
+		public void PlaySongAtIndex(int index)
 		{
 			IMediaItem item = playlist.MediaItemAtIndex(index);
 			if (logger.IsInfoEnabled) logger.Info("Playing song: " + item.FileName);
@@ -181,49 +201,49 @@ namespace WaveBox.Static
 			}
 		}
 
-		public static List<IMediaItem> ListOfSongs()
+		public List<IMediaItem> ListOfSongs()
 		{
 			return playlist.ListOfMediaItems();
 		}
 
-		public static void RemoveSongAtIndex(int index)
+		public void RemoveSongAtIndex(int index)
 		{
 			playlist.RemoveMediaItemAtIndex(index);
 		}
 
-		public static void RemoveSongsAtIndexes(List<int> indices)
+		public void RemoveSongsAtIndexes(List<int> indices)
 		{
 			playlist.RemoveMediaItemAtIndexes(indices);
 		}
 
-		public static void MoveSong(int fromIndex, int toIndex)
+		public void MoveSong(int fromIndex, int toIndex)
 		{
 			playlist.MoveMediaItem(fromIndex, toIndex);
 		}
 
-		public static void AddSong(Song song)
+		public void AddSong(Song song)
 		{
 			playlist.AddMediaItem(song, true);
 		}
 
-		public static void AddSongs(List<Song> songs)
+		public void AddSongs(List<Song> songs)
 		{
 			List<IMediaItem> mediaItems = new List<IMediaItem>();
 			mediaItems.AddRange(songs);
 			playlist.AddMediaItems(mediaItems);
 		}
 
-		public static void InsertSong(Song song, int index)
+		public void InsertSong(Song song, int index)
 		{
 			playlist.InsertMediaItem(song, index);
 		}
 
-		public static void ClearPlaylist()
+		public void ClearPlaylist()
 		{
 			playlist.ClearPlaylist();
 		}
 
-		private static void BassInit()
+		private void BassInit()
 		{
 			// if we are initializing, we want to make sure that we're not already initialized.
 			if (IsInitialized)
@@ -250,7 +270,7 @@ namespace WaveBox.Static
 			
 		}
 
-		private static void BassFree()
+		private void BassFree()
 		{
 			Bass.BASS_Free();
 			Bass.BASS_PluginFree(0);
@@ -260,7 +280,7 @@ namespace WaveBox.Static
 			currentStream = 0;
 		}
 
-		private static string BassErrorCodeToString(int code)
+		private string BassErrorCodeToString(int code)
 		{
 			return "";
 		}

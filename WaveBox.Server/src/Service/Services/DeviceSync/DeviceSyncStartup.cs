@@ -3,7 +3,7 @@ using Microsoft.AspNet.SignalR;
 using Microsoft.Owin.Diagnostics;
 using Owin;
 
-namespace WaveBox.DeviceSync
+namespace WaveBox.Service.Services.DeviceSync
 {
 	public class DeviceSyncStartup
 	{

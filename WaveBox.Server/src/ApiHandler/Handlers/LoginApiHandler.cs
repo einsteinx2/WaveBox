@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using Ninject;
 using WaveBox.Core.Injected;
 using WaveBox.Model;
+using WaveBox.Service.Services.Http;
 using WaveBox.Static;
 
 namespace WaveBox.ApiHandler.Handlers

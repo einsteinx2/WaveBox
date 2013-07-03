@@ -8,23 +8,30 @@ using WaveBox.Core.Injected;
 using WaveBox.FolderScanning;
 using WaveBox.Model;
 using WaveBox.OperationQueue;
+using WaveBox.Service;
 using WaveBox.Static;
 
-namespace WaveBox.Static
+namespace WaveBox.Service.Services
 {
-	public static class FileManager
+	public class FileManagerService : IService
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+		public string Name { get { return "filemanager"; } set { } }
+
+		public bool Required { get { return true; } set { } }
+
+		public bool Running { get; set; }
 
 		// Our list of media folders and the scanning queue which uses them
 		private static List<Folder> mediaFolders;
 		private static DelayedOperationQueue scanQueue;
 
 		/// <summary>
-		/// Setup() grabs the list of media folders from Settings, checks if they exist, and then begins to scan
+		/// Start() grabs the list of media folders from Settings, checks if they exist, and then begins to scan
 		/// them for media fields
 		/// </summary>
-		public static void Setup()
+		public bool Start()
 		{
 			// Grab list of media folders, initialize the scan queue
 			mediaFolders = Injection.Kernel.Get<IServerSettings>().MediaFolders;
@@ -102,23 +109,34 @@ namespace WaveBox.Static
 				else
 				{
 					// Print an error if the folder doesn't exist
-					if (logger.IsInfoEnabled) logger.Info("warning: folder {0} does not exist, skipping... " + folder.FolderPath);
+					if (logger.IsInfoEnabled) logger.Warn("Folder {0} does not exist, skipping... " + folder.FolderPath);
 				}
+			}
+
+			// Report if no media folders in configuration
+			if (mediaFolders.Count == 0)
+			{
+				logger.Warn("No media folders defined, cannot start FileManager service");
+				return false;
 			}
 
 			// Collect garbage now to conserve resources
 			GC.Collect();
+
+			return true;
 		}
 
-		public static void Stop()
+		public bool Stop()
 		{
 			scanQueue.stopQueue();
+
+			return true;
 		}
 
 		/// <summary>
 		/// OnChanged() is currently a stub.
 		/// </summary>
-		private static void OnChanged(object source, FileSystemEventArgs e)
+		private void OnChanged(object source, FileSystemEventArgs e)
 		{
 		}
 
@@ -126,7 +144,7 @@ namespace WaveBox.Static
 		/// OnCreated() handles when an item is created in the watch folders, and forces a re-scan of the specific
 		/// folder in which the file was created.
 		/// </summary>
-		private static void OnCreated(object source, FileSystemEventArgs e)
+		private void OnCreated(object source, FileSystemEventArgs e)
 		{
 			if (logger.IsInfoEnabled) logger.Info("File created: " + e.FullPath);
 
@@ -154,7 +172,7 @@ namespace WaveBox.Static
 		/// <summary>
 		/// OnDeleted() handles when an object is deleted from a watch folder, starting an orphan scan on the database
 		/// </summary>
-		private static void OnDeleted(object source, FileSystemEventArgs e)
+		private void OnDeleted(object source, FileSystemEventArgs e)
 		{
 			// if a file got deleted, we need to remove the orphan from the db
 			scanQueue.queueOperation(new OrphanScanOperation(DelayedOperationQueue.DEFAULT_DELAY));
@@ -164,7 +182,7 @@ namespace WaveBox.Static
 		/// OnRenamed() handles when an object is renamed in a watch folder, purging the old object and adding the
 		/// new one.
 		/// </summary>
-		private static void OnRenamed(object source, RenamedEventArgs e)
+		private void OnRenamed(object source, RenamedEventArgs e)
 		{
 			// if a file is renamed, its db entry is probably orphaned.  remove the orphan and
 			// add the renamed file as a new entry

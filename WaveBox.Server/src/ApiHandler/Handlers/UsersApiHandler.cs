@@ -4,6 +4,7 @@ using WaveBox.Static;
 using WaveBox.Model;
 using Newtonsoft.Json;
 using WaveBox.Core.Injected;
+using WaveBox.Service.Services.Http;
 using Ninject;
 
 namespace WaveBox.ApiHandler.Handlers

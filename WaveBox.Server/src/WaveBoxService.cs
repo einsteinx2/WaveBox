@@ -14,6 +14,7 @@ using Ninject;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Injected;
 using WaveBox.Server.Extensions;
+using WaveBox.Service;
 using WaveBox.Static;
 using WaveBox.Transcoding;
 
@@ -165,19 +166,6 @@ namespace WaveBox
 
 			// Abort main thread, nullify the WaveBox object
 			init.Abort();
-
-			// Shut off ZeroConf
-			if (logger.IsInfoEnabled) logger.Info("Turning off ZeroConf...");
-			ZeroConf.DisposeZeroConf();
-			if (logger.IsInfoEnabled) logger.Info("ZeroConf off");
-
-			// Stop any active transcodes
-			if (logger.IsInfoEnabled) logger.Info("Cancelling any active transcodes...");
-			TranscodeManager.Instance.CancelAllTranscodes();
-			if (logger.IsInfoEnabled) logger.Info("All transcodes canceled");
-
-			// Stop the file manager operation queue thread
-			FileManager.Stop();
 
 			// Destroy temp folder
 			if (Directory.Exists(TempFolder))

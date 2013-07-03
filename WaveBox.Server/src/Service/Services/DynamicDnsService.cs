@@ -1,20 +1,69 @@
 using System;
+using System.Data;
 using System.Net;
 using System.Linq;
 using System.Net.Sockets;
+using Cirrious.MvvmCross.Plugins.Sqlite;
 using WaveBox.Core.Injected;
+using WaveBox.Service;
+using WaveBox.Static;
 using Ninject;
 
-namespace WaveBox.Static
+namespace WaveBox.Service.Services
 {
-	public static class DynamicDns
+	public class DynamicDnsService : IService
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+		// Service name
+		public string Name { get { return "dynamicdns"; } set { } }
+
+		public bool Required { get { return false; } set { } }
+
+		public bool Running { get; set; }
+
+		// Server GUID and URL for Dynamic DNS
+		public string ServerGuid { get; set; }
+		public string ServerUrl { get; set; }
+
+		public DynamicDnsService()
+		{
+		}
+
+		public bool Start()
+		{
+			ServerUrl = ServerUtility.GetServerUrl();
+			ServerGuid = ServerUtility.GetServerGuid();
+
+			if (ServerUrl == null)
+			{
+				logger.Error("Could not start DynamicDns service, due to null ServerUrl");
+				return false;
+			}
+
+			if (ServerGuid == null)
+			{
+				logger.Error("Could not start DynamicDns service, due to null ServerGuid");
+				return false;
+			}
+
+			this.RegisterUrl(ServerUrl, ServerGuid);
+
+			return true;
+		}
+
+		public bool Stop()
+		{
+			ServerUrl = null;
+			ServerGuid = null;
+
+			return true;
+		}
 
 		/// <summary>
 		/// Return the IP address of the local adapter which WaveBox is running on
 		/// </summary>
-		public static IPAddress LocalIPAddress()
+		public IPAddress LocalIPAddress()
 		{
 			// If the network isn't available, IP will be null
 			if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
@@ -31,7 +80,7 @@ namespace WaveBox.Static
 		/// <summary>
 		/// Register URL registers this instance of WaveBox with the URL forwarding service
 		/// </summary>
-		public static void RegisterUrl(string serverUrl, string serverGuid)
+		public void RegisterUrl(string serverUrl, string serverGuid)
 		{
 			if ((object)serverUrl != null)
 			{
@@ -55,7 +104,7 @@ namespace WaveBox.Static
 		/// <summary>
 		/// Handler for determining success and failure of server registration
 		/// </summary>
-		public static void RegisterUrlCompleted(object sender, DownloadDataCompletedEventArgs e)
+		public void RegisterUrlCompleted(object sender, DownloadDataCompletedEventArgs e)
 		{
 			// Do nothing for now, check for success and handle failures later
 		}

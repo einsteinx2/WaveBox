@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR;
 using Newtonsoft.Json;
 
-namespace WaveBox.DeviceSync
+namespace WaveBox.Service.Services.DeviceSync
 {
 	public class RawConnection : PersistentConnection
 	{

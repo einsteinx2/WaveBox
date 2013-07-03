@@ -5,7 +5,7 @@ using WaveBox.OperationQueue;
 using WaveBox.PodcastManagement;
 using WaveBox.Static;
 
-namespace WaveBox
+namespace WaveBox.Service.Services.Cron
 {
 	public class FeedCheckOperation : IDelayedOperation
 	{
@@ -44,7 +44,7 @@ namespace WaveBox
 			{
 				podcast.DownloadNewEpisodes();
 			}
-			PodcastManagement.DownloadQueue.FeedChecks.queueOperation(new FeedCheckOperation(Injection.Kernel.Get<IServerSettings>().PodcastCheckInterval));
+			DownloadQueue.FeedChecks.queueOperation(new FeedCheckOperation(Injection.Kernel.Get<IServerSettings>().PodcastCheckInterval));
 		}
 
 		public void Cancel()
