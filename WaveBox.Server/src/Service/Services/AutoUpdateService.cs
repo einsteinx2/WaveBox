@@ -43,8 +43,8 @@ namespace WaveBox.Service.Services
 
 		public bool Start()
 		{
-			Stop();
-			CheckForUpdate(null);
+			this.Stop();
+			this.CheckForUpdate(null);
 
 			return true;
 		}

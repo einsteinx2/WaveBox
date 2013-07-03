@@ -35,8 +35,15 @@ namespace WaveBox.Service.Services
 			ServerUrl = ServerUtility.GetServerUrl();
 			ServerGuid = ServerUtility.GetServerGuid();
 
-			if (ServerUrl == null || ServerGuid == null)
+			if (ServerUrl == null)
 			{
+				logger.Error("Could not start DynamicDns service, due to null ServerUrl");
+				return false;
+			}
+
+			if (ServerGuid == null)
+			{
+				logger.Error("Could not start DynamicDns service, due to null ServerGuid");
 				return false;
 			}
 

@@ -30,11 +30,10 @@ namespace WaveBox.Service.Services
 		/// </summary>
 		public bool Start()
 		{
-			bool success = true;
-
 			string serverUrl = ServerUtility.GetServerUrl();
 			if ((object)serverUrl == null)
 			{
+				logger.Error("Could not start ZeroConf service, due to null server URL");
 				return false;
 			}
 
@@ -63,10 +62,10 @@ namespace WaveBox.Service.Services
 			{
 				logger.Error(e);
 				this.Stop();
-				success = false;
+				return false;
 			}
 
-			return success;
+			return true;
 		}
 
 		/// <summary>

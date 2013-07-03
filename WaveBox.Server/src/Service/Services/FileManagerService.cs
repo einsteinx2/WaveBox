@@ -109,8 +109,15 @@ namespace WaveBox.Service.Services
 				else
 				{
 					// Print an error if the folder doesn't exist
-					if (logger.IsInfoEnabled) logger.Info("warning: folder {0} does not exist, skipping... " + folder.FolderPath);
+					if (logger.IsInfoEnabled) logger.Warn("Folder {0} does not exist, skipping... " + folder.FolderPath);
 				}
+			}
+
+			// Report if no media folders in configuration
+			if (mediaFolders.Count == 0)
+			{
+				logger.Warn("No media folders defined, cannot start FileManager service");
+				return false;
 			}
 
 			// Collect garbage now to conserve resources

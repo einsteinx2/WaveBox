@@ -30,8 +30,10 @@ namespace WaveBox.Service.Services
 			{
 				WebApplication.Start<DeviceSyncStartup>("http://localhost:" + Injection.Kernel.Get<IServerSettings>().WsPort + "/");
 			}
-			catch
+			catch (Exception e)
 			{
+				logger.Error("Could not start SignalR DeviceSync service");
+				logger.Error(e);
 				return false;
 			}
 
@@ -40,6 +42,7 @@ namespace WaveBox.Service.Services
 
 		public bool Stop()
 		{
+			// todo: Actually find out how to stop SignalR
 			return true;
 		}
 	}

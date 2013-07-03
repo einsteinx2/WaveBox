@@ -32,8 +32,6 @@ namespace WaveBox.Service.Services
 
 		public bool Start()
 		{
-			bool success = true;
-
 			try
 			{
 				// Bind to local port and attempt start
@@ -46,8 +44,6 @@ namespace WaveBox.Service.Services
 			// Catch socket exceptions
 			catch (System.Net.Sockets.SocketException e)
 			{
-				success = false;
-
 				// Port already in use
 				if (e.SocketErrorCode.ToString() == "AddressAlreadyInUse")
 				{
@@ -59,20 +55,16 @@ namespace WaveBox.Service.Services
 					logger.Error(e);
 				}
 
-				// Fail on socket error, if service is required
-				if (Required)
-				{
-					logger.Error("Service " + Name + ":" + Port + " is required to run WaveBox, exiting now!");
-					Environment.Exit(-1);
-				}
+				return false;
 			}
 			// Catch generic exception
 			catch (Exception e)
 			{
 				logger.Error(e);
+				return false;
 			}
 
-			return success;
+			return true;
 		}
 
 		public bool Stop()
