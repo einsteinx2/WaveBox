@@ -86,7 +86,6 @@
     <Compile Include="src\OperationQueue\IDelayedOperation.cs" />
     <Compile Include="src\SQLiteNet.cs" />
     <Compile Include="src\Static\Injection.cs" />
-    <Compile Include="src\Static\UserManager.cs" />
     <Compile Include="src\Static\Utility.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

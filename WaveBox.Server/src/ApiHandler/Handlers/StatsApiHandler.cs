@@ -5,7 +5,7 @@ using System.Text;
 using Newtonsoft.Json;
 using WaveBox.Model;
 using WaveBox.Static;
-using WaveBox.TcpServer.Http;
+using WaveBox.Service.Services.Http;
 
 namespace WaveBox.ApiHandler
 {

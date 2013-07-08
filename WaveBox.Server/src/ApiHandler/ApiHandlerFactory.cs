@@ -5,8 +5,8 @@ using System.Text;
 using Ninject;
 using WaveBox.ApiHandler.Handlers;
 using WaveBox.Model;
+using WaveBox.Service.Services.Http;
 using WaveBox.Static;
-using WaveBox.TcpServer.Http;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Injected;
 

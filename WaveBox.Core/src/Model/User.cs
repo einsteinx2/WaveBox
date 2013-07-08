@@ -279,11 +279,11 @@ namespace WaveBox.Model
 			return false;
 		}
 
-		public void Delete()
+		public bool Delete()
 		{
 			if (ReferenceEquals(UserId, null))
 			{
-				return;
+				return true;
 			}
 
 			// Delete the user
@@ -298,6 +298,8 @@ namespace WaveBox.Model
 					// Delete associated sessions
 					Session.DeleteSessionsForUserId((int)UserId);
 				}
+
+				return true;
 			}
 			catch (Exception e)
 			{
@@ -307,6 +309,8 @@ namespace WaveBox.Model
 			{
 				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
+
+			return false;
 		}
 
 		public class Factory

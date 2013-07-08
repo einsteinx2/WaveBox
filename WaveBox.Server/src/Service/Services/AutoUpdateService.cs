@@ -5,12 +5,19 @@ using System.Threading;
 using Newtonsoft.Json;
 using WaveBox.Core.Extensions;
 using WaveBox.OperationQueue;
+using WaveBox.Service;
 
-namespace WaveBox.Static
+namespace WaveBox.Service.Services
 {
-	public static class AutoUpdater
+	public class AutoUpdateService : IService
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+		public string Name { get { return "autoupdate"; } set { } }
+
+		public bool Required { get { return false; } set { } }
+
+		public bool Running { get; set; }
 
 		// Hard coded release update check URL for now
 		private const string ReleaseUpdateCheckUrl = "http://waveboxapp.com/release_updates.json";
@@ -21,27 +28,28 @@ namespace WaveBox.Static
 		// Hard coded check interval of 1 day for now
 		private const int dueTime = 86400000;
 
-		private static string updateJson;
-		public static string UpdateJson { get { return updateJson; } }
+		private string updateJson;
+		public string UpdateJson { get { return updateJson; } }
 
-		private static bool isUpdateAvailable;
-		public static bool IsUpdateAvailable { get { return isUpdateAvailable; } }
+		private bool isUpdateAvailable;
+		public bool IsUpdateAvailable { get { return isUpdateAvailable; } }
 
-		private static List<UpdateInfo> updates;
-		public static List<UpdateInfo> Updates { get { return updates; } }
+		private List<UpdateInfo> updates;
+		public List<UpdateInfo> Updates { get { return updates; } }
 
-		private static Timer timer;
+		private Timer timer;
 
-		private static WebClient client;
+		private WebClient client;
 
-		public static void Start()
+		public bool Start()
 		{
-			Stop();
+			this.Stop();
+			this.CheckForUpdate(null);
 
-			CheckForUpdate(null);
+			return true;
 		}
 
-		public static void Stop()
+		public bool Stop()
 		{
 			if ((object)client != null)
 			{
@@ -55,9 +63,11 @@ namespace WaveBox.Static
 				timer.Dispose();
 				timer = null;
 			}
+
+			return true;
 		}
 
-		private static void CheckForUpdate(object state)
+		private void CheckForUpdate(object state)
 		{
 			if (logger.IsInfoEnabled) logger.Info("Checking for updates");
 
@@ -72,7 +82,7 @@ namespace WaveBox.Static
 			client.DownloadStringCompleted += new DownloadStringCompletedEventHandler((sender, args) => {
 				// Parse the JSON and do something useful with it
 				updateJson = args.Result;
-				ParseJson();
+				this.ParseJson();
 
 				// Schedule another check
 				timer = new Timer(CheckForUpdate, null, dueTime, Timeout.Infinite);
@@ -82,7 +92,7 @@ namespace WaveBox.Static
 			client.DownloadStringAsync(new Uri(BetaUpdateCheckUrl));
 		}
 
-		private static void ParseJson()
+		private void ParseJson()
 		{
 			if ((object)updateJson == null)
 			{

@@ -10,7 +10,9 @@ using WaveBox.Core.Injected;
 using WaveBox.Model;
 using WaveBox.Server.Extensions;
 using WaveBox.Static;
-using WaveBox.TcpServer.Http;
+using WaveBox.Service;
+using WaveBox.Service.Services;
+using WaveBox.Service.Services.Http;
 using WaveBox.Transcoding;
 
 namespace WaveBox.ApiHandler.Handlers
@@ -23,6 +25,8 @@ namespace WaveBox.ApiHandler.Handlers
 		private UriWrapper Uri { get; set; }
 		private ITranscoder Transcoder { get; set; }
 
+		private TranscodeService transcodeService = null;
+
 		/// <summary>
 		/// Constructor for TranscodeApiHandler
 		/// </summary>
@@ -30,6 +34,8 @@ namespace WaveBox.ApiHandler.Handlers
 		{
 			Processor = processor;
 			Uri = uri;
+
+			transcodeService = (TranscodeService)ServiceManager.GetInstance("transcode");
 		}
 
 		/// <summary>
@@ -37,6 +43,14 @@ namespace WaveBox.ApiHandler.Handlers
 		/// <summary>
 		public void Process()
 		{
+			// Ensure transcode service is ready
+			if ((object)transcodeService == null)
+			{
+				string json = JsonConvert.SerializeObject(new TranscodeResponse("TranscodeService is not running!"), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+				Processor.WriteJson(json);
+				return;
+			}
+
 			if (logger.IsInfoEnabled) logger.Info("Starting file transcoding sequence");
 
 			// Try to get the media item id
@@ -177,7 +191,7 @@ namespace WaveBox.ApiHandler.Handlers
 				if (item.ItemType == ItemType.Song)
 				{
 					// Begin transcoding song
-					Transcoder = TranscodeManager.Instance.TranscodeSong(item, transType, (uint)quality, isDirect, 0, (uint)item.Duration);
+					Transcoder = transcodeService.TranscodeSong(item, transType, (uint)quality, isDirect, 0, (uint)item.Duration);
 				}
 				else
 				{
@@ -223,7 +237,7 @@ namespace WaveBox.ApiHandler.Handlers
 					lengthSeconds = lengthSeconds == 0 ? (uint)item.Duration - offsetSeconds : lengthSeconds;
 
 					// Begin video transcoding
-					Transcoder = TranscodeManager.Instance.TranscodeVideo(item, transType, quality, isDirect, width, height, maintainAspect, offsetSeconds, lengthSeconds);
+					Transcoder = transcodeService.TranscodeVideo(item, transType, quality, isDirect, width, height, maintainAspect, offsetSeconds, lengthSeconds);
 				}
 				
 				// If a transcoder was generated...
@@ -293,7 +307,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 
 				// Spin off a thread to consume the transcoder in 30 seconds.
-				Thread consume = new Thread(() => TranscodeManager.Instance.ConsumedTranscode(Transcoder));
+				Thread consume = new Thread(() => transcodeService.ConsumedTranscode(Transcoder));
 				consume.Start();
 			}
 			catch (Exception e)

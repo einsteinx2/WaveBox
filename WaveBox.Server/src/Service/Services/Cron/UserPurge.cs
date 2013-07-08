@@ -10,12 +10,12 @@ using WaveBox.Model;
 using WaveBox.OperationQueue;
 using WaveBox.Static;
 
-namespace WaveBox.SessionManagement
+namespace WaveBox.Service.Services.Cron
 {
 	/// <summary>
-	/// Scrub all sessions which are out of date, using WaveBox settings
+	/// Purge all users and sessions which are out of date, using WaveBox settings
 	/// </summary>
-	public static class SessionScrub
+	public static class UserPurge
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -23,10 +23,23 @@ namespace WaveBox.SessionManagement
 		public static DelayedOperationQueue Queue = new DelayedOperationQueue();
 
 		/// <summary>
-		/// Start session scrubbing operation
+		/// Start user purge operation
 		/// </summary>
 		public static void Start()
 		{
+			// Delete all expired users
+			foreach (User u in User.ExpiredUsers())
+			{
+				if (u.Delete())
+				{
+					if (logger.IsInfoEnabled) logger.Info(String.Format("Purged expired user: [id: {0}, name: {1}]", u.UserId, u.UserName));
+				}
+				else
+				{
+					if (logger.IsInfoEnabled) logger.Info(String.Format("Failed to purge expired user: [id: {0}, name: {1}]", u.UserId, u.UserName));
+				}
+			}
+
 			// Grab a list of all sessions
 			var sessions = Session.AllSessions();
 

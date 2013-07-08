@@ -2,18 +2,17 @@ using System;
 using Ninject;
 using WaveBox.Core.Injected;
 using WaveBox.OperationQueue;
-using WaveBox.SessionManagement;
 using WaveBox.Static;
 
-namespace WaveBox
+namespace WaveBox.Service.Services.Cron
 {
-	public class SessionScrubOperation : IDelayedOperation
+	public class UserPurgeOperation : IDelayedOperation
 	{
 		// Initialize operation state
 		private DelayedOperationState state = DelayedOperationState.None;
 
 		// Name of operation
-		private string operationType = "SessionScrub";
+		private string operationType = "UserPurge";
 
 		// Delay
 		private int originalDelayInMinutes = 0;
@@ -47,14 +46,14 @@ namespace WaveBox
 		public string OperationType { get { return operationType; } }
 
 		/// <summary>
-		/// Run the session scrubbing operation
+		/// Run the UserPurge operation
 		/// </summary>
 		public void Run()
 		{
-			SessionScrub.Start();
+			UserPurge.Start();
 
 			// Queue up the next one in 10 minutes
-			SessionScrub.Queue.queueOperation(new SessionScrubOperation(10));
+			UserPurge.Queue.queueOperation(new UserPurgeOperation(10));
 		}
 
 		// No need to cancel this operation
@@ -78,7 +77,7 @@ namespace WaveBox
 		/// <summary>
 		/// Set up the operation to run again at next interval
 		/// </summary>
-		public SessionScrubOperation(int minutesDelay)
+		public UserPurgeOperation(int minutesDelay)
 		{
 			RunDateTime = DateTime.Now.AddMinutes(minutesDelay);
 			originalDelayInMinutes = minutesDelay;

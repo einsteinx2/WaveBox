@@ -4,8 +4,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using WaveBox.OperationQueue;
+using WaveBox.PodcastManagement;
 
-namespace WaveBox.PodcastManagement
+namespace WaveBox.Service.Services.Cron
 {
 	/// <summary>
 	/// The podcast download queue.  This class wraps a list and implements some queue functions.  The reason for doing this is that we needed the queue to be mutable in other ways than pushing and popping.

@@ -4,6 +4,7 @@ using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Web;
+using Cirrious.MvvmCross.Plugins.Sqlite;
 using Ninject;
 using WaveBox.Core.Injected;
 using WaveBox.Static;
@@ -133,6 +134,85 @@ namespace WaveBox
 			dt = dt.AddSeconds(secondsSince1970);
 			dt = dt.AddHours(TimeZone.CurrentTimeZone.GetUtcOffset(dt).Hours);
 			return dt;
+		}
+
+		/// <summary>
+		/// Retrieve the server's GUID for URL forwarding, or generate a new one if none exists
+		/// </summary>
+		public static string GetServerGuid()
+		{
+			string guid = null;
+
+			ISQLiteConnection conn = null;
+			try
+			{
+				// Grab server GUID from the database
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+				guid = conn.ExecuteScalar<string>("SELECT Guid FROM Server");
+			}
+			catch (Exception e)
+			{
+				logger.Error("Exception loading server GUID", e);
+			}
+			finally
+			{
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+			}
+
+			// If it doesn't exist, generate a new one
+			if ((object)guid == null)
+			{
+				// Generate the GUID
+				Guid guidObj = Guid.NewGuid();
+				guid = guidObj.ToString();
+
+				// Store the GUID in the database
+				try
+				{
+					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+					int affected = conn.Execute("INSERT INTO Server (Guid) VALUES (?)", guid);
+
+					if (affected == 0)
+					{
+						guid = null;
+					}
+				}
+				catch (Exception e)
+				{
+					logger.Error("Exception saving guid", e);
+					guid = null;
+				}
+				finally
+				{
+					Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+				}
+			}
+
+			return guid;
+		}
+
+		/// <summary>
+		/// Retrieve the server's forwarding URL from database
+		/// </summary>
+		public static string GetServerUrl()
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				// Grab server URL from the database
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+				return conn.ExecuteScalar<string>("SELECT Url FROM Server");
+			}
+			catch (Exception e)
+			{
+				logger.Error("Exception loading server info", e);
+			}
+			finally
+			{
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+			}
+
+			return null;
 		}
 
 		/// <summary>
