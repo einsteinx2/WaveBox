@@ -138,7 +138,8 @@ namespace WaveBox
 		{
 			var p = new SortedDictionary<string, string>();
 
-			p.Add("artist", artist.ArtistName);
+			// URL encode to ensure spaces get parsed properly
+			p.Add("artist", HttpUtility.UrlEncode(artist.ArtistName));
 			p.Add("api_key", apiKey);
 			p.Add("method", "artist.getInfo");
 
@@ -191,7 +192,16 @@ namespace WaveBox
 
 		public static string RemoveHttpHeaders(string resp)
 		{
-			return resp.Substring(resp.IndexOf("\r\n\r\n") + 4);
+			// Prevent exception on null response
+			try
+			{
+				resp = resp.Substring(resp.IndexOf("\r\n\r\n") + 4);
+			}
+			catch
+			{
+			}
+
+			return resp;
 		}
 
 		/// <summary>

@@ -72,7 +72,17 @@ namespace WaveBox.ApiHandler.Handlers
 				{
 					if (Uri.Parameters["lastfmInfo"].IsTrue())
 					{
-						lastfmInfo = Lastfm.GetArtistInfo(a);
+						logger.Info("Querying Last.fm for artist: " + a.ArtistName);
+						try
+						{
+							lastfmInfo = Lastfm.GetArtistInfo(a);
+							logger.Info("Last.fm query complete!");
+						}
+						catch (Exception e)
+						{
+							logger.Error("Last.fm query failed!");
+							logger.Error(e);
+						}
 					}
 				}
 			}
@@ -183,7 +193,7 @@ namespace WaveBox.ApiHandler.Handlers
 			try
 			{
 				// Send it!
-				string json = JsonConvert.SerializeObject(new ArtistsResponse(null, artists, albums, songs), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+				string json = JsonConvert.SerializeObject(new ArtistsResponse(null, artists, albums, songs, lastfmInfo), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 				Processor.WriteJson(json);
 			}
 			catch (Exception e)

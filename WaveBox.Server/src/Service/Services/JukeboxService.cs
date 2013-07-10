@@ -24,8 +24,6 @@ namespace WaveBox.Service.Services
 
 		public bool Required { get { return false; } set { } }
 
-		public List<string> Dependencies { get { return new List<string>(); } set { } }
-
 		public bool Running { get; set; }
 
 		public static bool IsInitialized { get; set; }
