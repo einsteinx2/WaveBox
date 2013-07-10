@@ -29,8 +29,8 @@ namespace WaveBox
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		/// <summary>
-		/// The main program for WaveBox.  Launches the HTTP server, initializes settings, creates default user,
-		/// begins file scan, and then sleeps forever while other threads handle the work.
+		/// The main instance of WaveBox which runs the server.  Creates necessary directories, initializes
+		/// database and settings, and starts all associated services.
 		/// </summary>
 		public void Start()
 		{
@@ -77,7 +77,6 @@ namespace WaveBox
 				logger.Warn("Could not start one or more WaveBox services, please check services in your configuration");
 				logger.Warn(e);
 			}
-
 
 			// Temporary: create test user
 			new User.Factory().CreateUser("test", "test", null);

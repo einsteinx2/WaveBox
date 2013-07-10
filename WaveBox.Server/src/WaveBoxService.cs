@@ -111,11 +111,13 @@ namespace WaveBox
 			// Handle any uncaught exceptions
 			catch (Exception e)
 			{
-				//logger.Error(e);
 				ServerUtility.ReportCrash(e, false);
 			}
 		}
 
+		/// <summary>
+		/// Perform dependency injection for all other classes in WaveBox
+		/// </summary>
 		private static void InjectClasses()
 		{
 			Injection.Kernel.Bind<IDatabase>().To<Database>().InSingletonScope();
@@ -127,7 +129,7 @@ namespace WaveBox
 		/// </summary>
 		static void Main(string[] args)
 		{
-			// Setup the depencency injection
+			// Setup the dependency injection
 			InjectClasses();
 
 			// Create an instance of the service, run it!
