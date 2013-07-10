@@ -60,6 +60,9 @@ namespace WaveBox
 			// Start services
 			try
 			{
+				// Initialize factory, so it can register all services for deployment
+				ServiceFactory.Initialize();
+
 				// Start user defined services
 				if (Injection.Kernel.Get<IServerSettings>().Services != null)
 				{
