@@ -18,14 +18,15 @@ namespace WaveBox.Service
 		public static readonly List<string> RequiredServices = new List<string>{"cron", "filemanager", "http", "transcode"};
 
 		// List of services which are keyed and instantiated upon discovery
-		private static Dictionary<string, IService> services = new Dictionary<string, IService>();
+		private static List<IService> services = new List<IService>();
 
 		/// <summary>
 		/// Return the requested IService object which will be managed by ServiceManager
 		/// <summary>
 		public static IService CreateService(string name)
 		{
-			return services.ContainsKey(name) ? services[name] : null;
+			// Any services with this name?  If yes, return service.  If no, return null.
+			return services.Any(x => x.Name == name) ? services.Single(x => x.Name == name) : null;
 		}
 
 		/// <summary>
@@ -37,8 +38,7 @@ namespace WaveBox.Service
 			try
 			{
 				// Grab all available types which implement IService
-				var types = Assembly.GetExecutingAssembly().GetTypes().Where(x => x.GetInterfaces().Contains(typeof(IService)));
-				foreach (Type t in types)
+				foreach (Type t in Assembly.GetExecutingAssembly().GetTypes().Where(x => x.GetInterfaces().Contains(typeof(IService))))
 				{
 					// Instantiate the instance to grab its name without further reflection
 					IService instance = (IService)Activator.CreateInstance(t);
@@ -46,8 +46,8 @@ namespace WaveBox.Service
 					// Only bother keeping instance if service is RequiredServices or specified active in settings
 					if (RequiredServices.Contains(instance.Name) || Injection.Kernel.Get<IServerSettings>().Services.Contains(instance.Name))
 					{
-						logger.Info("Discovered service: " + instance.Name + " -> " + t);
-						services.Add(instance.Name, instance);
+						if (logger.IsInfoEnabled) logger.Info("Discovered service: " + instance.Name + " -> " + t);
+						services.Add(instance);
 					}
 				}
 			}
