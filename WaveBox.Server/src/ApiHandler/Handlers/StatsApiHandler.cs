@@ -14,6 +14,8 @@ namespace WaveBox.ApiHandler
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 
+		public string Name { get { return "stats"; } set { } }
+
 		/// <summary>
 		/// Constructor for StatsApiHandler
 		/// </summary>

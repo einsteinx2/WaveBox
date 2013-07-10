@@ -15,6 +15,8 @@ namespace WaveBox.ApiHandler.Handlers
 {
 	class PodcastApiHandler : IApiHandler
 	{
+		public string Name { get { return "podcasts"; } set { } }
+
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 

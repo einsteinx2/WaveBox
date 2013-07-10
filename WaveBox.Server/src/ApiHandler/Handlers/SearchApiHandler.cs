@@ -12,6 +12,8 @@ namespace WaveBox.ApiHandler.Handlers
 {
 	public class SearchApiHandler : IApiHandler
 	{
+		public string Name { get { return "search"; } set { } }
+
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 		private User User { get; set; }
