@@ -27,6 +27,7 @@ namespace WaveBox.Service.Services
 		{
 			// FOR NOW: Use the pre-existing delayed operation queues.  Once more work has been done, cron will
 			// run a unified timer and spin each of these off as needed
+			logger.Info("Scheduling and starting all cronjobs...");
 
 			// Start podcast download queue
 			DownloadQueue.FeedChecks.queueOperation(new FeedCheckOperation(0));
@@ -35,6 +36,8 @@ namespace WaveBox.Service.Services
 			// Start user and session purge operation
 			UserPurge.Queue.queueOperation(new UserPurgeOperation(0));
 			UserPurge.Queue.startQueue();
+
+			logger.Info("All cronjobs started!");
 
 			return true;
 		}

@@ -398,6 +398,10 @@ namespace WaveBox.Model
 
 					return u;
 				}
+				catch (NullReferenceException e)
+				{
+					logger.Info("User '" + userName + "' already exists, skipping...");
+				}
 				catch (Exception e)
 				{
 					logger.Error(e);
