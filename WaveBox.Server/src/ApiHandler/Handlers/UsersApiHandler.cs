@@ -20,9 +20,16 @@ namespace WaveBox.ApiHandler.Handlers
 		private User User { get; set; }
 
 		/// <summary>
-		/// Constructors for UsersApiHandler
+		/// Constructor for UsersApiHandler
 		/// </summary>
-		public UsersApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
+		public UsersApiHandler()
+		{
+		}
+
+		/// <summary>
+		/// Prepare parameters via factory
+		/// </summary>
+		public void Prepare(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;

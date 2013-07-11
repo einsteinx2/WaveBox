@@ -21,17 +21,24 @@ namespace WaveBox.ApiHandler.Handlers
 
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
-
+		private User User { get; set; }
 		private JukeboxService Jukebox = null;
 
 		/// <summary>
-		/// Constructor for JukeboxApiHandler class
+		/// Constructor for JukeboxApiHandler
 		/// </summary>
-		public JukeboxApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
+		public JukeboxApiHandler()
+		{
+		}
+
+		/// <summary>
+		/// Prepare parameters via factory
+		/// </summary>
+		public void Prepare(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;
-
+			User = user;
 			Jukebox = (JukeboxService)ServiceManager.GetInstance("jukebox");
 		}
 

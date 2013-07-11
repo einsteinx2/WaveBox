@@ -23,14 +23,23 @@ namespace WaveBox.ApiHandler.Handlers
 
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
+		private User User { get; set; }
 
 		/// <summary>
 		/// Constructor for StreamApiHandler
 		/// </summary>
-		public StreamApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
+		public StreamApiHandler()
+		{
+		}
+
+		/// <summary>
+		/// Prepare parameters via factory
+		/// </summary>
+		public void Prepare(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;
+			User = user;
 		}
 
 		/// <summary>

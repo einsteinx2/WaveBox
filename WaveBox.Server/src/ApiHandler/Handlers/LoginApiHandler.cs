@@ -21,7 +21,14 @@ namespace WaveBox.ApiHandler.Handlers
 		/// <summary>
 		/// Constructor for LoginApiHandler
 		/// </summary>
-		public LoginApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
+		public LoginApiHandler()
+		{
+		}
+
+		/// <summary>
+		/// Prepare parameters via factory
+		/// </summary>
+		public void Prepare(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;

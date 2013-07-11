@@ -21,9 +21,16 @@ namespace WaveBox.ApiHandler.Handlers
 		private User User { get; set; }
 
 		/// <summary>
-		/// Constructor for ScrobbleApiHandler class
+		/// Constructor for ScrobbleApiHandler
 		/// </summary>
-		public ScrobbleApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
+		public ScrobbleApiHandler()
+		{
+		}
+
+		/// <summary>
+		/// Prepare parameters via factory
+		/// </summary>
+		public void Prepare(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;

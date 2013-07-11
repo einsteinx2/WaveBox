@@ -19,14 +19,23 @@ namespace WaveBox.ApiHandler.Handlers
 
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
+		private User User { get; set; }
 
 		/// <summary>
 		/// Constructor for VideosApiHandler
 		/// </summary>
-		public VideosApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
+		public VideosApiHandler()
+		{
+		}
+
+		/// <summary>
+		/// Prepare parameters via factory
+		/// </summary>
+		public void Prepare(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;
+			User = user;
 		}
 
 		/// <summary>

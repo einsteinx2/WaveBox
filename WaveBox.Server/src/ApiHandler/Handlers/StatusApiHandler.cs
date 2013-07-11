@@ -35,18 +35,27 @@ namespace WaveBox.ApiHandler.Handlers
 
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
+		private User User { get; set; }
 
 		// Status API cache
 		private static StatusApiCache statusCache = new StatusApiCache();
 		public static StatusApiCache StatusCache { get { return statusCache; } }
 
 		/// <summary>
-		/// Constructor for StatusApiHandler class
+		/// Constructor for StatusApiHandler
 		/// </summary>
-		public StatusApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
+		public StatusApiHandler()
+		{
+		}
+
+		/// <summary>
+		/// Prepare parameters via factory
+		/// </summary>
+		public void Prepare(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;
+			User = user;
 		}
 
 		/// <summary>

@@ -21,7 +21,14 @@ namespace WaveBox.ApiHandler.Handlers
 		/// <summary>
 		/// Constructor for SearchApiHandler
 		/// </summary>
-		public SearchApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
+		public SearchApiHandler()
+		{
+		}
+
+		/// <summary>
+		/// Prepare parameters via factory
+		/// </summary>
+		public void Prepare(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;
