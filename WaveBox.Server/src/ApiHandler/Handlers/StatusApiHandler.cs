@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using Ninject;
+using WaveBox.ApiHandler;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Injected;
 using WaveBox.Model;
@@ -105,6 +106,8 @@ namespace WaveBox.ApiHandler.Handlers
 				status["mediaTypes"] = Enum.GetNames(typeof(FileType)).Where(x => x != "Unknown").ToList().ToCSV();
 				// Get list of transcoders available
 				status["transcoders"] = Enum.GetNames(typeof(TranscodeType)).ToList().ToCSV();
+				// Get list of API handlers
+				status["apiHandlers"] = ApiHandlerFactory.GetApiHandlers().ToCSV();
 				// Get list of services
 				status["services"] = ServiceManager.GetServices().ToCSV();
 				// Get last query log ID

@@ -157,6 +157,14 @@ namespace WaveBox.ApiHandler
 		}
 
 		/// <summary>
+		/// Return a list of currently registered API handlers
+		/// <summary>
+		public static List<string> GetApiHandlers()
+		{
+			return handlers.Select(x => x.Name).ToList();
+		}
+
+		/// <summary>
 		/// Authenticate a user or session against the database
 		/// </summary>
 		public static User Authenticate(string action, string sessionId, string username, string password, string clientName)
