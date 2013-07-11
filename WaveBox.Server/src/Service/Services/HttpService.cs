@@ -40,7 +40,9 @@ namespace WaveBox.Service.Services
 				Listener.Start();
 
 				// Initialize API handler factory, to dynamically serve up handlers
+				if (logger.IsInfoEnabled) logger.Info("Discovering all available API handlers...");
 				ApiHandlerFactory.Initialize();
+				if (logger.IsInfoEnabled) logger.Info("API handler discovery complete!");
 
 				// Start accepting TCP clients
 				Listener.BeginAcceptTcpClient(AcceptClientCallback, null);
