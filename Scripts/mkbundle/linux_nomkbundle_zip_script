@@ -1,0 +1,43 @@
+#!/bin/sh
+
+# Cleanup
+rm WaveBox_Linux_* WaveBoxLauncher
+
+# Create the launcher
+echo '#!/bin/bash
+cd "${0%/*}"
+BINARY=WaveBox.exe
+if ps aux | grep -v grep | grep $BINARY > /dev/null 
+then
+    output=`ps aux | grep -v grep | grep $BINARY`
+    set -- $output
+    pid=$2
+    kill $pid
+    sleep 5
+    kill -9 $pid >/dev/null 2>&1
+    echo "WaveBox Stopped"
+else
+    MONO_ZEROCONF_PROVIDERS=. nohup mono --debug $BINARY &
+    echo "WaveBox Started"
+fi' > WaveBoxLauncher
+chmod a+x WaveBoxLauncher
+
+# Create an archive for 32bit
+mv lib_native lib_native.bak
+mkdir lib_native
+cp lib_native.bak/*.x86.so lib_native
+tar czvf WaveBox_Linux_32bit_`date +%s`.tgz *.config WaveBoxLauncher WaveBox.exe Bass.Net.dll Cirrious.MvvmCross.Plugins.Sqlite.dll Cirrious.MvvmCross.dll Microsoft.AspNet.SignalR.Core.dll Microsoft.AspNet.SignalR.Owin.dll Microsoft.Owin.Diagnostics.dll Microsoft.Owin.Host.HttpListener.dll Microsoft.Owin.Hosting.dll Mono.Nat.dll Mono.Zeroconf.dll Newtonsoft.Json.dll Ninject.dll Owin.dll System.Data.SQLite.dll WaveBox.Core.dll log4net.dll taglib-sharp.dll Mono.Zeroconf.Providers.AvahiDBus.dll lib_native html
+rm -r lib_native
+mv lib_native.bak lib_native
+echo "32bit done"
+
+# Create an archive for 32bit
+mv lib_native lib_native.bak
+mkdir lib_native
+cp lib_native.bak/*.x64.so lib_native
+tar czvf WaveBox_Linux_64bit_`date +%s`.tgz *.config WaveBoxLauncher WaveBox.exe Bass.Net.dll Cirrious.MvvmCross.Plugins.Sqlite.dll Cirrious.MvvmCross.dll Microsoft.AspNet.SignalR.Core.dll Microsoft.AspNet.SignalR.Owin.dll Microsoft.Owin.Diagnostics.dll Microsoft.Owin.Host.HttpListener.dll Microsoft.Owin.Hosting.dll Mono.Nat.dll Mono.Zeroconf.dll Newtonsoft.Json.dll Ninject.dll Owin.dll System.Data.SQLite.dll WaveBox.Core.dll log4net.dll taglib-sharp.dll Mono.Zeroconf.Providers.AvahiDBus.dll lib_native html
+rm -r lib_native
+mv lib_native.bak lib_native
+echo "64bit done"
+
+echo "DONE :)"
