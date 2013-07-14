@@ -1,4 +1,4 @@
 echo off
 
-taskkill /F /IM WaveBoxService.exe
-start WaveBoxService.exe
+taskkill /F /IM WaveBox.exe
+start WaveBox.exe

@@ -1,3 +1,3 @@
 echo off
 
-taskkill /F /IM WaveBoxService.exe
+taskkill /F /IM WaveBox.exe
