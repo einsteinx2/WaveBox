@@ -5,7 +5,7 @@
 #
 
 #
-# First, edit /Library/Frameworks/Mono.framework/Versions/2.10.12/lib/pkgconfig/mono-2.pc to match the following
+# First, edit /Library/Frameworks/Mono.framework/Versions/Current/lib/pkgconfig/mono-2.pc to match the following
 #
 #Libs: -L${libdir}  -lmono-2.0 -pthread   -lpthread -liconv
 #Cflags: -I${includedir} -D_THREAD_SAFE -framework CoreFoundation -arch i386 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk -mmacosx-version-min=10.5
@@ -15,7 +15,7 @@ echo "If the build fails, check the script comments and make sure you edited the
 
 # Cleanup
 echo "Cleaning up old files\n"
-rm -rf WaveBox_OSX_32bit.zip WaveBoxBinary WaveBoxLauncher WaveBox.app
+rm -rf WaveBox_OSX_32bit* WaveBoxBinary WaveBoxLauncher WaveBox.app
 
 # Enable 32bit building, or it will default to 64bit and fail to link
 export AS="as -arch i386"
@@ -26,7 +26,8 @@ export PATH=/Library/Frameworks/Mono.framework/Commands/:$PATH
 
 # Create the binary
 echo "Building the binary\n"
-env PKG_CONFIG_PATH=/Library/Frameworks/Mono.framework/Versions/2.10.12/lib/pkgconfig mkbundle --static --deps -o WaveBoxBinary WaveBox.exe Bass.Net.dll log4net.dll Mono.Nat.dll Mono.Zeroconf.dll Newtonsoft.Json.dll System.Data.SQLite.dll taglib-sharp.dll   
+#env PKG_CONFIG_PATH=/Library/Frameworks/Mono.framework/Versions/Current/lib/pkgconfig mkbundle -o WaveBoxBinary WaveBox.exe
+env PKG_CONFIG_PATH=/Library/Frameworks/Mono.framework/Versions/Current/lib/pkgconfig mkbundle --static --deps -o WaveBoxBinary WaveBox.exe Bass.Net.dll Cirrious.MvvmCross.Plugins.Sqlite.dll Cirrious.MvvmCross.dll Microsoft.AspNet.SignalR.Core.dll Microsoft.AspNet.SignalR.Owin.dll Microsoft.Owin.Diagnostics.dll Microsoft.Owin.Host.HttpListener.dll Microsoft.Owin.Hosting.dll Mono.Nat.dll Mono.Zeroconf.dll Newtonsoft.Json.dll Ninject.dll Owin.dll System.Data.SQLite.dll WaveBox.Core.Model.dll WaveBox.Core.dll log4net.dll taglib-sharp.dll
 
 # Create the launcher
 echo '#!/bin/bash
@@ -37,7 +38,7 @@ then
     killall $BINARY
     ./terminal-notifier.app/Contents/MacOS/terminal-notifier -message "WaveBox Stopped"
 else
-    MONO_ZEROCONF_PROVIDERS=. nohup ./$BINARY &
+    DYLD_FALLBACK_LIBRARY_PATH=. MONO_ZEROCONF_PROVIDERS=. nohup ./$BINARY &
     ./terminal-notifier.app/Contents/MacOS/terminal-notifier -message "WaveBox Started"
 fi' > WaveBoxLauncher
 chmod a+x WaveBoxLauncher
@@ -70,8 +71,8 @@ echo '<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 </plist>' > WaveBox.app/Contents/Info.plist
 
 # Copy the files into the bundle
-cp -r WaveBoxBinary WaveBoxLauncher terminal-notifier.app res wavebox.conf WaveBox.exe WaveBox.exe.config ../../html ffmpeg Mono.Zeroconf.Providers.Bonjour.dll Mono.Zeroconf.Providers.Bonjour.dll.config WaveBox.exe.config log4net.config /Library/Frameworks/Mono.framework/Versions/Current/lib/libMonoPosixHelper.dylib WaveBox.app/Contents/MacOS/
+cp -r WaveBoxBinary WaveBoxLauncher terminal-notifier.app res WaveBox.exe html ffmpeg Mono.Zeroconf.Providers.Bonjour.dll *.config /Library/Frameworks/Mono.framework/Versions/Current/lib/libMonoPosixHelper.dylib WaveBox.app/Contents/MacOS/
 mkdir WaveBox.app/Contents/MacOS/lib_native
 cp lib_native/*.dylib WaveBox.app/Contents/MacOS/lib_native/
 rm WaveBoxLauncher
-zip -r WaveBox_OSX_32bit.zip WaveBox.app
+zip -r WaveBox_OSX_32bit_`date +%s`.zip WaveBox.app
