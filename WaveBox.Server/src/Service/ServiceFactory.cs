@@ -40,15 +40,10 @@ namespace WaveBox.Service
 				// Grab all available types which implement IService
 				foreach (Type t in Assembly.GetExecutingAssembly().GetTypes().Where(x => x.GetInterfaces().Contains(typeof(IService))))
 				{
-					// Instantiate the instance to grab its name without further reflection
+					// Discover and instantiate all available services
 					IService instance = (IService)Activator.CreateInstance(t);
-
-					// Only bother keeping instance if service is RequiredServices or specified active in settings
-					if (RequiredServices.Contains(instance.Name) || Injection.Kernel.Get<IServerSettings>().Services.Contains(instance.Name))
-					{
-						if (logger.IsInfoEnabled) logger.Info("Discovered service: " + instance.Name + " -> " + t);
-						services.Add(instance);
-					}
+					if (logger.IsInfoEnabled) logger.Info("Discovered service: " + instance.Name + " -> " + t);
+					services.Add(instance);
 				}
 			}
 			catch (Exception e)
