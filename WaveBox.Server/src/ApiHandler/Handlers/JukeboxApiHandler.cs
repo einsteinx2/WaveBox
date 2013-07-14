@@ -17,19 +17,28 @@ namespace WaveBox.ApiHandler.Handlers
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+		public string Name { get { return "jukebox"; } set { } }
+
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
-
+		private User User { get; set; }
 		private JukeboxService Jukebox = null;
 
 		/// <summary>
-		/// Constructor for JukeboxApiHandler class
+		/// Constructor for JukeboxApiHandler
 		/// </summary>
-		public JukeboxApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
+		public JukeboxApiHandler()
+		{
+		}
+
+		/// <summary>
+		/// Prepare parameters via factory
+		/// </summary>
+		public void Prepare(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;
-
+			User = user;
 			Jukebox = (JukeboxService)ServiceManager.GetInstance("jukebox");
 		}
 

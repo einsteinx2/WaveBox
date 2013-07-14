@@ -1,13 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using WaveBox.Model;
+using WaveBox.Service.Services.Http;
 
 namespace WaveBox.ApiHandler
 {
-	// This interface is implemented by all API handlers, to ensure that the Process() method is implemented
-	interface IApiHandler
+	public interface IApiHandler
 	{
+		// Ensure all API handlers have a name
+		string Name { get; set; }
+
+		// Ensure all API handlers implement a preparation function, to set parameters from factory
+		void Prepare(UriWrapper uriW, IHttpProcessor processor, User user);
+
+		// Ensure all API handlers implement a processing function
 		void Process();
 	}
 }

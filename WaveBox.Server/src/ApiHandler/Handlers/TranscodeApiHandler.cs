@@ -21,20 +21,30 @@ namespace WaveBox.ApiHandler.Handlers
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+		public string Name { get { return "transcode"; } set { } }
+
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
-		private ITranscoder Transcoder { get; set; }
+		private User User { get; set; }
 
+		private ITranscoder Transcoder { get; set; }
 		private TranscodeService transcodeService = null;
 
 		/// <summary>
 		/// Constructor for TranscodeApiHandler
 		/// </summary>
-		public TranscodeApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
+		public TranscodeApiHandler()
+		{
+		}
+
+		/// <summary>
+		/// Prepare parameters via factory
+		/// </summary>
+		public void Prepare(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;
-
+			User = user;
 			transcodeService = (TranscodeService)ServiceManager.GetInstance("transcode");
 		}
 

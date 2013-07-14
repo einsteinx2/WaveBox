@@ -1,27 +1,39 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
+using WaveBox.Model;
 using WaveBox.Service.Services.Http;
 
 namespace WaveBox.ApiHandler.Handlers
 {
-	public class WebInterfaceHandler : IApiHandler
+	public class WebApiHandler : IApiHandler
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+		public string Name { get { return "web"; } set { } }
+
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
+		private User User { get; set; }
 
 		// Define root project directory containing web interface
 		private const string rootPath = "html";
 
 		/// <summary>
-		/// Constructor for WebInterfaceHandler
+		/// Constructor for WebApiHandler
 		/// </summary>
-		public WebInterfaceHandler(UriWrapper uri, IHttpProcessor processor)
+		public WebApiHandler()
 		{
-			Uri = uri;
+		}
+
+		/// <summary>
+		/// Prepare parameters via factory
+		/// </summary>
+		public void Prepare(UriWrapper uri, IHttpProcessor processor, User user)
+		{
 			Processor = processor;
+			Uri = uri;
+			User = user;
 		}
 
 		/// <summary>

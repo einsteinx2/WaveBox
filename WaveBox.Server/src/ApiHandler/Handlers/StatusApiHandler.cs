@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using Ninject;
+using WaveBox.ApiHandler;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Injected;
 using WaveBox.Model;
@@ -31,20 +32,31 @@ namespace WaveBox.ApiHandler.Handlers
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+		public string Name { get { return "status"; } set { } }
+
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
+		private User User { get; set; }
 
 		// Status API cache
 		private static StatusApiCache statusCache = new StatusApiCache();
 		public static StatusApiCache StatusCache { get { return statusCache; } }
 
 		/// <summary>
-		/// Constructor for StatusApiHandler class
+		/// Constructor for StatusApiHandler
 		/// </summary>
-		public StatusApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
+		public StatusApiHandler()
+		{
+		}
+
+		/// <summary>
+		/// Prepare parameters via factory
+		/// </summary>
+		public void Prepare(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;
+			User = user;
 		}
 
 		/// <summary>
@@ -94,6 +106,8 @@ namespace WaveBox.ApiHandler.Handlers
 				status["mediaTypes"] = Enum.GetNames(typeof(FileType)).Where(x => x != "Unknown").ToList().ToCSV();
 				// Get list of transcoders available
 				status["transcoders"] = Enum.GetNames(typeof(TranscodeType)).ToList().ToCSV();
+				// Get list of API handlers
+				status["apiHandlers"] = ApiHandlerFactory.GetApiHandlers().ToCSV();
 				// Get list of services
 				status["services"] = ServiceManager.GetServices().ToCSV();
 				// Get last query log ID

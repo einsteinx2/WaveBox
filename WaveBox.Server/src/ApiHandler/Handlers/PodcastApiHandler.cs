@@ -15,16 +15,27 @@ namespace WaveBox.ApiHandler.Handlers
 {
 	class PodcastApiHandler : IApiHandler
 	{
+		public string Name { get { return "podcast"; } set { } }
+
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
+		private User User { get; set; }
 
 		/// <summary>
 		/// Constructor for PodcastApiHandler
 		/// </summary>
-		public PodcastApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
+		public PodcastApiHandler()
+		{
+		}
+
+		/// <summary>
+		/// Prepare parameters via factory
+		/// </summary>
+		public void Prepare(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;
+			User = user;
 		}
 
 		/// <summary>

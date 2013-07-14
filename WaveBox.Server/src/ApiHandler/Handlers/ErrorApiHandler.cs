@@ -5,6 +5,7 @@ using System.Text;
 using Newtonsoft.Json;
 using Ninject;
 using WaveBox.Core.Injected;
+using WaveBox.Model;
 using WaveBox.Static;
 using WaveBox.Service.Services.Http;
 
@@ -14,28 +15,40 @@ namespace WaveBox.ApiHandler.Handlers
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+		public string Name { get { return "error"; } set { } }
+
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
+		private User User { get; set; }
 		private string Err { get; set; }
 
 		/// <summary>
 		/// Constructor for ErrorApiHandler class
 		/// </summary>
-		public ErrorApiHandler(UriWrapper uri, IHttpProcessor processor)
+		public ErrorApiHandler()
+		{
+		}
+
+		/// <summary>
+		/// Prepare parameters via factory
+		/// </summary>
+		public void Prepare(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;
+			User = user;
 			Err = "Invalid API call";
 		}
 
 		/// <summary>
-		/// Overload constructor for ErrorApiHandler class (custom error message)
+		/// Prepare parameters via factory (special overload for error)
 		/// </summary>
-		public ErrorApiHandler(UriWrapper uri, IHttpProcessor processor, string err)
+		public void Prepare(UriWrapper uri, IHttpProcessor processor, User user, string error)
 		{
 			Processor = processor;
 			Uri = uri;
-			Err = err;
+			User = user;
+			Err = error;
 		}
 
 		/// <summary>

@@ -18,16 +18,27 @@ namespace WaveBox.ApiHandler.Handlers
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+		public string Name { get { return "database"; } set { } }
+
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
+		private User User { get; set; }
 
 		/// <summary>
-		/// Constructor for DatabaseApiHandler class
+		/// Constructor for DatabaseApiHandler
 		/// </summary>
-		public DatabaseApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
+		public DatabaseApiHandler()
+		{
+		}
+
+		/// <summary>
+		/// Prepare parameters via factory
+		/// </summary>
+		public void Prepare(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			Processor = processor;
 			Uri = uri;
+			User = user;
 		}
 
 		/// <summary>
