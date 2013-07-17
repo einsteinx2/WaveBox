@@ -75,7 +75,6 @@ namespace WaveBox.FolderScanning
 					testFolderObjCreateTime.Start();
 					Folder topFolder = new Folder.Factory().CreateFolder(folderPath);
 					testFolderObjCreateTime.Stop();
-					//if (logger.IsInfoEnabled) logger.Info("scanning " + topFolder.FolderName + "  id: " + topFolder.FolderId);
 
 					if (topFolder.FolderId == null)
 					{
@@ -161,7 +160,7 @@ namespace WaveBox.FolderScanning
 						{
 							f = TagLib.File.Create(file);
 						}
-						catch (TagLib.CorruptFileException)// e)
+						catch (TagLib.CorruptFileException)
 						{
 							logger.Error(file + " has a corrupt tag and will not be inserted. ");
 							return;
@@ -205,6 +204,9 @@ namespace WaveBox.FolderScanning
 								}
 							}
 						}
+
+						// Dispose of file as it is no longer needed
+						f.Dispose();
 					}
 				}
 				else if (type == ItemType.Art)
@@ -292,10 +294,10 @@ namespace WaveBox.FolderScanning
 
 			Song song = new Song();
 			song.ItemId = itemId;
-
-			FileInfo fsFile = new FileInfo(filePath);
-			TagLib.Tag tag = file.Tag;
 			song.FolderId = folderId;
+
+			// Parse taglib tags
+			TagLib.Tag tag = file.Tag;
 
 			try
 			{
@@ -368,6 +370,9 @@ namespace WaveBox.FolderScanning
 				song.GenreName = null;
 			}
 
+			// Dispose tag
+			tag = null;
+
 			if ((object)song.GenreName != null)
 			{
 				// Retreive the genre id
@@ -376,13 +381,20 @@ namespace WaveBox.FolderScanning
 
 			song.Duration = Convert.ToInt32(file.Properties.Duration.TotalSeconds);
 			song.Bitrate = file.Properties.AudioBitrate;
+
+			// Get necessary filesystem information about file
+			FileInfo fsFile = new FileInfo(filePath);
+
 			song.FileSize = fsFile.Length;
 			song.LastModified = fsFile.LastWriteTime.ToUniversalUnixTimestamp();
-
 			song.FileName = fsFile.Name;
 
 			// Generate an art id from the embedded art, if it exists
 			int? artId = CreateArt(file).ArtId;
+
+			// Dispose file handles
+			fsFile = null;
+			file.Dispose();
 
 			// If there was no embedded art, use the folder's art
 			artId = (object)artId == null ? Art.ArtIdForItemId(song.FolderId) : artId;
@@ -444,6 +456,9 @@ namespace WaveBox.FolderScanning
 				art.InsertArt();
 			}
 
+			// Dispose file stream
+			fs.Close();
+
 			return art;
 		}
 
@@ -467,6 +482,9 @@ namespace WaveBox.FolderScanning
 					art.InsertArt();
 				}
 			}
+
+			// Close file handle
+			file.Dispose();
 
 			return art;
 		}
@@ -628,9 +646,7 @@ namespace WaveBox.FolderScanning
 			Video video = new Video();
 			video.ItemId = itemId;
 
-			FileInfo fsFile = new FileInfo(filePath);
 			video.FolderId = folderId;
-
 			video.FileType = video.FileType.FileTypeForTagLibMimeType(file.MimeType);
 
 			if (video.FileType == FileType.Unknown)
@@ -642,12 +658,20 @@ namespace WaveBox.FolderScanning
 			video.Height = file.Properties.VideoHeight;
 			video.Duration = Convert.ToInt32(file.Properties.Duration.TotalSeconds);
 			video.Bitrate = file.Properties.AudioBitrate;
+
+			// Get filesystem information about file
+			FileInfo fsFile = new FileInfo(filePath);
+
 			video.FileSize = fsFile.Length;
 			video.LastModified = fsFile.LastWriteTime.ToUniversalUnixTimestamp();
 			video.FileName = fsFile.Name;
 
 			// Generate an art id from the embedded art, if it exists
 			int? artId = CreateArt(file).ArtId;
+
+			// Close file handles
+			fsFile = null;
+			file.Dispose();
 
 			// If there was no embedded art, use the folder's art
 			artId = (object)artId == null ? Art.ArtIdForItemId(video.FolderId) : artId;
