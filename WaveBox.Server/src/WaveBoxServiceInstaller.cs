@@ -13,8 +13,6 @@ namespace WaveBox
 
 		public WaveBoxServiceInstaller()
 		{
-			InitializeComponent();
-
 			this.servInstaller = new ServiceInstaller();
 			this.serviceProcessInstaller = new ServiceProcessInstaller();
 
