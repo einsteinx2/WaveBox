@@ -1,0 +1,11 @@
+#!/bin/sh
+
+rm -rf WaveBox_Windows_32bit*
+
+# Zip the files
+mv lib_native lib_native.bak
+mkdir lib_native
+cp lib_native.bak/*.dll lib_native/
+zip -r WaveBox_Windows_32bit_`date +%s`.zip lib_native res WaveBox.exe html ffmpeg.exe Bass.Net.dll Cirrious.MvvmCross.Plugins.Sqlite.dll Cirrious.MvvmCross.dll Microsoft.AspNet.SignalR.Core.dll Microsoft.AspNet.SignalR.Owin.dll Microsoft.Owin.Diagnostics.dll Microsoft.Owin.Host.HttpListener.dll Microsoft.Owin.Hosting.dll Mono.Nat.dll Mono.Zeroconf.dll Newtonsoft.Json.dll Ninject.dll Owin.dll System.Data.SQLite.dll WaveBox.Core.Model.dll WaveBox.Core.dll log4net.dll taglib-sharp.dll Mono.Zeroconf.Providers.Bonjour.dll *.config
+rm -r lib_native
+mv lib_native.bak lib_native

@@ -10,6 +10,9 @@
 #Libs: -L${libdir}  -lmono-2.0 -pthread   -lpthread -liconv
 #Cflags: -I${includedir} -D_THREAD_SAFE -framework CoreFoundation -arch i386 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk -mmacosx-version-min=10.5
 #
+# If on OS X 10.6, use this for the sysroot instead: /Developer/SDKs/MacOSX10.6.sdk
+#
+#
 
 echo "If the build fails, check the script comments and make sure you edited the mono-2.pc file as directed\n"
 

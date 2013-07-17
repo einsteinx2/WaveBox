@@ -1,0 +1,34 @@
+#!/bin/sh
+
+# Cleanup
+echo "Cleaning up old files\n"
+rm -f WaveBoxBinary WaveBoxLauncher WaveBox_Linux_32bit*
+
+# Use 32bit building
+#export AS="as -arch i386"
+#export CC="cc -arch i386"
+
+# Create the binary
+echo "Building the binary\n"
+mkbundle --static --deps -o WaveBoxBinary WaveBox.exe Bass.Net.dll Cirrious.MvvmCross.Plugins.Sqlite.dll Cirrious.MvvmCross.dll Microsoft.AspNet.SignalR.Core.dll Microsoft.AspNet.SignalR.Owin.dll Microsoft.Owin.Diagnostics.dll Microsoft.Owin.Host.HttpListener.dll Microsoft.Owin.Hosting.dll Mono.Nat.dll Mono.Zeroconf.dll Newtonsoft.Json.dll Ninject.dll Owin.dll System.Data.SQLite.dll WaveBox.Core.dll log4net.dll taglib-sharp.dll
+
+# Create the launcher
+echo '#!/bin/bash
+cd "${0%/*}"
+BINARY=WaveBoxBinary
+if ps aux | grep -v grep | grep $BINARY > /dev/null 
+then
+    killall $BINARY
+    echo "WaveBox Stopped"
+else
+    MONO_ZEROCONF_PROVIDERS=. nohup ./$BINARY &
+    echo "WaveBox Started"
+fi' > WaveBoxLauncher
+chmod a+x WaveBoxLauncher
+
+# Create an archive
+rm lib_native/*.dll
+rm lib_native/*.dylib
+rm lib_native/*.x64.so
+tar czvf WaveBox_Linux_32bit_`date +%s`.tgz WaveBoxBinary WaveBoxLauncher Mono.Zeroconf.Providers.AvahiDBus.dll lib_native html -C /usr/lib/ libMonoPosixHelper.so
+echo "DONE :)"
