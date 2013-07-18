@@ -398,7 +398,7 @@ namespace WaveBox.Model
 
 					return u;
 				}
-				catch (NullReferenceException e)
+				catch (NullReferenceException)
 				{
 					logger.Info("User '" + userName + "' already exists, skipping...");
 				}

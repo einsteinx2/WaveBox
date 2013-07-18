@@ -1,0 +1,224 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		539F3EBE179824A200DC15A3 /* watcher.c in Sources */ = {isa = PBXBuildFile; fileRef = 539F3EBD179824A200DC15A3 /* watcher.c */; };
+		539F3EC0179824AE00DC15A3 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 539F3EBF179824AE00DC15A3 /* CoreServices.framework */; };
+		539F3EC21798252400DC15A3 /* watcher.h in Headers */ = {isa = PBXBuildFile; fileRef = 539F3EC11798252400DC15A3 /* watcher.h */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		539F3EB61798248100DC15A3 /* libWaveBoxFSEvents.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libWaveBoxFSEvents.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		539F3EBD179824A200DC15A3 /* watcher.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = watcher.c; sourceTree = "<group>"; };
+		539F3EBF179824AE00DC15A3 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
+		539F3EC11798252400DC15A3 /* watcher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = watcher.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		539F3EB31798248100DC15A3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				539F3EC0179824AE00DC15A3 /* CoreServices.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		539F3EAD1798248100DC15A3 = {
+			isa = PBXGroup;
+			children = (
+				539F3EBF179824AE00DC15A3 /* CoreServices.framework */,
+				539F3EC11798252400DC15A3 /* watcher.h */,
+				539F3EBD179824A200DC15A3 /* watcher.c */,
+				539F3EB71798248100DC15A3 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		539F3EB71798248100DC15A3 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				539F3EB61798248100DC15A3 /* libWaveBoxFSEvents.dylib */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		539F3EB41798248100DC15A3 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				539F3EC21798252400DC15A3 /* watcher.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		539F3EB51798248100DC15A3 /* WaveBoxFSEvents */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 539F3EBA1798248100DC15A3 /* Build configuration list for PBXNativeTarget "WaveBoxFSEvents" */;
+			buildPhases = (
+				539F3EB21798248100DC15A3 /* Sources */,
+				539F3EB31798248100DC15A3 /* Frameworks */,
+				539F3EB41798248100DC15A3 /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = WaveBoxFSEvents;
+			productName = WaveBoxFSEvents;
+			productReference = 539F3EB61798248100DC15A3 /* libWaveBoxFSEvents.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		539F3EAE1798248100DC15A3 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0460;
+				ORGANIZATIONNAME = "Einstein Times Two Software";
+			};
+			buildConfigurationList = 539F3EB11798248100DC15A3 /* Build configuration list for PBXProject "WaveBoxFSEvents" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 539F3EAD1798248100DC15A3;
+			productRefGroup = 539F3EB71798248100DC15A3 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				539F3EB51798248100DC15A3 /* WaveBoxFSEvents */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		539F3EB21798248100DC15A3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				539F3EBE179824A200DC15A3 /* watcher.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		539F3EB81798248100DC15A3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		539F3EB91798248100DC15A3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		539F3EBB1798248100DC15A3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				EXECUTABLE_PREFIX = lib;
+				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		539F3EBC1798248100DC15A3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				EXECUTABLE_PREFIX = lib;
+				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		539F3EB11798248100DC15A3 /* Build configuration list for PBXProject "WaveBoxFSEvents" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				539F3EB81798248100DC15A3 /* Debug */,
+				539F3EB91798248100DC15A3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		539F3EBA1798248100DC15A3 /* Build configuration list for PBXNativeTarget "WaveBoxFSEvents" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				539F3EBB1798248100DC15A3 /* Debug */,
+				539F3EBC1798248100DC15A3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 539F3EAE1798248100DC15A3 /* Project object */;
+}
