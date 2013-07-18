@@ -320,7 +320,7 @@ namespace WaveBox.Service.Services.Http
 				WriteSuccessHeader(output.Length, mimeType + ";charset=utf-8", null, DateTime.UtcNow, false, encoding);
 
 				// Write the stream
-				var binStream = new BinaryWriter(new BufferedStream(Socket.GetStream()));
+				var binStream = new BinaryWriter(new BufferedStream(Socket.GetStream()), Encoding.UTF8);
 				binStream.Write(output);
 				binStream.Flush();
 			}
@@ -367,7 +367,7 @@ namespace WaveBox.Service.Services.Http
 
 			try
 			{
-				StreamWriter outStream = new StreamWriter(new BufferedStream(Socket.GetStream()));
+				StreamWriter outStream = new StreamWriter(new BufferedStream(Socket.GetStream()), Encoding.UTF8);
 				outStream.Write(text);
 				outStream.Flush();
 			}
