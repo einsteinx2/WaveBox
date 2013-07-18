@@ -317,7 +317,7 @@ namespace WaveBox.Service.Services.Http
 				}
 
 				// Compression okay, write success header
-				WriteSuccessHeader(output.Length + 3, mimeType + ";charset=utf-8", null, DateTime.UtcNow, false, encoding);
+				WriteSuccessHeader(output.Length, mimeType + ";charset=utf-8", null, DateTime.UtcNow, false, encoding);
 
 				// Write the stream
 				var binStream = new BinaryWriter(new BufferedStream(Socket.GetStream()));
@@ -363,7 +363,7 @@ namespace WaveBox.Service.Services.Http
 			// Makes no sense at all, but for whatever reason, all ajax calls fail with a cross site 
 			// scripting error if Content-Type is set, but the player needs it for files for seeking,
 			// so pass -1 for no Content-Length header for all text requests
-			WriteSuccessHeader(Encoding.UTF8.GetByteCount(text) + 3, mimeType + ";charset=utf-8", null, DateTime.UtcNow);
+			WriteSuccessHeader(Encoding.UTF8.GetByteCount(text), mimeType + ";charset=utf-8", null, DateTime.UtcNow);
 
 			try
 			{
