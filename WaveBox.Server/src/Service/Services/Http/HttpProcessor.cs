@@ -317,7 +317,7 @@ namespace WaveBox.Service.Services.Http
 				}
 
 				// Compression okay, write success header
-				WriteSuccessHeader(output.Length, mimeType + ";charset=utf-8", null, DateTime.UtcNow, false, encoding);
+				WriteSuccessHeader(output.Length + 3, mimeType + ";charset=utf-8", null, DateTime.UtcNow, false, encoding);
 
 				// Write the stream
 				var binStream = new BinaryWriter(new BufferedStream(Socket.GetStream()));
@@ -350,10 +350,14 @@ namespace WaveBox.Service.Services.Http
 					encoding = "deflate";
 				}
 
-				// Send compressed stream
-				byte[] input = Encoding.UTF8.GetBytes(text);
-				WriteCompressedText(input, mimeType, encoding);
-				return;
+				// Bad encoding, send plaintext
+				if (encoding != null)
+				{
+					// Send compressed stream if valid encoding
+					byte[] input = Encoding.UTF8.GetBytes(text);
+					WriteCompressedText(input, mimeType, encoding);
+					return;
+				}
 			}
 
 			// Makes no sense at all, but for whatever reason, all ajax calls fail with a cross site 
