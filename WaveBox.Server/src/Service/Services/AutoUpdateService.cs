@@ -41,6 +41,10 @@ namespace WaveBox.Service.Services
 
 		private WebClient client;
 
+		public AutoUpdateService()
+		{
+		}
+
 		public bool Start()
 		{
 			this.Stop();
