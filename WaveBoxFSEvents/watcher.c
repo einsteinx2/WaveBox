@@ -73,7 +73,7 @@ void WatchPaths(char **paths, int numberOfPaths, double latency, WatchCallback c
     CFRunLoopRun();
 }
 
-// Must be called from the same thread as watchPaths
+// Stops the event stream and run loop
 void StopWatchingPaths()
 {
     // Close any existing stream
