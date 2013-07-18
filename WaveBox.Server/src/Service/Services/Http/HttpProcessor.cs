@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Net.Sockets;
 using System.Net;
 using System.Text;
@@ -136,7 +137,7 @@ namespace WaveBox.Service.Services.Http
 				{
 					return;
 				}
-				
+
 				int separator = line.IndexOf(':');
 				if (separator == -1) 
 				{
@@ -149,7 +150,7 @@ namespace WaveBox.Service.Services.Http
 				{
 					pos++; // strip any spaces
 				}
-					
+
 				string value = line.Substring(pos, line.Length - pos);
 				HttpHeaders[name] = value;
 			}
@@ -195,15 +196,15 @@ namespace WaveBox.Service.Services.Http
 						{
 							throw new Exception("client disconnected during post");
 						}
-					 }
-					 to_read -= numread;
-					 ms.Write(buf, 0, numread);
-				 }
-				 ms.Seek(0, SeekOrigin.Begin);
+					}
+					to_read -= numread;
+					ms.Write(buf, 0, numread);
+				}
+				ms.Seek(0, SeekOrigin.Begin);
 			}
 
 			string data = HttpUrl + "?" + new StreamReader(ms).ReadToEnd();
-			
+
 			IApiHandler apiHandler = ApiHandlerFactory.CreateApiHandler(data, this);
 
 			apiHandler.Process();
@@ -227,7 +228,7 @@ namespace WaveBox.Service.Services.Http
 			outStream.Flush();
 		}
 
-		public void WriteSuccessHeader(long contentLength, string mimeType, IDictionary<string, string> customHeaders, DateTime lastModified, bool isPartial = false)
+		public void WriteSuccessHeader(long contentLength, string mimeType, IDictionary<string, string> customHeaders, DateTime lastModified, bool isPartial = false, string encoding = null)
 		{
 			StreamWriter outStream = new StreamWriter(new BufferedStream(Socket.GetStream()));
 			string status = isPartial ? "HTTP/1.1 206 Partial Content" : "HTTP/1.1 200 OK";
@@ -237,12 +238,21 @@ namespace WaveBox.Service.Services.Http
 			outStream.WriteLine("Last-Modified: " + lastModified.ToRFC1123());
 			outStream.WriteLine("ETag: \"" + CreateETagString(lastModified) + "\"");
 			outStream.WriteLine("Accept-Ranges: bytes");
+
+			// Check request for compression
+			if (encoding != null)
+			{
+				outStream.WriteLine("Content-Encoding: " + encoding);
+			}
+
 			if (contentLength >= 0)
 			{
 				outStream.WriteLine("Content-Length: " + contentLength);
 			}
+
 			outStream.WriteLine("Access-Control-Allow-Origin: *");
 			outStream.WriteLine("Content-Type: " + mimeType);
+
 			if ((object)customHeaders != null)
 			{
 				foreach (string key in customHeaders.Keys)
@@ -256,22 +266,116 @@ namespace WaveBox.Service.Services.Http
 			{
 				outStream.WriteLine(key + ": " + DelayedHeaders[key]);
 			}
+
 			outStream.WriteLine("Connection: close");
 			outStream.WriteLine("");
 			outStream.Flush();
-			
-			if (logger.IsInfoEnabled) logger.Info("Success header, status: " + status + " contentLength: " + contentLength + " ETag: " + CreateETagString(lastModified) + " Last-Modified: " + lastModified.ToRFC1123());
+
+			if (logger.IsInfoEnabled) logger.Info(String.Format("Success, status: {0}, length: {1}, encoding: {2}, ETag: {3}, Last-Modified: {4}",
+				status,
+				contentLength,
+				encoding,
+				CreateETagString(lastModified),
+				lastModified.ToRFC1123()
+			));
+		}
+
+		public void WriteCompressedText(byte[] input, string mimeType, string encoding)
+		{
+			try
+			{
+				byte[] output = null;
+
+				// Create a MemoryStream for compression
+				using (MemoryStream memStream = new MemoryStream())
+				{
+					Stream zipStream = null;
+
+					// Attempt GZIP compression
+					if (encoding == "gzip")
+					{
+						zipStream = new GZipStream(memStream, CompressionMode.Compress);
+					}
+					// Attempt DEFLATE compression
+					else if (encoding == "deflate")
+					{
+						zipStream = new DeflateStream(memStream, CompressionMode.Compress);
+					}
+					else
+					{
+						logger.Error("Unknown encoding: " + encoding);
+						return;
+					}
+
+					// Write compressed data to stream
+					zipStream.Write(input, 0, input.Length);
+					zipStream.Flush();
+					zipStream.Dispose();
+
+					// Grab compressed output from memory
+					output = memStream.ToArray();
+				}
+
+				// Compression okay, write success header
+				WriteSuccessHeader(output.Length, mimeType + ";charset=utf-8", null, DateTime.UtcNow, false, encoding);
+
+				// Write the stream
+				var binStream = new BinaryWriter(new BufferedStream(Socket.GetStream()), Encoding.UTF8);
+				binStream.Write(output);
+				binStream.Flush();
+			}
+			catch (Exception e)
+			{
+				logger.Error("Failed to write compressed HTTP response: " + encoding);
+				logger.Error(e);
+			}
+
+			return;
 		}
 
 		public void WriteText(string text, string mimeType)
 		{
+			// If compression requested, attempt to send compressed
+			if (HttpHeaders.ContainsKey("Accept-Encoding"))
+			{
+				// Check which encoding
+				string accepted = HttpHeaders["Accept-Encoding"].ToString();
+				string encoding = null;
+				if (accepted.Contains("gzip"))
+				{
+					encoding = "gzip";
+				}
+				else if (accepted.Contains("deflate"))
+				{
+					encoding = "deflate";
+				}
+
+				// Bad encoding, send plaintext
+				if (encoding != null)
+				{
+					// Send compressed stream if valid encoding
+					byte[] input = Encoding.UTF8.GetBytes(text);
+					WriteCompressedText(input, mimeType, encoding);
+					return;
+				}
+			}
+
 			// Makes no sense at all, but for whatever reason, all ajax calls fail with a cross site 
 			// scripting error if Content-Type is set, but the player needs it for files for seeking,
 			// so pass -1 for no Content-Length header for all text requests
-			WriteSuccessHeader(Encoding.UTF8.GetByteCount(text) + 3, mimeType + ";charset=utf-8", null, DateTime.UtcNow);
-			StreamWriter outStream = new StreamWriter(new BufferedStream(Socket.GetStream()), Encoding.UTF8);
-			outStream.Write(text);
-			outStream.Flush();
+			WriteSuccessHeader(Encoding.UTF8.GetByteCount(text), mimeType + ";charset=utf-8", null, DateTime.UtcNow);
+
+			try
+			{
+				StreamWriter outStream = new StreamWriter(new BufferedStream(Socket.GetStream()), Encoding.UTF8);
+				outStream.Write(text);
+				outStream.Flush();
+			}
+			catch (Exception e)
+			{
+				logger.Error("Failed to write HTTP response");
+				logger.Error(e);
+			}
 		}
 
 		public void WriteJson(string json)
@@ -483,13 +587,10 @@ namespace WaveBox.Service.Services.Http
 
 			return lastMod;
 		}
-		
+
 		private string CreateETagString(DateTime lastModified)
 		{
 			return lastModified.ToRFC1123().SHA1();
 		}
 	}
 }
-
-
-

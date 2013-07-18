@@ -15,7 +15,7 @@ namespace WaveBox.Service.Services.Http
 
 		// Header writing methods
 		void WriteErrorHeader();
-		void WriteSuccessHeader(long contentLength, string mimeType, IDictionary<string, string> customHeaders, DateTime lastModified, bool isPartial = false);
+		void WriteSuccessHeader(long contentLength, string mimeType, IDictionary<string, string> customHeaders, DateTime lastModified, bool isPartial = false, string encoding = null);
 
 		// Body writing methods
 		void WriteNotModifiedHeader();

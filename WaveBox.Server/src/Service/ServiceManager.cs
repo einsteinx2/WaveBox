@@ -10,9 +10,6 @@ namespace WaveBox.Service
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		// List of required services which will run at all times
-		private static List<string> RequiredServices = new List<string>{"cron", "filemanager", "http", "transcode"};
-
 		// List of all services maintained by the manager
 		private static List<IService> Services = new List<IService>();
 
@@ -40,7 +37,6 @@ namespace WaveBox.Service
 
 			// Generate service from name
 			IService service = ServiceFactory.CreateService(name);
-			if (logger.IsInfoEnabled) logger.Info("Generated service: " + name + " -> " + service);
 
 			// Ensure service was valid
 			if ((object)service == null)
@@ -51,7 +47,6 @@ namespace WaveBox.Service
 
 			// Add service to list
 			Services.Add(service);
-			if (logger.IsInfoEnabled) logger.Info("Registered new service: " + service.Name);
 
 			// Autostart if requested
 			if (autostart)
@@ -147,7 +142,7 @@ namespace WaveBox.Service
 			bool success = true;
 
 			// Add all required services
-			foreach (string s in RequiredServices)
+			foreach (string s in ServiceFactory.RequiredServices)
 			{
 				if (!Services.Any(x => x.Name == s))
 				{

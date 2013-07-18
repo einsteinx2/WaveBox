@@ -245,8 +245,7 @@ namespace WaveBox.Service.Services
 			// Report if no media folders in configuration
 			if (mediaFolders.Count == 0)
 			{
-				logger.Warn("No media folders defined, cannot start FileManager service");
-				return false;
+				logger.Warn("No media folders defined, FileManager service cannot find any media");
 			}
 
 			// Collect garbage now to conserve resources
