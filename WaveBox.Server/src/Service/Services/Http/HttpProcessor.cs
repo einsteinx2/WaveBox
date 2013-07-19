@@ -306,7 +306,7 @@ namespace WaveBox.Service.Services.Http
 			if (logger.IsInfoEnabled) logger.Info(String.Format("Success, status: {0}, length: {1}, encoding: {2}, ETag: {3}, Last-Modified: {4}",
 				status,
 				contentLength,
-				encoding,
+				encoding ?? "none",
 				CreateETagString(lastModified),
 				lastModified.ToRFC1123()
 			));
