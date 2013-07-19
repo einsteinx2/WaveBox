@@ -154,8 +154,8 @@ namespace WaveBox.FolderScanning
 
 					if (needsUpdating)
 					{
-						if (logger.IsInfoEnabled) logger.Info("File needs updating: " + file);
-						
+						if (logger.IsInfoEnabled) logger.Info("Updating: " + file);
+
 						TagLib.File f = null;
 						try
 						{
@@ -219,20 +219,18 @@ namespace WaveBox.FolderScanning
 						// Find the old art id, if it exists
 						int? oldArtId = folder.ArtId;
 						int? newArtId = CreateArt(file).ArtId;
-						
+
 						if ((object)oldArtId == null)
 						{
-							if (logger.IsInfoEnabled) logger.Info("There was no old art id");
+							if (logger.IsInfoEnabled) logger.Info("Adding new art for folderId: " + folderId);
 
 							// Insert the relationship
 							Injection.Kernel.Get<IArtRepository>().UpdateArtItemRelationship(newArtId, folder.FolderId, true);
 						}
 						else
 						{
-							if (logger.IsInfoEnabled) logger.Info("There was an old art id");
-
 							Art oldArt = new Art.Factory().CreateArt((int)oldArtId);
-							
+
 							// Check if the previous folder art was actually from embedded tag art
 							if ((object)oldArt.FilePath == null)
 							{
@@ -249,7 +247,7 @@ namespace WaveBox.FolderScanning
 
 						// Add this art to any media items in this folder which have no art.
 						var items = folder.ListOfMediaItems();
-						
+
 						foreach (MediaItem m in items)
 						{
 							if (m.ArtId == null)
@@ -259,7 +257,7 @@ namespace WaveBox.FolderScanning
 							}
 						}
 
-						if (logger.IsInfoEnabled) logger.Info("Art needs updating for folderId: " + folderId);
+						if (logger.IsInfoEnabled) logger.Info("Updating art for folderId: " + folderId);
 					}
 				}
 			}
@@ -494,21 +492,21 @@ namespace WaveBox.FolderScanning
 		{
 			using (MD5 md5 = MD5.Create())
 			{
-				// Convert the input string to a byte array and compute the hash. 
+				// Convert the input string to a byte array and compute the hash.
 				byte[] data = md5.ComputeHash(input);
 
-				// Create a new Stringbuilder to collect the bytes 
+				// Create a new Stringbuilder to collect the bytes
 				// and create a string.
 				StringBuilder sBuilder = new StringBuilder();
 
-				// Loop through each byte of the hashed data  
-				// and format each one as a hexadecimal string. 
+				// Loop through each byte of the hashed data
+				// and format each one as a hexadecimal string.
 				for (int i = 0; i < data.Length; i++)
 				{
 					sBuilder.Append(data[i].ToString("x2"));
 				}
 
-				// Return the hexadecimal string. 
+				// Return the hexadecimal string.
 				return sBuilder.ToString();
 			}
 		}
@@ -518,21 +516,21 @@ namespace WaveBox.FolderScanning
 		{
 			using (MD5 md5 = MD5.Create())
 			{
-				// Convert the input string to a byte array and compute the hash. 
+				// Convert the input string to a byte array and compute the hash.
 				byte[] data = md5.ComputeHash(input);
 
-				// Create a new Stringbuilder to collect the bytes 
+				// Create a new Stringbuilder to collect the bytes
 				// and create a string.
 				StringBuilder sBuilder = new StringBuilder();
 
-				// Loop through each byte of the hashed data  
-				// and format each one as a hexadecimal string. 
+				// Loop through each byte of the hashed data
+				// and format each one as a hexadecimal string.
 				for (int i = 0; i < data.Length; i++)
 				{
 					sBuilder.Append(data[i].ToString("x2"));
 				}
 
-				// Return the hexadecimal string. 
+				// Return the hexadecimal string.
 				return sBuilder.ToString();
 			}
 		}

@@ -22,14 +22,15 @@ namespace WaveBox.ApiHandler
 		/// </summary>
 		public static IApiHandler CreateApiHandler(string uri, HttpProcessor processor)
 		{
-			if (logger.IsInfoEnabled) logger.Info("uri: " + uri);
-
 			// Turn the input string into a UriWrapper, so we can parse its components with ease
 			UriWrapper uriW = new UriWrapper(uri);
 
 			// Ensure URL contains API call
 			if (uriW.IsApiCall)
 			{
+				// Log any API calls
+				logger.Info("API: " + uri);
+
 				// Grab the action and authentication info (if call is /api/, no action, so return error)
 				string action = "";
 				try

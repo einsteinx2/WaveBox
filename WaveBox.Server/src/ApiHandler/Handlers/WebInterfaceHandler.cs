@@ -92,8 +92,6 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 			}
 
-			if (logger.IsInfoEnabled) logger.Info("Path: " + path);
-
 			// Make sure the file exists
 			if (!File.Exists(path))
 			{
