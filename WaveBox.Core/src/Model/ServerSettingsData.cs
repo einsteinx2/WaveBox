@@ -12,11 +12,8 @@ namespace WaveBox.Model
 		[JsonProperty("wsPort")]
 		public short WsPort { get; set; }
 
-		[JsonProperty("crashReportEnable")]
-		public bool CrashReportEnable { get; set; }
-
-		[JsonProperty("natEnable")]
-		public bool NatEnable { get; set; }
+		[JsonProperty("theme")]
+		public string Theme { get; set; }
 
 		[JsonProperty("mediaFolders")]
 		public List<string> MediaFolders { get; set; }
@@ -35,6 +32,9 @@ namespace WaveBox.Model
 
 		[JsonProperty("folderArtNames")]
 		public List<string> FolderArtNames { get; set; }
+
+		[JsonProperty("crashReportEnable")]
+		public bool CrashReportEnable { get; set; }
 
 		[JsonProperty("services")]
 		public List<string> Services { get; set; }

@@ -51,6 +51,11 @@ namespace WaveBox
 			if (!Directory.Exists(rootDir))
 			{
 				Directory.CreateDirectory(rootDir);
+
+				// Create themes directory
+				Directory.CreateDirectory(rootDir + "themes");
+
+				// TODO: package completed "wave" theme and copy it into user's themes directory as default
 			}
 
 			// Perform initial setup of Settings, Database

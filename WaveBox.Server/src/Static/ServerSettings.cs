@@ -31,9 +31,9 @@ namespace WaveBox.Static
 
 		public short WsPort { get { return settingsModel.WsPort; } }
 
-		public bool CrashReportEnable { get { return settingsModel.CrashReportEnable; } }
+		public string Theme { get { return settingsModel.Theme; } }
 
-		public bool NatEnable { get { return settingsModel.NatEnable; } }
+		public List<Folder> MediaFolders { get; private set; }
 
 		public string PodcastFolder { get { return settingsModel.PodcastFolder; } }
 
@@ -41,9 +41,9 @@ namespace WaveBox.Static
 
 		public int SessionTimeout { get { return settingsModel.SessionTimeout; } }
 
-		public List<Folder> MediaFolders { get; private set; }
-
 		public List<string> FolderArtNames { get { return settingsModel.FolderArtNames; } }
+
+		public bool CrashReportEnable { get { return settingsModel.CrashReportEnable; } }
 
 		public List<string> Services { get { return settingsModel.Services; } }
 
@@ -115,6 +115,18 @@ namespace WaveBox.Static
 					settingsModel.WsPort = (short)wsPort;
 					settingsChanged = true;
 					if (logger.IsInfoEnabled) logger.Info("Setting 'wsPort': " + settingsModel.WsPort);
+				}
+			}
+			catch { }
+
+			try
+			{
+				string themeTemp = json.theme;
+				if (themeTemp != null)
+				{
+					settingsModel.Theme = themeTemp;
+					settingsChanged = true;
+					if (logger.IsInfoEnabled) logger.Info("Setting 'theme': " + settingsModel.Theme);
 				}
 			}
 			catch { }
@@ -280,6 +292,7 @@ namespace WaveBox.Static
 				templateBuilder
 					.Replace("{setting-port}", settingsModel.Port.ToString())
 					.Replace("{setting-wsPort}", settingsModel.WsPort.ToString())
+					.Replace("{setting-theme}", settingsModel.Theme)
 					.Replace("{setting-mediaFolders}", settingsModel.MediaFolders.ToCSV(true))
 					.Replace("{setting-podcastFolder}", settingsModel.PodcastFolder)
 					.Replace("{setting-podcastCheckInterval}", settingsModel.PodcastCheckInterval.ToString())

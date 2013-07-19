@@ -1,7 +1,10 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
+using Ninject;
+using WaveBox.Core.Injection;
 using WaveBox.Service.Services.Http;
+using WaveBox.Static;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -12,8 +15,8 @@ namespace WaveBox.ApiHandler.Handlers
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 
-		// Define root project directory containing web interface
-		private const string rootPath = "html";
+		// Define root project directory containing users's web interface, or "theme"
+		private static string webRoot = ServerUtility.RootPath() + "themes" + Path.DirectorySeparatorChar;
 
 		/// <summary>
 		/// Constructor for WebInterfaceHandler
@@ -30,11 +33,45 @@ namespace WaveBox.ApiHandler.Handlers
 		public void Process()
 		{
 			// Store root path, return index by default
-			string path = rootPath;
+			string path = webRoot;
+
+			// Check for and apply theme path
+			if (Injection.Kernel.Get<IServerSettings>().Theme == null)
+			{
+				logger.Error("No theme set in WaveBox configuration, cannot serve Web UI");
+
+				// File not found
+				Processor.WriteErrorHeader();
+				return;
+			}
+
+			// Append theme path to web root
+			path += Injection.Kernel.Get<IServerSettings>().Theme;
+
+			// Validate theme path
+			if (!Directory.Exists(path))
+			{
+				logger.Error("Invalid theme '" + Injection.Kernel.Get<IServerSettings>().Theme + "' set in WaveBox configuration, cannot serve Web UI");
+
+				// File not found
+				Processor.WriteErrorHeader();
+				return;
+			}
+
 			if (Uri.UriParts.Count == 0)
 			{
 				// No path, so return the home page
 				path += Path.DirectorySeparatorChar + "index.html";
+
+				// Ensure theme contains an index
+				if (!File.Exists(path))
+				{
+					logger.Error("Theme '" + Injection.Kernel.Get<IServerSettings>().Theme + "' missing required file index.html");
+
+					// File not found
+					Processor.WriteErrorHeader();
+					return;
+				}
 			}
 			else
 			{
