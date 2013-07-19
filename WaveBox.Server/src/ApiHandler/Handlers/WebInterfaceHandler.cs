@@ -15,8 +15,8 @@ namespace WaveBox.ApiHandler.Handlers
 		private IHttpProcessor Processor { get; set; }
 		private UriWrapper Uri { get; set; }
 
-		// Define root project directory containing users's web interface, or "theme"
-		private static string webRoot = ServerUtility.RootPath() + "themes" + Path.DirectorySeparatorChar;
+		// Define root project directory containing web interfaces, or "themes"
+		private static string webRoot = ServerUtility.ExecutablePath() + "themes" + Path.DirectorySeparatorChar;
 
 		/// <summary>
 		/// Constructor for WebInterfaceHandler
