@@ -154,15 +154,16 @@ namespace WaveBox.Service.Services
 				int i = 0;
 				foreach (Folder folder in mediaFolders)
 				{
+					// Launch the folder scan operation
+					scanQueue.queueOperation(new FolderScanning.FolderScanOperation(folder.FolderPath, 0));
+
 					paths[i] = Marshal.StringToHGlobalAnsi(folder.FolderPath);
 					i++;
 				}
 
 				fsEventsCallback = new WatchCallback(FSEventsCallback);
 
-				fsEventsThread = new Thread(() => {
-					WatchPaths(paths, mediaFolders.Count, 5.0, fsEventsCallback);
-				});
+				fsEventsThread = new Thread(() => { WatchPaths(paths, mediaFolders.Count, 5.0, fsEventsCallback); });
 				fsEventsThread.Start();
 			}
 			else
@@ -186,50 +187,6 @@ namespace WaveBox.Service.Services
 
 						watch.IncludeSubdirectories = true;
 						watch.EnableRaisingEvents = true;
-
-						if (ServerUtility.DetectOS() == ServerUtility.OS.MacOSX)
-						{
-							// On OS X, there is a bug that requires us to explicitly set
-							// watchers for all subdirectories. The IncludeSubdirectories
-							// property is ignored
-							Stack<string> dirs = new Stack<string>(20);
-							dirs.Push(folder.FolderPath);
-
-							while (dirs.Count > 0)
-							{
-								string currentDir = dirs.Pop();
-								string[] subDirs;
-								try
-								{
-									subDirs = System.IO.Directory.GetDirectories(currentDir);
-								}
-								catch (UnauthorizedAccessException e)
-								{                    
-									logger.Error("Access denied: " + e);
-									continue;
-								}
-								catch (System.IO.DirectoryNotFoundException e)
-								{
-									logger.Error(e);
-									continue;
-								}
-
-								foreach (string subDirectory in subDirs)
-								{
-									watch = new FileSystemWatcher(subDirectory);
-									watch.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName;
-									watch.Changed += new FileSystemEventHandler(OnChanged);
-									watch.Created += new FileSystemEventHandler(OnCreated);
-									watch.Deleted += new FileSystemEventHandler(OnDeleted);
-									watch.Renamed += new RenamedEventHandler(OnRenamed);
-									watch.EnableRaisingEvents = true;
-
-									if (logger.IsInfoEnabled) logger.Info("File system watcher added for: " + subDirectory);
-
-									dirs.Push(subDirectory);
-								}
-							}
-						}
 
 						// Confirm watcher addition
 						if (logger.IsInfoEnabled) logger.Info("File system watcher added for: " + folder.FolderPath);
