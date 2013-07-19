@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -16,20 +17,20 @@ namespace WaveBox
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		// Adapted from here: http://mono.1490590.n4.nabble.com/Howto-detect-os-td1549244.html
-		[DllImport("libc")] 
-		static extern int uname(IntPtr buf); 
+		[DllImport("libc")]
+		static extern int uname(IntPtr buf);
 		public enum OS {Windows, MacOSX, Linux, BSD, Solaris, Unix, unknown};
 
 		/// <summary>
 		/// DetectOS uses a couple different tricks to detect if we are running on Windows, Mac OSX, or Unix.
 		/// </summary>
 		public static OS DetectOS()
-		{ 
+		{
 			// Detect Windows via directory separator character
 			if (System.IO.Path.DirectorySeparatorChar == '\\')
 			{
 				return OS.Windows;
-			} 
+			}
 			else
 			{
 				// Call uname to determine if we're running on a UNIX variant
@@ -65,7 +66,7 @@ namespace WaveBox
 			}
 
 			// If no matching cases, OS is unknown
-			return OS.unknown; 
+			return OS.unknown;
 		}
 
 		/// <summary>
@@ -220,7 +221,7 @@ namespace WaveBox
 		/// report the exception to WaveBox's crash dump service.  If not configured, the exception will be dumped to the log,
 		/// and the user may choose to report it manually.
 		/// </summary>
-		public static void ReportCrash(Exception exception, bool terminateProcess) 
+		public static void ReportCrash(Exception exception, bool terminateProcess)
 		{
 			logger.Error("WaveBox has crashed!");
 
@@ -270,6 +271,14 @@ namespace WaveBox
 		private static void ReportCrashAsyncCallback(object sender, UploadStringCompletedEventArgs e)
 		{
 			logger.Error("Crash report server async response: " + e.Result);
+		}
+
+		/// <summary>
+		/// Detects WaveBox's executable path
+		/// </summary>
+		public static string ExecutablePath()
+		{
+			return Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar;
 		}
 
 		/// <summary>
