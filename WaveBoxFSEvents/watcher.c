@@ -81,7 +81,9 @@ void StopWatchingPaths()
     {
         // Clean up the stream
         FSEventStreamStop(eventStream);
-        FSEventStreamUnscheduleFromRunLoop(eventStream, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
+        FSEventStreamUnscheduleFromRunLoop(eventStream,
+                                           runLoop ? runLoop : CFRunLoopGetCurrent(),
+                                           kCFRunLoopDefaultMode);
         FSEventStreamInvalidate(eventStream);
         FSEventStreamRelease(eventStream);
         eventStream = NULL;
