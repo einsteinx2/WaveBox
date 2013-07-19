@@ -9,9 +9,12 @@
 {
 	// Choose the port for WaveBox to listen on. If choosing a port under 1024, WaveBox will need to be run as root.
 	"port": {setting-port},
-	
+
 	// Choose the port for WaveBox's WebSockets interface to listen on.
 	"wsPort": {setting-wsPort},
+
+	// Choose the default theme for WaveBox's built-in Web UI.
+	"theme": "{setting-theme}",
 
 	// Define your media folders here.  They are comma-delimited between the brackets, e.g. ["path1", "path2"]
 	"mediaFolders": [{setting-mediaFolders}],
