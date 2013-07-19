@@ -93,7 +93,7 @@ namespace WaveBox.Service.Services
 				Listener.BeginAcceptTcpClient(AcceptClientCallback, null);
 				TcpClient s = Listener.EndAcceptTcpClient(result);
 				HttpProcessor processor = new HttpProcessor(s);
-				processor.process();
+				processor.Process();
 			}
 			catch
 			{

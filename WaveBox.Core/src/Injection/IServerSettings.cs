@@ -18,9 +18,9 @@ namespace WaveBox.Core.Injection
 
 		short WsPort { get; }
 
-		bool CrashReportEnable { get; }
+		string Theme { get; }
 
-		bool NatEnable { get; }
+		List<Folder> MediaFolders { get; }
 
 		string PodcastFolder { get; }
 
@@ -28,9 +28,9 @@ namespace WaveBox.Core.Injection
 
 		int SessionTimeout { get; }
 
-		List<Folder> MediaFolders { get; }
-
 		List<string> FolderArtNames { get; }
+
+		bool CrashReportEnable { get; }
 
 		List<string> Services { get; }
 

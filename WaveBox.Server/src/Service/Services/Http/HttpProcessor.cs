@@ -13,7 +13,7 @@ using WaveBox.Core.Extensions;
 using WaveBox.Transcoding;
 
 // offered to the public domain for any use with no restriction
-// and also with no warranty of any kind, please enjoy. - David Jeske. 
+// and also with no warranty of any kind, please enjoy. - David Jeske.
 
 // simple HTTP explanation
 // http://www.jmarshall.com/easy/http/
@@ -48,7 +48,7 @@ namespace WaveBox.Service.Services.Http
 			Socket = s;
 		}
 
-		private string streamReadLine(Stream inputStream) 
+		private string StreamReadLine(Stream inputStream)
 		{
 			int next_char, readTries = 0;
 			string data = "";
@@ -56,15 +56,15 @@ namespace WaveBox.Service.Services.Http
 			{
 				next_char = inputStream.ReadByte();
 
-				if (next_char == -1) 
+				if (next_char == -1)
 				{
 					if (readTries >= 29)
 					{
-						throw new Exception("ReadByte timed out", null);
+						throw new IOException("ReadByte timed out", null);
 					}
 					readTries++;
-					Thread.Sleep(1); 
-					continue; 
+					Thread.Sleep(1);
+					continue;
 				}
 				else
 				{
@@ -79,7 +79,7 @@ namespace WaveBox.Service.Services.Http
 			return data;
 		}
 
-		public void process()
+		public void Process()
 		{
 			// we can't use a StreamReader for input, because it buffers up extra data on us inside it's
 			// "processed" view of the world, and we want the data raw after the headers
@@ -104,9 +104,10 @@ namespace WaveBox.Service.Services.Http
 					WriteMethodNotAllowedHeader();
 				}
 			}
-			catch
+			catch (Exception e)
 			{
 				logger.Error("Exception occurred during HTTP processing");
+				logger.Error(e);
 				WriteErrorHeader();
 			}
 			finally
@@ -118,49 +119,66 @@ namespace WaveBox.Service.Services.Http
 			}
 		}
 
-		public void ParseRequest() 
+		public void ParseRequest()
 		{
-			String request = streamReadLine(InputStream);
-			string[] tokens = request.Split(' ');
-			if (tokens.Length != 3) 
+			try
 			{
-				logger.Error("Failed reading HTTP request");
-				throw new Exception("invalid http request line");
+				String request = StreamReadLine(InputStream);
+				string[] tokens = request.Split(' ');
+				if (tokens.Length != 3)
+				{
+					logger.Error("Failed reading HTTP request");
+					throw new Exception("Failed reading HTTP request");
+				}
+				HttpMethod = tokens[0].ToUpper();
+				HttpUrl = tokens[1];
+				HttpProtocolVersionString = tokens[2];
 			}
-			HttpMethod = tokens[0].ToUpper();
-			HttpUrl = tokens[1];
-			HttpProtocolVersionString = tokens[2];
+			// If client disconnects, ignore and continue
+			catch (IOException)
+			{
+			}
+			catch (NullReferenceException)
+			{
+			}
 		}
 
-		public void ReadHeaders() 
+		public void ReadHeaders()
 		{
 			String line;
-			while ((line = streamReadLine(InputStream)) != null)
+			try
 			{
-				if (line.Equals("")) 
+				while ((line = StreamReadLine(InputStream)) != null)
 				{
-					return;
-				}
+					if (line.Equals(""))
+					{
+						return;
+					}
 
-				int separator = line.IndexOf(':');
-				if (separator == -1) 
-				{
-					logger.Error("Failed reading HTTP headers");
-					throw new Exception("invalid http header line: " + line);
-				}
-				String name = line.Substring(0, separator);
-				int pos = separator + 1;
-				while ((pos < line.Length) && (line[pos] == ' ')) 
-				{
-					pos++; // strip any spaces
-				}
+					int separator = line.IndexOf(':');
+					if (separator == -1)
+					{
+						logger.Error("Failed reading HTTP headers");
+						throw new Exception("Failed reading HTTP headers: " + line);
+					}
+					String name = line.Substring(0, separator);
+					int pos = separator + 1;
+					while ((pos < line.Length) && (line[pos] == ' '))
+					{
+						pos++; // strip any spaces
+					}
 
-				string value = line.Substring(pos, line.Length - pos);
-				HttpHeaders[name] = value;
+					string value = line.Substring(pos, line.Length - pos);
+					HttpHeaders[name] = value;
+				}
+			}
+			// If client disconnects, ignore and continue
+			catch (IOException)
+			{
 			}
 		}
 
-		public void HandleGETRequest() 
+		public void HandleGETRequest()
 		{
 			IApiHandler apiHandler = ApiHandlerFactory.CreateApiHandler(HttpUrl, this);
 
@@ -172,33 +190,33 @@ namespace WaveBox.Service.Services.Http
 		{
 			// this post data processing just reads everything into a memory stream.
 			// this is fine for smallish things, but for large stuff we should really
-			// hand an input stream to the request processor. However, the input stream 
-			// we hand him needs to let him see the "end of the stream" at this content 
-			// length, because otherwise he won't know when he's seen it all! 
+			// hand an input stream to the request processor. However, the input stream
+			// we hand him needs to let him see the "end of the stream" at this content
+			// length, because otherwise he won't know when he's seen it all!
 
 			int content_len = 0;
 			MemoryStream ms = new MemoryStream();
-			if (HttpHeaders.ContainsKey("Content-Length")) 
+			if (HttpHeaders.ContainsKey("Content-Length"))
 			{
 				content_len = Convert.ToInt32(HttpHeaders["Content-Length"]);
 				if (content_len > MAX_POST_SIZE)
 				{
 					throw new Exception(String.Format("POST Content-Length({0}) too big for this simple server", content_len));
 				}
-				byte[] buf = new byte[BUF_SIZE]; 
+				byte[] buf = new byte[BUF_SIZE];
 				int to_read = content_len;
-				while (to_read > 0) 
-				{  
+				while (to_read > 0)
+				{
 					int numread = InputStream.Read(buf, 0, Math.Min(BUF_SIZE, to_read));
-					if (numread == 0) 
+					if (numread == 0)
 					{
-						if (to_read == 0) 
+						if (to_read == 0)
 						{
 							break;
-						} 
-						else 
+						}
+						else
 						{
-							throw new Exception("client disconnected during post");
+							throw new Exception("Client disconnected during HTTP POST");
 						}
 					}
 					to_read -= numread;
@@ -288,7 +306,7 @@ namespace WaveBox.Service.Services.Http
 			if (logger.IsInfoEnabled) logger.Info(String.Format("Success, status: {0}, length: {1}, encoding: {2}, ETag: {3}, Last-Modified: {4}",
 				status,
 				contentLength,
-				encoding,
+				encoding ?? "none",
 				CreateETagString(lastModified),
 				lastModified.ToRFC1123()
 			));
@@ -378,7 +396,7 @@ namespace WaveBox.Service.Services.Http
 				}
 			}
 
-			// Makes no sense at all, but for whatever reason, all ajax calls fail with a cross site 
+			// Makes no sense at all, but for whatever reason, all ajax calls fail with a cross site
 			// scripting error if Content-Type is set, but the player needs it for files for seeking,
 			// so pass -1 for no Content-Length header for all text requests
 			WriteSuccessHeader(Encoding.UTF8.GetByteCount(text) + 3, mimeType + ";charset=utf-8", null, DateTime.UtcNow);
@@ -408,7 +426,7 @@ namespace WaveBox.Service.Services.Http
 		public void WriteFile(Stream fs, int startOffset, long length, string mimeType, IDictionary<string, string> customHeaders, bool isSendContentLength, DateTime? lastModified, long? limitToBytes = null)
 		{
 			if ((object)fs == null || !fs.CanRead || length == 0 || startOffset >= length)
-			{ 
+			{
 				return;
 			}
 
@@ -452,8 +470,6 @@ namespace WaveBox.Service.Services.Http
 
 			if (fs.CanSeek)
 			{
-				if (logger.IsInfoEnabled) logger.Info("Trying to seek to " + startOffset);
-
 				// Seek to the start offset
 				fs.Seek(startOffset, SeekOrigin.Begin);
 				actualStartOffset = fs.Position;
@@ -477,8 +493,6 @@ namespace WaveBox.Service.Services.Http
 						Thread.Sleep(250);
 					}
 				}
-
-				if (logger.IsInfoEnabled) logger.Info("actual start offset " + actualStartOffset);
 
 				totalBytesWritten = fs.Position;
 			}
