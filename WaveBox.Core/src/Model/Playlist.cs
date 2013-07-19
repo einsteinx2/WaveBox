@@ -8,8 +8,9 @@ using Cirrious.MvvmCross.Plugins.Sqlite;
 using Newtonsoft.Json;
 using Ninject;
 using WaveBox.Core.Extensions;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 using WaveBox.Static;
+using WaveBox.Model.Repository;
 
 namespace WaveBox.Model
 {
@@ -105,7 +106,7 @@ namespace WaveBox.Model
 
 				if (PlaylistId == null)
 				{
-					int? itemId = Item.GenerateItemId(ItemType.Playlist);
+					int? itemId = Injection.Kernel.Get<IItemRepository>().GenerateItemId(ItemType.Playlist);
 					if (itemId == null)
 					{
 						return;
@@ -392,7 +393,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				int? id = Item.GenerateItemId(ItemType.PlaylistItem);
+				int? id = Injection.Kernel.Get<IItemRepository>().GenerateItemId(ItemType.PlaylistItem);
 				// to do - better way of knowing whether or not a query has been successfully completed.
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				var playlistItem = new PlaylistItem();
@@ -483,7 +484,7 @@ namespace WaveBox.Model
 			ISQLiteConnection conn = null;
 			try
 			{
-				int? id = Item.GenerateItemId(ItemType.PlaylistItem);
+				int? id = Injection.Kernel.Get<IItemRepository>().GenerateItemId(ItemType.PlaylistItem);
 
 				if (!ReferenceEquals(id, null))
 				{

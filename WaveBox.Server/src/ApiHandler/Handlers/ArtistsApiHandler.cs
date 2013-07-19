@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using Ninject;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 using WaveBox.Model;
 using WaveBox.Static;
 using WaveBox.Service.Services.Http;
+using WaveBox.Model.Repository;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -109,7 +110,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 
 				// Grab range of artists
-				artists = Artist.RangeArtists(start, end);
+				artists = Injection.Kernel.Get<IArtistRepository>().RangeArtists(start, end);
 			}
 
 			// Check for a request to limit/paginate artists, like SQL
@@ -180,14 +181,14 @@ namespace WaveBox.ApiHandler.Handlers
 				else
 				{
 					// If no artists in list, grab directly using model method
-					artists = Artist.LimitArtists(index, duration);
+					artists = Injection.Kernel.Get<IArtistRepository>().LimitArtists(index, duration);
 				}
 			}
 
 			// Finally, if no artists already in list, send the whole list
 			if (artists.Count == 0)
 			{
-				artists = Artist.AllArtists();
+				artists = Injection.Kernel.Get<IArtistRepository>().AllArtists();
 			}
 
 			try

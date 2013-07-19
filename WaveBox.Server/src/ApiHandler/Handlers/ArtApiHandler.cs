@@ -9,11 +9,12 @@ using System.Runtime.InteropServices;
 using Ninject;
 using TagLib;
 using WaveBox.Core.Extensions;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 using WaveBox.Model;
 using WaveBox.Server.Extensions;
 using WaveBox.Static;
 using WaveBox.Service.Services.Http;
+using WaveBox.Model.Repository;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -208,14 +209,14 @@ namespace WaveBox.ApiHandler.Handlers
 				return null;
 			}
 
-			int? itemId = Art.ItemIdForArtId((int)art.ArtId);
+			int? itemId = Injection.Kernel.Get<IArtRepository>().ItemIdForArtId((int)art.ArtId);
 
 			if ((object)itemId == null)
 			{
 				return null;
 			}
 
-			ItemType type = Item.ItemTypeForItemId((int)itemId);
+			ItemType type = Injection.Kernel.Get<IItemRepository>().ItemTypeForItemId((int)itemId);
 
 			Stream stream = null;
 

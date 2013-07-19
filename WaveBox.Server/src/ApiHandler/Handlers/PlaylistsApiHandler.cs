@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Web;
 using Newtonsoft.Json;
 using Ninject;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 using WaveBox.Model;
 using WaveBox.Service.Services.Http;
 using WaveBox.Static;
+using WaveBox.Model.Repository;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -76,7 +77,7 @@ namespace WaveBox.ApiHandler.Handlers
 								{
 									int itemId = itemIds[i];
 									List<IMediaItem> songs = null;
-									switch(Item.ItemTypeForItemId(itemId))
+									switch(Injection.Kernel.Get<IItemRepository>().ItemTypeForItemId(itemId))
 									{
 										case ItemType.Folder:
 											// get all the media items underneath this folder and add them

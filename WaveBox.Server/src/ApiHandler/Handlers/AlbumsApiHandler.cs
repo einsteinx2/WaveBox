@@ -5,10 +5,11 @@ using System.Text;
 using Newtonsoft.Json;
 using Ninject;
 using WaveBox.ApiHandler;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 using WaveBox.Model;
 using WaveBox.Static;
 using WaveBox.Service.Services.Http;
+using WaveBox.Model.Repository;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -78,7 +79,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 
 				// Grab range of albums
-				albums = Album.RangeAlbums(start, end);
+				albums = Injection.Kernel.Get<IAlbumRepository>().RangeAlbums(start, end);
 			}
 
 			// Check for a request to limit/paginate songs, like SQL
@@ -149,14 +150,14 @@ namespace WaveBox.ApiHandler.Handlers
 				else
 				{
 					// If no albums in list, grab directly using model method
-					albums = Album.LimitAlbums(index, duration);
+					albums = Injection.Kernel.Get<IAlbumRepository>().LimitAlbums(index, duration);
 				}
 			}
 
 			// Finally, if no albums already in list, send the whole list
 			if (albums.Count == 0)
 			{
-				albums = Album.AllAlbums();
+				albums = Injection.Kernel.Get<IAlbumRepository>().AllAlbums();
 			}
 
 			try

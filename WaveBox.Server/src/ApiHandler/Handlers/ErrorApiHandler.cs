@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using Ninject;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 using WaveBox.Static;
 using WaveBox.Service.Services.Http;
 

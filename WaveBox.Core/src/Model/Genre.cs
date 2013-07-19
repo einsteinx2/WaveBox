@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using Ninject;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 using WaveBox.Static;
+using WaveBox.Model.Repository;
 
 namespace WaveBox.Model
 {
@@ -28,7 +29,7 @@ namespace WaveBox.Model
 				return;
 			}
 
-			int? itemId = Item.GenerateItemId(ItemType.Genre);
+			int? itemId = Injection.Kernel.Get<IItemRepository>().GenerateItemId(ItemType.Genre);
 			if (itemId == null)
 			{
 				return;
@@ -150,26 +151,6 @@ namespace WaveBox.Model
 			}
 			
 			return new List<Folder>();
-		}
-
-		public static List<Genre> AllGenres()
-		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				return conn.Query<Genre>("SELECT * FROM Genre ORDER BY GenreName");
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-			}
-
-			return new List<Genre>();
 		}
 
 		public static int CompareGenresByName(Genre x, Genre y)

@@ -8,9 +8,10 @@ using System.Web;
 using System.Xml;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using Ninject;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 using WaveBox.Model;
 using WaveBox.Static;
+using WaveBox.Model.Repository;
 
 namespace WaveBox.PodcastManagement
 {
@@ -69,7 +70,7 @@ namespace WaveBox.PodcastManagement
 
 		public void AddToDatabase()
 		{
-			EpisodeId = Item.GenerateItemId(ItemType.PodcastEpisode);
+			EpisodeId = Injection.Kernel.Get<IItemRepository>().GenerateItemId(ItemType.PodcastEpisode);
 			if (ReferenceEquals(EpisodeId, null))
 			{
 				return;

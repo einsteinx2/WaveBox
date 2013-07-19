@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Ninject;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 using WaveBox.FolderScanning;
 using WaveBox.Model;
 using WaveBox.OperationQueue;

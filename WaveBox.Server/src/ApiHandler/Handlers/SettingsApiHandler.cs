@@ -6,7 +6,7 @@ using System.Web;
 using Newtonsoft.Json.Schema;
 using Newtonsoft.Json;
 using Ninject;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 using WaveBox.Core;
 using WaveBox.Model;
 using WaveBox.Static;

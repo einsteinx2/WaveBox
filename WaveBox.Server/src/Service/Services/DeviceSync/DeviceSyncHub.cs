@@ -9,6 +9,8 @@ using Microsoft.AspNet.SignalR.Hubs;
 using WaveBox.Core.Extensions;
 using WaveBox.Model;
 using WaveBox.Static;
+using WaveBox.Model.Repository;
+using Ninject;
 
 namespace WaveBox.Service.Services.DeviceSync
 {
@@ -141,7 +143,7 @@ namespace WaveBox.Service.Services.DeviceSync
 				Group group = AddConnection(new Connection(Context.ConnectionId, sessionId, clientName));
 
 				// Tell the client the current group state
-				var songIds = group.SongIds.Count > 0 ? Song.SongsForIds(group.SongIds) : new List<Song>();
+				var songIds = group.SongIds.Count > 0 ? Injection.Kernel.Get<ISongRepository>().SongsForIds(group.SongIds) : new List<Song>();
 				var progress = group.Progress + (float)(DateTime.Now.ToUniversalUnixTimestamp() - group.ProgressTimestamp);
 				Clients.Caller.currentState(songIds, group.CurrentIndex, progress, group.IsShuffle, group.IsRepeat);
 			});
@@ -174,7 +176,7 @@ namespace WaveBox.Service.Services.DeviceSync
 				Connection conn = ConnectionForId(Context.ConnectionId);
 				if (!ReferenceEquals(conn, null))
 				{
-					var songs = songIds.Count > 0 ? Song.SongsForIds(songIds) : new List<Song>();
+					var songs = songIds.Count > 0 ? Injection.Kernel.Get<ISongRepository>().SongsForIds(songIds) : new List<Song>();
 					conn.MyGroup.SongIds = songIds;
 					Clients.OthersInGroup(conn.SessionId).playQueueChanged(songs);
 				}

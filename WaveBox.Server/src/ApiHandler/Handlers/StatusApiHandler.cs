@@ -9,7 +9,7 @@ using System.Text;
 using Newtonsoft.Json;
 using Ninject;
 using WaveBox.Core.Extensions;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 using WaveBox.Model;
 using WaveBox.Static;
 using WaveBox.Service;
@@ -17,6 +17,7 @@ using WaveBox.Service.Services;
 using WaveBox.Service.Services.Http;
 using WaveBox.Transcoding;
 using WaveBox;
+using WaveBox.Model.Repository;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -121,21 +122,21 @@ namespace WaveBox.ApiHandler.Handlers
 							if (logger.IsInfoEnabled) logger.Info("Gathering extended status metrics from database");
 
 							// Get count of artists
-							statusCache.Cache["artistCount"] = Artist.CountArtists();
+							statusCache.Cache["artistCount"] = Injection.Kernel.Get<IArtistRepository>().CountArtists();
 							// Get count of albums
-							statusCache.Cache["albumCount"] = Album.CountAlbums();
+							statusCache.Cache["albumCount"] = Injection.Kernel.Get<IAlbumRepository>().CountAlbums();
 							// Get count of songs
-							statusCache.Cache["songCount"] = Song.CountSongs();
+							statusCache.Cache["songCount"] = Injection.Kernel.Get<ISongRepository>().CountSongs();
 							// Get count of videos
-							statusCache.Cache["videoCount"] = Video.CountVideos();
+							statusCache.Cache["videoCount"] = Injection.Kernel.Get<IVideoRepository>().CountVideos();
 							// Get total file size of songs (bytes)
-							statusCache.Cache["songFileSize"] = Song.TotalSongSize();
+							statusCache.Cache["songFileSize"] = Injection.Kernel.Get<ISongRepository>().TotalSongSize();
 							// Get total file size of videos (bytes)
-							statusCache.Cache["videoFileSize"] = Video.TotalVideoSize();
+							statusCache.Cache["videoFileSize"] = Injection.Kernel.Get<IVideoRepository>().TotalVideoSize();
 							// Get total song duration
-							statusCache.Cache["songDuration"] = Song.TotalSongDuration();
+							statusCache.Cache["songDuration"] = Injection.Kernel.Get<ISongRepository>().TotalSongDuration();
 							// Get total video duration
-							statusCache.Cache["videoDuration"] = Video.TotalVideoDuration();
+							statusCache.Cache["videoDuration"] = Injection.Kernel.Get<IVideoRepository>().TotalVideoDuration();
 
 							if (logger.IsInfoEnabled) logger.Info("Metric gathering complete, cached results!");
 						}

@@ -9,7 +9,7 @@ using System.Text;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using Ninject;
 using WaveBox.Core.Extensions;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 using WaveBox.Model;
 using WaveBox.OperationQueue;
 using WaveBox.Server.Extensions;

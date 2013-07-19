@@ -15,7 +15,7 @@ using Mono.Unix.Native;
 using Mono.Unix;
 using Mono.Zeroconf;
 using Ninject;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 using WaveBox.Model;
 using WaveBox.Service;
 using WaveBox.Static;

@@ -4,12 +4,13 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using Ninject;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 using WaveBox.Model;
 using WaveBox.Static;
 using WaveBox.Service;
 using WaveBox.Service.Services;
 using WaveBox.Service.Services.Http;
+using WaveBox.Model.Repository;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -183,7 +184,7 @@ namespace WaveBox.ApiHandler.Handlers
 			{
 				try
 				{
-					if (Item.ItemTypeForItemId(int.Parse(p)) == ItemType.Song)
+					if (Injection.Kernel.Get<IItemRepository>().ItemTypeForItemId(int.Parse(p)) == ItemType.Song)
 					{
 						Song s = new Song.Factory().CreateSong(int.Parse(p));
 						songs.Add(s);

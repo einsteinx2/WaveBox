@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using WaveBox.Model;
 
-namespace WaveBox.Core.Injected
+namespace WaveBox.Core.Injection
 {
 	public interface IServerSettings
 	{

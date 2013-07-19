@@ -8,6 +8,8 @@ using Cirrious.MvvmCross.Plugins.Sqlite;
 using Newtonsoft.Json;
 using WaveBox.Model;
 using WaveBox.Static;
+using WaveBox.Model.Repository;
+using Ninject;
 
 namespace WaveBox.Model
 {
@@ -50,7 +52,7 @@ namespace WaveBox.Model
 		public string GenreName { get; set; }
 
 		[JsonProperty("artId"), IgnoreRead, IgnoreWrite]
-		public int? ArtId { get { return Art.ArtIdForItemId(ItemId); } }
+		public int? ArtId { get { return Injection.Kernel.Get<IArtRepository>().ArtIdForItemId(ItemId); } }
 
 		/// <summary>
 		/// Public methods
@@ -109,7 +111,7 @@ namespace WaveBox.Model
 			public MediaItem CreateMediaItem(int itemId)
 			{
 				MediaItem item = null;
-				ItemType type = Item.ItemTypeForItemId(itemId);
+				ItemType type = Injection.Kernel.Get<IItemRepository>().ItemTypeForItemId(itemId);
 				switch (type)
 				{
 					case ItemType.Song:

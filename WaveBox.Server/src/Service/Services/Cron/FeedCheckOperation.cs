@@ -1,6 +1,6 @@
 using System;
 using Ninject;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 using WaveBox.OperationQueue;
 using WaveBox.PodcastManagement;
 using WaveBox.Static;

@@ -6,23 +6,33 @@ using System.Threading;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using Ninject;
 using WaveBox.Core.Extensions;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 using WaveBox.Model;
 using WaveBox.Static;
 
-namespace WaveBox
+namespace WaveBox.Model.Repository
 {
-	public static class Item
+	public class ItemRepository : IItemRepository
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public static int? GenerateItemId(ItemType itemType)
+		private readonly IDatabase database;
+
+		public ItemRepository(IDatabase database)
+		{
+			if (database == null)
+				throw new ArgumentNullException("database");
+
+			this.database = database;
+		}
+
+		public int? GenerateItemId(ItemType itemType)
 		{
 			int? itemId = null;
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+				conn = database.GetSqliteConnection();
 				int affected = conn.ExecuteLogged("INSERT INTO Item (ItemType, Timestamp) VALUES (?, ?)", itemType, DateTime.UtcNow.ToUniversalUnixTimestamp());
 
 				if (affected >= 1)
@@ -48,19 +58,19 @@ namespace WaveBox
 			}
 			finally
 			{
-				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+				database.CloseSqliteConnection(conn);
 			}
 
 			return itemId;
 		}
 
-		public static ItemType ItemTypeForItemId(int itemId)
+		public ItemType ItemTypeForItemId(int itemId)
 		{
 			int itemTypeId = 0;
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+				conn = database.GetSqliteConnection();
 				itemTypeId = conn.ExecuteScalar<int>("SELECT ItemType FROM Item WHERE ItemId = ?", itemId);
 			}
 			catch (Exception e)
@@ -69,13 +79,13 @@ namespace WaveBox
 			}
 			finally
 			{
-				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+				database.CloseSqliteConnection(conn);
 			}
 
 			return ItemTypeExtensions.ItemTypeForId(itemTypeId);
 		}
 
-		public static ItemType ItemTypeForFilePath(string filePath)
+		public ItemType ItemTypeForFilePath(string filePath)
 		{
 			// Make sure it's not null
 			if (filePath == null)
@@ -107,11 +117,6 @@ namespace WaveBox
 
 			// Return unknown, if we didn't return yet
 			return ItemType.Unknown;
-		}
-
-		public static bool RecordStat(this IItem item, StatType statType, long timestamp)
-		{
-			return (object)item.ItemId == null ? false : Stat.RecordStat((int)item.ItemId, statType, timestamp);
 		}
 	}
 }

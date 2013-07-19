@@ -1,7 +1,7 @@
 using System;
 using Newtonsoft.Json;
 using Ninject;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 using WaveBox.Model;
 using WaveBox.Service.Services.Http;
 using WaveBox.Static;

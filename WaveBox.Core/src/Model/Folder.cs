@@ -6,9 +6,10 @@ using System.Text;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using Newtonsoft.Json;
 using Ninject;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 using WaveBox.Model;
 using WaveBox.Static;
+using WaveBox.Model.Repository;
 
 namespace WaveBox.Model
 {
@@ -41,7 +42,7 @@ namespace WaveBox.Model
 		public string FolderPath { get; set; }
 
 		[JsonProperty("artId"), IgnoreRead, IgnoreWrite]
-		public int? ArtId { get { return Art.ArtIdForItemId(FolderId); } }
+		public int? ArtId { get { return Injection.Kernel.Get<IArtRepository>().ArtIdForItemId(FolderId); } }
 
 		/// <summary>
 		/// Constructors
@@ -76,7 +77,7 @@ namespace WaveBox.Model
 			var listOfSongs = new List<Song>();
 
 			// Recursively add media in all subfolders to the list.
-			listOfSongs.AddRange(Song.SearchSongs("FolderId", FolderId.ToString()));
+			listOfSongs.AddRange(Injection.Kernel.Get<ISongRepository>().SearchSongs("FolderId", FolderId.ToString()));
 
 			if (recursive == true)
 			{
@@ -94,7 +95,7 @@ namespace WaveBox.Model
 			var listOfVideos = new List<Video>();
 
 			// Recursively add media in all subfolders to the list.
-			listOfVideos.AddRange(Video.SearchVideos("FolderId", FolderId.ToString()));
+			listOfVideos.AddRange(Injection.Kernel.Get<IVideoRepository>().SearchVideos("FolderId", FolderId.ToString()));
 
 			if (recursive == true)
 			{
@@ -143,7 +144,7 @@ namespace WaveBox.Model
 
 		private Folder MediaFolder()
 		{
-			foreach (Folder mediaFolder in Folder.MediaFolders())
+			foreach (Folder mediaFolder in Injection.Kernel.Get<IFolderRepository>().MediaFolders())
 			{
 				if (FolderPath == mediaFolder.FolderPath)
 				{
@@ -156,7 +157,7 @@ namespace WaveBox.Model
 
 		public void InsertFolder(bool isMediaFolder)
 		{
-			int? itemId = Item.GenerateItemId(ItemType.Folder);
+			int? itemId = Injection.Kernel.Get<IItemRepository>().GenerateItemId(ItemType.Folder);
 			if (itemId == null)
 			{
 				return;
@@ -221,48 +222,6 @@ namespace WaveBox.Model
 			return pFolderId;
 		}
 
-		public static List<Folder> MediaFolders()
-		{
-			IServerSettings serverSettings = Injection.Kernel.Get<IServerSettings>();
-
-			if (serverSettings.MediaFolders == null) 
-			{
-				ISQLiteConnection conn = null;
-				try 
-				{
-					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-					return conn.Query<Folder>("SELECT * FROM Folder WHERE ParentFolderId IS NULL");
-				} 
-				catch (Exception e) 
-				{
-					logger.Info ("Failed reading list of media folders : " + e);
-				} 
-				finally
-				{
-					Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-				}
-			} 
-			else
-			{
-				return serverSettings.MediaFolders;
-			}
-
-			return new List<Folder>();
-		}
-
-		public static List<Folder> TopLevelFolders()
-		{
-			List<Folder> folders = new List<Folder>();
-
-			foreach (Folder mediaFolder in MediaFolders())
-			{
-				folders.AddRange(mediaFolder.ListOfSubFolders());
-			}
-
-			folders.Sort(CompareFolderByName);
-			return folders;
-		}
-
 		public static int CompareFolderByName(Folder x, Folder y)
 		{
 			return StringComparer.OrdinalIgnoreCase.Compare(x.FolderName, y.FolderName);
@@ -313,7 +272,7 @@ namespace WaveBox.Model
 				folder.FolderPath = path;
 				folder.FolderName = Path.GetFileName(path);
 
-				foreach (Folder mf in Folder.MediaFolders())
+				foreach (Folder mf in Injection.Kernel.Get<IFolderRepository>().MediaFolders())
 				{
 					if (path.Contains(mf.FolderPath))
 					{

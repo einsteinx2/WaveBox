@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using Ninject;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 using WaveBox.Model;
 using WaveBox.Static;
 using WaveBox.Service.Services.Http;
+using WaveBox.Model.Repository;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -72,7 +73,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 
 				// Grab range of videos
-				videos = Video.RangeVideos(start, end);
+				videos = Injection.Kernel.Get<IVideoRepository>().RangeVideos(start, end);
 			}
 
 			// Check for a request to limit/paginate videos, like SQL
@@ -143,14 +144,14 @@ namespace WaveBox.ApiHandler.Handlers
 				else
 				{
 					// If no videos in list, grab directly using model method
-					videos = Video.LimitVideos(index, duration);
+					videos = Injection.Kernel.Get<IVideoRepository>().LimitVideos(index, duration);
 				}
 			}
 
 			// Finally, if no videos already in list, send the whole list
 			if (videos.Count == 0)
 			{
-				videos = Video.AllVideos();
+				videos = Injection.Kernel.Get<IVideoRepository>().AllVideos();
 			}
 
 			try

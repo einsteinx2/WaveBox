@@ -5,10 +5,11 @@ using System.IO;
 using System.Xml;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using Ninject;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 using WaveBox.Model;
 using WaveBox.Service.Services.Cron;
 using WaveBox.Static;
+using WaveBox.Model.Repository;
 
 namespace WaveBox.PodcastManagement
 {
@@ -38,7 +39,7 @@ namespace WaveBox.PodcastManagement
 		/* Instance methods */
 		public void AddToDatabase()
 		{
-			PodcastId = Item.GenerateItemId(ItemType.Podcast);
+			PodcastId = Injection.Kernel.Get<IItemRepository>().GenerateItemId(ItemType.Podcast);
 			ISQLiteConnection conn = null;
 			try
 			{

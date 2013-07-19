@@ -6,6 +6,8 @@ using Newtonsoft.Json;
 using WaveBox.Model;
 using WaveBox.Static;
 using WaveBox.Service.Services.Http;
+using WaveBox.Model.Repository;
+using Ninject;
 
 namespace WaveBox.ApiHandler
 {
@@ -79,7 +81,7 @@ namespace WaveBox.ApiHandler
 				if (success)
 				{
 					// If all three are successful, generate an item type from the ID
-					ItemType itemType = Item.ItemTypeForItemId(itemIdInt);
+					ItemType itemType = Injection.Kernel.Get<IItemRepository>().ItemTypeForItemId(itemIdInt);
 
 					// Case: type is song, stat is playcount
 					if ((itemType == ItemType.Song) && (statTypeEnum == StatType.PLAYED))
@@ -88,20 +90,20 @@ namespace WaveBox.ApiHandler
 						Song song = new Song.Factory().CreateSong(itemIdInt);
 						if ((object)song.AlbumId != null)
 						{
-							Stat.RecordStat((int)song.AlbumId, statTypeEnum, timeStampLong);
+							Injection.Kernel.Get<IStatRepository>().RecordStat((int)song.AlbumId, statTypeEnum, timeStampLong);
 						}
 						if ((object)song.ArtistId != null)
 						{
-							Stat.RecordStat((int)song.ArtistId, statTypeEnum, timeStampLong);
+							Injection.Kernel.Get<IStatRepository>().RecordStat((int)song.ArtistId, statTypeEnum, timeStampLong);
 						}
 						if ((object)song.FolderId != null)
 						{
-							Stat.RecordStat((int)song.FolderId, statTypeEnum, timeStampLong);
+							Injection.Kernel.Get<IStatRepository>().RecordStat((int)song.FolderId, statTypeEnum, timeStampLong);
 						}
 					}
 
 					// Record stats for the generic item
-					Stat.RecordStat(itemIdInt, statTypeEnum, timeStampLong);
+					Injection.Kernel.Get<IStatRepository>().RecordStat(itemIdInt, statTypeEnum, timeStampLong);
 				}
 			}
 

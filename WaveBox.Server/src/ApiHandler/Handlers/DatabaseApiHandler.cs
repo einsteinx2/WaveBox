@@ -7,7 +7,7 @@ using System.Text;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using Newtonsoft.Json;
 using Ninject;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 using WaveBox.Model;
 using WaveBox.Static;
 using WaveBox.Service.Services.Http;

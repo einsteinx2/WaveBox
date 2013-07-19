@@ -7,9 +7,10 @@ using Cirrious.MvvmCross.Plugins.Sqlite;
 using Newtonsoft.Json;
 using Ninject;
 using WaveBox.Core.Extensions;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 using WaveBox.Model;
 using WaveBox.Static;
+using WaveBox.Model.Repository;
 
 namespace WaveBox.Model
 {
@@ -54,27 +55,7 @@ namespace WaveBox.Model
 		public User()
 		{
 		}
-
-		public static string UserNameForSessionid(string sessionId)
-		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				return conn.ExecuteScalar<string>("SELECT User.UserName FROM Session JOIN User USING (UserId) WHERE SessionId = ?", sessionId);
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-			}
-
-			return null;
-		}
-
+		
 		public bool UpdateSession(string sessionId)
 		{
 			// Update user's session based on its session ID
@@ -106,53 +87,6 @@ namespace WaveBox.Model
 			}
 
 			return new List<Session>();
-		}
-
-		public static List<User> AllUsers()
-		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				List<User> users = conn.Query<User>("SELECT * FROM User ORDER BY UserName");
-
-				foreach (User u in users)
-				{
-					u.Sessions = u.ListOfSessions();
-				}
-
-				return users;
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-			}
-
-			return new List<User>();
-		}
-
-		public static List<User> ExpiredUsers()
-		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				return conn.Query<User>("SELECT * FROM User WHERE DeleteTime <= ? ORDER BY UserName", DateTime.Now.ToUniversalUnixTimestamp());
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-			}
-
-			return new List<User>();
 		}
 
 		public static int CompareUsersByName(User x, User y)
@@ -268,7 +202,7 @@ namespace WaveBox.Model
 			// On successful authentication, create session!
 			if (Authenticate(password))
 			{
-				Session s = Session.CreateSession(Convert.ToInt32(UserId), clientName);
+				Session s = Injection.Kernel.Get<ISessionRepository>().CreateSession(Convert.ToInt32(UserId), clientName);
 				if (s != null)
 				{
 					SessionId = s.SessionId;
@@ -296,7 +230,7 @@ namespace WaveBox.Model
 				if (affected > 0)
 				{
 					// Delete associated sessions
-					Session.DeleteSessionsForUserId((int)UserId);
+					Injection.Kernel.Get<ISessionRepository>().DeleteSessionsForUserId((int)UserId);
 				}
 
 				return true;
@@ -373,7 +307,7 @@ namespace WaveBox.Model
 
 			public User CreateUser(string userName, string password, long? deleteTime)
 			{
-				int? itemId = Item.GenerateItemId(ItemType.User);
+				int? itemId = Injection.Kernel.Get<IItemRepository>().GenerateItemId(ItemType.User);
 				if (itemId == null)
 				{
 					return null;

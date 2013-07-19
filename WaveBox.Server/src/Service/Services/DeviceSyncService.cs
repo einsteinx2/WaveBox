@@ -4,7 +4,7 @@ using Microsoft.Owin.Diagnostics;
 using Microsoft.Owin.Hosting;
 using Ninject;
 using Owin;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 using WaveBox.Service;
 using WaveBox.Service.Services.DeviceSync;
 using WaveBox.Static;

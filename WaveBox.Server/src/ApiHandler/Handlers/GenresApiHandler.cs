@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Ninject;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 using WaveBox.Model;
 using WaveBox.Service.Services.Http;
 using WaveBox.Static;
+using WaveBox.Model.Repository;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -75,7 +76,7 @@ namespace WaveBox.ApiHandler.Handlers
 			else
 			{
 				// No id parameter
-				listOfGenres = Genre.AllGenres();
+				listOfGenres = Injection.Kernel.Get<IGenreRepository>().AllGenres();
 			}
 			
 			// Return all results

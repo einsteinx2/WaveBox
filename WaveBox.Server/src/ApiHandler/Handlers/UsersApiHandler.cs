@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using WaveBox.Static;
 using WaveBox.Model;
 using Newtonsoft.Json;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 using WaveBox.Service.Services.Http;
 using Ninject;
+using WaveBox.Model.Repository;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -160,7 +161,7 @@ namespace WaveBox.ApiHandler.Handlers
 				else
 				{
 					// On invalid key, return all users
-					listOfUsers = User.AllUsers();
+					listOfUsers = Injection.Kernel.Get<IUserRepository>().AllUsers();
 				}
 
 				try

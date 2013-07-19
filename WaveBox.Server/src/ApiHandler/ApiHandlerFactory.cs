@@ -8,7 +8,8 @@ using WaveBox.Model;
 using WaveBox.Service.Services.Http;
 using WaveBox.Static;
 using WaveBox.Core.Extensions;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
+using WaveBox.Model.Repository;
 
 namespace WaveBox.ApiHandler
 {
@@ -176,7 +177,7 @@ namespace WaveBox.ApiHandler
 			else
 			{
 				// Must use sessionId
-				username = User.UserNameForSessionid(sessionId);
+				username = Injection.Kernel.Get<IUserRepository>().UserNameForSessionid(sessionId);
 				if ((object)username != null)
 				{
 					user = new User.Factory().CreateUser(username);

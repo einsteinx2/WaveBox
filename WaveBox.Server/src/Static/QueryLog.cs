@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using Ninject;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 using WaveBox.Static;
 
-namespace WaveBox.Model
+namespace WaveBox.Static
 {
 	public class QueryLog
 	{

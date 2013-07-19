@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using Ninject;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 using WaveBox.Model;
 using WaveBox.Static;
 using WaveBox.Service.Services.Http;
+using WaveBox.Model.Repository;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -68,12 +69,12 @@ namespace WaveBox.ApiHandler.Handlers
 				if (Uri.Parameters.ContainsKey("mediaFolders") && Uri.Parameters["mediaFolders"].IsTrue())
 				{
 					// They asked for the media folders
-					listOfFolders = Folder.MediaFolders();
+					listOfFolders = Injection.Kernel.Get<IFolderRepository>().MediaFolders();
 				}
 				else
 				{
 					// They didn't ask for media folders, so send top level folders
-					listOfFolders = Folder.TopLevelFolders();
+					listOfFolders = Injection.Kernel.Get<IFolderRepository>().TopLevelFolders();
 				}
 			}
 

@@ -58,8 +58,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="src\BaseClasses.cs" />
     <Compile Include="src\Extensions\DateTimeExtensions.cs" />
-    <Compile Include="src\Injected\IDatabase.cs" />
-    <Compile Include="src\Injected\IServerSettings.cs" />
     <Compile Include="src\Model\Album.cs" />
     <Compile Include="src\Model\Art.cs" />
     <Compile Include="src\Model\ArtItem.cs" />
@@ -67,14 +65,10 @@
     <Compile Include="src\Model\FileType.cs" />
     <Compile Include="src\Model\Folder.cs" />
     <Compile Include="src\Model\Genre.cs" />
-    <Compile Include="src\Model\IItem.cs" />
-    <Compile Include="src\Model\IMediaItem.cs" />
-    <Compile Include="src\Model\Item.cs" />
     <Compile Include="src\Model\ItemType.cs" />
     <Compile Include="src\Model\MediaItem.cs" />
     <Compile Include="src\Model\Playlist.cs" />
     <Compile Include="src\Model\PlaylistItem.cs" />
-    <Compile Include="src\Model\QueryLog.cs" />
     <Compile Include="src\Model\ServerSettingsData.cs" />
     <Compile Include="src\Model\Session.cs" />
     <Compile Include="src\Model\Song.cs" />
@@ -87,6 +81,33 @@
     <Compile Include="src\SQLiteNet.cs" />
     <Compile Include="src\Static\Injection.cs" />
     <Compile Include="src\Static\Utility.cs" />
+    <Compile Include="src\Repository\AlbumRepository.cs" />
+    <Compile Include="src\Injection\IDatabase.cs" />
+    <Compile Include="src\Injection\IServerSettings.cs" />
+    <Compile Include="src\Injection\CoreModule.cs" />
+    <Compile Include="src\Repository\Interfaces\IAlbumRepository.cs" />
+    <Compile Include="src\Repository\Interfaces\IArtRepository.cs" />
+    <Compile Include="src\Repository\ArtRepository.cs" />
+    <Compile Include="src\Repository\Interfaces\IArtistRepository.cs" />
+    <Compile Include="src\Repository\ArtistRepository.cs" />
+    <Compile Include="src\Repository\Interfaces\IFolderRepository.cs" />
+    <Compile Include="src\Repository\FolderRepository.cs" />
+    <Compile Include="src\Repository\Interfaces\IGenreRepository.cs" />
+    <Compile Include="src\Model\Interfaces\IItem.cs" />
+    <Compile Include="src\Model\Interfaces\IMediaItem.cs" />
+    <Compile Include="src\Repository\GenreRepository.cs" />
+    <Compile Include="src\Repository\ItemRepository.cs" />
+    <Compile Include="src\Repository\Interfaces\IItemRepository.cs" />
+    <Compile Include="src\Repository\Interfaces\ISessionRepository.cs" />
+    <Compile Include="src\Repository\SessionRepository.cs" />
+    <Compile Include="src\Repository\Interfaces\ISongRepository.cs" />
+    <Compile Include="src\Repository\SongRepository.cs" />
+    <Compile Include="src\Repository\Interfaces\IStatRepository.cs" />
+    <Compile Include="src\Repository\StatRepository.cs" />
+    <Compile Include="src\Repository\Interfaces\IUserRepository.cs" />
+    <Compile Include="src\Repository\UserRepository.cs" />
+    <Compile Include="src\Repository\Interfaces\IVideoRepository.cs" />
+    <Compile Include="src\Repository\VideoRepository.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -98,8 +119,11 @@
   -->
   <ItemGroup>
     <Folder Include="lib_native\" />
-    <Folder Include="src\Injected\" />
     <Folder Include="src\Extensions\" />
+    <Folder Include="src\Repository\" />
+    <Folder Include="src\Injection\" />
+    <Folder Include="src\Repository\Interfaces\" />
+    <Folder Include="src\Model\Interfaces\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="lib\taglib-sharp.dll" />

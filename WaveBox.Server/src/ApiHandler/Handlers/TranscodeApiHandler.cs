@@ -6,7 +6,7 @@ using System.IO;
 using System.Threading;
 using Newtonsoft.Json;
 using Ninject;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 using WaveBox.Model;
 using WaveBox.Server.Extensions;
 using WaveBox.Static;
@@ -14,6 +14,7 @@ using WaveBox.Service;
 using WaveBox.Service.Services;
 using WaveBox.Service.Services.Http;
 using WaveBox.Transcoding;
+using WaveBox.Model.Repository;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -70,7 +71,7 @@ namespace WaveBox.ApiHandler.Handlers
 			try
 			{
 				// Set up default transcoding parameters
-				ItemType itemType = Item.ItemTypeForItemId(id);
+				ItemType itemType = Injection.Kernel.Get<IItemRepository>().ItemTypeForItemId(id);
 				IMediaItem item = null;
 				TranscodeType transType = TranscodeType.MP3;
 				bool isDirect = false;

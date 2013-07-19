@@ -5,7 +5,7 @@ using System.Text;
 using Newtonsoft.Json;
 using Ninject;
 using WaveBox.ApiHandler;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 using WaveBox.Model;
 using WaveBox.PodcastManagement;
 using WaveBox.Static;

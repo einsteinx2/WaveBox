@@ -5,10 +5,11 @@ using System.Net;
 using System.IO;
 using Ninject;
 using WaveBox.Core.Extensions;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 using WaveBox.Model;
 using WaveBox.OperationQueue;
 using WaveBox.Static;
+using WaveBox.Model.Repository;
 
 namespace WaveBox.Service.Services.Cron
 {
@@ -28,7 +29,7 @@ namespace WaveBox.Service.Services.Cron
 		public static void Start()
 		{
 			// Delete all expired users
-			foreach (User u in User.ExpiredUsers())
+			foreach (User u in Injection.Kernel.Get<IUserRepository>().ExpiredUsers())
 			{
 				if (u.Delete())
 				{
@@ -41,7 +42,7 @@ namespace WaveBox.Service.Services.Cron
 			}
 
 			// Grab a list of all sessions
-			var sessions = Session.AllSessions();
+			var sessions = Injection.Kernel.Get<ISessionRepository>().AllSessions();
 
 			// Grab the current UNIX time
 			long unixTime = DateTime.Now.ToUniversalUnixTimestamp();

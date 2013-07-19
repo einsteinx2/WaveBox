@@ -38,7 +38,7 @@ using Newtonsoft.Json;
 using log4net;
 ////////////
 using Ninject;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 
 
 #if WINDOWS_PHONE && !USE_CSHARP_SQLITE

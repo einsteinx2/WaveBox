@@ -339,7 +339,7 @@ namespace WaveBox.Service.Services.Http
 				binStream.Flush();
 			}
 			// If write failure, client disconnected, so ignore and continue
-			catch (IOException e)
+			catch (IOException)
 			{
 			}
 			catch (Exception e)
@@ -390,7 +390,7 @@ namespace WaveBox.Service.Services.Http
 				outStream.Flush();
 			}
 			// If write failure, client disconnected, so ignore and continue
-			catch (IOException e)
+			catch (IOException)
 			{
 			}
 			catch (Exception e)

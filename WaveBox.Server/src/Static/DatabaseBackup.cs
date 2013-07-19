@@ -5,7 +5,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Ninject;
-using WaveBox.Core.Injected;
+using WaveBox.Core.Injection;
 using WaveBox.Static;
 
 namespace WaveBox

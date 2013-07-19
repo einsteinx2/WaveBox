@@ -1,5 +1,6 @@
 using System;
 using Ninject;
+using WaveBox.Core;
 
 namespace WaveBox.Static
 {
@@ -9,7 +10,7 @@ namespace WaveBox.Static
 
 		static Injection()
 		{
-			Kernel = new StandardKernel();
+			Kernel = new StandardKernel(new CoreModule());
 		}
 	}
 }
