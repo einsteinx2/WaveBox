@@ -99,10 +99,14 @@ namespace WaveBox.Service.Services.Http
 				{
 					HandlePOSTRequest();
 				}
+				else
+				{
+					WriteMethodNotAllowedHeader();
+				}
 			}
 			catch
 			{
-				logger.Error("Received malformed URL from client");
+				logger.Error("Exception occurred during HTTP processing");
 				WriteErrorHeader();
 			}
 			finally
@@ -222,7 +226,17 @@ namespace WaveBox.Service.Services.Http
 		public void WriteErrorHeader()
 		{
 			StreamWriter outStream = new StreamWriter(new BufferedStream(Socket.GetStream()));
-			outStream.WriteLine("HTTP/1.1 404 File not found");
+			outStream.WriteLine("HTTP/1.1 404 Not Found");
+			outStream.WriteLine("Connection: close");
+			outStream.WriteLine("");
+			outStream.Flush();
+		}
+
+		public void WriteMethodNotAllowedHeader()
+		{
+			StreamWriter outStream = new StreamWriter(new BufferedStream(Socket.GetStream()));
+			outStream.WriteLine("HTTP/1.1 405 Method Not Allowed");
+			outStream.WriteLine("Allow: GET, POST");
 			outStream.WriteLine("Connection: close");
 			outStream.WriteLine("");
 			outStream.Flush();
@@ -324,6 +338,10 @@ namespace WaveBox.Service.Services.Http
 				binStream.Write(output);
 				binStream.Flush();
 			}
+			// If write failure, client disconnected, so ignore and continue
+			catch (IOException e)
+			{
+			}
 			catch (Exception e)
 			{
 				logger.Error("Failed to write compressed HTTP response: " + encoding);
@@ -363,13 +381,17 @@ namespace WaveBox.Service.Services.Http
 			// Makes no sense at all, but for whatever reason, all ajax calls fail with a cross site 
 			// scripting error if Content-Type is set, but the player needs it for files for seeking,
 			// so pass -1 for no Content-Length header for all text requests
-			WriteSuccessHeader(Encoding.UTF8.GetByteCount(text), mimeType + ";charset=utf-8", null, DateTime.UtcNow);
+			WriteSuccessHeader(Encoding.UTF8.GetByteCount(text) + 3, mimeType + ";charset=utf-8", null, DateTime.UtcNow);
 
 			try
 			{
 				StreamWriter outStream = new StreamWriter(new BufferedStream(Socket.GetStream()), Encoding.UTF8);
 				outStream.Write(text);
 				outStream.Flush();
+			}
+			// If write failure, client disconnected, so ignore and continue
+			catch (IOException e)
+			{
 			}
 			catch (Exception e)
 			{
