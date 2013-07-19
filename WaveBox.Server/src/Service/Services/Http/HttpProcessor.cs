@@ -303,13 +303,17 @@ namespace WaveBox.Service.Services.Http
 			outStream.WriteLine("");
 			outStream.Flush();
 
-			if (logger.IsInfoEnabled) logger.Info(String.Format("Success, status: {0}, length: {1}, encoding: {2}, ETag: {3}, Last-Modified: {4}",
-				status,
-				contentLength,
-				encoding ?? "none",
-				CreateETagString(lastModified),
-				lastModified.ToRFC1123()
-			));
+			// Only log API responses
+			if (HttpUrl.Contains("api"))
+			{
+				if (logger.IsInfoEnabled) logger.Info(String.Format("Success, status: {0}, length: {1}, encoding: {2}, ETag: {3}, Last-Modified: {4}",
+					status,
+					contentLength,
+					encoding ?? "none",
+					CreateETagString(lastModified),
+					lastModified.ToRFC1123()
+				));
+			}
 		}
 
 		public void WriteCompressedText(byte[] input, string mimeType, string encoding)
@@ -435,8 +439,6 @@ namespace WaveBox.Service.Services.Http
 			// If it exists, check to see if the headers contains an If-Modified-Since or If-None-Match entry
 			if (HttpHeaders.ContainsKey("If-Modified-Since"))
 			{
-				if (logger.IsInfoEnabled) logger.Info("If-Modified-Since header: " + HttpHeaders["If-Modified-Since"]);
-
 				if (HttpHeaders["If-Modified-Since"].Equals(lastMod.ToRFC1123()))
 				{
 					WriteNotModifiedHeader();
@@ -445,8 +447,6 @@ namespace WaveBox.Service.Services.Http
 			}
 			if (HttpHeaders.ContainsKey("If-None-Match"))
 			{
-				if (logger.IsInfoEnabled) logger.Info("If-None-Match header: " + HttpHeaders["If-None-Match"]);
-
 				if (HttpHeaders["If-None-Match"].Equals(CreateETagString(lastMod)))
 				{
 					WriteNotModifiedHeader();

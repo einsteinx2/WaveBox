@@ -49,7 +49,7 @@ namespace WaveBox.ApiHandler.Handlers
 			// Convert to integer
 			int artId = Int32.MaxValue;
 			Int32.TryParse(Uri.Parameters["id"], out artId);
-			
+
 			// If art ID was invalid, write error header
 			if (artId == Int32.MaxValue)
 			{
@@ -83,7 +83,6 @@ namespace WaveBox.ApiHandler.Handlers
 						// First try ImageMagick
 						try
 						{
-							logger.Info("Using Magick to resize image");
 							Byte[] data = ResizeImageMagick(stream, size);
 							stream = new MemoryStream(data, false);
 						}
@@ -93,10 +92,9 @@ namespace WaveBox.ApiHandler.Handlers
 						}
 					}
 
-					// If ImageMagick dll isn't loaded, or this is Windows,  
+					// If ImageMagick dll isn't loaded, or this is Windows,
 					if (imageMagickFailed || ServerUtility.DetectOS() == ServerUtility.OS.Windows)
 					{
-						logger.Info("Using GDI to resize image");
 						// Resize image, put it in memory stream
 						Image resized = ResizeImageGDI(new Bitmap(stream), new Size(size, size));
 						stream = new MemoryStream();
@@ -129,15 +127,13 @@ namespace WaveBox.ApiHandler.Handlers
 			int sourceWidth = (int)ImageMagickInterop.GetWidth(wand);
 			int sourceHeight = (int)ImageMagickInterop.GetHeight(wand);
 
-			logger.Info(String.Format("sourceWidth: {0}, sourceHeight: {1}, stream length: {2}, success: {3}, wand: {4}", sourceWidth, sourceHeight, stream.Length, success, wand));
-			
 			float nPercent = 0;
 			float nPercentW = 0;
 			float nPercentH = 0;
-			
+
 			nPercentW = ((float)width / (float)sourceWidth);
 			nPercentH = ((float)width / (float)sourceHeight);
-			
+
 			if (nPercentH < nPercentW)
 			{
 				nPercent = nPercentH;
@@ -146,16 +142,12 @@ namespace WaveBox.ApiHandler.Handlers
 			{
 				nPercent = nPercentW;
 			}
-			
+
 			int destWidth = (int)(sourceWidth * nPercent);
 			int destHeight = (int)(sourceHeight * nPercent);
 
-			logger.Info(String.Format("destWidth: {0}, destHeight: {1}", destWidth, destHeight));
-
 			ImageMagickInterop.ResizeImage(wand, (IntPtr)destWidth, (IntPtr)destHeight, ImageMagickInterop.Filter.Lanczos, 1.0);
 			byte[] newData = ImageMagickInterop.GetImageBlob(wand);
-
-			logger.Info(String.Format("new wand size: width = {0}, height = {1}; newData len = {2}", ImageMagickInterop.GetWidth(wand), ImageMagickInterop.GetHeight(wand), newData.Length));
 
 			// cleanup
 			ImageMagickInterop.DestroyWand(wand);
