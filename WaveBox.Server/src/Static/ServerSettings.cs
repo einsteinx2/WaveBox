@@ -77,7 +77,7 @@ namespace WaveBox.Static
 
 			dynamic json = JsonConvert.DeserializeObject(configFile);
 			bool settingsChanged = false;
-			
+
 			try
 			{
 				string podcastFolderTemp = json.podcastFolderDoesntExist;
@@ -352,7 +352,7 @@ namespace WaveBox.Static
 
 					settingsTemplate.Close();
 					settingsOut.Close();
-				} 
+				}
 				catch (Exception e)
 				{
 					logger.Error(e);
@@ -404,6 +404,9 @@ namespace WaveBox.Static
 			ISQLiteConnection conn = null;
 			try
 			{
+				// Trim all trailing slashes from paths, to prevent potential constraint issues
+				path = path.TrimEnd('/', '\\');
+
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				IList<Folder> result = conn.Query<Folder>("SELECT * FROM Folder WHERE FolderPath = ? AND MediaFolderId IS NULL", path);
 
@@ -438,7 +441,7 @@ namespace WaveBox.Static
 			bool inBlockComment = false;
 			bool inStringLiteral = false;
 
-			Action<char> AppendDiscardingWhitespace = (c) => 
+			Action<char> AppendDiscardingWhitespace = (c) =>
 			{
 				if (c != '\t' && c != ' ')
 				{
@@ -503,7 +506,7 @@ namespace WaveBox.Static
 							continue;
 						}
 					}
-					else 
+					else
 					{
 						// if we are in a block comment, make sure that we shouldn't be ending the block comment
 						if (curr == '*' && next == '/')
