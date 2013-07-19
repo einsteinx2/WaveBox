@@ -308,6 +308,9 @@
     <None Include="lib\System.Data.SQLite.dll" />
     <None Include="lib\System.Data.SQLite.Linq.dll" />
     <None Include="lib\Ninject.dll" />
+    <None Include="lib_native\libWaveBoxFSEvents.dylib">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
