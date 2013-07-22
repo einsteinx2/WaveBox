@@ -14,6 +14,8 @@ namespace WaveBox.Model.Repository
 		List<Album> RandomAlbums(int limit = 10);
 		List<Album> RangeAlbums(char start, char end);
 		List<Album> LimitAlbums(int index, int duration = Int32.MinValue);
+		List<int> SongArtIds(int albumId);
+		List<int> FolderArtIds(int albumId);
 	}
 }
 

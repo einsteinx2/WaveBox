@@ -88,58 +88,18 @@ namespace WaveBox.Model
 
 		private List<int> SongArtIds()
 		{
-			List<int> songArtIds = new List<int>();
+			if (AlbumId == null)
+				return new List<int>();
 
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				var result = conn.DeferredQuery<Art>("SELECT ArtItem.ArtId FROM Song " +
-													 "LEFT JOIN ArtItem ON Song.ItemId = ArtItem.ItemId " +
-													 "WHERE Song.AlbumId = ? AND ArtItem.ArtId IS NOT NULL GROUP BY ArtItem.ArtId", AlbumId);
-				foreach (Art art in result)
-				{
-					songArtIds.Add((int)art.ArtId);
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-			}
-
-			return songArtIds;
+			return Injection.Kernel.Get<IAlbumRepository>().SongArtIds((int)AlbumId);
 		}
 
 		private List<int> FolderArtIds()
 		{
-			List<int> folderArtIds = new List<int>();
+			if (AlbumId == null)
+				return new List<int>();
 
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				var result = conn.DeferredQuery<Art>("SELECT ArtItem.ArtId FROM Song " +
-													 "LEFT JOIN ArtItem ON Song.FolderId = ArtItem.ItemId " +
-													 "WHERE Song.AlbumId = ? AND ArtItem.ArtId IS NOT NULL GROUP BY ArtItem.ArtId", AlbumId);
-				foreach (Art art in result)
-				{
-					folderArtIds.Add((int)art.ArtId);
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-			}
-
-			return folderArtIds;
+			return Injection.Kernel.Get<IAlbumRepository>().FolderArtIds((int)AlbumId);
 		}
 
 		public Artist Artist()

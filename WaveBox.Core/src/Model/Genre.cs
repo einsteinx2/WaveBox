@@ -60,97 +60,34 @@ namespace WaveBox.Model
 
 		public List<Artist> ListOfArtists()
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				return conn.Query<Artist>("SELECT Artist.* " +
-										"FROM Genre " + 
-										"LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
-										"LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
-										"WHERE Genre.GenreId = ? GROUP BY Artist.ArtistId", GenreId);
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-			}
+			if (GenreId == null)
+				return new List<Artist>();
 
-			return new List<Artist>();
+			return Injection.Kernel.Get<IGenreRepository>().ListOfArtists((int)GenreId);
 		}
 
 		public List<Album> ListOfAlbums()
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				return conn.Query<Album>("SELECT Album.* " +
-										 "FROM Genre " + 
-										 "LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
-										 "LEFT JOIN Album ON Song.AlbumId = Album.ItemId " +
-										 "WHERE Genre.GenreId = ? GROUP BY Album.ItemId", GenreId);
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-			}
-			
-			return new List<Album>();
+			if (GenreId == null)
+				return new List<Album>();
+
+			return Injection.Kernel.Get<IGenreRepository>().ListOfAlbums((int)GenreId);
 		}
 
 		public List<Song> ListOfSongs()
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				return conn.Query<Song>("SELECT Song.*, Genre.GenreName " +
-										"FROM Genre " + 
-										"LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
-										"WHERE Genre.GenreId = ? GROUP BY Song.ItemId", conn);
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-			}
-			
-			return new List<Song>();
+			if (GenreId == null)
+				return new List<Song>();
+
+			return Injection.Kernel.Get<IGenreRepository>().ListOfSongs((int)GenreId);
 		}
 
 		public List<Folder> ListOfFolders()
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				return conn.Query<Folder>("SELECT Folder.* " +
-										  "FROM Genre " + 
-										  "LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
-										  "LEFT JOIN Folder ON Song.FolderId = Folder.FolderId " +
-										  "WHERE Genre.GenreId = ? GROUP BY Folder.FolderId", GenreId);
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-			}
-			
-			return new List<Folder>();
+			if (GenreId == null)
+				return new List<Folder>();
+
+			return Injection.Kernel.Get<IGenreRepository>().ListOfFolders((int)GenreId);
 		}
 
 		public static int CompareGenresByName(Genre x, Genre y)

@@ -2,6 +2,9 @@ using System;
 using WaveBox.Core.Injection;
 using System.Collections.Generic;
 using Cirrious.MvvmCross.Plugins.Sqlite;
+using WaveBox.Static;
+using Ninject;
+using System.IO;
 
 namespace WaveBox.Model.Repository
 {
@@ -61,6 +64,100 @@ namespace WaveBox.Model.Repository
 
 			folders.Sort(Folder.CompareFolderByName);
 			return folders;
+		}
+
+		public List<Song> ListOfSongs(int folderId, bool recursive = false)
+		{
+			var listOfSongs = new List<Song>();
+
+			// Recursively add media in all subfolders to the list.
+			listOfSongs.AddRange(Injection.Kernel.Get<ISongRepository>().SearchSongs("FolderId", folderId.ToString()));
+
+			if (recursive == true)
+			{
+				foreach (var subf in ListOfSubFolders(folderId))
+				{
+					listOfSongs.AddRange(subf.ListOfSongs(true));
+				}
+			}
+
+			return listOfSongs;
+		}
+
+		public List<Video> ListOfVideos(int folderId, bool recursive = false)
+		{
+			var listOfVideos = new List<Video>();
+
+			// Recursively add media in all subfolders to the list.
+			listOfVideos.AddRange(Injection.Kernel.Get<IVideoRepository>().SearchVideos("FolderId", folderId.ToString()));
+
+			if (recursive == true)
+			{
+				foreach (var subf in ListOfSubFolders(folderId))
+				{
+					listOfVideos.AddRange(subf.ListOfVideos(true));
+				}
+			}
+
+			return listOfVideos;
+		}
+
+		public List<Folder> ListOfSubFolders(int folderId)
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+				List<Folder> folders = conn.Query<Folder>("SELECT * FROM Folder WHERE ParentFolderId = ?", folderId);
+				folders.Sort(Folder.CompareFolderByName);
+				return folders;
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+			}
+
+			return new List<Folder>();
+		}
+
+		public int? GetParentFolderId(string path)
+		{
+			string parentFolderPath = Directory.GetParent(path).FullName;
+
+			int? pFolderId = null;
+
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+				int id = conn.ExecuteScalar<int>("SELECT FolderId FROM Folder WHERE FolderPath = ?", parentFolderPath);
+
+				if (id == 0)
+				{
+					if (logger.IsInfoEnabled) logger.Info("No db result for parent folder.  Constructing parent folder object.");
+					Folder f = new Folder.Factory().CreateFolder(parentFolderPath);
+					f.InsertFolder(false);
+					pFolderId = f.FolderId;
+				}
+				else
+				{
+					pFolderId = id;
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+			}
+
+			return pFolderId;
 		}
 	}
 }

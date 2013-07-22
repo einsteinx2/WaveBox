@@ -8,7 +8,10 @@ namespace WaveBox.Model.Repository
 	{
 		List<Folder> MediaFolders();
 		List<Folder> TopLevelFolders();
-
+		List<Song> ListOfSongs(int folderId, bool recursive = false);
+		List<Video> ListOfVideos(int folderId, bool recursive = false);
+		List<Folder> ListOfSubFolders(int folderId);
+		int? GetParentFolderId(string path);
 	}
 }
 

@@ -277,6 +277,62 @@ namespace WaveBox.Model.Repository
 			// We had an exception somehow, so return an empty list
 			return new List<Album>();
 		}
+
+		public List<int> SongArtIds(int albumId)
+		{
+			List<int> songArtIds = new List<int>();
+
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+				var result = conn.DeferredQuery<Art>("SELECT ArtItem.ArtId FROM Song " +
+				                                     "LEFT JOIN ArtItem ON Song.ItemId = ArtItem.ItemId " +
+				                                     "WHERE Song.AlbumId = ? AND ArtItem.ArtId IS NOT NULL GROUP BY ArtItem.ArtId", albumId);
+				foreach (Art art in result)
+				{
+					songArtIds.Add((int)art.ArtId);
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+			}
+
+			return songArtIds;
+		}
+
+		public List<int> FolderArtIds(int albumId)
+		{
+			List<int> folderArtIds = new List<int>();
+
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+				var result = conn.DeferredQuery<Art>("SELECT ArtItem.ArtId FROM Song " +
+					"LEFT JOIN ArtItem ON Song.FolderId = ArtItem.ItemId " +
+					"WHERE Song.AlbumId = ? AND ArtItem.ArtId IS NOT NULL GROUP BY ArtItem.ArtId", albumId);
+				foreach (Art art in result)
+				{
+					folderArtIds.Add((int)art.ArtId);
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+			}
+
+			return folderArtIds;
+		}
 	}
 }
 
