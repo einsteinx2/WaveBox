@@ -53,7 +53,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 
 				// Add artist by ID to the list
-				Artist a = new Artist.Factory().CreateArtist(id);
+				Artist a = Injection.Kernel.Get<IArtistRepository>().ArtistForId(id);
 				artists.Add(a);
 
 				// Add artist's albums to response

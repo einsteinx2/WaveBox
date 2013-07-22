@@ -3,7 +3,6 @@ using WaveBox.Core.Injection;
 using System.Collections.Generic;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using WaveBox.Static;
-using Ninject;
 using System.IO;
 
 namespace WaveBox.Model.Repository
@@ -14,16 +13,98 @@ namespace WaveBox.Model.Repository
 
 		private readonly IDatabase database;
 		private readonly IServerSettings serverSettings;
+		private readonly ISongRepository songRepository;
+		private readonly IVideoRepository videoRepository;
 
-		public FolderRepository(IDatabase database, IServerSettings serverSettings)
+		public FolderRepository(IDatabase database, IServerSettings serverSettings, ISongRepository songRepository, IVideoRepository videoRepository)
 		{
 			if (database == null)
 				throw new ArgumentNullException("database");
 			if (serverSettings == null)
 				throw new ArgumentNullException("serverSettings");
+			if (songRepository == null)
+				throw new ArgumentNullException("songRepository");
+			if (videoRepository == null)
+				throw new ArgumentNullException("videoRepository");
 
 			this.database = database;
 			this.serverSettings = serverSettings;
+			this.songRepository = songRepository;
+			this.videoRepository = videoRepository;
+		}
+
+		public Folder FolderForId(int folderId)
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = database.GetSqliteConnection();
+
+				List<Folder> folder = conn.Query<Folder>("SELECT * FROM Folder WHERE FolderId = ? LIMIT 1", folderId);
+				if (folder.Count > 0)
+				{
+					return folder[0];
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				database.CloseSqliteConnection(conn);
+			}
+
+			return null;
+		}
+
+		public Folder FolderForPath(string path)
+		{
+			Folder folder = new Folder();
+
+			if (path == null || path == "")
+			{
+				return folder;
+			}
+
+			folder.FolderPath = path;
+			folder.FolderName = Path.GetFileName(path);
+
+			foreach (Folder mf in MediaFolders())
+			{
+				if (path.Contains(mf.FolderPath))
+				{
+					folder.MediaFolderId = mf.FolderId;
+				}
+			}
+
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = database.GetSqliteConnection();
+				if (folder.IsMediaFolder() || serverSettings.MediaFolders == null)
+				{
+					int folderId = conn.ExecuteScalar<int>("SELECT FolderId FROM Folder WHERE FolderName = ? AND ParentFolderId IS NULL", folder.FolderName);
+					folder.FolderId = folderId == 0 ? (int?)null : folderId;
+				}
+				else
+				{
+					folder.ParentFolderId = GetParentFolderId(folder.FolderPath);
+
+					int folderId = conn.ExecuteScalar<int>("SELECT FolderId FROM Folder WHERE FolderName = ? AND ParentFolderId = ?", folder.FolderName, folder.ParentFolderId);
+					folder.FolderId = folderId == 0 ? (int?)null : folderId;
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				database.CloseSqliteConnection(conn);
+			}
+
+			return folder;
 		}
 
 		public List<Folder> MediaFolders()
@@ -71,7 +152,7 @@ namespace WaveBox.Model.Repository
 			var listOfSongs = new List<Song>();
 
 			// Recursively add media in all subfolders to the list.
-			listOfSongs.AddRange(Injection.Kernel.Get<ISongRepository>().SearchSongs("FolderId", folderId.ToString()));
+			listOfSongs.AddRange(songRepository.SearchSongs("FolderId", folderId.ToString()));
 
 			if (recursive == true)
 			{
@@ -89,7 +170,7 @@ namespace WaveBox.Model.Repository
 			var listOfVideos = new List<Video>();
 
 			// Recursively add media in all subfolders to the list.
-			listOfVideos.AddRange(Injection.Kernel.Get<IVideoRepository>().SearchVideos("FolderId", folderId.ToString()));
+			listOfVideos.AddRange(videoRepository.SearchVideos("FolderId", folderId.ToString()));
 
 			if (recursive == true)
 			{
@@ -107,7 +188,7 @@ namespace WaveBox.Model.Repository
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+				conn = database.GetSqliteConnection();
 				List<Folder> folders = conn.Query<Folder>("SELECT * FROM Folder WHERE ParentFolderId = ?", folderId);
 				folders.Sort(Folder.CompareFolderByName);
 				return folders;
@@ -118,7 +199,7 @@ namespace WaveBox.Model.Repository
 			}
 			finally
 			{
-				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+				database.CloseSqliteConnection(conn);
 			}
 
 			return new List<Folder>();
@@ -133,13 +214,13 @@ namespace WaveBox.Model.Repository
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+				conn = database.GetSqliteConnection();
 				int id = conn.ExecuteScalar<int>("SELECT FolderId FROM Folder WHERE FolderPath = ?", parentFolderPath);
 
 				if (id == 0)
 				{
 					if (logger.IsInfoEnabled) logger.Info("No db result for parent folder.  Constructing parent folder object.");
-					Folder f = new Folder.Factory().CreateFolder(parentFolderPath);
+					Folder f = FolderForPath(parentFolderPath);
 					f.InsertFolder(false);
 					pFolderId = f.FolderId;
 				}
@@ -154,7 +235,7 @@ namespace WaveBox.Model.Repository
 			}
 			finally
 			{
-				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+				database.CloseSqliteConnection(conn);
 			}
 
 			return pFolderId;

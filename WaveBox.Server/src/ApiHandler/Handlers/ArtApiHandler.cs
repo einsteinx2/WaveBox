@@ -58,7 +58,7 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 
 			// Grab art stream
-			Art art = new Art.Factory().CreateArt(artId);
+			Art art = Injection.Kernel.Get<IArtRepository>().ArtForId(artId);
 			Stream stream = CreateStream(art);
 
 			// If the stream could not be produced, return error
@@ -124,34 +124,41 @@ namespace WaveBox.ApiHandler.Handlers
 			stream.Read(b, 0, (int)stream.Length);
 			bool success = ImageMagickInterop.ReadImageBlob(wand, b);
 
-			int sourceWidth = (int)ImageMagickInterop.GetWidth(wand);
-			int sourceHeight = (int)ImageMagickInterop.GetHeight(wand);
-
-			float nPercent = 0;
-			float nPercentW = 0;
-			float nPercentH = 0;
-
-			nPercentW = ((float)width / (float)sourceWidth);
-			nPercentH = ((float)width / (float)sourceHeight);
-
-			if (nPercentH < nPercentW)
+			if (success)
 			{
-				nPercent = nPercentH;
+				int sourceWidth = (int)ImageMagickInterop.GetWidth(wand);
+				int sourceHeight = (int)ImageMagickInterop.GetHeight(wand);
+
+				float nPercent = 0;
+				float nPercentW = 0;
+				float nPercentH = 0;
+
+				nPercentW = ((float)width / (float)sourceWidth);
+				nPercentH = ((float)width / (float)sourceHeight);
+
+				if (nPercentH < nPercentW)
+				{
+					nPercent = nPercentH;
+				}
+				else
+				{
+					nPercent = nPercentW;
+				}
+
+				int destWidth = (int)(sourceWidth * nPercent);
+				int destHeight = (int)(sourceHeight * nPercent);
+
+				ImageMagickInterop.ResizeImage(wand, (IntPtr)destWidth, (IntPtr)destHeight, ImageMagickInterop.Filter.Lanczos, 1.0);
+				byte[] newData = ImageMagickInterop.GetImageBlob(wand);
+
+				// cleanup
+				ImageMagickInterop.DestroyWand(wand);
+				return newData;
 			}
 			else
 			{
-				nPercent = nPercentW;
+				return b;
 			}
-
-			int destWidth = (int)(sourceWidth * nPercent);
-			int destHeight = (int)(sourceHeight * nPercent);
-
-			ImageMagickInterop.ResizeImage(wand, (IntPtr)destWidth, (IntPtr)destHeight, ImageMagickInterop.Filter.Lanczos, 1.0);
-			byte[] newData = ImageMagickInterop.GetImageBlob(wand);
-
-			// cleanup
-			ImageMagickInterop.DestroyWand(wand);
-			return newData;
 		}
 
 		// Thanks to http://www.switchonthecode.com/tutorials/csharp-tutorial-image-editing-saving-cropping-and-resizing
@@ -226,7 +233,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 		private Stream StreamForSong(int songId)
 		{
-			Song song = new Song.Factory().CreateSong(songId);
+			Song song = Injection.Kernel.Get<ISongRepository>().SongForId(songId);
 			Stream stream = null;
 
 			// Open the image from the tag
@@ -252,7 +259,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 		private Stream StreamForFolder(int folderId)
 		{
-			Folder folder = new Folder.Factory().CreateFolder(folderId);
+			Folder folder = Injection.Kernel.Get<IFolderRepository>().FolderForId(folderId);
 			Stream stream = null;
 
 			string artPath = FolderArtPath(folder);

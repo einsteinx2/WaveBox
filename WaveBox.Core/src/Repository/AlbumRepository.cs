@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using WaveBox.Core.Injection;
 using System.Linq;
 using WaveBox.Static;
-using Ninject;
 
 namespace WaveBox.Model.Repository
 {
@@ -14,18 +13,84 @@ namespace WaveBox.Model.Repository
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private readonly IDatabase database;
+		private readonly IItemRepository itemRepository;
 
-		public AlbumRepository(IDatabase database)
+		public AlbumRepository(IDatabase database, IItemRepository itemRepository)
 		{
 			if (database == null)
 				throw new ArgumentNullException("database");
+			if (itemRepository == null)
+				throw new ArgumentNullException("itemRepository");
 
 			this.database = database;
+			this.itemRepository = itemRepository;
+		}
+
+		public Album AlbumForId(int albumId)
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = database.GetSqliteConnection();
+				var result = conn.DeferredQuery<Album>("SELECT Album.*, Artist.ArtistName FROM Album " +
+				                                       "LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
+				                                       "WHERE Album.AlbumId = ?", albumId);
+
+				foreach (Album a in result)
+				{
+					return a;
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				database.CloseSqliteConnection(conn);
+			}
+
+			return new Album();
+		}
+
+		public Album AlbumForName(string albumName, int? artistId)
+		{
+			if (albumName == null || albumName == "")
+			{
+				return new Album();
+			}
+
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = database.GetSqliteConnection();
+				var result = conn.DeferredQuery<Album>("SELECT Album.*, Artist.ArtistName FROM Album " +
+				                                       "LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
+				                                       "WHERE Album.AlbumName = ? AND Album.ArtistId = ?", albumName, artistId);
+
+				foreach (Album a in result)
+				{
+					return a;
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				database.CloseSqliteConnection(conn);
+			}
+
+			Album album = new Album();
+			album.AlbumName = albumName;
+			album.ArtistId = artistId;
+			return album;
 		}
 
 		public bool InsertAlbum(string albumName, int? artistId, int? releaseYear)
 		{
-			int? itemId = Injection.Kernel.Get<IItemRepository>().GenerateItemId(ItemType.Album);
+			int? itemId = itemRepository.GenerateItemId(ItemType.Album);
 			if (itemId == null)
 			{
 				return false;
@@ -64,7 +129,7 @@ namespace WaveBox.Model.Repository
 				return new Album();
 			}
 
-			Album a = new Album.Factory().CreateAlbum(albumName, artistId);
+			Album a = AlbumForName(albumName, artistId);
 
 			if (a.AlbumId == null)
 			{
@@ -77,7 +142,7 @@ namespace WaveBox.Model.Repository
 				{
 					// The insert failed because this album was inserted by another
 					// thread, so grab the album id, it will exist this time
-					a = new Album.Factory().CreateAlbum(albumName, artistId);
+					a = AlbumForName(albumName, artistId);
 				}
 			}
 
@@ -285,7 +350,7 @@ namespace WaveBox.Model.Repository
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+				conn = database.GetSqliteConnection();
 				var result = conn.DeferredQuery<Art>("SELECT ArtItem.ArtId FROM Song " +
 				                                     "LEFT JOIN ArtItem ON Song.ItemId = ArtItem.ItemId " +
 				                                     "WHERE Song.AlbumId = ? AND ArtItem.ArtId IS NOT NULL GROUP BY ArtItem.ArtId", albumId);
@@ -300,7 +365,7 @@ namespace WaveBox.Model.Repository
 			}
 			finally
 			{
-				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+				database.CloseSqliteConnection(conn);
 			}
 
 			return songArtIds;
@@ -313,7 +378,7 @@ namespace WaveBox.Model.Repository
 			ISQLiteConnection conn = null;
 			try
 			{
-				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+				conn = database.GetSqliteConnection();
 				var result = conn.DeferredQuery<Art>("SELECT ArtItem.ArtId FROM Song " +
 					"LEFT JOIN ArtItem ON Song.FolderId = ArtItem.ItemId " +
 					"WHERE Song.AlbumId = ? AND ArtItem.ArtId IS NOT NULL GROUP BY ArtItem.ArtId", albumId);
@@ -328,7 +393,7 @@ namespace WaveBox.Model.Repository
 			}
 			finally
 			{
-				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+				database.CloseSqliteConnection(conn);
 			}
 
 			return folderArtIds;

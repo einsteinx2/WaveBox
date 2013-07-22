@@ -5,8 +5,10 @@ namespace WaveBox.Model.Repository
 {
 	public interface IArtistRepository
 	{
-		bool InsertArtist(string artistName);
+		Artist ArtistForId(int? artistId);
 		Artist ArtistForName(string artistName);
+		bool InsertArtist(string artistName);
+		Artist ArtistForNameOrCreate(string artistName);
 		List<Artist> AllArtists();
 		int CountArtists();
 		List<Artist> SearchArtists(string field, string query, bool exact = true);

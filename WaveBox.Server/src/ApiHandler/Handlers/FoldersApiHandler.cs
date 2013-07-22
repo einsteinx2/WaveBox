@@ -51,7 +51,7 @@ namespace WaveBox.ApiHandler.Handlers
 			if (success)
 			{
 				// Return the folder for this id
-				containingFolder = new Folder.Factory().CreateFolder(id);
+				containingFolder = Injection.Kernel.Get<IFolderRepository>().FolderForId(id);
 				listOfFolders = containingFolder.ListOfSubFolders();
 
 				if (Uri.Parameters.ContainsKey("recursiveMedia") && Uri.Parameters["recursiveMedia"].IsTrue())

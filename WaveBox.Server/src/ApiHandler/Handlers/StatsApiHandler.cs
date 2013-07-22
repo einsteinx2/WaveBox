@@ -87,7 +87,7 @@ namespace WaveBox.ApiHandler
 					if ((itemType == ItemType.Song) && (statTypeEnum == StatType.PLAYED))
 					{
 						// Also record a play for the artist, album, and folder
-						Song song = new Song.Factory().CreateSong(itemIdInt);
+						Song song = Injection.Kernel.Get<ISongRepository>().SongForId(itemIdInt);
 						if ((object)song.AlbumId != null)
 						{
 							Injection.Kernel.Get<IStatRepository>().RecordStat((int)song.AlbumId, statTypeEnum, timeStampLong);

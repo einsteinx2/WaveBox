@@ -13,8 +13,6 @@ namespace WaveBox.Model
 {
 	public class Artist : IItem
 	{
-		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
 		[JsonIgnore, IgnoreRead, IgnoreWrite]
 		public int? ItemId { get { return ArtistId; } set { ArtistId = ItemId; } }
 
@@ -58,72 +56,6 @@ namespace WaveBox.Model
 		public static int CompareArtistsByName(Artist x, Artist y)
 		{
 			return StringComparer.OrdinalIgnoreCase.Compare(x.ArtistName, y.ArtistName);
-		}
-
-		public class Factory
-		{
-			public Artist CreateArtist(int? artistId)
-			{
-				if (artistId == null)
-				{
-					return new Artist();
-				}
-
-				ISQLiteConnection conn = null;
-				try
-				{
-					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-
-					var result = conn.DeferredQuery<Artist>("SELECT * FROM Artist WHERE ArtistId = ?", artistId);
-
-					foreach (Artist a in result)
-					{
-						return a;
-					}
-				}
-				catch (Exception e)
-				{
-					logger.Error(e);
-				}
-				finally
-				{
-					Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-				}
-
-				return new Artist();
-			}
-
-			public Artist CreateArtist(string artistName)
-			{
-				if (artistName == null || artistName == "")
-				{
-					return new Artist();
-				}
-
-				ISQLiteConnection conn = null;
-				try
-				{
-					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-					var result = conn.DeferredQuery<Artist>("SELECT * FROM Artist WHERE ArtistName = ?", artistName);
-
-					foreach (Artist a in result)
-					{
-						return a;
-					}
-				}
-				catch (Exception e)
-				{
-					logger.Error(e);
-				}
-				finally
-				{
-					Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-				}
-
-				Artist artist = new Artist();
-				artist.ArtistName = artistName;
-				return artist;
-			}
 		}
 	}
 }

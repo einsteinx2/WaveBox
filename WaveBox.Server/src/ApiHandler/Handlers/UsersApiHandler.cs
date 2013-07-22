@@ -47,7 +47,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 
 				// Create a test user and reply with the account info
-				User testUser = new User.Factory().CreateTestUser(success ? (int?)durationSeconds : null);
+				User testUser = Injection.Kernel.Get<IUserRepository>().CreateTestUser(success ? (int?)durationSeconds : null);
 				if (!ReferenceEquals(testUser, null))
 				{
 					listOfUsers.Add(testUser);
@@ -110,11 +110,11 @@ namespace WaveBox.ApiHandler.Handlers
 					}
 
 					// After all checks pass, delete this session, return user associated with it
-					var session = new Session.Factory().CreateSession(rowId);
+					var session = Injection.Kernel.Get<ISessionRepository>().SessionForRowId(rowId);
 					if (session != null)
 					{
 						session.DeleteSession();
-						listOfUsers.Add(new User.Factory().CreateUser(Convert.ToInt32(session.UserId)));
+						listOfUsers.Add(Injection.Kernel.Get<IUserRepository>().UserForId(Convert.ToInt32(session.UserId)));
 					}
 
 					try
@@ -155,7 +155,7 @@ namespace WaveBox.ApiHandler.Handlers
 				// On valid key, return a specific user, and their attributes
 				if (success)
 				{
-					User user = new User.Factory().CreateUser(id);
+					User user = Injection.Kernel.Get<IUserRepository>().UserForId(id);
 					listOfUsers.Add(user);
 				}
 				else

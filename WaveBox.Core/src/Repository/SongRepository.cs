@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using System.Text;
 using System.Linq;
+using System.Collections;
 
 namespace WaveBox.Model.Repository
 {
@@ -19,6 +20,37 @@ namespace WaveBox.Model.Repository
 				throw new ArgumentNullException("database");
 
 			this.database = database;
+		}
+
+		public Song SongForId(int songId)
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = database.GetSqliteConnection();
+				var result = conn.DeferredQuery<Song>("SELECT Song.*, Artist.ArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
+				                                              "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+				                                              "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
+				                                              "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
+				                                              "WHERE Song.ItemId = ? LIMIT 1", songId);
+
+				foreach (Song song in result)
+				{
+					// Record exists, so return it
+					return song;
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				database.CloseSqliteConnection(conn);
+			}
+
+			// No record found, so return an empty Song object
+			return new Song();
 		}
 
 		public IList<Song> SongsForIds(IList<int> songIds)

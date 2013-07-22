@@ -59,7 +59,7 @@ namespace WaveBox.Model
 		public bool UpdateSession(string sessionId)
 		{
 			// Update user's session based on its session ID
-			Session s = new Session.Factory().CreateSession(sessionId);
+			Session s = Injection.Kernel.Get<ISessionRepository>().SessionForSessionId(sessionId);
 
 			if (s != null)
 			{
@@ -95,7 +95,7 @@ namespace WaveBox.Model
 		}
 
 		// Compute password hash using PBKDF2
-		private static string ComputePasswordHash(string password, string salt, int iterations = HashIterations)
+		public static string ComputePasswordHash(string password, string salt, int iterations = HashIterations)
 		{
 			// Convert salt to byte array
 			byte[] saltBytes = Encoding.UTF8.GetBytes(salt);
@@ -109,7 +109,7 @@ namespace WaveBox.Model
 		}
 
 		// Use RNG crypto service to generate random bytes for salt
-		private static string GeneratePasswordSalt()
+		public static string GeneratePasswordSalt()
 		{
 			// Create byte array to store salt
 			byte[] salt = new byte[32];
@@ -245,120 +245,6 @@ namespace WaveBox.Model
 			}
 
 			return false;
-		}
-
-		public class Factory
-		{
-			public User CreateUser(int userId)
-			{
-				ISQLiteConnection conn = null;
-				try
-				{
-					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-					var result = conn.DeferredQuery<User>("SELECT * FROM User WHERE UserId = ?", userId);
-
-					foreach (var u in result)
-					{
-						u.Sessions = u.ListOfSessions();
-						return u;
-					}
-				}
-				catch (Exception e)
-				{
-					logger.Error(e);
-				}
-				finally
-				{
-					Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-				}
-
-				var user = new User();
-				user.UserId = userId;
-				return user;
-			}
-
-			public User CreateUser(string userName)
-			{
-				ISQLiteConnection conn = null;
-				try
-				{
-					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-					var result = conn.DeferredQuery<User>("SELECT * FROM User WHERE UserName = ?", userName);
-
-					foreach (var u in result)
-					{
-						u.Sessions = u.ListOfSessions();
-						return u;
-					}
-				}
-				catch (Exception e)
-				{
-					logger.Error(e);
-				}
-				finally
-				{
-					Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-				}
-
-				var user = new User();
-				user.UserName = userName;
-				return user;
-			}
-
-			public User CreateUser(string userName, string password, long? deleteTime)
-			{
-				int? itemId = Injection.Kernel.Get<IItemRepository>().GenerateItemId(ItemType.User);
-				if (itemId == null)
-				{
-					return null;
-				}
-
-				string salt = GeneratePasswordSalt();
-				string hash = ComputePasswordHash(password, salt);
-
-				ISQLiteConnection conn = null;
-				try
-				{
-					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-					var u = new User();
-					u.UserId = itemId;
-					u.UserName = userName;
-					u.PasswordHash = hash;
-					u.Password = password;
-					u.PasswordSalt = salt;
-					u.CreateTime = DateTime.Now.ToUniversalUnixTimestamp();
-					u.DeleteTime = deleteTime;
-					conn.Insert(u);
-
-					return u;
-				}
-				catch (NullReferenceException)
-				{
-					logger.Info("User '" + userName + "' already exists, skipping...");
-				}
-				catch (Exception e)
-				{
-					logger.Error(e);
-				}
-				finally
-				{
-					Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-				}
-
-				return new User();
-			}
-
-			public User CreateTestUser(long? durationSeconds)
-			{
-				// Create a new user with random username and password, that lasts for the specified duration
-				if (ReferenceEquals(durationSeconds, null))
-				{
-					// If no duration specified, use 24 hours
-					durationSeconds = 60 * 60 * 24;
-				}
-
-				return CreateUser(Utility.RandomString(16), Utility.RandomString(16), DateTime.Now.ToUniversalUnixTimestamp() + durationSeconds);
-			}
 		}
 	}
 }

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Cirrious.MvvmCross.Plugins.Sqlite;
-using Ninject;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Injection;
 using WaveBox.Model;

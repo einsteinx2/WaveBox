@@ -13,8 +13,6 @@ namespace WaveBox.Model
 {
 	public class Album : IItem
 	{
-		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
 		[JsonIgnore, IgnoreRead, IgnoreWrite]
 		public int? ItemId { get { return AlbumId; } set { AlbumId = ItemId; } }
 
@@ -104,7 +102,7 @@ namespace WaveBox.Model
 
 		public Artist Artist()
 		{
-			return new Artist.Factory().CreateArtist(ArtistId);
+			return Injection.Kernel.Get<IArtistRepository>().ArtistForId(ArtistId);
 		}
 
 		public List<Song> ListOfSongs()
@@ -115,75 +113,6 @@ namespace WaveBox.Model
 		public static int CompareAlbumsByName(Album x, Album y)
 		{
 			return StringComparer.OrdinalIgnoreCase.Compare(x.AlbumName, y.AlbumName);
-		}
-
-		public class Factory
-		{
-			public Factory()
-			{
-			}
-
-			public Album CreateAlbum(int albumId)
-			{
-				ISQLiteConnection conn = null;
-				try
-				{
-					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-					var result = conn.DeferredQuery<Album>("SELECT Album.*, Artist.ArtistName FROM Album " +
-															"LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
-															"WHERE Album.AlbumId = ?", albumId);
-
-					foreach (Album a in result)
-					{
-						return a;
-					}
-				}
-				catch (Exception e)
-				{
-					logger.Error(e);
-				}
-				finally
-				{
-					Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-				}
-
-				return new Album();
-			}
-
-			public Album CreateAlbum(string albumName, int? artistId)
-			{
-				if (albumName == null || albumName == "")
-				{
-					return new Album();
-				}
-
-				ISQLiteConnection conn = null;
-				try
-				{
-					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-					var result = conn.DeferredQuery<Album>("SELECT Album.*, Artist.ArtistName FROM Album " +
-															"LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
-															"WHERE Album.AlbumName = ? AND Album.ArtistId = ?", albumName, artistId);
-
-					foreach (Album a in result)
-					{
-						return a;
-					}
-				}
-				catch (Exception e)
-				{
-					logger.Error(e);
-				}
-				finally
-				{
-					Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-				}
-
-				Album album = new Album();
-				album.AlbumName = albumName;
-				album.ArtistId = artistId;
-				return album;
-			}
 		}
 	}
 }

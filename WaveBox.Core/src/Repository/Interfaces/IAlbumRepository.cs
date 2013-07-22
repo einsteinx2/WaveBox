@@ -6,6 +6,8 @@ namespace WaveBox.Model.Repository
 {
 	public interface IAlbumRepository
 	{
+		Album AlbumForId(int albumId);
+		Album AlbumForName(string albumName, int? artistId);
 		bool InsertAlbum(string albumName, int? artistId, int? releaseYear);
 		Album AlbumForName(string albumName, int? artistId, int? releaseYear = null);
 		List<Album> AllAlbums();

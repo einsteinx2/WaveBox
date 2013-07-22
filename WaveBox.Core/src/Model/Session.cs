@@ -96,58 +96,5 @@ namespace WaveBox.Model
 
 			return success;
 		}
-
-		public class Factory
-		{
-			public Session CreateSession(int rowId)
-			{
-				ISQLiteConnection conn = null;
-				try
-				{
-					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-					var result = conn.DeferredQuery<Session>("SELECT RowId AS RowId, * FROM Session WHERE RowId = ?", rowId);
-
-					foreach (var session in result)
-					{
-						return session;
-					}
-				}
-				catch (Exception e)
-				{
-					logger.Error(e);
-				}
-				finally
-				{
-					Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-				}
-
-				return new Session();
-			}
-
-			public Session CreateSession(string sessionId)
-			{
-				ISQLiteConnection conn = null;
-				try
-				{
-					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-					var result = conn.DeferredQuery<Session>("SELECT RowId AS RowId, * FROM Session WHERE SessionId = ?", sessionId);
-
-					foreach (var session in result)
-					{
-						return session;
-					}
-				}
-				catch (Exception e)
-				{
-					logger.Error(e);
-				}
-				finally
-				{
-					Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-				}
-
-				return new Session();
-			}
-		}
 	}
 }

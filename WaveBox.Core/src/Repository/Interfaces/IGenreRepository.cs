@@ -5,6 +5,8 @@ namespace WaveBox.Model.Repository
 {
 	public interface IGenreRepository
 	{
+		Genre GenreForId(int? genreId);
+		Genre GenreForName(string genreName);
 		List<Genre> AllGenres();
 		List<Artist> ListOfArtists(int genreId);
 		List<Album> ListOfAlbums(int genreId);

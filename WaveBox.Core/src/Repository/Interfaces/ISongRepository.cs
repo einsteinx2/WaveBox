@@ -5,6 +5,7 @@ namespace WaveBox.Model.Repository
 {
 	public interface ISongRepository
 	{
+		Song SongForId(int songId);
 		IList<Song> SongsForIds(IList<int> songIds);
 		IList<Song> AllSongs();
 		int CountSongs();

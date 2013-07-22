@@ -90,7 +90,7 @@ namespace WaveBox.ApiHandler.Handlers
 				// Get the media item associated with this id
 				if (itemType == ItemType.Song)
 				{
-					item = new Song.Factory().CreateSong(id);
+					item = Injection.Kernel.Get<ISongRepository>().SongForId(id);
 					if (logger.IsInfoEnabled) logger.Info("Preparing audio transcode: " + item.FileName);
 					
 					// Default to MP3 transcoding
@@ -98,7 +98,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 				else if (itemType == ItemType.Video)
 				{
-					item = new Video.Factory().CreateVideo(id);
+					item = Injection.Kernel.Get<IVideoRepository>().VideoForId(id);
 					if (logger.IsInfoEnabled) logger.Info("Preparing video transcode: " + item.FileName);
 
 					// Default to h.264 transcoding

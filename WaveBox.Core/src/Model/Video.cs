@@ -75,33 +75,5 @@ namespace WaveBox.Model
 		{
 			return x.FileName.CompareTo(y.FileName);
 		}
-
-		public new class Factory
-		{
-			public Video CreateVideo(int videoId)
-			{
-				ISQLiteConnection conn = null;
-				try
-				{
-					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-					var result = conn.DeferredQuery<Video>("SELECT * FROM Video WHERE ItemId = ?", videoId);
-
-					foreach (Video v in result)
-					{
-						return v;
-					}
-				}
-				catch (Exception e)
-				{
-					logger.Error(e);
-				}
-				finally
-				{
-					Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-				}
-
-				return new Video();
-			}
-		}
 	}
 }

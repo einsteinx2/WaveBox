@@ -5,6 +5,7 @@ namespace WaveBox.Model.Repository
 {
 	public interface IVideoRepository
 	{
+		Video VideoForId(int videoId);
 		List<Video> AllVideos();
 		int CountVideos();
 		long TotalVideoSize();

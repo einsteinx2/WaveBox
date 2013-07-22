@@ -10,6 +10,8 @@ using System.Web;
 using Newtonsoft.Json;
 using WaveBox.Model;
 using WaveBox.Static;
+using WaveBox.Model.Repository;
+using Ninject;
 
 namespace WaveBox
 {
@@ -100,7 +102,7 @@ namespace WaveBox
 
 			for (int i = 0; i < limit; i++)
 			{
-				song = new Song.Factory().CreateSong(scrobbles[i].SongId);
+				song = Injection.Kernel.Get<ISongRepository>().SongForId(scrobbles[i].SongId);
 				parameters.Add("artist" + (scrobbleType == LfmScrobbleType.NOWPLAYING ? "" : string.Format("[{0}]", i)), HttpUtility.UrlEncode(song.ArtistName, Encoding.UTF8));
 				parameters.Add("timestamp" + (scrobbleType == LfmScrobbleType.NOWPLAYING ? "" : string.Format("[{0}]", i)), HttpUtility.UrlEncode(timestamp.ToString(), Encoding.UTF8));
 				parameters.Add("track" + (scrobbleType == LfmScrobbleType.NOWPLAYING ? "" : string.Format("[{0}]", i)), HttpUtility.UrlEncode(song.SongName, Encoding.UTF8));
@@ -151,7 +153,7 @@ namespace WaveBox
 
 		public static string GetArtistInfo(int artistId)
 		{
-			return GetArtistInfo(new Artist.Factory().CreateArtist(artistId));
+			return GetArtistInfo(Injection.Kernel.Get<IArtistRepository>().ArtistForId(artistId));
 		}
 
 		private static string CompileApiCall(SortedDictionary<string, string> parameters)

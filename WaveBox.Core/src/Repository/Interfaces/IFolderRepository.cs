@@ -6,6 +6,8 @@ namespace WaveBox.Model.Repository
 {
 	public interface IFolderRepository
 	{
+		Folder FolderForId(int folderId);
+		Folder FolderForPath(string path);
 		List<Folder> MediaFolders();
 		List<Folder> TopLevelFolders();
 		List<Song> ListOfSongs(int folderId, bool recursive = false);

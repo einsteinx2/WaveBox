@@ -48,7 +48,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 
 				// Add video by ID to the list
-				videos.Add(new Video.Factory().CreateVideo(id));
+				videos.Add(Injection.Kernel.Get<IVideoRepository>().VideoForId(id));
 			}
 			// Check for a request for range of videos
 			else if (Uri.Parameters.ContainsKey("range"))

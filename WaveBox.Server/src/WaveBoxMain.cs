@@ -20,6 +20,7 @@ using WaveBox.Model;
 using WaveBox.Service;
 using WaveBox.Static;
 using WaveBox.Transcoding;
+using WaveBox.Model.Repository;
 
 namespace WaveBox
 {
@@ -89,7 +90,7 @@ namespace WaveBox
 			}
 
 			// Temporary: create test user
-			new User.Factory().CreateUser("test", "test", null);
+			Injection.Kernel.Get<IUserRepository>().CreateUser("test", "test", null);
 
 			return;
 		}

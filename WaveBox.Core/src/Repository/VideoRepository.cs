@@ -20,6 +20,31 @@ namespace WaveBox.Model.Repository
 			this.database = database;
 		}
 
+		public Video VideoForId(int videoId)
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = database.GetSqliteConnection();
+				var result = conn.DeferredQuery<Video>("SELECT * FROM Video WHERE ItemId = ?", videoId);
+
+				foreach (Video v in result)
+				{
+					return v;
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				database.CloseSqliteConnection(conn);
+			}
+
+			return new Video();
+		}
+
 		public List<Video> AllVideos()
 		{
 			ISQLiteConnection conn = null;

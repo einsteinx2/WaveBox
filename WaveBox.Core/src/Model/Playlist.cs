@@ -175,9 +175,9 @@ namespace WaveBox.Model
 					switch (playlistItem.ItemType)
 					{
 						case ItemType.Song:
-							return new Song.Factory().CreateSong((int)playlistItem.ItemId);
+							return Injection.Kernel.Get<ISongRepository>().SongForId((int)playlistItem.ItemId);
 						case ItemType.Video:
-							return new Video.Factory().CreateVideo((int)playlistItem.ItemId);
+							return Injection.Kernel.Get<IVideoRepository>().VideoForId((int)playlistItem.ItemId);
 						default:
 							break;
 					}
@@ -208,7 +208,7 @@ namespace WaveBox.Model
 				{
 					if (!ReferenceEquals(playlistItem.ItemId, null))
 					{
-						IMediaItem item = new MediaItem.Factory().CreateMediaItem((int)playlistItem.ItemId);
+						IMediaItem item = Injection.Kernel.Get<IMediaItemRepository>().MediaItemForId((int)playlistItem.ItemId);
 						if (!ReferenceEquals(item, null))
 						{
 							items.Add(item);
@@ -442,7 +442,7 @@ namespace WaveBox.Model
 
 		public void AddMediaItem(int itemId, bool updateDatabase = true)
 		{
-			IMediaItem item = new MediaItem.Factory().CreateMediaItem(itemId);
+			IMediaItem item = Injection.Kernel.Get<IMediaItemRepository>().MediaItemForId(itemId);
 
 			if (!ReferenceEquals(item, null))
 			{
@@ -456,7 +456,7 @@ namespace WaveBox.Model
 			foreach (int itemId in itemIds)
 			{
 				logger.Info("Checking item id " + itemId);
-				IMediaItem item = new MediaItem.Factory().CreateMediaItem(itemId);
+				IMediaItem item = Injection.Kernel.Get<IMediaItemRepository>().MediaItemForId(itemId);
 				if (!ReferenceEquals(item, null))
 				{
 					logger.Info("Found item " + item);
@@ -469,7 +469,7 @@ namespace WaveBox.Model
 
 		public void InsertMediaItem(int itemId, int index)
 		{
-			IMediaItem item = new MediaItem.Factory().CreateMediaItem(itemId);
+			IMediaItem item = Injection.Kernel.Get<IMediaItemRepository>().MediaItemForId(itemId);
 			InsertMediaItem(item, index);
 		}
 

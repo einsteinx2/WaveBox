@@ -60,7 +60,7 @@ namespace WaveBox.ApiHandler.Handlers
 				IMediaItem item = null;
 				if (itemType == ItemType.Song)
 				{
-					item = new Song.Factory().CreateSong(id);
+					item = Injection.Kernel.Get<ISongRepository>().SongForId(id);
 					if (logger.IsInfoEnabled) logger.Info("HLS transcoding for songs not currently supported");
 
 					// CURRENTLY DO NOT SUPPORT HLS STREAMING FOR SONGS
@@ -68,7 +68,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 				else if (itemType == ItemType.Video)
 				{
-					item = new Video.Factory().CreateVideo(id);
+					item = Injection.Kernel.Get<IVideoRepository>().VideoForId(id);
 					if (logger.IsInfoEnabled) logger.Info("Preparing video stream: " + item.FileName);
 				}
 

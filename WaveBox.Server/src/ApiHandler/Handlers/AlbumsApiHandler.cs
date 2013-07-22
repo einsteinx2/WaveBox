@@ -50,7 +50,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 
 				// Add album by ID to the list
-				Album a = new Album.Factory().CreateAlbum(id);
+				Album a = Injection.Kernel.Get<IAlbumRepository>().AlbumForId(id);
 				albums.Add(a);
 
 				// Add album's songs to response

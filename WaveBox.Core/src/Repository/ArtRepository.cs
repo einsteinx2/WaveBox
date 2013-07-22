@@ -18,6 +18,31 @@ namespace WaveBox.Model.Repository
 			this.database = database;
 		}
 
+		public Art ArtForId(int artId)
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = database.GetSqliteConnection();
+				var result = conn.DeferredQuery<Art>("SELECT * FROM Art WHERE ArtId = ?", artId);
+
+				foreach (Art a in result)
+				{
+					return a;
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				database.CloseSqliteConnection(conn);
+			}
+
+			return new Art();
+		}
+
 		public int? ItemIdForArtId(int? artId)
 		{
 			if ((object)artId == null)

@@ -54,7 +54,7 @@ namespace WaveBox.Model
 
 		public Folder ParentFolder()
 		{
-			return new Folder.Factory().CreateFolder((int)ParentFolderId);
+			return Injection.Kernel.Get<IFolderRepository>().FolderForId((int)ParentFolderId);
 		}
 
 		public void Scan()
@@ -155,89 +155,6 @@ namespace WaveBox.Model
 		public static int CompareFolderByName(Folder x, Folder y)
 		{
 			return StringComparer.OrdinalIgnoreCase.Compare(x.FolderName, y.FolderName);
-		}
-
-		/*
-		 * Factory class
-		 */
-
-		public class Factory
-		{
-			private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
-			public Folder CreateFolder(int folderId)
-			{
-				ISQLiteConnection conn = null;
-				try
-				{
-					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-
-					List<Folder> folder = conn.Query<Folder>("SELECT * FROM Folder WHERE FolderId = ? LIMIT 1", folderId);
-					if (folder.Count > 0)
-					{
-						return folder[0];
-					}
-				}
-				catch (Exception e)
-				{
-					logger.Error(e);
-				}
-				finally
-				{
-					Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-				}
-
-				return null;
-			}
-
-			public Folder CreateFolder(string path)
-			{
-				Folder folder = new Folder();
-
-				if (path == null || path == "")
-				{
-					return folder;
-				}
-
-				folder.FolderPath = path;
-				folder.FolderName = Path.GetFileName(path);
-
-				foreach (Folder mf in Injection.Kernel.Get<IFolderRepository>().MediaFolders())
-				{
-					if (path.Contains(mf.FolderPath))
-					{
-						folder.MediaFolderId = mf.FolderId;
-					}
-				}
-
-				ISQLiteConnection conn = null;
-				try
-				{
-					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-					if (folder.IsMediaFolder() || Injection.Kernel.Get<IServerSettings>().MediaFolders == null)
-					{
-						int folderId = conn.ExecuteScalar<int>("SELECT FolderId FROM Folder WHERE FolderName = ? AND ParentFolderId IS NULL", folder.FolderName);
-						folder.FolderId = folderId == 0 ? (int?)null : folderId;
-					}
-					else
-					{
-						folder.ParentFolderId = Injection.Kernel.Get<IFolderRepository>().GetParentFolderId(folder.FolderPath);
-
-						int folderId = conn.ExecuteScalar<int>("SELECT FolderId FROM Folder WHERE FolderName = ? AND ParentFolderId = ?", folder.FolderName, folder.ParentFolderId);
-						folder.FolderId = folderId == 0 ? (int?)null : folderId;
-					}
-				}
-				catch (Exception e)
-				{
-					logger.Error(e);
-				}
-				finally
-				{
-					Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-				}
-
-				return folder;
-			}
 		}
 	}
 }

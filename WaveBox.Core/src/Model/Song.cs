@@ -96,43 +96,5 @@ namespace WaveBox.Model
 				return x.DiscNumber > y.DiscNumber ? 1 : -1;
 			}
 		}
-
-		/*
-		 * Factory
-		 */
-
-		public new class Factory
-		{
-			public Song CreateSong(int songId)
-			{
-				ISQLiteConnection conn = null;
-				try
-				{
-					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-					IEnumerable result = conn.DeferredQuery<Song>("SELECT Song.*, Artist.ArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
-																  "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
-																  "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
-																  "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
-																  "WHERE Song.ItemId = ? LIMIT 1", songId);
-
-					foreach (Song song in result)
-					{
-						// Record exists, so return it
-						return song;
-					}
-				}
-				catch (Exception e)
-				{
-					logger.Error(e);
-				}
-				finally
-				{
-					Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-				}
-
-				// No record found, so return an empty Song object
-				return new Song();
-			}
-		}
 	}
 }

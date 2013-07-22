@@ -48,7 +48,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 
 				// Add song by ID to the list
-				listOfSongs.Add(new Song.Factory().CreateSong(id));
+				listOfSongs.Add(Injection.Kernel.Get<ISongRepository>().SongForId(id));
 			}
 			// Check for a request for range of songs
 			else if (Uri.Parameters.ContainsKey("range"))

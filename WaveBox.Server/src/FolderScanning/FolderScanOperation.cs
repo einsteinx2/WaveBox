@@ -57,7 +57,7 @@ namespace WaveBox.FolderScanning
 
 		public void ProcessFolder(int folderId)
 		{
-			Folder folder = new Folder.Factory().CreateFolder(folderId);
+			Folder folder = Injection.Kernel.Get<IFolderRepository>().FolderForId(folderId);
 			this.ProcessFolder(folder.FolderPath);
 		}
 
@@ -74,7 +74,7 @@ namespace WaveBox.FolderScanning
 				if (Directory.Exists(folderPath))
 				{
 					testFolderObjCreateTime.Start();
-					Folder topFolder = new Folder.Factory().CreateFolder(folderPath);
+					Folder topFolder = Injection.Kernel.Get<IFolderRepository>().FolderForPath(folderPath);
 					testFolderObjCreateTime.Stop();
 
 					if (topFolder.FolderId == null)
@@ -91,7 +91,7 @@ namespace WaveBox.FolderScanning
 						if (!subfolder.Contains(".AppleDouble"))
 						{
 							testFolderObjCreateTime.Start();
-							Folder folder = new Folder.Factory().CreateFolder(subfolder);
+							Folder folder = Injection.Kernel.Get<IFolderRepository>().FolderForPath(subfolder);
 							testFolderObjCreateTime.Stop();
 
 							// if the folder isn't already in the database, add it.
@@ -187,7 +187,7 @@ namespace WaveBox.FolderScanning
 								}
 								else if (itemId != null)
 								{
-									var oldSong = new Song.Factory().CreateSong((int)itemId);
+									var oldSong = Injection.Kernel.Get<ISongRepository>().SongForId((int)itemId);
 									var newSong = CreateSong(file, folderId, f);
 									newSong.ItemId = oldSong.ItemId;
 									newSong.InsertMediaItem();
@@ -201,7 +201,7 @@ namespace WaveBox.FolderScanning
 								}
 								else if (itemId != null)
 								{
-									new Video.Factory().CreateVideo((int)itemId).InsertMediaItem();
+									Injection.Kernel.Get<IVideoRepository>().VideoForId((int)itemId).InsertMediaItem();
 								}
 							}
 						}
@@ -214,7 +214,7 @@ namespace WaveBox.FolderScanning
 				{
 					if (ArtFileNeedsUpdating(file, folderId))
 					{
-						var folder = new Folder.Factory().CreateFolder((int)folderId);
+						var folder = Injection.Kernel.Get<IFolderRepository>().FolderForId((int)folderId);
 
 						// Find the old art id, if it exists
 						int? oldArtId = folder.ArtId;
@@ -229,7 +229,7 @@ namespace WaveBox.FolderScanning
 						}
 						else
 						{
-							Art oldArt = new Art.Factory().CreateArt((int)oldArtId);
+							Art oldArt = Injection.Kernel.Get<IArtRepository>().ArtForId((int)oldArtId);
 
 							// Check if the previous folder art was actually from embedded tag art
 							if ((object)oldArt.FilePath == null)
@@ -300,7 +300,7 @@ namespace WaveBox.FolderScanning
 
 			try
 			{
-				Artist artist = Injection.Kernel.Get<IArtistRepository>().ArtistForName(tag.FirstPerformer);
+				Artist artist = Injection.Kernel.Get<IArtistRepository>().ArtistForNameOrCreate(tag.FirstPerformer);
 				song.ArtistId = artist.ArtistId;
 				song.ArtistName = artist.ArtistName;
 			}
@@ -375,7 +375,7 @@ namespace WaveBox.FolderScanning
 			if ((object)song.GenreName != null)
 			{
 				// Retreive the genre id
-				song.GenreId = new Genre.Factory().CreateGenre(song.GenreName).GenreId;
+				song.GenreId = Injection.Kernel.Get<IGenreRepository>().GenreForName(song.GenreName).GenreId;
 			}
 
 			song.Duration = Convert.ToInt32(file.Properties.Duration.TotalSeconds);

@@ -169,7 +169,7 @@ namespace WaveBox.ApiHandler
 			if (action == "login")
 			{
 				// Must use username and password, and create a session
-				user = new User.Factory().CreateUser(username);
+				user = Injection.Kernel.Get<IUserRepository>().UserForName(username);
 				if (user.UserId == null || !user.CreateSession(password, clientName))
 				{
 					user = null;
@@ -181,7 +181,7 @@ namespace WaveBox.ApiHandler
 				username = Injection.Kernel.Get<IUserRepository>().UserNameForSessionid(sessionId);
 				if ((object)username != null)
 				{
-					user = new User.Factory().CreateUser(username);
+					user = Injection.Kernel.Get<IUserRepository>().UserForName(username);
 
 					// Update this user's session
 					user.UpdateSession(sessionId);

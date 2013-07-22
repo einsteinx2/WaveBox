@@ -101,29 +101,5 @@ namespace WaveBox.Model
 		{
 			return ItemId.GetHashCode();
 		}
-
-		public class Factory
-		{
-			public Factory()
-			{
-			}
-
-			public MediaItem CreateMediaItem(int itemId)
-			{
-				MediaItem item = null;
-				ItemType type = Injection.Kernel.Get<IItemRepository>().ItemTypeForItemId(itemId);
-				switch (type)
-				{
-					case ItemType.Song:
-						item = new Song.Factory().CreateSong(itemId);
-						break;
-					case ItemType.Video:
-						item = new Video.Factory().CreateVideo(itemId);
-						break;
-				}
-
-				return item;
-			}
-		}
 	}
 }

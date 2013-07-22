@@ -76,33 +76,5 @@ namespace WaveBox.Model
 				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 		}
-
-		public class Factory
-		{
-			public Art CreateArt(int artId)
-			{
-				ISQLiteConnection conn = null;
-				try
-				{
-					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-					var result = conn.DeferredQuery<Art>("SELECT * FROM Art WHERE ArtId = ?", artId);
-
-					foreach (Art a in result)
-					{
-						return a;
-					}
-				}
-				catch (Exception e)
-				{
-					logger.Error(e);
-				}
-				finally
-				{
-					Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-				}
-
-				return new Art();
-			}
-		}
 	}
 }

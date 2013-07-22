@@ -81,22 +81,22 @@ namespace WaveBox.ApiHandler.Handlers
 									{
 										case ItemType.Folder:
 											// get all the media items underneath this folder and add them
-											songs = new Folder.Factory().CreateFolder(itemId).ListOfSongs(true).ConvertAll(x => (IMediaItem)x);
+											songs = Injection.Kernel.Get<IFolderRepository>().FolderForId(itemId).ListOfSongs(true).ConvertAll(x => (IMediaItem)x);
 											playlist.AddMediaItems(songs);
 											break;
 										case ItemType.Artist:
-											songs = new Artist.Factory().CreateArtist(itemId).ListOfSongs().ConvertAll(x => (IMediaItem)x);
+											songs = Injection.Kernel.Get<IArtistRepository>().ArtistForId(itemId).ListOfSongs().ConvertAll(x => (IMediaItem)x);
 											playlist.AddMediaItems(songs);
 											break;
 										case ItemType.Album:
-											songs = new Album.Factory().CreateAlbum(itemId).ListOfSongs().ConvertAll(x => (IMediaItem)x);
+											songs = Injection.Kernel.Get<IAlbumRepository>().AlbumForId(itemId).ListOfSongs().ConvertAll(x => (IMediaItem)x);
 											playlist.AddMediaItems(songs);
 											break;
 										case ItemType.Song:
-											playlist.AddMediaItem(new Song.Factory().CreateSong(itemId));
+											playlist.AddMediaItem(Injection.Kernel.Get<ISongRepository>().SongForId(itemId));
 											break;
 										case ItemType.Video:
-											playlist.AddMediaItem(new Video.Factory().CreateVideo(itemId));
+											playlist.AddMediaItem(Injection.Kernel.Get<IVideoRepository>().VideoForId(itemId));
 											break;
 										default:
 											error = "Invalid item type at index: " + i;

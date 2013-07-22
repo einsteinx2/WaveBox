@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using System.Linq;
 using WaveBox.Static;
-using Ninject;
 
 namespace WaveBox.Model.Repository
 {
@@ -13,18 +12,85 @@ namespace WaveBox.Model.Repository
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private readonly IDatabase database;
+		private readonly IItemRepository itemRepository;
 
-		public ArtistRepository(IDatabase database)
+		public ArtistRepository(IDatabase database, IItemRepository itemRepository)
 		{
 			if (database == null)
 				throw new ArgumentNullException("database");
+			if (itemRepository == null)
+				throw new ArgumentNullException("itemRepository");
 
 			this.database = database;
+			this.itemRepository = itemRepository;
+		}
+
+		public Artist ArtistForId(int? artistId)
+		{
+			if (artistId == null)
+			{
+				return new Artist();
+			}
+
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = database.GetSqliteConnection();
+
+				var result = conn.DeferredQuery<Artist>("SELECT * FROM Artist WHERE ArtistId = ?", artistId);
+
+				foreach (Artist a in result)
+				{
+					return a;
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				database.CloseSqliteConnection(conn);
+			}
+
+			return new Artist();
+		}
+
+		public Artist ArtistForName(string artistName)
+		{
+			if (artistName == null || artistName == "")
+			{
+				return new Artist();
+			}
+
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = database.GetSqliteConnection();
+				var result = conn.DeferredQuery<Artist>("SELECT * FROM Artist WHERE ArtistName = ?", artistName);
+
+				foreach (Artist a in result)
+				{
+					return a;
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				database.CloseSqliteConnection(conn);
+			}
+
+			Artist artist = new Artist();
+			artist.ArtistName = artistName;
+			return artist;
 		}
 
 		public bool InsertArtist(string artistName)
 		{
-			int? itemId = Injection.Kernel.Get<IItemRepository>().GenerateItemId(ItemType.Artist);
+			int? itemId = itemRepository.GenerateItemId(ItemType.Artist);
 			if (itemId == null)
 			{
 				return false;
@@ -54,7 +120,7 @@ namespace WaveBox.Model.Repository
 			return success;
 		}
 
-		public Artist ArtistForName(string artistName)
+		public Artist ArtistForNameOrCreate(string artistName)
 		{
 			if (artistName == null || artistName == "")
 			{
@@ -62,7 +128,7 @@ namespace WaveBox.Model.Repository
 			}
 
 			// check to see if the artist exists
-			Artist anArtist = new Artist.Factory().CreateArtist(artistName);
+			Artist anArtist = ArtistForName(artistName);
 
 			// if not, create it.
 			if (anArtist.ArtistId == null)
@@ -70,13 +136,13 @@ namespace WaveBox.Model.Repository
 				anArtist = null;
 				if (InsertArtist(artistName))
 				{
-					anArtist = ArtistForName(artistName);
+					anArtist = ArtistForNameOrCreate(artistName);
 				}
 				else 
 				{
 					// The insert failed because this album was inserted by another
 					// thread, so grab the artist id, it will exist this time
-					anArtist = new Artist.Factory().CreateArtist(artistName);
+					anArtist = ArtistForName(artistName);
 				}
 			}
 

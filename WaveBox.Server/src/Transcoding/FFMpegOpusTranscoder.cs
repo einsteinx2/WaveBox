@@ -4,6 +4,8 @@ using System.IO;
 using WaveBox.Model;
 using WaveBox.Static;
 using WaveBox.Server.Extensions;
+using Ninject;
+using WaveBox.Model.Repository;
 
 namespace WaveBox.Transcoding
 {
@@ -206,7 +208,7 @@ namespace WaveBox.Transcoding
 		{
 			string theString = "--bitrate " + quality;
 			theString += " --quiet";
-			Song song = new Song.Factory().CreateSong(Item.ItemId.Value);
+			Song song = Injection.Kernel.Get<ISongRepository>().SongForId(Item.ItemId.Value);
 
 			theString += song.ArtistName == null ? String.Empty : " --comment ARTIST=\"" + song.ArtistName + "\"";
 			theString += song.AlbumName == null ? String.Empty : " --comment ALBUM=\"" + song.AlbumName + "\"";

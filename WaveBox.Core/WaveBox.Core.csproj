@@ -109,6 +109,8 @@
     <Compile Include="src\Repository\Interfaces\IVideoRepository.cs" />
     <Compile Include="src\Repository\VideoRepository.cs" />
     <Compile Include="src\SQLiteConnectionPool.cs" />
+    <Compile Include="src\Repository\Interfaces\IMediaItemRepository.cs" />
+    <Compile Include="src\Repository\MediaItemRepository.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

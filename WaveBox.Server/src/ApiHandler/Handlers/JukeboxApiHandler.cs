@@ -186,7 +186,7 @@ namespace WaveBox.ApiHandler.Handlers
 				{
 					if (Injection.Kernel.Get<IItemRepository>().ItemTypeForItemId(int.Parse(p)) == ItemType.Song)
 					{
-						Song s = new Song.Factory().CreateSong(int.Parse(p));
+						Song s = Injection.Kernel.Get<ISongRepository>().SongForId(int.Parse(p));
 						songs.Add(s);
 					}
 					else
