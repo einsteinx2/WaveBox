@@ -1,5 +1,7 @@
 using System;
 using Cirrious.MvvmCross.Plugins.Sqlite;
+using System.Collections.Generic;
+using WaveBox.Core.Model;
 
 namespace WaveBox.Core
 {
@@ -7,11 +9,11 @@ namespace WaveBox.Core
 	{
 		object DbBackupLock { get; }
 
-		string DatabaseTemplatePath();
-		string DatabasePath();
+		string DatabaseTemplatePath { get; }
+		string DatabasePath { get; }
 
-		string QuerylogTemplatePath();
-		string QuerylogPath();
+		string QuerylogTemplatePath { get; }
+		string QuerylogPath { get; }
 
 		void DatabaseSetup();
 
@@ -22,6 +24,7 @@ namespace WaveBox.Core
 		void CloseQueryLogSqliteConnection(ISQLiteConnection conn);
 
 		long LastQueryLogId();
+		List<QueryLog> QueryLogsSinceId(int queryId);
 	}
 }
 

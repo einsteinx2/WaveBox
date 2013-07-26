@@ -90,7 +90,7 @@ namespace WaveBox.ApiHandler.Handlers
 				try
 				{
 					// Send DatabaseResponse containing list of queries
-					string json = JsonConvert.SerializeObject(new DatabaseResponse(null, DatabaseBackup.QueryLogsSinceId(Int32.Parse(id))), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+					string json = JsonConvert.SerializeObject(new DatabaseResponse(null, Injection.Kernel.Get<IDatabase>().QueryLogsSinceId(Int32.Parse(id))), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 					Processor.WriteJson(json);
 				}
 				catch (Exception e)

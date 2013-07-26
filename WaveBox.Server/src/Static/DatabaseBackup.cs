@@ -95,7 +95,7 @@ namespace WaveBox
 				}
 
 				// If not, do the backup then return it
-				bool success = Backup((System.Data.SQLite.SQLiteConnection)GetDbConnection(Injection.Kernel.Get<IDatabase>().DatabasePath()), (System.Data.SQLite.SQLiteConnection)GetBackupDbConnection(lastQueryId));
+				bool success = Backup((System.Data.SQLite.SQLiteConnection)GetDbConnection(Injection.Kernel.Get<IDatabase>().DatabasePath), (System.Data.SQLite.SQLiteConnection)GetBackupDbConnection(lastQueryId));
 				if (success)
 				{
 					return fileName;
@@ -171,29 +171,6 @@ namespace WaveBox
 
 			object result = filedType.GetValue(instance);
 			return result;
-		}
-
-		public static List<QueryLog> QueryLogsSinceId(int queryId)
-		{
-			// Return all queries >= this id
-			ISQLiteConnection conn = null;
-			try
-			{
-				// Gather a list of queries from the query log, which can be used to synchronize a local database
-				conn = Injection.Kernel.Get<IDatabase>().GetQueryLogSqliteConnection();
-				return conn.Query<QueryLog>("SELECT * FROM QueryLog WHERE QueryId >= ?", queryId);
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				// Ensure database closed
-				Injection.Kernel.Get<IDatabase>().CloseQueryLogSqliteConnection(conn);
-			}
-
-			return new List<QueryLog>();
 		}
 	}
 }

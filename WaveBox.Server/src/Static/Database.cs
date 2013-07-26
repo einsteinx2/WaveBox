@@ -7,6 +7,7 @@ using System.Threading;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using WaveBox.Static;
 using WaveBox.Core;
+using WaveBox.Core.Model;
 
 namespace WaveBox.Static
 {
@@ -15,12 +16,12 @@ namespace WaveBox.Static
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private static readonly string DATABASE_FILE_NAME = "wavebox.db";
-		public string DatabaseTemplatePath() { return "res" + Path.DirectorySeparatorChar + DATABASE_FILE_NAME; }
-		public string DatabasePath() { return ServerUtility.RootPath() + DATABASE_FILE_NAME; }
+		public string DatabaseTemplatePath { get { return "res" + Path.DirectorySeparatorChar + DATABASE_FILE_NAME; } }
+		public string DatabasePath { get { return ServerUtility.RootPath() + DATABASE_FILE_NAME; } }
 
 		private static readonly string QUERY_LOG_FILE_NAME = "wavebox_querylog.db";
-		public string QuerylogTemplatePath() { return "res" + Path.DirectorySeparatorChar + QUERY_LOG_FILE_NAME; }
-		public string QuerylogPath() { return ServerUtility.RootPath() + QUERY_LOG_FILE_NAME; }
+		public string QuerylogTemplatePath { get { return "res" + Path.DirectorySeparatorChar + QUERY_LOG_FILE_NAME; } }
+		public string QuerylogPath { get { return ServerUtility.RootPath() + QUERY_LOG_FILE_NAME; } }
 
 		private static readonly object dbBackupLock = new object();
 		public object DbBackupLock { get { return dbBackupLock; } }
@@ -32,20 +33,20 @@ namespace WaveBox.Static
 
 		public Database()
 		{
-			mainPool = new SQLiteConnectionPool(MAX_CONNECTIONS, DatabasePath());
-			logPool = new SQLiteConnectionPool(MAX_CONNECTIONS, QuerylogPath());
+			mainPool = new SQLiteConnectionPool(MAX_CONNECTIONS, DatabasePath);
+			logPool = new SQLiteConnectionPool(MAX_CONNECTIONS, QuerylogPath);
 		}
 
 		public void DatabaseSetup()
 		{
-			if (!File.Exists(DatabasePath()))
+			if (!File.Exists(DatabasePath))
 			{
 				try
 				{
 					if (logger.IsInfoEnabled) logger.Info("Database file doesn't exist; Creating it : " + DATABASE_FILE_NAME);
 
 					// new filestream on the template
-					FileStream dbTemplate = new FileStream(DatabaseTemplatePath(), FileMode.Open);
+					FileStream dbTemplate = new FileStream(DatabaseTemplatePath, FileMode.Open);
 
 					// a new byte array
 					byte[] dbData = new byte[dbTemplate.Length];
@@ -54,7 +55,7 @@ namespace WaveBox.Static
 					dbTemplate.Read(dbData, 0, Convert.ToInt32(dbTemplate.Length));
 
 					// write it all out
-					System.IO.File.WriteAllBytes(DatabasePath(), dbData);
+					System.IO.File.WriteAllBytes(DatabasePath, dbData);
 
 					// close the template file
 					dbTemplate.Close();
@@ -65,14 +66,14 @@ namespace WaveBox.Static
 				}
 			}
 
-			if (!File.Exists(QuerylogPath()))
+			if (!File.Exists(QuerylogPath))
 			{
 				try
 				{
 					if (logger.IsInfoEnabled) logger.Info("Query log database file doesn't exist; Creating it : " + QUERY_LOG_FILE_NAME);
 
 					// new filestream on the template
-					FileStream dbTemplate = new FileStream(QuerylogTemplatePath(), FileMode.Open);
+					FileStream dbTemplate = new FileStream(QuerylogTemplatePath, FileMode.Open);
 
 					// a new byte array
 					byte[] dbData = new byte[dbTemplate.Length];
@@ -81,7 +82,7 @@ namespace WaveBox.Static
 					dbTemplate.Read(dbData, 0, Convert.ToInt32(dbTemplate.Length));
 
 					// write it all out
-					System.IO.File.WriteAllBytes(QuerylogPath(), dbData);
+					System.IO.File.WriteAllBytes(QuerylogPath, dbData);
 
 					// close the template file
 					dbTemplate.Close();
@@ -132,6 +133,29 @@ namespace WaveBox.Static
 			}
 
 			return -1;
+		}
+
+		public List<QueryLog> QueryLogsSinceId(int queryId)
+		{
+			// Return all queries >= this id
+			ISQLiteConnection conn = null;
+			try
+			{
+				// Gather a list of queries from the query log, which can be used to synchronize a local database
+				conn = GetQueryLogSqliteConnection();
+				return conn.Query<QueryLog>("SELECT * FROM QueryLog WHERE QueryId >= ?", queryId);
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				// Ensure database closed
+				CloseQueryLogSqliteConnection(conn);
+			}
+
+			return new List<QueryLog>();
 		}
 	}
 }

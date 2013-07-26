@@ -149,6 +149,16 @@ namespace WaveBox.Core.Static
 
 			return buffer.Trim(new char[] {' ', ','});
 		}
+
+		public static string RemoveByteOrderMark(this string s)
+		{
+			string byteOrderMarkUtf8 = Encoding.UTF8.GetString(Encoding.UTF8.GetPreamble());
+
+			if (s.StartsWith(byteOrderMarkUtf8))
+				return s.Remove(0, byteOrderMarkUtf8.Length);
+
+			return s;
+		}
 	}
 }
 
