@@ -7,7 +7,6 @@ using System.Text;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using Newtonsoft.Json;
 using Ninject;
-using TagLib;
 using WaveBox;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;

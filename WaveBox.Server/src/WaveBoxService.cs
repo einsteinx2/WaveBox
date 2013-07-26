@@ -134,9 +134,19 @@ namespace WaveBox
 			// Setup the dependency injection
 			InjectClasses();
 
-			// Create an instance of the service, run it!
-			ServiceBase[] service = new ServiceBase[] { new WaveBoxService() };
-			ServiceBase.Run(service);
+			WaveBoxService service = new WaveBoxService();
+			if (Environment.UserInteractive)
+			{
+				// Allow use to run as a regular console program on Windows
+				Console.WriteLine("Press enter to exit");
+				Console.ReadLine();
+			}
+			else
+			{
+				// Create an instance of the service, run it!
+				ServiceBase[] serviceBase = new ServiceBase[] { service };
+				ServiceBase.Run(serviceBase);
+			}
 		}
 
 		/// <summary>

@@ -2,6 +2,7 @@ using System;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace WaveBox.Core
 {
@@ -11,6 +12,7 @@ namespace WaveBox.Core
 		private int maxConnections = 0;
 		private int usedConnections = 0;
 		private object connectionPoolLock = new object();
+		private bool getConnectionsAllowed = true;
 		private Stack<ISQLiteConnection> availableConnections = new Stack<ISQLiteConnection>();
 
 		public SQLiteConnectionPool(int max, string path)
@@ -23,26 +25,29 @@ namespace WaveBox.Core
 		{
 			lock (connectionPoolLock)
 			{
-				ISQLiteConnection conn = null;
-				if (availableConnections.Count > 0)
+				if (getConnectionsAllowed)
 				{
-					// Grab an existing connection
-					conn = availableConnections.Pop();
-				}
-				else if (usedConnections < maxConnections)
-				{
-					// There are no available connections, and we have room for more open connections, so make a new one
-					conn = new SQLite.SQLiteConnection(databasePath);
-					conn.Execute("PRAGMA synchronous = OFF");
-					// Five second busy timeout
-					conn.BusyTimeout = new TimeSpan(0, 0, 5); 
-				}
+					ISQLiteConnection conn = null;
+					if (availableConnections.Count > 0)
+					{
+						// Grab an existing connection
+						conn = availableConnections.Pop();
+					}
+					else if (usedConnections < maxConnections)
+					{
+						// There are no available connections, and we have room for more open connections, so make a new one
+						conn = new SQLite.SQLiteConnection(databasePath);
+						conn.Execute("PRAGMA synchronous = OFF");
+						// Five second busy timeout
+						conn.BusyTimeout = new TimeSpan(0, 0, 5); 
+					}
 
-				if (!ReferenceEquals(conn, null))
-				{
-					// We got a connection, so increment the counter
-					usedConnections++;
-					return conn;
+					if (!ReferenceEquals(conn, null))
+					{
+						// We got a connection, so increment the counter
+						usedConnections++;
+						return conn;
+					}
 				}
 			}
 
@@ -65,6 +70,32 @@ namespace WaveBox.Core
 				// Make the connection available and decrement the counter
 				availableConnections.Push(conn);
 				usedConnections--;
+			}
+		}
+
+		// TODO: Fix this isn't async
+		public void CloseAllConnections(Action action)
+		{
+			lock (connectionPoolLock)
+			{
+				getConnectionsAllowed = false;
+			}
+
+			// Wait for the connections to dry up
+			while (usedConnections > 0)
+			{
+				Thread.Sleep(50);
+			}
+
+			// Close the connections in the pool
+			if (action != null)
+			{
+				action();
+			}
+
+			lock (connectionPoolLock)
+			{
+				getConnectionsAllowed = false;
 			}
 		}
 	}
