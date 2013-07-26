@@ -7,11 +7,10 @@ using Cirrious.MvvmCross.Plugins.Sqlite;
 using Ninject;
 using WaveBox.Core.Injection;
 using WaveBox.Model;
-using WaveBox.Service.Services.Cron;
 using WaveBox.Static;
 using WaveBox.Model.Repository;
 
-namespace WaveBox.PodcastManagement
+namespace WaveBox.Model
 {
 	public class Podcast
 	{
@@ -94,7 +93,7 @@ namespace WaveBox.PodcastManagement
 				DeleteOldEpisodes(newEps.Count);
 			} 
 
-			DownloadQueue.Enqueue(newEps);
+			Injection.Kernel.Get<IPodcastShim>().Enqueue(newEps);
 		}
 
 		private void DeleteOldEpisodes(int count)
@@ -125,7 +124,7 @@ namespace WaveBox.PodcastManagement
 			// remove any episodes of this podcast that might happen to be in the download queue
 			if (this.PodcastId != null)
 			{
-				DownloadQueue.RemovePodcast(PodcastId.Value);
+				Injection.Kernel.Get<IPodcastShim>().RemovePodcast(PodcastId.Value);
 			}
 
 			foreach (PodcastEpisode ep in ListOfStoredEpisodes())

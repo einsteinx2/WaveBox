@@ -7,6 +7,7 @@ using WaveBox.Core.Injection;
 using WaveBox.Service.Services.Http;
 using Ninject;
 using WaveBox.Model.Repository;
+using WaveBox.Core.ApiResponse;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -173,21 +174,6 @@ namespace WaveBox.ApiHandler.Handlers
 				{
 					logger.Error(e);
 				}
-			}
-		}
-
-		private class UsersResponse
-		{
-			[JsonProperty("error")]
-			public string Error { get; set; }
-
-			[JsonProperty("users")]
-			public List<User> Users { get; set; }
-
-			public UsersResponse(string error, List<User> users)
-			{
-				Error = error;
-				Users = users;
 			}
 		}
 	}

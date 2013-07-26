@@ -13,7 +13,7 @@ using WaveBox.Model;
 using WaveBox.Static;
 using WaveBox.Model.Repository;
 
-namespace WaveBox.PodcastManagement
+namespace WaveBox.Model
 {
 	public class PodcastEpisode
 	{

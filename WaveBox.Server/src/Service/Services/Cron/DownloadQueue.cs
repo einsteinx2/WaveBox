@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using WaveBox.OperationQueue;
-using WaveBox.PodcastManagement;
+using WaveBox.Model;
 
 namespace WaveBox.Service.Services.Cron
 {

@@ -11,6 +11,7 @@ using WaveBox.Core;
 using WaveBox.Model;
 using WaveBox.Static;
 using WaveBox.Service.Services.Http;
+using WaveBox.Core.ApiResponse;
 
 namespace WaveBox.ApiHandler
 {
@@ -64,21 +65,6 @@ namespace WaveBox.ApiHandler
 			{
 				// If no parameter provided, return settings
 				Processor.WriteJson(JsonConvert.SerializeObject(new SettingsResponse(null, Injection.Kernel.Get<IServerSettings>().SettingsModel), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
-			}
-		}
-		
-		private class SettingsResponse
-		{
-			[JsonProperty("error")]
-			public string Error { get; set; }
-
-			[JsonProperty("settings")]
-			public ServerSettingsData Settings { get; set; }
-			
-			public SettingsResponse(string error, ServerSettingsData settings)
-			{
-				Error = error;
-				Settings = settings;
 			}
 		}
 	}

@@ -7,6 +7,9 @@ using System.Runtime.InteropServices;
 using Ninject;
 using WaveBox.Core.Injection;
 using WaveBox.Static;
+using System.Collections.Generic;
+using WaveBox.Model;
+using Cirrious.MvvmCross.Plugins.Sqlite;
 
 namespace WaveBox
 {
@@ -168,6 +171,29 @@ namespace WaveBox
 
 			object result = filedType.GetValue(instance);
 			return result;
+		}
+
+		public static List<QueryLog> QueryLogsSinceId(int queryId)
+		{
+			// Return all queries >= this id
+			ISQLiteConnection conn = null;
+			try
+			{
+				// Gather a list of queries from the query log, which can be used to synchronize a local database
+				conn = Injection.Kernel.Get<IDatabase>().GetQueryLogSqliteConnection();
+				return conn.Query<QueryLog>("SELECT * FROM QueryLog WHERE QueryId >= ?", queryId);
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				// Ensure database closed
+				Injection.Kernel.Get<IDatabase>().CloseQueryLogSqliteConnection(conn);
+			}
+
+			return new List<QueryLog>();
 		}
 	}
 }

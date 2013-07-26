@@ -7,6 +7,7 @@ using Ninject;
 using WaveBox.Core.Injection;
 using WaveBox.Static;
 using WaveBox.Service.Services.Http;
+using WaveBox.Core.ApiResponse;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -19,19 +20,9 @@ namespace WaveBox.ApiHandler.Handlers
 		private string Err { get; set; }
 
 		/// <summary>
-		/// Constructor for ErrorApiHandler class
-		/// </summary>
-		public ErrorApiHandler(UriWrapper uri, IHttpProcessor processor)
-		{
-			Processor = processor;
-			Uri = uri;
-			Err = "Invalid API call";
-		}
-
-		/// <summary>
 		/// Overload constructor for ErrorApiHandler class (custom error message)
 		/// </summary>
-		public ErrorApiHandler(UriWrapper uri, IHttpProcessor processor, string err)
+		public ErrorApiHandler(UriWrapper uri, IHttpProcessor processor, string err = "Invalid API call")
 		{
 			Processor = processor;
 			Uri = uri;
@@ -46,8 +37,7 @@ namespace WaveBox.ApiHandler.Handlers
 		{
 			if (logger.IsInfoEnabled) logger.Info(Err);
 
-			Dictionary<string, string> response = new Dictionary<string, string>();
-			response["error"] = Err;
+			ErrorResponse response = new ErrorResponse(Err);
 
 			string json = JsonConvert.SerializeObject(response, Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 			Processor.WriteJson(json);

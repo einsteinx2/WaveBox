@@ -13,6 +13,7 @@ using WaveBox.Static;
 using WaveBox.Service.Services.Http;
 using WaveBox.Transcoding;
 using WaveBox.Model.Repository;
+using WaveBox.Core.ApiResponse;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -218,17 +219,6 @@ namespace WaveBox.ApiHandler.Handlers
 			builder.AppendLine("#EXT-X-ENDLIST");
 
 			return builder.ToString();
-		}
-
-		private class TranscodeHlsResponse
-		{
-			[JsonProperty("error")]
-			public string Error { get; set; }
-
-			public TranscodeHlsResponse(string error)
-			{
-				Error = error;
-			}
 		}
 	}
 }

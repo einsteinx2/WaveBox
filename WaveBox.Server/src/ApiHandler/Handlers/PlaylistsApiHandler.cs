@@ -8,6 +8,7 @@ using WaveBox.Model;
 using WaveBox.Service.Services.Http;
 using WaveBox.Static;
 using WaveBox.Model.Repository;
+using WaveBox.Core;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -268,25 +269,6 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 
 			return itemIds;
-		}
-
-		private class PlaylistsResponse
-		{
-			[JsonProperty("error")]
-			public string Error { get; set; }
-
-			[JsonProperty("playlists")]
-			public List<Playlist> Playlists { get; set; }
-
-			[JsonProperty("mediaItems")]
-			public List<IMediaItem> MediaItems { get; set; }
-
-			public PlaylistsResponse(string error, List<Playlist> playlists, List<IMediaItem> mediaItems)
-			{
-				Error = error;
-				Playlists = playlists;
-				MediaItems = mediaItems;
-			}
 		}
 	}
 }

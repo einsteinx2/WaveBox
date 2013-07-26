@@ -17,6 +17,7 @@ using WaveBox.Server.Extensions;
 using WaveBox.Service;
 using WaveBox.Static;
 using WaveBox.Transcoding;
+using WaveBox.Model;
 
 namespace WaveBox
 {
@@ -122,6 +123,7 @@ namespace WaveBox
 		{
 			Injection.Kernel.Bind<IDatabase>().To<Database>().InSingletonScope();
 			Injection.Kernel.Bind<IServerSettings>().To<ServerSettings>().InSingletonScope();
+			Injection.Kernel.Bind<IPodcastShim>().To<PodcastShim>().InSingletonScope();
 		}
 
 		/// <summary>

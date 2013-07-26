@@ -8,6 +8,7 @@ using WaveBox.Static;
 using WaveBox.Service.Services.Http;
 using WaveBox.Model.Repository;
 using Ninject;
+using WaveBox.Core.ApiResponse;
 
 namespace WaveBox.ApiHandler
 {
@@ -109,17 +110,6 @@ namespace WaveBox.ApiHandler
 
 			// After all stat iterations, return a successful response
 			Processor.WriteJson(JsonConvert.SerializeObject(new StatsResponse(null)));
-		}
-		
-		private class StatsResponse
-		{
-			[JsonProperty("error")]
-			public string Error { get; set; }
-
-			public StatsResponse(string error)
-			{
-				Error = error;
-			}
 		}
 	}
 }

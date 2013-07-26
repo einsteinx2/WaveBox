@@ -2,8 +2,8 @@ using System;
 using Ninject;
 using WaveBox.Core.Injection;
 using WaveBox.OperationQueue;
-using WaveBox.PodcastManagement;
 using WaveBox.Static;
+using WaveBox.Model;
 
 namespace WaveBox.Service.Services.Cron
 {

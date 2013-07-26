@@ -8,6 +8,7 @@ using WaveBox.Model;
 using WaveBox.Service.Services.Http;
 using WaveBox.Static;
 using WaveBox.Model.Repository;
+using WaveBox.Core.ApiResponse;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -127,33 +128,6 @@ namespace WaveBox.ApiHandler.Handlers
 				// Return error JSON for no query parameter
 				string json = JsonConvert.SerializeObject(new SearchResponse("No search query provided", artists, albums, songs, videos), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 				Processor.WriteJson(json);
-			}
-		}
-
-		private class SearchResponse
-		{
-			[JsonProperty("error")]
-			public string Error { get; set; }
-
-			[JsonProperty("artists")]
-			public List<Artist> Artists { get; set; }
-
-			[JsonProperty("albums")]
-			public List<Album> Albums { get; set; }
-
-			[JsonProperty("songs")]
-			public List<Song> Songs { get; set; }
-
-			[JsonProperty("videos")]
-			public List<Video> Videos { get; set; }
-
-			public SearchResponse(string error, List<Artist> artists, List<Album> albums, List<Song> songs, List<Video> videos)
-			{
-				Error = error;
-				Artists = artists;
-				Albums = albums;
-				Songs = songs;
-				Videos = videos;
 			}
 		}
 	}

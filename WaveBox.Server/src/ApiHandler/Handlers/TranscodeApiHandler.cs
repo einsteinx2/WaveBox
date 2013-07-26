@@ -15,6 +15,7 @@ using WaveBox.Service.Services;
 using WaveBox.Service.Services.Http;
 using WaveBox.Transcoding;
 using WaveBox.Model.Repository;
+using WaveBox.Core.ApiResponse;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -314,17 +315,6 @@ namespace WaveBox.ApiHandler.Handlers
 			catch (Exception e)
 			{
 				logger.Error(e);
-			}
-		}
-
-		private class TranscodeResponse
-		{
-			[JsonProperty("error")]
-			public string Error { get; set; }
-
-			public TranscodeResponse(string error)
-			{
-				Error = error;
 			}
 		}
 	}

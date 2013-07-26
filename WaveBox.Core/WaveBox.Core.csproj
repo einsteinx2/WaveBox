@@ -111,6 +111,33 @@
     <Compile Include="src\SQLiteConnectionPool.cs" />
     <Compile Include="src\Repository\Interfaces\IMediaItemRepository.cs" />
     <Compile Include="src\Repository\MediaItemRepository.cs" />
+    <Compile Include="src\ApiResponse\AlbumsResponse.cs" />
+    <Compile Include="src\ApiResponse\ArtistsResponse.cs" />
+    <Compile Include="src\ApiResponse\DatabaseResponse.cs" />
+    <Compile Include="src\Model\QueryLog.cs" />
+    <Compile Include="src\ApiResponse\ErrorResponse.cs" />
+    <Compile Include="src\ApiResponse\FoldersResponse.cs" />
+    <Compile Include="src\ApiResponse\GenresResponse.cs" />
+    <Compile Include="src\ApiResponse\JukeboxResponse.cs" />
+    <Compile Include="src\ApiResponse\JukeboxStatus.cs" />
+    <Compile Include="src\ApiResponse\LoginResponse.cs" />
+    <Compile Include="src\ApiResponse\PlaylistsResponse.cs" />
+    <Compile Include="src\ApiResponse\PodcastContentResponse.cs" />
+    <Compile Include="src\ApiResponse\PodcastActionResponse.cs" />
+    <Compile Include="src\Model\PodcastEpisode.cs" />
+    <Compile Include="src\Model\Podcast.cs" />
+    <Compile Include="src\Model\Interfaces\IPodcastShim.cs" />
+    <Compile Include="src\ApiResponse\ScrobbleResponse.cs" />
+    <Compile Include="src\ApiResponse\SearchResponse.cs" />
+    <Compile Include="src\ApiResponse\SettingsResponse.cs" />
+    <Compile Include="src\ApiResponse\SongsResponse.cs" />
+    <Compile Include="src\ApiResponse\StatsResponse.cs" />
+    <Compile Include="src\ApiResponse\StatusResponse.cs" />
+    <Compile Include="src\ApiResponse\StreamResponse.cs" />
+    <Compile Include="src\ApiResponse\TranscodeResponse.cs" />
+    <Compile Include="src\ApiResponse\TranscodeHlsResponse.cs" />
+    <Compile Include="src\ApiResponse\UsersResponse.cs" />
+    <Compile Include="src\ApiResponse\VideosResponse.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -127,6 +154,7 @@
     <Folder Include="src\Injection\" />
     <Folder Include="src\Repository\Interfaces\" />
     <Folder Include="src\Model\Interfaces\" />
+    <Folder Include="src\ApiResponse\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="lib\taglib-sharp.dll" />

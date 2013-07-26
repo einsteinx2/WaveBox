@@ -7,9 +7,9 @@ using Ninject;
 using WaveBox.ApiHandler;
 using WaveBox.Core.Injection;
 using WaveBox.Model;
-using WaveBox.PodcastManagement;
 using WaveBox.Static;
 using WaveBox.Service.Services.Http;
+using WaveBox.Core.ApiResponse;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -159,47 +159,6 @@ namespace WaveBox.ApiHandler.Handlers
 					Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Invalid Podcast ID", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 					return;
 				}
-			}
-		}
-
-		private class PodcastContentResponse
-		{
-			[JsonProperty("error")]
-			public string Error { get; set; }
-
-			[JsonProperty("podcasts")]
-			public List<Podcast> Podcasts { get; set; }
-
-			[JsonProperty("episodes")]
-			public List<PodcastEpisode> Episodes { get; set; }
-
-			public PodcastContentResponse(string error, List<Podcast> podcasts)
-			{
-				Error = error;
-				Podcasts = podcasts;
-				Episodes = null;
-			}
-
-			public PodcastContentResponse(string error, Podcast podcast, List<PodcastEpisode> episodes)
-			{
-				Error = error;
-				Podcasts = new List<Podcast> { podcast };
-				Episodes = episodes;
-			}
-		}
-
-		private class PodcastActionResponse
-		{
-			[JsonProperty("error")]
-			public bool Success { get; set; }
-
-			[JsonProperty("success")]
-			public string ErrorMessage { get; set; }
-
-			public PodcastActionResponse(string errorMessage, bool success)
-			{
-				ErrorMessage = errorMessage;
-				Success = success;
 			}
 		}
 	}

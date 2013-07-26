@@ -7,6 +7,7 @@ using WaveBox.ApiHandler;
 using WaveBox.Model;
 using WaveBox.Static;
 using WaveBox.Service.Services.Http;
+using WaveBox.Core.ApiResponse;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -191,33 +192,6 @@ namespace WaveBox.ApiHandler.Handlers
 					logger.Error(e);
 				}
 				return;
-			}
-		}
-
-		private class ScrobbleResponse
-		{
-			[JsonProperty("error")]
-			public string Error { get; set; }
-
-			[JsonProperty("authUrl")]
-			public string AuthUrl { get; set; }
-
-			public ScrobbleResponse()
-			{
-				Error = null;
-				AuthUrl = null;
-			}
-
-			public ScrobbleResponse(string error)
-			{
-				Error = error;
-				AuthUrl = null;
-			}
-
-			public ScrobbleResponse(string error, string authUrl)
-			{
-				Error = error;
-				AuthUrl = authUrl;
 			}
 		}
 	}

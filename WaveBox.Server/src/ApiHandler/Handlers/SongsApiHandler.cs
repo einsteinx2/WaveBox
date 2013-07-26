@@ -9,6 +9,7 @@ using WaveBox.Model;
 using WaveBox.Static;
 using WaveBox.Service.Services.Http;
 using WaveBox.Model.Repository;
+using WaveBox.Core.ApiResponse;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -163,21 +164,6 @@ namespace WaveBox.ApiHandler.Handlers
 			catch (Exception e)
 			{
 				logger.Error(e);
-			}
-		}
-
-		private class SongsResponse
-		{
-			[JsonProperty("error")]
-			public string Error { get; set; }
-
-			[JsonProperty("songs")]
-			public IList<Song> Songs { get; set; }
-
-			public SongsResponse(string error, IList<Song> songs)
-			{
-				Error = error;
-				Songs = songs;
 			}
 		}
 	}

@@ -11,6 +11,7 @@ using WaveBox.Core.Injection;
 using WaveBox.Model;
 using WaveBox.Static;
 using WaveBox.Service.Services.Http;
+using WaveBox.Core.ApiResponse;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -89,28 +90,13 @@ namespace WaveBox.ApiHandler.Handlers
 				try
 				{
 					// Send DatabaseResponse containing list of queries
-					string json = JsonConvert.SerializeObject(new DatabaseResponse(null, QueryLog.QueryLogsSinceId(Int32.Parse(id))), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+					string json = JsonConvert.SerializeObject(new DatabaseResponse(null, DatabaseBackup.QueryLogsSinceId(Int32.Parse(id))), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 					Processor.WriteJson(json);
 				}
 				catch (Exception e)
 				{
 					logger.Error(e);
 				}
-			}
-		}
-
-		private class DatabaseResponse
-		{
-			[JsonProperty("error")]
-			public string Error { get; set; }
-
-			[JsonProperty("queries")]
-			public IList<QueryLog> Queries { get; set; }
-
-			public DatabaseResponse(string error, IList<QueryLog> queries)
-			{
-				Error = error;
-				Queries = queries;
 			}
 		}
 	}

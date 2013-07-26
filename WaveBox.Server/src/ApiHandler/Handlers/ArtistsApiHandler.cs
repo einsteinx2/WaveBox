@@ -9,6 +9,7 @@ using WaveBox.Model;
 using WaveBox.Static;
 using WaveBox.Service.Services.Http;
 using WaveBox.Model.Repository;
+using WaveBox.Core.ApiResponse;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -200,52 +201,6 @@ namespace WaveBox.ApiHandler.Handlers
 			catch (Exception e)
 			{
 				logger.Error(e);
-			}
-		}
-
-		private class ArtistsResponse
-		{
-			[JsonProperty("error")]
-			public string Error { get; set; }
-
-			[JsonProperty("artists")]
-			public IList<Artist> Artists { get; set; }
-
-			[JsonProperty("albums")]
-			public IList<Album> Albums { get; set; }
-
-			[JsonProperty("songs")]
-			public IList<Song> Songs { get; set; }
-
-			[JsonProperty("lastfmInfo")]
-			public dynamic LastfmInfo { get; set; }
-
-			public ArtistsResponse(string error, IList<Artist> artists, IList<Album> albums, IList<Song> songs)
-			{
-				Error = error;
-				Artists = artists;
-				Songs = songs;
-				Albums = albums;
-				LastfmInfo = null;
-			}
-
-			public ArtistsResponse(string error, IList<Artist> artists, IList<Album> albums, IList<Song> songs, string lastfmInfo)
-			{
-				Error = error;
-				Artists = artists;
-				Songs = songs;
-				Albums = albums;
-
-				// Deserialize Last.fm info if requested
-				if (lastfmInfo != null)
-				{
-					var jsonParse = JsonConvert.DeserializeObject(lastfmInfo);
-					LastfmInfo = jsonParse;
-				}
-				else
-				{
-					LastfmInfo = null;
-				}
 			}
 		}
 	}

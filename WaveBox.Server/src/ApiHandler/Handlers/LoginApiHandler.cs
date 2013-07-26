@@ -5,6 +5,7 @@ using WaveBox.Core.Injection;
 using WaveBox.Model;
 using WaveBox.Service.Services.Http;
 using WaveBox.Static;
+using WaveBox.Core;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -41,21 +42,6 @@ namespace WaveBox.ApiHandler.Handlers
 			catch (Exception e)
 			{
 				logger.Error(e.ToString());
-			}
-		}
-
-		private class LoginResponse
-		{
-			[JsonProperty("error")]
-			public string Error { get; set; }
-
-			[JsonProperty("sessionId")]
-			public string SessionId { get; set; }
-
-			public LoginResponse(string error, string sessionId)
-			{
-				Error = error;
-				SessionId = sessionId;
 			}
 		}
 	}
