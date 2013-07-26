@@ -4,14 +4,14 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Ninject;
-using WaveBox.Core.Injection;
 using WaveBox.FolderScanning;
-using WaveBox.Model;
-using WaveBox.OperationQueue;
+using WaveBox.Core.Model;
+using WaveBox.Core.OperationQueue;
 using WaveBox.Service;
 using WaveBox.Static;
 using System.Runtime.InteropServices;
 using System.Threading;
+using WaveBox.Core;
 
 namespace WaveBox.Service.Services
 {

@@ -1,7 +1,7 @@
 using System;
 using WaveBox.Service.Services.Cron;
 using System.Collections.Generic;
-using WaveBox.Model;
+using WaveBox.Core.Model;
 
 namespace WaveBox
 {

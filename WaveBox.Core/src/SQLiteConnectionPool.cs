@@ -3,7 +3,7 @@ using Cirrious.MvvmCross.Plugins.Sqlite;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace WaveBox
+namespace WaveBox.Core
 {
 	public class SQLiteConnectionPool
 	{

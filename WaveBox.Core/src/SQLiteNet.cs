@@ -33,12 +33,12 @@
 //
 
 //////////// TEMP
-using WaveBox.Static;
+using WaveBox.Core.Static;
 using Newtonsoft.Json;
 using log4net;
 ////////////
 using Ninject;
-using WaveBox.Core.Injection;
+using WaveBox.Core;
 
 
 #if WINDOWS_PHONE && !USE_CSHARP_SQLITE

@@ -1,6 +1,6 @@
 using System;
 
-namespace WaveBox.OperationQueue
+namespace WaveBox.Core.OperationQueue
 {
 	public enum DelayedOperationState
 	{

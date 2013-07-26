@@ -5,11 +5,11 @@ using System.Net;
 using System.IO;
 using Ninject;
 using WaveBox.Core.Extensions;
-using WaveBox.Core.Injection;
-using WaveBox.Model;
-using WaveBox.OperationQueue;
+using WaveBox.Core.Model;
+using WaveBox.Core.OperationQueue;
 using WaveBox.Static;
-using WaveBox.Model.Repository;
+using WaveBox.Core.Model.Repository;
+using WaveBox.Core;
 
 namespace WaveBox.Service.Services.Cron
 {

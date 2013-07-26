@@ -1,7 +1,7 @@
 using System;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 
-namespace WaveBox.Model
+namespace WaveBox.Core.Model
 {
 	public class QueryLog
 	{

@@ -1,7 +1,6 @@
 using System;
 using Ninject;
-using WaveBox.Core.Injection;
-using WaveBox.OperationQueue;
+using WaveBox.Core.OperationQueue;
 using WaveBox.Static;
 
 namespace WaveBox.Service.Services.Cron

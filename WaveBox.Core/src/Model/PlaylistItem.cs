@@ -1,6 +1,6 @@
 using System;
 
-namespace WaveBox.Model
+namespace WaveBox.Core.Model
 {
 	public class PlaylistItem
 	{

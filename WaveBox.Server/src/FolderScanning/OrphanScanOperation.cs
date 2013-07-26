@@ -9,11 +9,11 @@ using System.Text;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using Ninject;
 using WaveBox.Core.Extensions;
-using WaveBox.Core.Injection;
-using WaveBox.Model;
-using WaveBox.OperationQueue;
+using WaveBox.Core.Model;
+using WaveBox.Core.OperationQueue;
 using WaveBox.Server.Extensions;
 using WaveBox.Static;
+using WaveBox.Core;
 
 namespace WaveBox.FolderScanning
 {

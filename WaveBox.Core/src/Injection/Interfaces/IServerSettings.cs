@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using WaveBox.Model;
+using WaveBox.Core.Model;
 
-namespace WaveBox.Core.Injection
+namespace WaveBox.Core
 {
 	public interface IServerSettings
 	{

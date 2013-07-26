@@ -8,10 +8,12 @@ using System.Text;
 using System.Web.Services;
 using System.Web;
 using Newtonsoft.Json;
-using WaveBox.Model;
+using WaveBox.Core.Model;
 using WaveBox.Static;
-using WaveBox.Model.Repository;
+using WaveBox.Core.Model.Repository;
 using Ninject;
+using WaveBox.Core;
+using WaveBox.Core.Static;
 
 namespace WaveBox
 {

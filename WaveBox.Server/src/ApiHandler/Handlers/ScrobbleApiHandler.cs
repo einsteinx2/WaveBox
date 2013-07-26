@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using WaveBox.ApiHandler;
-using WaveBox.Model;
+using WaveBox.Core.Model;
 using WaveBox.Static;
 using WaveBox.Service.Services.Http;
 using WaveBox.Core.ApiResponse;

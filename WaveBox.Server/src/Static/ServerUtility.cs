@@ -7,8 +7,8 @@ using System.Runtime.InteropServices;
 using System.Web;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using Ninject;
-using WaveBox.Core.Injection;
 using WaveBox.Static;
+using WaveBox.Core;
 
 namespace WaveBox
 {

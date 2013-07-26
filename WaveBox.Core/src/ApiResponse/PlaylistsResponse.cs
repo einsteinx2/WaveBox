@@ -1,7 +1,7 @@
 using System;
 using Newtonsoft.Json;
 using System.Collections.Generic;
-using WaveBox.Model;
+using WaveBox.Core.Model;
 
 namespace WaveBox.Core
 {

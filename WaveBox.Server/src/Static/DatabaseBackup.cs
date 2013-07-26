@@ -5,11 +5,11 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Ninject;
-using WaveBox.Core.Injection;
 using WaveBox.Static;
 using System.Collections.Generic;
-using WaveBox.Model;
+using WaveBox.Core.Model;
 using Cirrious.MvvmCross.Plugins.Sqlite;
+using WaveBox.Core;
 
 namespace WaveBox
 {

@@ -6,12 +6,12 @@ using System.Linq;
 using System.Text;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using Newtonsoft.Json;
-using WaveBox.Model;
-using WaveBox.Static;
-using WaveBox.Model.Repository;
+using WaveBox.Core.Model;
+using WaveBox.Core.Static;
+using WaveBox.Core.Model.Repository;
 using Ninject;
 
-namespace WaveBox.Model
+namespace WaveBox.Core.Model
 {
 	public class MediaItem : IMediaItem
 	{

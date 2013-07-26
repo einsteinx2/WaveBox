@@ -1,7 +1,7 @@
 using System;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 
-namespace WaveBox.Core.Injection
+namespace WaveBox.Core
 {
 	public interface IDatabase
 	{

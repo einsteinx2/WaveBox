@@ -5,11 +5,10 @@ using System.Text;
 using System.Threading;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using WaveBox.Core.Extensions;
-using WaveBox.Core.Injection;
-using WaveBox.Model;
-using WaveBox.Static;
+using WaveBox.Core.Model;
+using WaveBox.Core.Static;
 
-namespace WaveBox.Model.Repository
+namespace WaveBox.Core.Model.Repository
 {
 	public class ItemRepository : IItemRepository
 	{

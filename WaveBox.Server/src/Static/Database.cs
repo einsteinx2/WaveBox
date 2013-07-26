@@ -5,8 +5,8 @@ using System.IO;
 using System.Reflection;
 using System.Threading;
 using Cirrious.MvvmCross.Plugins.Sqlite;
-using WaveBox.Core.Injection;
 using WaveBox.Static;
+using WaveBox.Core;
 
 namespace WaveBox.Static
 {

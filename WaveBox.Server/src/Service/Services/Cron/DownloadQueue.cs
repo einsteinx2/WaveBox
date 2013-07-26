@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
-using WaveBox.OperationQueue;
-using WaveBox.Model;
+using WaveBox.Core.OperationQueue;
+using WaveBox.Core.Model;
 
 namespace WaveBox.Service.Services.Cron
 {

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-namespace WaveBox.OperationQueue
+namespace WaveBox.Core.OperationQueue
 {
 	public abstract class AbstractOperation : IDelayedOperation
 	{

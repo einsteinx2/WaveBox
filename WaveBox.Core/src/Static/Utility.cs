@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Web;
 
-namespace WaveBox.Static
+namespace WaveBox.Core.Static
 {
 	public static class Utility
 	{

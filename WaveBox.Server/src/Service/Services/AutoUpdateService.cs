@@ -4,7 +4,7 @@ using System.Net;
 using System.Threading;
 using Newtonsoft.Json;
 using WaveBox.Core.Extensions;
-using WaveBox.OperationQueue;
+using WaveBox.Core.OperationQueue;
 using WaveBox.Service;
 
 namespace WaveBox.Service.Services

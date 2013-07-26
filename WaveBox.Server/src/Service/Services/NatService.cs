@@ -1,9 +1,9 @@
 using System;
 using Mono.Nat;
 using Ninject;
-using WaveBox.Core.Injection;
 using WaveBox.Service;
 using WaveBox.Static;
+using WaveBox.Core;
 
 namespace WaveBox.Service.Services
 {

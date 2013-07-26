@@ -1,8 +1,7 @@
 using System;
-using WaveBox.Core.Injection;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 
-namespace WaveBox.Model.Repository
+namespace WaveBox.Core.Model.Repository
 {
 	public class ArtRepository : IArtRepository
 	{

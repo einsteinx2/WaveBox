@@ -1,11 +1,12 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using WaveBox.Model;
+using WaveBox.Core.Model;
 using WaveBox.Static;
 using WaveBox.Server.Extensions;
 using Ninject;
-using WaveBox.Model.Repository;
+using WaveBox.Core.Model.Repository;
+using WaveBox.Core;
 
 namespace WaveBox.Transcoding
 {

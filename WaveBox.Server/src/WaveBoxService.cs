@@ -12,12 +12,12 @@ using Mono.Unix.Native;
 using Mono.Unix;
 using Ninject;
 using WaveBox.Core.Extensions;
-using WaveBox.Core.Injection;
 using WaveBox.Server.Extensions;
 using WaveBox.Service;
 using WaveBox.Static;
 using WaveBox.Transcoding;
-using WaveBox.Model;
+using WaveBox.Core.Model;
+using WaveBox.Core;
 
 namespace WaveBox
 {

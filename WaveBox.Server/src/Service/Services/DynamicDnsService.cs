@@ -4,10 +4,10 @@ using System.Net;
 using System.Linq;
 using System.Net.Sockets;
 using Cirrious.MvvmCross.Plugins.Sqlite;
-using WaveBox.Core.Injection;
 using WaveBox.Service;
 using WaveBox.Static;
 using Ninject;
+using WaveBox.Core;
 
 namespace WaveBox.Service.Services
 {

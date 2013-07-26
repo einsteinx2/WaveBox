@@ -2,7 +2,7 @@ using System;
 using Ninject;
 using WaveBox.Core;
 
-namespace WaveBox.Static
+namespace WaveBox.Core
 {
 	public static class Injection
 	{

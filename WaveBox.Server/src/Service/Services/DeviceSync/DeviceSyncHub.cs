@@ -7,10 +7,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
 using WaveBox.Core.Extensions;
-using WaveBox.Model;
+using WaveBox.Core.Model;
 using WaveBox.Static;
-using WaveBox.Model.Repository;
+using WaveBox.Core.Model.Repository;
 using Ninject;
+using WaveBox.Core;
 
 namespace WaveBox.Service.Services.DeviceSync
 {

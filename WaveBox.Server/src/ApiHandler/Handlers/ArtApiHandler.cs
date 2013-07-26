@@ -9,12 +9,12 @@ using System.Runtime.InteropServices;
 using Ninject;
 using TagLib;
 using WaveBox.Core.Extensions;
-using WaveBox.Core.Injection;
-using WaveBox.Model;
+using WaveBox.Core.Model;
 using WaveBox.Server.Extensions;
 using WaveBox.Static;
 using WaveBox.Service.Services.Http;
-using WaveBox.Model.Repository;
+using WaveBox.Core.Model.Repository;
+using WaveBox.Core;
 
 namespace WaveBox.ApiHandler.Handlers
 {

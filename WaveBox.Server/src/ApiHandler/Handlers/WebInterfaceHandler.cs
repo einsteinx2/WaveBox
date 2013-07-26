@@ -2,9 +2,9 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using Ninject;
-using WaveBox.Core.Injection;
 using WaveBox.Service.Services.Http;
 using WaveBox.Static;
+using WaveBox.Core;
 
 namespace WaveBox.ApiHandler.Handlers
 {

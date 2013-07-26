@@ -1,10 +1,9 @@
 using System;
-using WaveBox.Core.Injection;
 using System.Collections.Generic;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using System.Linq;
 
-namespace WaveBox.Model.Repository
+namespace WaveBox.Core.Model.Repository
 {
 	public class VideoRepository : IVideoRepository
 	{

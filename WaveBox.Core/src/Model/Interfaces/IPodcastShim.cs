@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace WaveBox.Model
+namespace WaveBox.Core.Model
 {
 	public interface IPodcastShim
 	{

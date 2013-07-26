@@ -19,6 +19,7 @@ using WaveBox.Transcoding;
 // http://www.jmarshall.com/easy/http/
 using WaveBox.ApiHandler;
 using WaveBox.Static;
+using WaveBox.Core.Static;
 
 namespace WaveBox.Service.Services.Http
 {

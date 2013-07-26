@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Ninject;
-using WaveBox.Core.Injection;
 using WaveBox.Service.Services.Cron;
 using WaveBox.Static;
 

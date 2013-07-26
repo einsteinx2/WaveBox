@@ -7,10 +7,10 @@ using Cirrious.MvvmCross.Plugins.Sqlite;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using Ninject;
-using WaveBox.Core.Injection;
 using WaveBox.Core;
-using WaveBox.Model;
+using WaveBox.Core.Model;
 using WaveBox.Service;
+using WaveBox.Core.Static;
 
 namespace WaveBox.Static
 {

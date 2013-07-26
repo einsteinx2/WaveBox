@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using WaveBox.Model;
+using WaveBox.Core.Model;
 
-namespace WaveBox.Model.Repository
+namespace WaveBox.Core.Model.Repository
 {
 	public interface IFolderRepository
 	{

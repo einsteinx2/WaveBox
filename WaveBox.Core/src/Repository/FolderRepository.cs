@@ -1,11 +1,10 @@
 using System;
-using WaveBox.Core.Injection;
 using System.Collections.Generic;
 using Cirrious.MvvmCross.Plugins.Sqlite;
-using WaveBox.Static;
+using WaveBox.Core.Static;
 using System.IO;
 
-namespace WaveBox.Model.Repository
+namespace WaveBox.Core.Model.Repository
 {
 	public class FolderRepository : IFolderRepository
 	{

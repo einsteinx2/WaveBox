@@ -1,6 +1,6 @@
 using System;
 using Newtonsoft.Json;
-using WaveBox.Model;
+using WaveBox.Core.Model;
 using System.Collections.Generic;
 
 namespace WaveBox.Core.ApiResponse

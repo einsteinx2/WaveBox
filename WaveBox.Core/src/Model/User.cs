@@ -7,12 +7,11 @@ using Cirrious.MvvmCross.Plugins.Sqlite;
 using Newtonsoft.Json;
 using Ninject;
 using WaveBox.Core.Extensions;
-using WaveBox.Core.Injection;
-using WaveBox.Model;
-using WaveBox.Static;
-using WaveBox.Model.Repository;
+using WaveBox.Core.Model;
+using WaveBox.Core.Static;
+using WaveBox.Core.Model.Repository;
 
-namespace WaveBox.Model
+namespace WaveBox.Core.Model
 {
 	public class User
 	{

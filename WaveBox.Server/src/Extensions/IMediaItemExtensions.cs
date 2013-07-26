@@ -1,9 +1,10 @@
 using System;
 using System.IO;
-using WaveBox.Model;
-using WaveBox.Model.Repository;
+using WaveBox.Core.Model;
+using WaveBox.Core.Model.Repository;
 using WaveBox.Static;
 using Ninject;
+using WaveBox.Core;
 
 namespace WaveBox.Server.Extensions
 {
@@ -11,6 +12,9 @@ namespace WaveBox.Server.Extensions
 	{
 		public static string FilePath(this IMediaItem mediaItem)
 		{
+			if (mediaItem.FolderId == null)
+				return null;
+
 			return Injection.Kernel.Get<IFolderRepository>().FolderForId((int)mediaItem.FolderId).FolderPath + Path.DirectorySeparatorChar + mediaItem.FileName;
 		}
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using WaveBox.Model;
+using WaveBox.Core.Model;
 using WaveBox.Service;
 using WaveBox.Transcoding;
 

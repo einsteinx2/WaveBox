@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace WaveBox.Model
+namespace WaveBox.Core.Model
 {
 	public class ServerSettingsData
 	{

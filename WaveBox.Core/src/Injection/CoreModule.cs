@@ -1,6 +1,6 @@
 using System;
 using Ninject.Modules;
-using WaveBox.Model.Repository;
+using WaveBox.Core.Model.Repository;
 
 namespace WaveBox.Core
 {

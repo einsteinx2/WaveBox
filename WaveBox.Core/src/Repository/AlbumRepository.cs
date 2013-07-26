@@ -1,12 +1,11 @@
 using System;
-using WaveBox.Model;
+using WaveBox.Core.Model;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using System.Collections.Generic;
-using WaveBox.Core.Injection;
 using System.Linq;
-using WaveBox.Static;
+using WaveBox.Core.Static;
 
-namespace WaveBox.Model.Repository
+namespace WaveBox.Core.Model.Repository
 {
 	public class AlbumRepository : IAlbumRepository
 	{

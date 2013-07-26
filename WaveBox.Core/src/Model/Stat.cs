@@ -8,11 +8,10 @@ using Cirrious.MvvmCross.Plugins.Sqlite;
 using Newtonsoft.Json;
 using Ninject;
 using TagLib;
-using WaveBox.Core.Injection;
-using WaveBox.Model;
-using WaveBox.Static;
+using WaveBox.Core.Model;
+using WaveBox.Core.Static;
 
-namespace WaveBox.Model
+namespace WaveBox.Core.Model
 {
 	public enum StatType
 	{

@@ -5,11 +5,10 @@ using System.Text;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using Newtonsoft.Json;
 using Ninject;
-using WaveBox.Core.Injection;
-using WaveBox.Static;
-using WaveBox.Model.Repository;
+using WaveBox.Core.Static;
+using WaveBox.Core.Model.Repository;
 
-namespace WaveBox.Model
+namespace WaveBox.Core.Model
 {
 	public class Artist : IItem
 	{

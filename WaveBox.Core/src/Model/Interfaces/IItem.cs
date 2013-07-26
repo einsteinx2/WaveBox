@@ -2,11 +2,11 @@ using System;
 using System.IO;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using Newtonsoft.Json;
-using WaveBox.Static;
+using WaveBox.Core.Static;
 using Ninject;
-using WaveBox.Model.Repository;
+using WaveBox.Core.Model.Repository;
 
-namespace WaveBox.Model
+namespace WaveBox.Core.Model
 {
 	public interface IItem
 	{

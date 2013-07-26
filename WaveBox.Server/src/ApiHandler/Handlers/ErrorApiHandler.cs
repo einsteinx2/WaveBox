@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using Ninject;
-using WaveBox.Core.Injection;
 using WaveBox.Static;
 using WaveBox.Service.Services.Http;
 using WaveBox.Core.ApiResponse;
+using WaveBox.Core;
 
 namespace WaveBox.ApiHandler.Handlers
 {

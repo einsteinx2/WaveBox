@@ -1,9 +1,9 @@
 using System;
 using Ninject;
-using WaveBox.Core.Injection;
-using WaveBox.OperationQueue;
+using WaveBox.Core.OperationQueue;
 using WaveBox.Static;
-using WaveBox.Model;
+using WaveBox.Core.Model;
+using WaveBox.Core;
 
 namespace WaveBox.Service.Services.Cron
 {

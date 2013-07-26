@@ -1,11 +1,10 @@
 using System;
-using WaveBox.Core.Injection;
 using System.Collections.Generic;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using WaveBox.Core.Extensions;
-using WaveBox.Static;
+using WaveBox.Core.Static;
 
-namespace WaveBox.Model.Repository
+namespace WaveBox.Core.Model.Repository
 {
 	public class UserRepository : IUserRepository
 	{

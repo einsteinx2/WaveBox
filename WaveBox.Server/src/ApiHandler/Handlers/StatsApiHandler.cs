@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
-using WaveBox.Model;
+using WaveBox.Core.Model;
 using WaveBox.Static;
 using WaveBox.Service.Services.Http;
-using WaveBox.Model.Repository;
+using WaveBox.Core.Model.Repository;
 using Ninject;
 using WaveBox.Core.ApiResponse;
+using WaveBox.Core;
 
 namespace WaveBox.ApiHandler
 {

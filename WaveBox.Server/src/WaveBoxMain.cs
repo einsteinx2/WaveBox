@@ -15,12 +15,12 @@ using Mono.Unix.Native;
 using Mono.Unix;
 using Mono.Zeroconf;
 using Ninject;
-using WaveBox.Core.Injection;
-using WaveBox.Model;
+using WaveBox.Core.Model;
 using WaveBox.Service;
 using WaveBox.Static;
 using WaveBox.Transcoding;
-using WaveBox.Model.Repository;
+using WaveBox.Core.Model.Repository;
+using WaveBox.Core;
 
 namespace WaveBox
 {

@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using Ninject;
 using WaveBox.ApiHandler.Handlers;
-using WaveBox.Model;
+using WaveBox.Core.Model;
 using WaveBox.Service.Services.Http;
 using WaveBox.Static;
 using WaveBox.Core.Extensions;
-using WaveBox.Core.Injection;
-using WaveBox.Model.Repository;
+using WaveBox.Core.Model.Repository;
+using WaveBox.Core;
 
 namespace WaveBox.ApiHandler
 {

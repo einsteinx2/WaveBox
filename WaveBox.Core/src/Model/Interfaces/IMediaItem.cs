@@ -3,7 +3,7 @@ using System.IO;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using Newtonsoft.Json;
 
-namespace WaveBox.Model
+namespace WaveBox.Core.Model
 {
 	public interface IMediaItem : IItem
 	{

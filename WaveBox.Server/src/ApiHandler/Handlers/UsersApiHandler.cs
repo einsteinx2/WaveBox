@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
 using WaveBox.Static;
-using WaveBox.Model;
+using WaveBox.Core.Model;
 using Newtonsoft.Json;
-using WaveBox.Core.Injection;
 using WaveBox.Service.Services.Http;
 using Ninject;
-using WaveBox.Model.Repository;
+using WaveBox.Core.Model.Repository;
 using WaveBox.Core.ApiResponse;
+using WaveBox.Core;
+using WaveBox.Core.Static;
 
 namespace WaveBox.ApiHandler.Handlers
 {

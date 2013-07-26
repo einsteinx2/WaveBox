@@ -1,6 +1,6 @@
 using System;
 
-namespace WaveBox.Model.Repository
+namespace WaveBox.Core.Model.Repository
 {
 	public interface IMediaItemRepository
 	{

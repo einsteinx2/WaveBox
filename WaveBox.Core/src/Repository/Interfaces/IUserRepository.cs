@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace WaveBox.Model.Repository
+namespace WaveBox.Core.Model.Repository
 {
 	public interface IUserRepository
 	{

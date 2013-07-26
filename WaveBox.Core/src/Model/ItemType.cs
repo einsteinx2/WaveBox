@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace WaveBox.Model
+namespace WaveBox.Core.Model
 {
 	public enum ItemType
 	{
