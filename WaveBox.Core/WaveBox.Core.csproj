@@ -77,7 +77,6 @@
     <Compile Include="src\Model\Video.cs" />
     <Compile Include="src\OperationQueue\AbstractOperation.cs" />
     <Compile Include="src\OperationQueue\DelayedOperationQueue.cs" />
-    <Compile Include="src\OperationQueue\IDelayedOperation.cs" />
     <Compile Include="src\SQLiteNet.cs" />
     <Compile Include="src\Static\Utility.cs" />
     <Compile Include="src\Repository\AlbumRepository.cs" />
@@ -138,6 +137,9 @@
     <Compile Include="src\Injection\Injection.cs" />
     <Compile Include="src\Injection\Interfaces\IDatabase.cs" />
     <Compile Include="src\Injection\Interfaces\IServerSettings.cs" />
+    <Compile Include="src\OperationQueue\Interfaces\IDelayedOperation.cs" />
+    <Compile Include="src\Static\ThreadSafeRandom.cs" />
+    <Compile Include="src\OperationQueue\Interfaces\IOperationQueue.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -156,6 +158,7 @@
     <Folder Include="src\Model\Interfaces\" />
     <Folder Include="src\ApiResponse\" />
     <Folder Include="src\Injection\Interfaces\" />
+    <Folder Include="src\OperationQueue\Interfaces\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="lib\taglib-sharp.dll" />

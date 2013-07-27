@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace WaveBox.Core.OperationQueue
 {
-	public class DelayedOperationQueue
+	public class DelayedOperationQueue : IOperationQueue
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
