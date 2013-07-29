@@ -150,16 +150,35 @@ namespace WaveBox.Core.Static
 			return buffer.Trim(new char[] {' ', ','});
 		}
 
+		/// <summary>
+		/// Remove UTF8 byte order mark from a string
+		/// </summary>
 		public static string RemoveByteOrderMark(this string s)
 		{
 			string byteOrderMarkUtf8 = Encoding.UTF8.GetString(Encoding.UTF8.GetPreamble());
 
 			if (s.StartsWith(byteOrderMarkUtf8))
+			{
 				return s.Remove(0, byteOrderMarkUtf8.Length);
+			}
 
 			return s;
 		}
 
+		/// <summary>
+		/// AddRange() for IList<T>, to add a collection to another collection
+		/// </summary>
+		public static void AddRange<T>(this IList<T> list, IEnumerable<T> input)
+		{
+			foreach (T item in input)
+			{
+				list.Add(item);
+			}
+		}
+
+		/// <summary>
+		/// Randomly shuffle an IList<T> list
+		/// </summary>
 		public static void Shuffle<T>(this IList<T> list)
 		{
 			int n = list.Count;

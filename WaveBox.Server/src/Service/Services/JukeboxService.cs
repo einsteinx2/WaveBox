@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Un4seen.Bass;
 using WaveBox.Core.Model;
+using WaveBox.Core.Static;
 using WaveBox.Server.Extensions;
 using WaveBox.Service;
 
@@ -227,10 +228,7 @@ namespace WaveBox.Service.Services
 		public void AddSongs(IList<Song> songs)
 		{
 			IList<IMediaItem> mediaItems = new List<IMediaItem>();
-			foreach (Song s in songs)
-			{
-				mediaItems.Add(s);
-			}
+			mediaItems.AddRange(songs);
 			playlist.AddMediaItems(mediaItems);
 		}
 
