@@ -5,12 +5,13 @@ using System.Text;
 using Newtonsoft.Json;
 using Ninject;
 using WaveBox.ApiHandler;
-using WaveBox.Core.Model;
-using WaveBox.Static;
-using WaveBox.Service.Services.Http;
-using WaveBox.Core.Model.Repository;
-using WaveBox.Core.ApiResponse;
 using WaveBox.Core;
+using WaveBox.Core.ApiResponse;
+using WaveBox.Core.Extensions;
+using WaveBox.Core.Model;
+using WaveBox.Core.Model.Repository;
+using WaveBox.Service.Services.Http;
+using WaveBox.Static;
 
 namespace WaveBox.ApiHandler.Handlers
 {
