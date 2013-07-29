@@ -32,7 +32,7 @@ namespace WaveBox.ApiHandler.Handlers
 		/// </summary>
 		public void Process()
 		{
-			List<Podcast> listToReturn = new List<Podcast>();
+			IList<Podcast> listToReturn = new List<Podcast>();
 
 			if (Uri.UriPart(2) == null)
 			{

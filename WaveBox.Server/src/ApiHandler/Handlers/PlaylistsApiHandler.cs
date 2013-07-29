@@ -67,7 +67,7 @@ namespace WaveBox.ApiHandler.Handlers
 					{
 						case "add":
 							// Try to get the itemIds to add them to the playlist if necessary
-							List<int> itemIds = ParseItemIds();
+							IList<int> itemIds = ParseItemIds();
 							if (itemIds.Count == 0)
 							{
 								error = "Missing item ids";
@@ -114,8 +114,8 @@ namespace WaveBox.ApiHandler.Handlers
 							playlist.DeletePlaylist();
 							break;
 						case "insert":
-							List<int> insertItemIds = ParseItemIds();
-							List<int> insertIndexes = ParseIndexes();
+							IList<int> insertItemIds = ParseItemIds();
+							IList<int> insertIndexes = ParseIndexes();
 							if (insertItemIds.Count == 0 || insertItemIds.Count != insertIndexes.Count)
 							{
 								error = "Incorrect number of items and indexes supplied";
@@ -135,7 +135,7 @@ namespace WaveBox.ApiHandler.Handlers
 							listOfMediaItems = playlist.ListOfMediaItems();
 							break;
 						case "move":
-							List<int> moveIndexes = ParseIndexes();
+							IList<int> moveIndexes = ParseIndexes();
 							if (moveIndexes.Count == 0 || moveIndexes.Count % 2 != 0)
 							{
 								error = "Incorrect number of indexes supplied";
@@ -153,7 +153,7 @@ namespace WaveBox.ApiHandler.Handlers
 							}
 							break;
 						case "remove":
-							List<int> removeIndexes = ParseIndexes();
+							IList<int> removeIndexes = ParseIndexes();
 							if (removeIndexes.Count == 0)
 							{
 								error = "No indexes supplied";
@@ -197,7 +197,7 @@ namespace WaveBox.ApiHandler.Handlers
 						playlist.CreatePlaylist();
 
 						// Try to get the itemIds to add them to the playlist if necessary
-						List<int> itemIds = ParseItemIds();
+						IList<int> itemIds = ParseItemIds();
 						if (itemIds.Count > 0)
 						{
 							playlist.AddMediaItems(itemIds);
@@ -230,10 +230,10 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 		}
 
-		private List<int> ParseItemIds()
+		private IList<int> ParseItemIds()
 		{
 			// Try to get the itemIds
-			List<int> itemIds = new List<int>();
+			IList<int> itemIds = new List<int>();
 			if (Uri.Parameters.ContainsKey("itemIds"))
 			{
 				string[] itemIdStrings = Uri.Parameters["itemIds"].Split(',');
@@ -251,10 +251,10 @@ namespace WaveBox.ApiHandler.Handlers
 			return itemIds;
 		}
 
-		private List<int> ParseIndexes()
+		private IList<int> ParseIndexes()
 		{
 			// Try to get the itemIds
-			List<int> itemIds = new List<int>();
+			IList<int> itemIds = new List<int>();
 			if (Uri.Parameters.ContainsKey("indexes"))
 			{
 				string[] itemIdStrings = Uri.Parameters["indexes"].Split(',');

@@ -48,7 +48,7 @@ namespace WaveBox.Core.Model
 		{
 		}
 
-		public static List<Playlist> AllPlaylists()
+		public static IList<Playlist> AllPlaylists()
 		{
 			ISQLiteConnection conn = null;
 			try
@@ -202,7 +202,7 @@ namespace WaveBox.Core.Model
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				var result = conn.DeferredQuery<PlaylistItem>("SELECT * FROM PlaylistItem WHERE PlaylistId = ? ORDER BY ItemPosition", PlaylistId);
 
-				var items = new List<IMediaItem>();
+				IList<IMediaItem> items = new List<IMediaItem>();
 				foreach (PlaylistItem playlistItem in result)
 				{
 					if (!ReferenceEquals(playlistItem.ItemId, null))
@@ -234,9 +234,9 @@ namespace WaveBox.Core.Model
 			RemoveMediaItemAtIndex(IndexOfMediaItem(item));
 		}
 
-		public void RemoveMediaItems(List<IMediaItem> items)
+		public void RemoveMediaItems(IList<IMediaItem> items)
 		{
-			List<int> indexes = new List<int>();
+			IList<int> indexes = new List<int>();
 			if (PlaylistId == 0 || items == null)
 			{
 				return;
@@ -283,7 +283,7 @@ namespace WaveBox.Core.Model
 			}
 		}
 
-		public void RemoveMediaItemAtIndexes(List<int> indices)
+		public void RemoveMediaItemAtIndexes(IList<int> indices)
 		{
 			ISQLiteConnection conn = null;
 			try
@@ -451,7 +451,7 @@ namespace WaveBox.Core.Model
 
 		public void AddMediaItems(IList<int> itemIds)
 		{
-			List<IMediaItem> items = new List<IMediaItem>();
+			IList<IMediaItem> items = new List<IMediaItem>();
 			foreach (int itemId in itemIds)
 			{
 				logger.Info("Checking item id " + itemId);

@@ -141,11 +141,11 @@ namespace WaveBox.Service.Services
 		{
 			CurrentIndex = CurrentIndex + 1;
 
-			if (CurrentIndex >= playlist.PlaylistCount) 
+			if (CurrentIndex >= playlist.PlaylistCount)
 			{
 				CurrentIndex = CurrentIndex - 1;
 				Stop();
-			} 
+			}
 			else
 			{
 				PlaySongAtIndex (CurrentIndex);
@@ -176,7 +176,7 @@ namespace WaveBox.Service.Services
 					{
 						if (logger.IsInfoEnabled) logger.Info("BASS failed to create stream for " + path);
 					}
-					else 
+					else
 					{
 						if (logger.IsInfoEnabled) logger.Info("Current stream handle: " + currentStream);
 
@@ -209,7 +209,7 @@ namespace WaveBox.Service.Services
 			playlist.RemoveMediaItemAtIndex(index);
 		}
 
-		public void RemoveSongsAtIndexes(List<int> indices)
+		public void RemoveSongsAtIndexes(IList<int> indices)
 		{
 			playlist.RemoveMediaItemAtIndexes(indices);
 		}
@@ -224,10 +224,13 @@ namespace WaveBox.Service.Services
 			playlist.AddMediaItem(song, true);
 		}
 
-		public void AddSongs(List<Song> songs)
+		public void AddSongs(IList<Song> songs)
 		{
-			List<IMediaItem> mediaItems = new List<IMediaItem>();
-			mediaItems.AddRange(songs);
+			IList<IMediaItem> mediaItems = new List<IMediaItem>();
+			foreach (Song s in songs)
+			{
+				mediaItems.Add(s);
+			}
 			playlist.AddMediaItems(mediaItems);
 		}
 
@@ -265,7 +268,7 @@ namespace WaveBox.Service.Services
 			}
 
 			else IsInitialized = true;
-			
+
 		}
 
 		private void BassFree()
