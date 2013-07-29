@@ -11,19 +11,19 @@ namespace WaveBox.Core.ApiResponse
 		public string Error { get; set; }
 
 		[JsonProperty("podcasts")]
-		public List<Podcast> Podcasts { get; set; }
+		public IList<Podcast> Podcasts { get; set; }
 
 		[JsonProperty("episodes")]
-		public List<PodcastEpisode> Episodes { get; set; }
+		public IList<PodcastEpisode> Episodes { get; set; }
 
-		public PodcastContentResponse(string error, List<Podcast> podcasts)
+		public PodcastContentResponse(string error, IList<Podcast> podcasts)
 		{
 			Error = error;
 			Podcasts = podcasts;
 			Episodes = null;
 		}
 
-		public PodcastContentResponse(string error, Podcast podcast, List<PodcastEpisode> episodes)
+		public PodcastContentResponse(string error, Podcast podcast, IList<PodcastEpisode> episodes)
 		{
 			Error = error;
 			Podcasts = new List<Podcast> { podcast };

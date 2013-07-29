@@ -36,7 +36,7 @@ namespace WaveBox
 					CreateAuthUrl();
 					return authUrl;
 				}
-				else 
+				else
 				{
 					return authUrl;
 				}
@@ -87,7 +87,7 @@ namespace WaveBox
 		/// <param name='recordScrobble'>
 		/// If set to <c>true</c> record scrobble.
 		/// </param>
-		public string Scrobble(List<LfmScrobbleData> scrobbles, LfmScrobbleType scrobbleType)
+		public string Scrobble(IList<LfmScrobbleData> scrobbles, LfmScrobbleType scrobbleType)
 		{
 			if (scrobbles.Count == 0)
 			{
@@ -126,11 +126,11 @@ namespace WaveBox
 			}
 
 			// or if it's invalid, return without doing anything.
-			else 
+			else
 			{
 				return null;
 			}
-			
+
 			// then compile the request and do it
 			string p = CompileApiCall(parameters);
 			string resp = DoPostRestRequest(p);
@@ -224,8 +224,8 @@ namespace WaveBox
 			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(requestUrl);
 
 			using (HttpWebResponse response = req.GetResponse() as HttpWebResponse)
-			{  
-				StreamReader reader = new StreamReader(response.GetResponseStream());  
+			{
+				StreamReader reader = new StreamReader(response.GetResponseStream());
 				jsonResponse = JsonConvert.DeserializeObject(reader.ReadToEnd());
 			}
 
@@ -253,8 +253,8 @@ namespace WaveBox
 			HttpWebRequest req = (HttpWebRequest)WebRequest.Create(requestUrl);
 
 			using (HttpWebResponse response = req.GetResponse() as HttpWebResponse)
-			{  
-				StreamReader reader = new StreamReader(response.GetResponseStream());  
+			{
+				StreamReader reader = new StreamReader(response.GetResponseStream());
 				jsonResponse = JsonConvert.DeserializeObject(reader.ReadToEnd());
 			}
 
@@ -266,8 +266,8 @@ namespace WaveBox
 				logger.Info ("[SCROBBLE] (" + user.UserName + ") Obtain last.fm authentication request token: success");
 			}
 
-			string url = "http://www.last.fm/api/auth/?" + 
-			string.Format ("api_key={0}", apiKey) + 
+			string url = "http://www.last.fm/api/auth/?" +
+			string.Format ("api_key={0}", apiKey) +
 			string.Format ("&token={0}", requestToken);
 
 			authUrl = url;
@@ -322,7 +322,7 @@ namespace WaveBox
 
 				stream.Close();
 				s.Close();
-			} 
+			}
 			catch (Exception e)
 			{
 				logger.Error(e);

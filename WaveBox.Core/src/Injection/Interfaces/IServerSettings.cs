@@ -20,7 +20,7 @@ namespace WaveBox.Core
 
 		string Theme { get; }
 
-		List<Folder> MediaFolders { get; }
+		IList<Folder> MediaFolders { get; }
 
 		string PodcastFolder { get; }
 
@@ -28,11 +28,11 @@ namespace WaveBox.Core
 
 		int SessionTimeout { get; }
 
-		List<string> FolderArtNames { get; }
+		IList<string> FolderArtNames { get; }
 
 		bool CrashReportEnable { get; }
 
-		List<string> Services { get; }
+		IList<string> Services { get; }
 
 		void Reload();
 

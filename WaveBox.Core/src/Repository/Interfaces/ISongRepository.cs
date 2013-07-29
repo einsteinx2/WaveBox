@@ -11,9 +11,9 @@ namespace WaveBox.Core.Model.Repository
 		int CountSongs();
 		long TotalSongSize();
 		long TotalSongDuration();
-		List<Song> SearchSongs(string field, string query, bool exact = true);
-		List<Song> RangeSongs(char start, char end);
-		List<Song> LimitSongs(int index, int duration = Int32.MinValue);
+		IList<Song> SearchSongs(string field, string query, bool exact = true);
+		IList<Song> RangeSongs(char start, char end);
+		IList<Song> LimitSongs(int index, int duration = Int32.MinValue);
 
 	}
 }

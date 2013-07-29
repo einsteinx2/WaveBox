@@ -137,7 +137,7 @@ namespace WaveBox.ApiHandler.Handlers
 											Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, null, jukebox.ListOfSongs()), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 										}
 									}
-									else 
+									else
 									{
 										if (logger.IsInfoEnabled) logger.Info("Move: Invalid number of indices");
 										Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("Invalid number of indices for action 'move'", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
@@ -145,7 +145,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 								}
 							}
-							else 
+							else
 							{
 								if (logger.IsInfoEnabled) logger.Info("Move: Missing 'index' parameter");
 								Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("Missing 'index' parameter for action 'move'", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
@@ -180,7 +180,7 @@ namespace WaveBox.ApiHandler.Handlers
 		public bool AddSongs(string songIds)
 		{
 			bool allSongsAddedSuccessfully = true;
-			List<Song> songs = new List<Song>();
+			IList<Song> songs = new List<Song>();
 			foreach (string p in songIds.Split(','))
 			{
 				try
@@ -217,7 +217,7 @@ namespace WaveBox.ApiHandler.Handlers
 		/// </summary>
 		public void RemoveSongs(string songIds)
 		{
-			List<int> indices = new List<int>();
+			IList<int> indices = new List<int>();
 			foreach (string p in songIds.Split(','))
 			{
 				try

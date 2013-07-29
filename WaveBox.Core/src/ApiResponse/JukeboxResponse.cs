@@ -14,9 +14,9 @@ namespace WaveBox.Core.ApiResponse
 		public JukeboxStatus JukeboxStatus { get; set; }
 
 		[JsonProperty("jukeboxPlaylist")]
-		public List<IMediaItem> JukeboxPlaylist { get; set; }
+		public IList<IMediaItem> JukeboxPlaylist { get; set; }
 
-		public JukeboxResponse(string error, JukeboxStatus jukeboxStatus, List<IMediaItem> jukeboxPlaylist)
+		public JukeboxResponse(string error, JukeboxStatus jukeboxStatus, IList<IMediaItem> jukeboxPlaylist)
 		{
 			Error = error;
 			JukeboxStatus = jukeboxStatus;

@@ -36,9 +36,9 @@ namespace WaveBox.ApiHandler.Handlers
 		public void Process()
 		{
 			// Generate return lists of folders, songs, videos
-			List<Folder> listOfFolders = new List<Folder>();
-			List<Song> listOfSongs = new List<Song>();
-			List<Video> listOfVideos = new List<Video>();
+			IList<Folder> listOfFolders = new List<Folder>();
+			IList<Song> listOfSongs = new List<Song>();
+			IList<Video> listOfVideos = new List<Video>();
 			Folder containingFolder = null;
 			bool recursive = false;
 

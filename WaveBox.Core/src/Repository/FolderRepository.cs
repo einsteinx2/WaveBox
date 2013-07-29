@@ -106,7 +106,7 @@ namespace WaveBox.Core.Model.Repository
 			return folder;
 		}
 
-		public List<Folder> MediaFolders()
+		public IList<Folder> MediaFolders()
 		{
 			if (serverSettings.MediaFolders == null) 
 			{
@@ -133,7 +133,7 @@ namespace WaveBox.Core.Model.Repository
 			return new List<Folder>();
 		}
 
-		public List<Folder> TopLevelFolders()
+		public IList<Folder> TopLevelFolders()
 		{
 			List<Folder> folders = new List<Folder>();
 
@@ -146,7 +146,7 @@ namespace WaveBox.Core.Model.Repository
 			return folders;
 		}
 
-		public List<Song> ListOfSongs(int folderId, bool recursive = false)
+		public IList<Song> ListOfSongs(int folderId, bool recursive = false)
 		{
 			var listOfSongs = new List<Song>();
 
@@ -164,7 +164,7 @@ namespace WaveBox.Core.Model.Repository
 			return listOfSongs;
 		}
 
-		public List<Video> ListOfVideos(int folderId, bool recursive = false)
+		public IList<Video> ListOfVideos(int folderId, bool recursive = false)
 		{
 			var listOfVideos = new List<Video>();
 
@@ -182,7 +182,7 @@ namespace WaveBox.Core.Model.Repository
 			return listOfVideos;
 		}
 
-		public List<Folder> ListOfSubFolders(int folderId)
+		public IList<Folder> ListOfSubFolders(int folderId)
 		{
 			ISQLiteConnection conn = null;
 			try

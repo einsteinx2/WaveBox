@@ -6,13 +6,13 @@ namespace WaveBox.Core.Model.Repository
 	public interface IVideoRepository
 	{
 		Video VideoForId(int videoId);
-		List<Video> AllVideos();
+		IList<Video> AllVideos();
 		int CountVideos();
 		long TotalVideoSize();
 		long TotalVideoDuration();
-		List<Video> SearchVideos(string field, string query, bool exact = true);
-		List<Video> RangeVideos(char start, char end);
-		List<Video> LimitVideos(int index, int duration = Int32.MinValue);
+		IList<Video> SearchVideos(string field, string query, bool exact = true);
+		IList<Video> RangeVideos(char start, char end);
+		IList<Video> LimitVideos(int index, int duration = Int32.MinValue);
 	}
 }
 

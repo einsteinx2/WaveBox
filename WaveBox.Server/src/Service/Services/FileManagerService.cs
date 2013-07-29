@@ -25,7 +25,7 @@ namespace WaveBox.Service.Services
 		HistoryDone = 0x00000010,
 		RootChanged = 0x00000020,
 		FlagMount = 0x00000040,
-		FlagUnmount = 0x00000080, 
+		FlagUnmount = 0x00000080,
 		// The below values are only relevant of file events are enabled
 		FlagItemCreated = 0x00000100,
 		FlagItemRemoved = 0x00000200,
@@ -51,7 +51,7 @@ namespace WaveBox.Service.Services
 		public bool Running { get; set; }
 
 		// Our list of media folders and the scanning queue which uses them
-		private static List<Folder> mediaFolders;
+		private static IList<Folder> mediaFolders;
 		private static DelayedOperationQueue scanQueue;
 
 		private static Thread fsEventsThread = null;
