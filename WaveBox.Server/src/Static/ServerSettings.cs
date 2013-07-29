@@ -33,7 +33,7 @@ namespace WaveBox.Static
 
 		public string Theme { get { return settingsModel.Theme; } }
 
-		public List<Folder> MediaFolders { get; private set; }
+		public IList<Folder> MediaFolders { get; private set; }
 
 		public string PodcastFolder { get { return settingsModel.PodcastFolder; } }
 
@@ -41,11 +41,11 @@ namespace WaveBox.Static
 
 		public int SessionTimeout { get { return settingsModel.SessionTimeout; } }
 
-		public List<string> FolderArtNames { get { return settingsModel.FolderArtNames; } }
+		public IList<string> FolderArtNames { get { return settingsModel.FolderArtNames; } }
 
 		public bool CrashReportEnable { get { return settingsModel.CrashReportEnable; } }
 
-		public List<string> Services { get { return settingsModel.Services; } }
+		public IList<string> Services { get { return settingsModel.Services; } }
 
 		public void Reload()
 		{

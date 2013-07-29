@@ -155,7 +155,7 @@ namespace WaveBox.Core.Model.Repository
 			return null;
 		}
 
-		public List<User> AllUsers()
+		public IList<User> AllUsers()
 		{
 			ISQLiteConnection conn = null;
 			try
@@ -182,7 +182,7 @@ namespace WaveBox.Core.Model.Repository
 			return new List<User>();
 		}
 
-		public List<User> ExpiredUsers()
+		public IList<User> ExpiredUsers()
 		{
 			ISQLiteConnection conn = null;
 			try

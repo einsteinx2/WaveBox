@@ -16,7 +16,7 @@ namespace WaveBox.Core.Model
 		public string Theme { get; set; }
 
 		[JsonProperty("mediaFolders")]
-		public List<string> MediaFolders { get; set; }
+		public IList<string> MediaFolders { get; set; }
 
 		[JsonProperty("podcastFolder")]
 		public string PodcastFolder { get; set; }
@@ -31,12 +31,12 @@ namespace WaveBox.Core.Model
 		public bool PrettyJson { get; set; }
 
 		[JsonProperty("folderArtNames")]
-		public List<string> FolderArtNames { get; set; }
+		public IList<string> FolderArtNames { get; set; }
 
 		[JsonProperty("crashReportEnable")]
 		public bool CrashReportEnable { get; set; }
 
 		[JsonProperty("services")]
-		public List<string> Services { get; set; }
+		public IList<string> Services { get; set; }
 	}
 }

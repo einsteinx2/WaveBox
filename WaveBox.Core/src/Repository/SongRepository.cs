@@ -189,7 +189,7 @@ namespace WaveBox.Core.Model.Repository
 			return 0;
 		}
 
-		public List<Song> SearchSongs(string field, string query, bool exact = true)
+		public IList<Song> SearchSongs(string field, string query, bool exact = true)
 		{
 			if (query == null)
 			{
@@ -253,7 +253,7 @@ namespace WaveBox.Core.Model.Repository
 		}
 
 		// Return a list of songs titled between a range of (a-z, A-Z, 0-9 characters)
-		public List<Song> RangeSongs(char start, char end)
+		public IList<Song> RangeSongs(char start, char end)
 		{
 			// Ensure characters are alphanumeric, return empty list if either is not
 			if (!Char.IsLetterOrDigit(start) || !Char.IsLetterOrDigit(end))
@@ -295,7 +295,7 @@ namespace WaveBox.Core.Model.Repository
 		}
 
 		// Return a list of songs using SQL LIMIT x,y where X is starting index and Y is duration
-		public List<Song> LimitSongs(int index, int duration = Int32.MinValue)
+		public IList<Song> LimitSongs(int index, int duration = Int32.MinValue)
 		{
 			ISQLiteConnection conn = null;
 			try

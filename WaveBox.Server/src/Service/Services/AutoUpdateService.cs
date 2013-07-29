@@ -35,7 +35,7 @@ namespace WaveBox.Service.Services
 		public bool IsUpdateAvailable { get { return isUpdateAvailable; } }
 
 		private List<UpdateInfo> updates;
-		public List<UpdateInfo> Updates { get { return updates; } }
+		public IList<UpdateInfo> Updates { get { return updates; } }
 
 		private Timer timer;
 

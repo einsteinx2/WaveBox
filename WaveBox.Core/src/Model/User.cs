@@ -31,7 +31,7 @@ namespace WaveBox.Core.Model
 		public string Password { get; set; }
 
 		[JsonProperty("sessions"), IgnoreRead, IgnoreWrite]
-		public List<Session> Sessions { get; set; }
+		public IList<Session> Sessions { get; set; }
 
 		[JsonIgnore]
 		public string PasswordHash { get; set; }
@@ -68,7 +68,7 @@ namespace WaveBox.Core.Model
 			return false;
 		}
 
-		public List<Session> ListOfSessions()
+		public IList<Session> ListOfSessions()
 		{
 			ISQLiteConnection conn = null;
 			try

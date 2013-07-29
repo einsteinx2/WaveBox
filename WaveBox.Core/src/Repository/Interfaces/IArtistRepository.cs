@@ -9,11 +9,11 @@ namespace WaveBox.Core.Model.Repository
 		Artist ArtistForName(string artistName);
 		bool InsertArtist(string artistName);
 		Artist ArtistForNameOrCreate(string artistName);
-		List<Artist> AllArtists();
+		IList<Artist> AllArtists();
 		int CountArtists();
-		List<Artist> SearchArtists(string field, string query, bool exact = true);
-		List<Artist> RangeArtists(char start, char end);
-		List<Artist> LimitArtists(int index, int duration = Int32.MinValue);
+		IList<Artist> SearchArtists(string field, string query, bool exact = true);
+		IList<Artist> RangeArtists(char start, char end);
+		IList<Artist> LimitArtists(int index, int duration = Int32.MinValue);
 	}
 }
 

@@ -35,10 +35,10 @@ namespace WaveBox.ApiHandler.Handlers
 		public void Process()
 		{
 			// Lists to return as results
-			List<Artist> artists = new List<Artist>();
-			List<Album> albums = new List<Album>();
-			List<Song> songs = new List<Song>();
-			List<Video> videos = new List<Video>();
+			IList<Artist> artists = new List<Artist>();
+			IList<Album> albums = new List<Album>();
+			IList<Song> songs = new List<Song>();
+			IList<Video> videos = new List<Video>();
 
 			// If a query is provided...
 			if (Uri.Parameters.ContainsKey("query"))

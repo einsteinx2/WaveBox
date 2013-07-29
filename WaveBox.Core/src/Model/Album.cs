@@ -46,7 +46,7 @@ namespace WaveBox.Core.Model
 		public int? DetermineArtId()
 		{
 			// Return the art id (if any) for this album, based on the current best art id using either a song art id or the folder art id
-			List<int> songArtIds = SongArtIds();
+			IList<int> songArtIds = SongArtIds();
 			if (songArtIds.Count == 1)
 			{
 				// There is one unique art ID for these songs, so return it
@@ -55,7 +55,7 @@ namespace WaveBox.Core.Model
 			else
 			{
 				// Check the folder art id(s)
-				List<int> folderArtIds = FolderArtIds();
+				IList<int> folderArtIds = FolderArtIds();
 				if (folderArtIds.Count == 0)
 				{
 					// There is no folder art
@@ -83,7 +83,7 @@ namespace WaveBox.Core.Model
 			}
 		}
 
-		private List<int> SongArtIds()
+		private IList<int> SongArtIds()
 		{
 			if (AlbumId == null)
 				return new List<int>();
@@ -91,7 +91,7 @@ namespace WaveBox.Core.Model
 			return Injection.Kernel.Get<IAlbumRepository>().SongArtIds((int)AlbumId);
 		}
 
-		private List<int> FolderArtIds()
+		private IList<int> FolderArtIds()
 		{
 			if (AlbumId == null)
 				return new List<int>();
@@ -104,7 +104,7 @@ namespace WaveBox.Core.Model
 			return Injection.Kernel.Get<IArtistRepository>().ArtistForId(ArtistId);
 		}
 
-		public List<Song> ListOfSongs()
+		public IList<Song> ListOfSongs()
 		{
 			return Injection.Kernel.Get<ISongRepository>().SearchSongs("AlbumId", AlbumId.ToString());
 		}

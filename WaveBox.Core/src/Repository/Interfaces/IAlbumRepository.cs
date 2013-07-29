@@ -10,14 +10,14 @@ namespace WaveBox.Core.Model.Repository
 		Album AlbumForName(string albumName, int? artistId);
 		bool InsertAlbum(string albumName, int? artistId, int? releaseYear);
 		Album AlbumForName(string albumName, int? artistId, int? releaseYear = null);
-		List<Album> AllAlbums();
+		IList<Album> AllAlbums();
 		int CountAlbums();
-		List<Album> SearchAlbums(string field, string query, bool exact = true);
-		List<Album> RandomAlbums(int limit = 10);
-		List<Album> RangeAlbums(char start, char end);
-		List<Album> LimitAlbums(int index, int duration = Int32.MinValue);
-		List<int> SongArtIds(int albumId);
-		List<int> FolderArtIds(int albumId);
+		IList<Album> SearchAlbums(string field, string query, bool exact = true);
+		IList<Album> RandomAlbums(int limit = 10);
+		IList<Album> RangeAlbums(char start, char end);
+		IList<Album> LimitAlbums(int index, int duration = Int32.MinValue);
+		IList<int> SongArtIds(int albumId);
+		IList<int> FolderArtIds(int albumId);
 	}
 }
 

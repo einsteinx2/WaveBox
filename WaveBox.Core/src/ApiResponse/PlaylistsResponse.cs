@@ -11,12 +11,12 @@ namespace WaveBox.Core
 		public string Error { get; set; }
 
 		[JsonProperty("playlists")]
-		public List<Playlist> Playlists { get; set; }
+		public IList<Playlist> Playlists { get; set; }
 
 		[JsonProperty("mediaItems")]
-		public List<IMediaItem> MediaItems { get; set; }
+		public IList<IMediaItem> MediaItems { get; set; }
 
-		public PlaylistsResponse(string error, List<Playlist> playlists, List<IMediaItem> mediaItems)
+		public PlaylistsResponse(string error, IList<Playlist> playlists, IList<IMediaItem> mediaItems)
 		{
 			Error = error;
 			Playlists = playlists;

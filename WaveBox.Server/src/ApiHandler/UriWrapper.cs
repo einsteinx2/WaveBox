@@ -8,7 +8,7 @@ namespace WaveBox.ApiHandler
 	public class UriWrapper
 	{
 		// URI breakdown into parts, a string, and parameters
-		public List<string> UriParts { get; set; }
+		public IList<string> UriParts { get; set; }
 		public string UriString { get; set; }
 		public Dictionary<string, string> Parameters { get; set; }
 
@@ -69,7 +69,7 @@ namespace WaveBox.ApiHandler
 		public string UriPart(int index)
 		{
 			// Make sure the URI's part count is greater than the index
-			if (UriParts.Count > index) 
+			if (UriParts.Count > index)
 			{
 				return UriParts.ElementAt(index);
 			}
@@ -81,9 +81,9 @@ namespace WaveBox.ApiHandler
 		/// <summary>
 		/// Purge the empty elements in an array of strings, returning a list of strings
 		/// </summary>
-		private List<string> RemoveEmptyElements(string[] input)
+		private IList<string> RemoveEmptyElements(string[] input)
 		{
-			List<string> result = new List<string>();
+			IList<string> result = new List<string>();
 
 			foreach (string s in input)
 			{

@@ -33,11 +33,11 @@ namespace WaveBox.ApiHandler.Handlers
 		public void Process()
 		{
 			// Generate return lists of folders, songs, videos
-			List<Genre> listOfGenres = new List<Genre>();
-			List<Folder> listOfFolders = new List<Folder>();
-			List<Artist> listOfArtists = new List<Artist>();
-			List<Album> listOfAlbums = new List<Album>();
-			List<Song> listOfSongs = new List<Song>();
+			IList<Genre> listOfGenres = new List<Genre>();
+			IList<Folder> listOfFolders = new List<Folder>();
+			IList<Artist> listOfArtists = new List<Artist>();
+			IList<Album> listOfAlbums = new List<Album>();
+			IList<Song> listOfSongs = new List<Song>();
 
 			// Try to get the folder id
 			bool success = false;
@@ -46,7 +46,7 @@ namespace WaveBox.ApiHandler.Handlers
 			{
 				success = Int32.TryParse(Uri.Parameters["id"], out id);
 			}
-			
+
 			if (success)
 			{
 				string type = "artists"; // Default to artist
@@ -79,7 +79,7 @@ namespace WaveBox.ApiHandler.Handlers
 				// No id parameter
 				listOfGenres = Injection.Kernel.Get<IGenreRepository>().AllGenres();
 			}
-			
+
 			// Return all results
 			try
 			{

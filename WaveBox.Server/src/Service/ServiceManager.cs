@@ -11,7 +11,7 @@ namespace WaveBox.Service
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		// List of all services maintained by the manager
-		private static List<IService> Services = new List<IService>();
+		private static IList<IService> Services = new List<IService>();
 
 		/// <summary>
 		/// Add a new service, by name, to the manager, optionally starting it automatically
@@ -64,7 +64,7 @@ namespace WaveBox.Service
 		/// <summary>
 		/// Add a list of services, by name, to the manager, optionally autostarting all of them
 		/// </summary>
-		public static bool AddList(List<string> names, bool autostart = false)
+		public static bool AddList(IList<string> names, bool autostart = false)
 		{
 			bool success = true;
 
@@ -110,7 +110,7 @@ namespace WaveBox.Service
 		/// <summary>
 		/// Return string list of registered services
 		/// </summary>
-		public static List<string> GetServices()
+		public static IList<string> GetServices()
 		{
 			return Services.Select(x => x.Name).ToList();
 		}

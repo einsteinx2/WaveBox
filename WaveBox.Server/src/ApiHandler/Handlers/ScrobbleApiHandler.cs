@@ -69,7 +69,7 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 
 			// Create list of scrobble data
-			List<LfmScrobbleData> scrobbles = new List<LfmScrobbleData>();
+			IList<LfmScrobbleData> scrobbles = new List<LfmScrobbleData>();
 
 			// Get Last.fm API enumerations
 			LfmScrobbleType scrobbleType = Lastfm.ScrobbleTypeForString(action);

@@ -102,7 +102,7 @@ namespace WaveBox.Core.Model.Repository
 			}
 		}
 
-		public List<Genre> AllGenres()
+		public IList<Genre> AllGenres()
 		{
 			ISQLiteConnection conn = null;
 			try
@@ -122,7 +122,7 @@ namespace WaveBox.Core.Model.Repository
 			return new List<Genre>();
 		}
 
-		public List<Artist> ListOfArtists(int genreId)
+		public IList<Artist> ListOfArtists(int genreId)
 		{
 			ISQLiteConnection conn = null;
 			try
@@ -146,7 +146,7 @@ namespace WaveBox.Core.Model.Repository
 			return new List<Artist>();
 		}
 
-		public List<Album> ListOfAlbums(int genreId)
+		public IList<Album> ListOfAlbums(int genreId)
 		{
 			ISQLiteConnection conn = null;
 			try
@@ -170,7 +170,7 @@ namespace WaveBox.Core.Model.Repository
 			return new List<Album>();
 		}
 
-		public List<Song> ListOfSongs(int genreId)
+		public IList<Song> ListOfSongs(int genreId)
 		{
 			ISQLiteConnection conn = null;
 			try
@@ -193,7 +193,7 @@ namespace WaveBox.Core.Model.Repository
 			return new List<Song>();
 		}
 
-		public List<Folder> ListOfFolders(int genreId)
+		public IList<Folder> ListOfFolders(int genreId)
 		{
 			ISQLiteConnection conn = null;
 			try

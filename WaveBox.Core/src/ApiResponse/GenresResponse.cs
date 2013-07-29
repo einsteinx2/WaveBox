@@ -11,21 +11,21 @@ namespace WaveBox.Core.ApiResponse
 		public string Error { get; set; }
 
 		[JsonProperty("genres")]
-		public List<Genre> Genres { get; set; }
+		public IList<Genre> Genres { get; set; }
 
 		[JsonProperty("folders")]
-		public List<Folder> Folders { get; set; }
+		public IList<Folder> Folders { get; set; }
 
 		[JsonProperty("artists")]
-		public List<Artist> Artists { get; set; }
+		public IList<Artist> Artists { get; set; }
 
 		[JsonProperty("albums")]
-		public List<Album> Albums { get; set; }
+		public IList<Album> Albums { get; set; }
 
 		[JsonProperty("songs")]
-		public List<Song> Songs { get; set; }
+		public IList<Song> Songs { get; set; }
 
-		public GenresResponse(string error, List<Genre> genres, List<Folder> folders, List<Artist> artists, List<Album> albums, List<Song> songs)
+		public GenresResponse(string error, IList<Genre> genres, IList<Folder> folders, IList<Artist> artists, IList<Album> albums, IList<Song> songs)
 		{
 			Error = error;
 			Genres = genres;
