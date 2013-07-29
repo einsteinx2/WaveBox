@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Un4seen.Bass;
+using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
 using WaveBox.Core.Static;
 using WaveBox.Server.Extensions;

@@ -6,17 +6,18 @@ using System.IO;
 using System.Threading;
 using Newtonsoft.Json;
 using Ninject;
-using WaveBox.Core.Model;
-using WaveBox.Server.Extensions;
-using WaveBox.Static;
-using WaveBox.Service;
-using WaveBox.Service.Services;
-using WaveBox.Service.Services.Http;
-using WaveBox.Transcoding;
-using WaveBox.Core.Model.Repository;
-using WaveBox.Core.ApiResponse;
 using WaveBox.Core;
+using WaveBox.Core.ApiResponse;
+using WaveBox.Core.Extensions;
+using WaveBox.Core.Model.Repository;
+using WaveBox.Core.Model;
 using WaveBox.Core.Static;
+using WaveBox.Server.Extensions;
+using WaveBox.Service;
+using WaveBox.Service.Services.Http;
+using WaveBox.Service.Services;
+using WaveBox.Static;
+using WaveBox.Transcoding;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -94,7 +95,7 @@ namespace WaveBox.ApiHandler.Handlers
 				{
 					item = Injection.Kernel.Get<ISongRepository>().SongForId(id);
 					if (logger.IsInfoEnabled) logger.Info("Preparing audio transcode: " + item.FileName);
-					
+
 					// Default to MP3 transcoding
 					transType = TranscodeType.MP3;
 				}
@@ -106,7 +107,7 @@ namespace WaveBox.ApiHandler.Handlers
 					// Default to h.264 transcoding
 					transType = TranscodeType.X264;
 				}
-				
+
 				// Return an error if no item exists
 				if ((item == null) || (!File.Exists(item.FilePath())))
 				{
@@ -242,7 +243,7 @@ namespace WaveBox.ApiHandler.Handlers
 					// Begin video transcoding
 					Transcoder = transcodeService.TranscodeVideo(item, transType, quality, isDirect, width, height, maintainAspect, offsetSeconds, lengthSeconds);
 				}
-				
+
 				// If a transcoder was generated...
 				if ((object)Transcoder != null)
 				{
@@ -279,7 +280,7 @@ namespace WaveBox.ApiHandler.Handlers
 				// Send the file if either there is no transcoder and the original file exists OR
 				// it's a direct transcoder and the base stream exists OR
 				// it's a file transcoder and the transcoded file exists
-				if ((object)Transcoder == null && File.Exists(item.FilePath()) || 
+				if ((object)Transcoder == null && File.Exists(item.FilePath()) ||
 					(Transcoder.IsDirect && (object)stream != null) ||
 					(!Transcoder.IsDirect && File.Exists(Transcoder.OutputPath)))
 				{
