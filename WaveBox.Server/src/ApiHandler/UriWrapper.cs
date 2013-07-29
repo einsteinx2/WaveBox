@@ -8,7 +8,7 @@ namespace WaveBox.ApiHandler
 	public class UriWrapper
 	{
 		// URI breakdown into parts, a string, and parameters
-		public List<string> UriParts { get; set; }
+		public IList<string> UriParts { get; set; }
 		public string UriString { get; set; }
 		public Dictionary<string, string> Parameters { get; set; }
 

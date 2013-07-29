@@ -149,7 +149,7 @@ namespace WaveBox.Core.Model.Repository
 			return anArtist;
 		}
 
-		public List<Artist> AllArtists()
+		public IList<Artist> AllArtists()
 		{
 			ISQLiteConnection conn = null;
 			try
@@ -189,7 +189,7 @@ namespace WaveBox.Core.Model.Repository
 			return 0;
 		}
 
-		public List<Artist> SearchArtists(string field, string query, bool exact = true)
+		public IList<Artist> SearchArtists(string field, string query, bool exact = true)
 		{
 			if (query == null)
 			{
@@ -237,7 +237,7 @@ namespace WaveBox.Core.Model.Repository
 		}
 
 		// Return a list of artists titled between a range of (a-z, A-Z, 0-9 characters)
-		public List<Artist> RangeArtists(char start, char end)
+		public IList<Artist> RangeArtists(char start, char end)
 		{
 			// Ensure characters are alphanumeric, return empty list if either is not
 			if (!Char.IsLetterOrDigit(start) || !Char.IsLetterOrDigit(end))
@@ -276,7 +276,7 @@ namespace WaveBox.Core.Model.Repository
 		}
 
 		// Return a list of artists using SQL LIMIT x,y where X is starting index and Y is duration
-		public List<Artist> LimitArtists(int index, int duration = Int32.MinValue)
+		public IList<Artist> LimitArtists(int index, int duration = Int32.MinValue)
 		{
 			ISQLiteConnection conn = null;
 			try

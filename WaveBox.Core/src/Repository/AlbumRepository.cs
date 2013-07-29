@@ -148,7 +148,7 @@ namespace WaveBox.Core.Model.Repository
 			return a;
 		}
 
-		public List<Album> AllAlbums()
+		public IList<Album> AllAlbums()
 		{
 			ISQLiteConnection conn = null;
 			try
@@ -190,7 +190,7 @@ namespace WaveBox.Core.Model.Repository
 			return 0;
 		}
 
-		public List<Album> SearchAlbums(string field, string query, bool exact = true)
+		public IList<Album> SearchAlbums(string field, string query, bool exact = true)
 		{
 			if (query == null)
 			{
@@ -241,7 +241,7 @@ namespace WaveBox.Core.Model.Repository
 			return new List<Album>();
 		}
 
-		public List<Album> RandomAlbums(int limit = 10)
+		public IList<Album> RandomAlbums(int limit = 10)
 		{
 			ISQLiteConnection conn = null;
 			try
@@ -264,7 +264,7 @@ namespace WaveBox.Core.Model.Repository
 		}
 
 		// Return a list of albums titled between a range of (a-z, A-Z, 0-9 characters)
-		public List<Album> RangeAlbums(char start, char end)
+		public IList<Album> RangeAlbums(char start, char end)
 		{
 			// Ensure characters are alphanumeric, return empty list if either is not
 			if (!Char.IsLetterOrDigit(start) || !Char.IsLetterOrDigit(end))
@@ -304,7 +304,7 @@ namespace WaveBox.Core.Model.Repository
 		}
 
 		// Return a list of albums using SQL LIMIT x,y where X is starting index and Y is duration
-		public List<Album> LimitAlbums(int index, int duration = Int32.MinValue)
+		public IList<Album> LimitAlbums(int index, int duration = Int32.MinValue)
 		{
 			ISQLiteConnection conn = null;
 			try
@@ -342,7 +342,7 @@ namespace WaveBox.Core.Model.Repository
 			return new List<Album>();
 		}
 
-		public List<int> SongArtIds(int albumId)
+		public IList<int> SongArtIds(int albumId)
 		{
 			List<int> songArtIds = new List<int>();
 
@@ -370,7 +370,7 @@ namespace WaveBox.Core.Model.Repository
 			return songArtIds;
 		}
 
-		public List<int> FolderArtIds(int albumId)
+		public IList<int> FolderArtIds(int albumId)
 		{
 			List<int> folderArtIds = new List<int>();
 

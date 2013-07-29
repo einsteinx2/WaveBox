@@ -7,11 +7,11 @@ namespace WaveBox.Core.Model.Repository
 	{
 		Genre GenreForId(int? genreId);
 		Genre GenreForName(string genreName);
-		List<Genre> AllGenres();
-		List<Artist> ListOfArtists(int genreId);
-		List<Album> ListOfAlbums(int genreId);
-		List<Song> ListOfSongs(int genreId);
-		List<Folder> ListOfFolders(int genreId);
+		IList<Genre> AllGenres();
+		IList<Artist> ListOfArtists(int genreId);
+		IList<Album> ListOfAlbums(int genreId);
+		IList<Song> ListOfSongs(int genreId);
+		IList<Folder> ListOfFolders(int genreId);
 	}
 }
 

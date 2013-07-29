@@ -42,12 +42,12 @@ namespace WaveBox.Core.Model
 		/// Public methods
 		/// </summary>
 
-		public List<Album> ListOfAlbums()
+		public IList<Album> ListOfAlbums()
 		{
 			return Injection.Kernel.Get<IAlbumRepository>().SearchAlbums("ArtistId", ArtistId.ToString());
 		}
 
-		public List<Song> ListOfSongs()
+		public IList<Song> ListOfSongs()
 		{
 			return Injection.Kernel.Get<ISongRepository>().SearchSongs("ArtistId", ArtistId.ToString());
 		}

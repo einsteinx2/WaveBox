@@ -61,7 +61,7 @@ namespace WaveBox.Core.Model
 			// TO DO: scanning!  yay!
 		}
 
-		public List<IMediaItem> ListOfMediaItems()
+		public IList<IMediaItem> ListOfMediaItems()
 		{
 			List<IMediaItem> mediaItems = new List<IMediaItem>();
 
@@ -71,7 +71,7 @@ namespace WaveBox.Core.Model
 			return mediaItems;
 		}
 
-		public List<Song> ListOfSongs(bool recursive = false)
+		public IList<Song> ListOfSongs(bool recursive = false)
 		{
 			if (FolderId == null)
 				return new List<Song>();
@@ -79,7 +79,7 @@ namespace WaveBox.Core.Model
 			return Injection.Kernel.Get<IFolderRepository>().ListOfSongs((int)FolderId, recursive);
 		}
 
-		public List<Video> ListOfVideos(bool recursive = false)
+		public IList<Video> ListOfVideos(bool recursive = false)
 		{
 			if (FolderId == null)
 				return new List<Video>();
@@ -87,7 +87,7 @@ namespace WaveBox.Core.Model
 			return Injection.Kernel.Get<IFolderRepository>().ListOfVideos((int)FolderId, recursive);
 		}
 
-		public List<Folder> ListOfSubFolders()
+		public IList<Folder> ListOfSubFolders()
 		{
 			if (FolderId == null)
 				return new List<Folder>();

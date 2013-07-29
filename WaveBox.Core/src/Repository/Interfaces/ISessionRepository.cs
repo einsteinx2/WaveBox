@@ -8,7 +8,7 @@ namespace WaveBox.Core.Model.Repository
 		Session SessionForRowId(int rowId);
 		Session SessionForSessionId(string sessionId);
 		Session CreateSession(int userId, string clientName);
-		List<Session> AllSessions();
+		IList<Session> AllSessions();
 		int CountSessions();
 		bool DeleteSessionsForUserId(int userId);
 	}

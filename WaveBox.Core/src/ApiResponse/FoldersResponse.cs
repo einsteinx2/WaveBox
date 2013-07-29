@@ -11,18 +11,18 @@ namespace WaveBox.Core.ApiResponse
 		public string Error { get; set; }
 
 		[JsonProperty("folders")]
-		public List<Folder> Folders { get; set; }
+		public IList<Folder> Folders { get; set; }
 
 		[JsonProperty("containingFolder")]
 		public Folder ContainingFolder { get; set; }
 
 		[JsonProperty("songs")]
-		public List<Song> Songs { get; set; }
+		public IList<Song> Songs { get; set; }
 
 		[JsonProperty("videos")]
-		public List<Video> Videos { get; set; }
+		public IList<Video> Videos { get; set; }
 
-		public FoldersResponse(string error, Folder containingFolder, List<Folder> folders, List<Song> songs, List<Video>videos)
+		public FoldersResponse(string error, Folder containingFolder, IList<Folder> folders, IList<Song> songs, IList<Video>videos)
 		{
 			Error = error;
 			ContainingFolder = containingFolder;

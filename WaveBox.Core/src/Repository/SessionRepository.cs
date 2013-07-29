@@ -104,7 +104,7 @@ namespace WaveBox.Core.Model.Repository
 			return new Session();
 		}
 
-		public List<Session> AllSessions()
+		public IList<Session> AllSessions()
 		{
 			ISQLiteConnection conn = null;
 			try

@@ -11,18 +11,18 @@ namespace WaveBox.Core.ApiResponse
 		public string Error { get; set; }
 
 		[JsonProperty("artists")]
-		public List<Artist> Artists { get; set; }
+		public IList<Artist> Artists { get; set; }
 
 		[JsonProperty("albums")]
-		public List<Album> Albums { get; set; }
+		public IList<Album> Albums { get; set; }
 
 		[JsonProperty("songs")]
-		public List<Song> Songs { get; set; }
+		public IList<Song> Songs { get; set; }
 
 		[JsonProperty("videos")]
-		public List<Video> Videos { get; set; }
+		public IList<Video> Videos { get; set; }
 
-		public SearchResponse(string error, List<Artist> artists, List<Album> albums, List<Song> songs, List<Video> videos)
+		public SearchResponse(string error, IList<Artist> artists, IList<Album> albums, IList<Song> songs, IList<Video> videos)
 		{
 			Error = error;
 			Artists = artists;

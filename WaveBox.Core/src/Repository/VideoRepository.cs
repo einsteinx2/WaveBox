@@ -44,7 +44,7 @@ namespace WaveBox.Core.Model.Repository
 			return new Video();
 		}
 
-		public List<Video> AllVideos()
+		public IList<Video> AllVideos()
 		{
 			ISQLiteConnection conn = null;
 			try
@@ -136,7 +136,7 @@ namespace WaveBox.Core.Model.Repository
 			return 0;
 		}
 
-		public List<Video> SearchVideos(string field, string query, bool exact = true)
+		public IList<Video> SearchVideos(string field, string query, bool exact = true)
 		{
 			if (query == null)
 			{
@@ -185,7 +185,7 @@ namespace WaveBox.Core.Model.Repository
 		}
 
 		// Return a list of videos titled between a range of (a-z, A-Z, 0-9 characters)
-		public List<Video> RangeVideos(char start, char end)
+		public IList<Video> RangeVideos(char start, char end)
 		{
 			// Ensure characters are alphanumeric, return empty list if either is not
 			if (!Char.IsLetterOrDigit(start) || !Char.IsLetterOrDigit(end))
@@ -224,7 +224,7 @@ namespace WaveBox.Core.Model.Repository
 		}
 
 		// Return a list of videos using SQL LIMIT x,y where X is starting index and Y is duration
-		public List<Video> LimitVideos(int index, int duration = Int32.MinValue)
+		public IList<Video> LimitVideos(int index, int duration = Int32.MinValue)
 		{
 			ISQLiteConnection conn = null;
 			try

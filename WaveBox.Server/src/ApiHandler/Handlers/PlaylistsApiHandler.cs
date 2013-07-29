@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web;
 using Newtonsoft.Json;
 using Ninject;
@@ -34,8 +35,8 @@ namespace WaveBox.ApiHandler.Handlers
 		{
 			// Generate return lists of playlists, media items in them
 			string error = null;
-			List<Playlist> listOfPlaylists = new List<Playlist>();
-			List<IMediaItem> listOfMediaItems = new List<IMediaItem>();
+			IList<Playlist> listOfPlaylists = new List<Playlist>();
+			IList<IMediaItem> listOfMediaItems = new List<IMediaItem>();
 
 			// Try to get the playlist id
 			bool success = false;
@@ -76,20 +77,21 @@ namespace WaveBox.ApiHandler.Handlers
 								for (int i = 0; i < itemIds.Count; i++)
 								{
 									int itemId = itemIds[i];
-									List<IMediaItem> songs = null;
-									switch(Injection.Kernel.Get<IItemRepository>().ItemTypeForItemId(itemId))
+									IList<IMediaItem> songs = null;
+									switch (Injection.Kernel.Get<IItemRepository>().ItemTypeForItemId(itemId))
 									{
 										case ItemType.Folder:
 											// get all the media items underneath this folder and add them
-											songs = Injection.Kernel.Get<IFolderRepository>().FolderForId(itemId).ListOfSongs(true).ConvertAll(x => (IMediaItem)x);
+											// Use Select instead of ConvertAll: http://stackoverflow.com/questions/1571819/difference-between-select-and-convertall-in-c-sharp
+											songs = Injection.Kernel.Get<IFolderRepository>().FolderForId(itemId).ListOfSongs(true).Select(x => (IMediaItem)x).ToList();
 											playlist.AddMediaItems(songs);
 											break;
 										case ItemType.Artist:
-											songs = Injection.Kernel.Get<IArtistRepository>().ArtistForId(itemId).ListOfSongs().ConvertAll(x => (IMediaItem)x);
+											songs = Injection.Kernel.Get<IArtistRepository>().ArtistForId(itemId).ListOfSongs().Select(x => (IMediaItem)x).ToList();
 											playlist.AddMediaItems(songs);
 											break;
 										case ItemType.Album:
-											songs = Injection.Kernel.Get<IAlbumRepository>().AlbumForId(itemId).ListOfSongs().ConvertAll(x => (IMediaItem)x);
+											songs = Injection.Kernel.Get<IAlbumRepository>().AlbumForId(itemId).ListOfSongs().Select(x => (IMediaItem)x).ToList();
 											playlist.AddMediaItems(songs);
 											break;
 										case ItemType.Song:

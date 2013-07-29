@@ -135,7 +135,7 @@ namespace WaveBox.Static
 			return -1;
 		}
 
-		public List<QueryLog> QueryLogsSinceId(int queryId)
+		public IList<QueryLog> QueryLogsSinceId(int queryId)
 		{
 			// Return all queries >= this id
 			ISQLiteConnection conn = null;

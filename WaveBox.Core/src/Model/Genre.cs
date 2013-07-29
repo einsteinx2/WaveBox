@@ -57,7 +57,7 @@ namespace WaveBox.Core.Model
 			}
 		}
 
-		public List<Artist> ListOfArtists()
+		public IList<Artist> ListOfArtists()
 		{
 			if (GenreId == null)
 				return new List<Artist>();
@@ -65,7 +65,7 @@ namespace WaveBox.Core.Model
 			return Injection.Kernel.Get<IGenreRepository>().ListOfArtists((int)GenreId);
 		}
 
-		public List<Album> ListOfAlbums()
+		public IList<Album> ListOfAlbums()
 		{
 			if (GenreId == null)
 				return new List<Album>();
@@ -73,7 +73,7 @@ namespace WaveBox.Core.Model
 			return Injection.Kernel.Get<IGenreRepository>().ListOfAlbums((int)GenreId);
 		}
 
-		public List<Song> ListOfSongs()
+		public IList<Song> ListOfSongs()
 		{
 			if (GenreId == null)
 				return new List<Song>();
@@ -81,7 +81,7 @@ namespace WaveBox.Core.Model
 			return Injection.Kernel.Get<IGenreRepository>().ListOfSongs((int)GenreId);
 		}
 
-		public List<Folder> ListOfFolders()
+		public IList<Folder> ListOfFolders()
 		{
 			if (GenreId == null)
 				return new List<Folder>();

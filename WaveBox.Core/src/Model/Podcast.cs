@@ -24,7 +24,7 @@ namespace WaveBox.Core.Model
 
 		/* Properties */
 		public long? PodcastId { get; set; }
-		public long? EpisodeKeepCap { get; set; } 
+		public long? EpisodeKeepCap { get; set; }
 		public string Title { get; set; }
 		public string Author { get; set; }
 		public string Description { get; set; }
@@ -65,8 +65,8 @@ namespace WaveBox.Core.Model
 				Directory.CreateDirectory(PodcastMediaDirectory + Path.DirectorySeparatorChar + Title);
 			}
 
-			List<PodcastEpisode> current = ListOfCurrentEpisodes();
-			List<PodcastEpisode> stored = ListOfStoredEpisodes();
+			IList<PodcastEpisode> current = ListOfCurrentEpisodes();
+			IList<PodcastEpisode> stored = ListOfStoredEpisodes();
 			List<PodcastEpisode> newEps = new List<PodcastEpisode>();
 
 			// get new episodes
@@ -90,7 +90,7 @@ namespace WaveBox.Core.Model
 			if (stored.Count == EpisodeKeepCap && newEps.Count > 0)
 			{
 				DeleteOldEpisodes(newEps.Count);
-			} 
+			}
 
 			Injection.Kernel.Get<IPodcastShim>().Enqueue(newEps);
 		}
@@ -159,7 +159,7 @@ namespace WaveBox.Core.Model
 			return success;
 		}
 
-		public List<PodcastEpisode> ListOfCurrentEpisodes()
+		public IList<PodcastEpisode> ListOfCurrentEpisodes()
 		{
 			var doc = new XmlDocument();
 			doc.Load(rssUrl);
@@ -177,7 +177,7 @@ namespace WaveBox.Core.Model
 			return list;
 		}
 
-		public List<PodcastEpisode> ListOfStoredEpisodes()
+		public IList<PodcastEpisode> ListOfStoredEpisodes()
 		{
 			ISQLiteConnection conn = null;
 			try

@@ -67,7 +67,7 @@ namespace WaveBox.ApiHandler.Handlers
 								{
 									Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Parameter 'keepCap' contained an invalid value", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 								}
-								else 
+								else
 								{
 									if (!Int32.TryParse(keepCapTemp, out keepCap))
 									{
@@ -148,7 +148,7 @@ namespace WaveBox.ApiHandler.Handlers
 				if (id != 0)
 				{
 					Podcast thisPodcast = new Podcast.Factory().CreatePodcast(id);
-					List<PodcastEpisode> epList = thisPodcast.ListOfStoredEpisodes();
+					IList<PodcastEpisode> epList = thisPodcast.ListOfStoredEpisodes();
 
 					Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse(null, thisPodcast, epList), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 					return;

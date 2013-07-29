@@ -36,7 +36,7 @@ namespace WaveBox.ApiHandler.Handlers
 		public void Process()
 		{
 			// Return list of users to be passed as JSON
-			List<User> listOfUsers = new List<User>();
+			IList<User> listOfUsers = new List<User>();
 
 			// See if we need to make a test user
 			if (Uri.Parameters.ContainsKey("testUser") && Uri.Parameters["testUser"].IsTrue())

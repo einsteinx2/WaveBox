@@ -24,7 +24,7 @@ namespace WaveBox.Core
 		void CloseQueryLogSqliteConnection(ISQLiteConnection conn);
 
 		long LastQueryLogId();
-		List<QueryLog> QueryLogsSinceId(int queryId);
+		IList<QueryLog> QueryLogsSinceId(int queryId);
 	}
 }
 

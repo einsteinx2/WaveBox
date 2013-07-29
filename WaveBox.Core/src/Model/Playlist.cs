@@ -19,16 +19,16 @@ namespace WaveBox.Core.Model
 
 		[JsonIgnore]
 		public int? ItemId { get { return PlaylistId; } set { PlaylistId = ItemId; } }
-		
+
 		[JsonIgnore]
 		public ItemType ItemType { get { return ItemType.Playlist; } }
-		
+
 		[JsonIgnore]
 		public int ItemTypeId { get { return (int)ItemType; } }
 
 		[JsonProperty("id")]
 		public int? PlaylistId { get; set; }
-	
+
 		[JsonProperty("name")]
 		public string PlaylistName { get; set; }
 
@@ -77,7 +77,7 @@ namespace WaveBox.Core.Model
 			{
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				var result = conn.DeferredQuery<PlaylistItem>("SELECT ItemId FROM PlaylistItem WHERE PlaylistId = ?", PlaylistId);
-				
+
 				foreach (PlaylistItem playlistItem in result)
 				{
 					itemIds.Append(playlistItem.ItemId);
@@ -145,8 +145,8 @@ namespace WaveBox.Core.Model
 			try
 			{
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				return conn.ExecuteScalar<int>("SELECT ItemPosition FROM PlaylistItem " + 
-												"WHERE PlaylistId = ? AND ItemType = ? " + 
+				return conn.ExecuteScalar<int>("SELECT ItemPosition FROM PlaylistItem " +
+												"WHERE PlaylistId = ? AND ItemType = ? " +
 												"ORDER BY ItemPosition LIMIT 1", PlaylistId, item.ItemTypeId);
 			}
 			catch (Exception e)
@@ -194,7 +194,7 @@ namespace WaveBox.Core.Model
 			return new MediaItem();
 		}
 
-		public List<IMediaItem> ListOfMediaItems()
+		public IList<IMediaItem> ListOfMediaItems()
 		{
 			ISQLiteConnection conn = null;
 			try
@@ -302,7 +302,7 @@ namespace WaveBox.Core.Model
 				var result = conn.Query<PlaylistItem>("SELECT * FROM PlaylistItem WHERE PlaylistId = ? ORDER BY ItemPosition", PlaylistId);
 
 				// update the values of each index in the array to be the new index
-				for (int i = 0; i < result.Count; i++) 
+				for (int i = 0; i < result.Count; i++)
 				{
 					var item = result[i];
 
@@ -424,7 +424,7 @@ namespace WaveBox.Core.Model
 			}
 		}
 
-		public void AddMediaItems(List<IMediaItem> items)
+		public void AddMediaItems(IList<IMediaItem> items)
 		{
 			if (PlaylistId == 0 || items == null)
 			{
@@ -449,7 +449,7 @@ namespace WaveBox.Core.Model
 			}
 		}
 
-		public void AddMediaItems(List<int> itemIds)
+		public void AddMediaItems(IList<int> itemIds)
 		{
 			List<IMediaItem> items = new List<IMediaItem>();
 			foreach (int itemId in itemIds)

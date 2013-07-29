@@ -199,7 +199,7 @@ namespace WaveBox.Service.Services
 			}
 		}
 
-		public List<IMediaItem> ListOfSongs()
+		public IList<IMediaItem> ListOfSongs()
 		{
 			return playlist.ListOfMediaItems();
 		}
