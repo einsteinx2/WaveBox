@@ -258,7 +258,7 @@ namespace WaveBox.Service.Services.Http
 				if (apiUser == null)
 				{
 					ErrorApiHandler errorApi = (ErrorApiHandler)Injection.Kernel.Get<IApiHandlerFactory>().CreateApiHandler("error");
-					errorApi.Process(uri, this, apiUser, "Failed to authenticate");
+					errorApi.Process(uri, this, apiUser, "Authentication failed");
 					return;
 				}
 			}
