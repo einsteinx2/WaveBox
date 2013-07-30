@@ -106,7 +106,7 @@ namespace WaveBox.ApiHandler.Handlers
 			DateTime? lastModified = null;
 			if (!ReferenceEquals(art.LastModified, null))
 			{
-				lastModified = ((long)art.LastModified).ToDateTimeFromUnixTimestamp();
+				lastModified = ((long)art.LastModified).ToDateTime();
 			}
 			Processor.WriteFile(stream, 0, stream.Length, HttpHeader.MimeTypeForExtension(".jpg"), null, true, lastModified);
 
