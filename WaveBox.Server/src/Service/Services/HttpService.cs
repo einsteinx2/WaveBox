@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using Ninject;
+using WaveBox.ApiHandler;
 using WaveBox.Service;
 using WaveBox.Service.Services.Http;
 using WaveBox.Static;
@@ -34,6 +35,9 @@ namespace WaveBox.Service.Services
 		{
 			try
 			{
+				// Discover and register all API handlers
+				ApiHandlerFactory.Initialize();
+
 				// Bind to local port and attempt start
 				Listener = new TcpListener(IPAddress.Any, Port);
 				Listener.Start();
