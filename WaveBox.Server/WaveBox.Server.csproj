@@ -173,6 +173,7 @@
     <Compile Include="src\Service\Services\HttpService.cs" />
     <Compile Include="src\Service\Services\Http\HttpHeader.cs" />
     <Compile Include="src\Service\Services\Http\HttpProcessor.cs" />
+    <Compile Include="src\Service\Services\Http\HttpProcessorPrivate.cs" />
     <Compile Include="src\Service\Services\Http\IHttpProcessor.cs" />
     <Compile Include="src\Service\Services\JukeboxService.cs" />
     <Compile Include="src\Service\Services\NatService.cs" />

@@ -13,8 +13,6 @@ namespace WaveBox.ApiHandler
 {
 	public static class ApiAuthenticate
 	{
-		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
 		/// <summary>
 		/// Attempt to authenticate a user using a session ID
 		/// </summary>
