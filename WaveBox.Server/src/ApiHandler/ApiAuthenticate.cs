@@ -27,7 +27,7 @@ namespace WaveBox.ApiHandler
 				if (user != null)
 				{
 					// Update this user's session and return
-					user.UpdateSession(sessionId);
+					user.UpdateSession(session);
 					return user;
 				}
 			}
@@ -49,10 +49,10 @@ namespace WaveBox.ApiHandler
 
 			try
 			{
-				uriW.Parameters.TryGetValue("s", out sessionId);
-				uriW.Parameters.TryGetValue("u", out username);
-				uriW.Parameters.TryGetValue("p", out password);
-				uriW.Parameters.TryGetValue("c", out clientName);
+				uri.Parameters.TryGetValue("s", out sessionId);
+				uri.Parameters.TryGetValue("u", out username);
+				uri.Parameters.TryGetValue("p", out password);
+				uri.Parameters.TryGetValue("c", out clientName);
 			}
 			catch
 			{
