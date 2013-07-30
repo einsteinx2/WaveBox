@@ -8,8 +8,15 @@ using System.Net.Sockets;
 using System.Net;
 using System.Text;
 using System.Threading;
+using Ninject;
 using WaveBox;
+using WaveBox.ApiHandler;
+using WaveBox.ApiHandler.Handlers;
+using WaveBox.Core;
 using WaveBox.Core.Extensions;
+using WaveBox.Core.Model;
+using WaveBox.Core.Static;
+using WaveBox.Static;
 using WaveBox.Transcoding;
 
 // offered to the public domain for any use with no restriction
@@ -17,9 +24,6 @@ using WaveBox.Transcoding;
 
 // simple HTTP explanation
 // http://www.jmarshall.com/easy/http/
-using WaveBox.ApiHandler;
-using WaveBox.Static;
-using WaveBox.Core.Static;
 
 namespace WaveBox.Service.Services.Http
 {
@@ -555,7 +559,7 @@ namespace WaveBox.Service.Services.Http
 				while ((line = this.StreamReadLine(InputStream)) != null)
 				{
 					// Done reading, empty content
-					if (line == "" || line.Length = 0)
+					if (line == "" || line.Length == 0)
 					{
 						return;
 					}
@@ -664,7 +668,7 @@ namespace WaveBox.Service.Services.Http
 			if (!uri.IsApiCall)
 			{
 				api = ApiHandlerFactory.CreateApiHandler("web");
-				api.Process(uri, apiUser);
+				api.Process(uri, this, apiUser);
 				return;
 			}
 
@@ -672,7 +676,7 @@ namespace WaveBox.Service.Services.Http
 			if (uri.Action == null)
 			{
 				api = (ErrorApiHandler)ApiHandlerFactory.CreateApiHandler("error");
-				api.Process(uri, apiUser, "Invalid API call");
+				api.Process(uri, this, apiUser, "Invalid API call");
 				return;
 			}
 
@@ -692,7 +696,7 @@ namespace WaveBox.Service.Services.Http
 				if (apiUser == null)
 				{
 					api = (ErrorApiHandler)ApiHandlerFactory.CreateApiHandler("error");
-					api.Process(uri, apiUser, "Failed to authenticate");
+					api.Process(uri, this, apiUser, "Failed to authenticate");
 					return;
 				}
 			}
@@ -703,7 +707,7 @@ namespace WaveBox.Service.Services.Http
 
 			// Retrieve the requested API handler by its action
 			IApiHandler apiHandler = ApiHandlerFactory.CreateApiHandler(uri.Action);
-			apiHandler.Process(uri, apiUser);
+			apiHandler.Process(uri, this, apiUser);
 		}
 
 		// If a cookie is found, grab it and use it for authentication
