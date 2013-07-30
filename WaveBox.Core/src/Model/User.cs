@@ -73,7 +73,8 @@ namespace WaveBox.Core.Model
 			// Delete user's session based on its session ID
 			Session s = Injection.Kernel.Get<ISessionRepository>().SessionForSessionId(sessionId);
 
-			if (s != null)
+			// Ensure session actually belongs to this user
+			if (s != null && this.Sessions.Any(x => x.SessionId == sessionId))
 			{
 				return s.DeleteSession();
 			}

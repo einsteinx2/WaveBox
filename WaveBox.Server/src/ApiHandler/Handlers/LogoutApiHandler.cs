@@ -22,10 +22,18 @@ namespace WaveBox.ApiHandler.Handlers
 			try
 			{
 				// Destroy session
-				logger.Info(String.Format("Logged out user, destroyed session: [user: {0}, key: {1}]", user.UserName, user.SessionId));
-				user.DeleteSession(user.SessionId);
+				string error = null;
+				if (user.DeleteSession(user.SessionId))
+				{
+					logger.Info(String.Format("Logged out user, destroyed session: [user: {0}, key: {1}]", user.UserName, user.SessionId));
+				}
+				else
+				{
+					error = "Failed to log out user: " + user.UserName;
+					logger.Error(error);
+				}
 
-				string json = JsonConvert.SerializeObject(new LogoutResponse(null, user.SessionId), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+				string json = JsonConvert.SerializeObject(new LogoutResponse(error, user.SessionId), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 				processor.WriteJson(json);
 			}
 			catch (Exception e)
