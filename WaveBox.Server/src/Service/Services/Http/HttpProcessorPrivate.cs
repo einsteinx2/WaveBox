@@ -241,9 +241,13 @@ namespace WaveBox.Service.Services.Http
 			// Log API call
 			logger.Info("API: " + this.HttpUrl);
 
-			// Check for session cookie authentication
-			string sessionId = this.GetSessionCookie();
-			apiUser = Injection.Kernel.Get<IApiAuthenticate>().AuthenticateSession(sessionId);
+			// Check for session cookie authentication, unless this is a login request
+			string sessionId = null;
+			if (uri.Action != "login")
+			{
+				sessionId = this.GetSessionCookie();
+				apiUser = Injection.Kernel.Get<IApiAuthenticate>().AuthenticateSession(sessionId);
+			}
 
 			// If no cookie, try parameter authentication
 			if (apiUser == null)
@@ -292,7 +296,9 @@ namespace WaveBox.Service.Services.Http
 					// Look for wavebox_session cookie
 					if (cookies[i] == "wavebox_session")
 					{
-						return cookies[i + 1];
+						string cookie = cookies[i + 1];
+						logger.Info("wavebox_session: " + cookie);
+						return cookie;
 					}
 				}
 			}
