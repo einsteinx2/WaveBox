@@ -23,13 +23,13 @@ namespace WaveBox.ApiHandler.Handlers
 		/// </summary>
 		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
-			this.Process(uri, processor, user);
+			this.Process(uri, processor, user, "Invalid API call");
 		}
 
 		/// <summary>
 		/// Process logs the error, creates a JSON response, and send it back to the user on bad API call
 		/// </summary>
-		public void Process(UriWrapper uri, IHttpProcessor processor, User user, string error = "Invalid API call")
+		public void Process(UriWrapper uri, IHttpProcessor processor, User user, string error)
 		{
 			if (logger.IsInfoEnabled) logger.Info(error);
 
