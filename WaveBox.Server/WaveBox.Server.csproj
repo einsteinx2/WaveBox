@@ -133,6 +133,7 @@
     <Compile Include="src\ApiHandler\Handlers\GenresApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\JukeboxApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\LoginApiHandler.cs" />
+    <Compile Include="src\ApiHandler\Handlers\LogoutApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\PlaylistsApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\PodcastApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\ScrobbleApiHandler.cs" />

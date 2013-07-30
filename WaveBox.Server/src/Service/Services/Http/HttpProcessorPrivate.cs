@@ -264,8 +264,8 @@ namespace WaveBox.Service.Services.Http
 			}
 
 			// apiUser.SessionId will be generated on new login, so that takes precedence for new session cookie
-			sessionId = apiUser.SessionId ?? sessionId;
-			this.SetSessionCookie(sessionId);
+			apiUser.SessionId  = apiUser.SessionId ?? sessionId;
+			this.SetSessionCookie(apiUser.SessionId);
 
 			// Retrieve the requested API handler by its action
 			IApiHandler apiHandler = Injection.Kernel.Get<IApiHandlerFactory>().CreateApiHandler(uri.Action);

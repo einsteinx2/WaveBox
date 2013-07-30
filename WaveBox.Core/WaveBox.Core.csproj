@@ -119,6 +119,7 @@
     <Compile Include="src\ApiResponse\JukeboxResponse.cs" />
     <Compile Include="src\ApiResponse\JukeboxStatus.cs" />
     <Compile Include="src\ApiResponse\LoginResponse.cs" />
+    <Compile Include="src\ApiResponse\LogoutResponse.cs" />
     <Compile Include="src\ApiResponse\PlaylistsResponse.cs" />
     <Compile Include="src\ApiResponse\PodcastContentResponse.cs" />
     <Compile Include="src\ApiResponse\PodcastActionResponse.cs" />

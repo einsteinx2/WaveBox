@@ -50,11 +50,11 @@ namespace WaveBox.Core.Model
 
 		[JsonProperty("deleteTime")]
 		public long? DeleteTime { get; set; }
-	
+
 		public User()
 		{
 		}
-		
+
 		public bool UpdateSession(string sessionId)
 		{
 			// Update user's session based on its session ID
@@ -63,6 +63,19 @@ namespace WaveBox.Core.Model
 			if (s != null)
 			{
 				return s.UpdateSession();
+			}
+
+			return false;
+		}
+
+		public bool DeleteSession(string sessionId)
+		{
+			// Delete user's session based on its session ID
+			Session s = Injection.Kernel.Get<ISessionRepository>().SessionForSessionId(sessionId);
+
+			if (s != null)
+			{
+				return s.DeleteSession();
 			}
 
 			return false;
