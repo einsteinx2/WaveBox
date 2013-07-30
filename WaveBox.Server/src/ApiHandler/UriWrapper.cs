@@ -20,7 +20,20 @@ namespace WaveBox.ApiHandler
 		public bool IsApiCall { get { return FirstPart == "api"; } }
 
 		// Determines the action of an API call
-		public string Action { get { return IsApiCall ? UriPart(1).ToLower() : null; } }
+		public string Action
+		{
+			get
+			{
+				try
+				{
+					return IsApiCall ? UriPart(1).ToLower() : null;
+				}
+				catch
+				{
+					return null;
+				}
+			}
+		}
 
 		/// <summary>
 		/// Constructor for UriWrapper, takes in a URI string and enables methods to parse its pieces

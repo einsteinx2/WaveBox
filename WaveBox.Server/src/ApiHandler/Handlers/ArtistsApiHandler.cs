@@ -19,22 +19,12 @@ namespace WaveBox.ApiHandler.Handlers
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		private IHttpProcessor Processor { get; set; }
-		private UriWrapper Uri { get; set; }
-
-		/// <summary>
-		/// Constructor for ArtistsApiHandler class
-		/// </summary>
-		public ArtistsApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
-		{
-			Processor = processor;
-			Uri = uri;
-		}
+		public string Name { get { return "artists"; } set { } }
 
 		/// <summary>
 		/// Process returns an ArtistsResponse containing a list of artists, albums, and songs
 		/// </summary>
-		public void Process()
+		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			// Lists of artists, albums, songs to be returned via handler
 			IList<Artist> artists = new List<Artist>();
@@ -46,12 +36,12 @@ namespace WaveBox.ApiHandler.Handlers
 
 			// Fetch artist ID from parameters
 			int id = 0;
-			if (Uri.Parameters.ContainsKey("id"))
+			if (uri.Parameters.ContainsKey("id"))
 			{
-				if (!Int32.TryParse(Uri.Parameters["id"], out id))
+				if (!Int32.TryParse(uri.Parameters["id"], out id))
 				{
 					string json = JsonConvert.SerializeObject(new ArtistsResponse("Parameter 'id' requires a valid integer", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-					Processor.WriteJson(json);
+					processor.WriteJson(json);
 					return;
 				}
 
@@ -63,18 +53,18 @@ namespace WaveBox.ApiHandler.Handlers
 				albums = a.ListOfAlbums();
 
 				// If requested, add artist's songs to response
-				if (Uri.Parameters.ContainsKey("includeSongs"))
+				if (uri.Parameters.ContainsKey("includeSongs"))
 				{
-					if (Uri.Parameters["includeSongs"].IsTrue())
+					if (uri.Parameters["includeSongs"].IsTrue())
 					{
 						songs = a.ListOfSongs();
 					}
 				}
 
 				// If requested, add artist's Last.fm info to response
-				if (Uri.Parameters.ContainsKey("lastfmInfo"))
+				if (uri.Parameters.ContainsKey("lastfmInfo"))
 				{
-					if (Uri.Parameters["lastfmInfo"].IsTrue())
+					if (uri.Parameters["lastfmInfo"].IsTrue())
 					{
 						logger.Info("Querying Last.fm for artist: " + a.ArtistName);
 						try
@@ -91,15 +81,15 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 			}
 			// Check for a request for range of artists
-			else if (Uri.Parameters.ContainsKey("range"))
+			else if (uri.Parameters.ContainsKey("range"))
 			{
-				string[] range = Uri.Parameters["range"].Split(',');
+				string[] range = uri.Parameters["range"].Split(',');
 
 				// Ensure valid range was parsed
 				if (range.Length != 2)
 				{
 					string json = JsonConvert.SerializeObject(new ArtistsResponse("Parameter 'range' requires a valid, comma-separated character tuple", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-					Processor.WriteJson(json);
+					processor.WriteJson(json);
 					return;
 				}
 
@@ -108,7 +98,7 @@ namespace WaveBox.ApiHandler.Handlers
 				if (!Char.TryParse(range[0], out start) || !Char.TryParse(range[1], out end))
 				{
 					string json = JsonConvert.SerializeObject(new ArtistsResponse("Parameter 'range' requires characters which are single alphanumeric values", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-					Processor.WriteJson(json);
+					processor.WriteJson(json);
 					return;
 				}
 
@@ -118,15 +108,15 @@ namespace WaveBox.ApiHandler.Handlers
 
 			// Check for a request to limit/paginate artists, like SQL
 			// Note: can be combined with range or all artists
-			if (Uri.Parameters.ContainsKey("limit") && !Uri.Parameters.ContainsKey("id"))
+			if (uri.Parameters.ContainsKey("limit") && !uri.Parameters.ContainsKey("id"))
 			{
-				string[] limit = Uri.Parameters["limit"].Split(',');
+				string[] limit = uri.Parameters["limit"].Split(',');
 
 				// Ensure valid limit was parsed
 				if (limit.Length < 1 || limit.Length > 2 )
 				{
 					string json = JsonConvert.SerializeObject(new ArtistsResponse("Parameter 'limit' requires a single integer, or a valid, comma-separated integer tuple", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-					Processor.WriteJson(json);
+					processor.WriteJson(json);
 					return;
 				}
 
@@ -136,7 +126,7 @@ namespace WaveBox.ApiHandler.Handlers
 				if (!Int32.TryParse(limit[0], out index))
 				{
 					string json = JsonConvert.SerializeObject(new ArtistsResponse("Parameter 'limit' requires a valid integer start index", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-					Processor.WriteJson(json);
+					processor.WriteJson(json);
 					return;
 				}
 
@@ -144,7 +134,7 @@ namespace WaveBox.ApiHandler.Handlers
 				if (index < 0)
 				{
 					string json = JsonConvert.SerializeObject(new ArtistsResponse("Parameter 'limit' requires a non-negative integer start index", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-					Processor.WriteJson(json);
+					processor.WriteJson(json);
 					return;
 				}
 
@@ -154,7 +144,7 @@ namespace WaveBox.ApiHandler.Handlers
 					if (!Int32.TryParse(limit[1], out duration))
 					{
 						string json = JsonConvert.SerializeObject(new ArtistsResponse("Parameter 'limit' requires a valid integer duration", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-						Processor.WriteJson(json);
+						processor.WriteJson(json);
 						return;
 					}
 
@@ -162,7 +152,7 @@ namespace WaveBox.ApiHandler.Handlers
 					if (duration < 0)
 					{
 						string json = JsonConvert.SerializeObject(new ArtistsResponse("Parameter 'limit' requires a non-negative integer duration", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-						Processor.WriteJson(json);
+						processor.WriteJson(json);
 						return;
 					}
 				}
@@ -198,7 +188,7 @@ namespace WaveBox.ApiHandler.Handlers
 			{
 				// Send it!
 				string json = JsonConvert.SerializeObject(new ArtistsResponse(null, artists, albums, songs, lastfmInfo), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-				Processor.WriteJson(json);
+				processor.WriteJson(json);
 			}
 			catch (Exception e)
 			{

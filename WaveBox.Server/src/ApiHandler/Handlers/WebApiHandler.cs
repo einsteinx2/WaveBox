@@ -5,32 +5,23 @@ using Ninject;
 using WaveBox.Service.Services.Http;
 using WaveBox.Static;
 using WaveBox.Core;
+using WaveBox.Core.Model;
 
 namespace WaveBox.ApiHandler.Handlers
 {
-	public class WebInterfaceHandler : IApiHandler
+	public class WebApiHandler : IApiHandler
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		private IHttpProcessor Processor { get; set; }
-		private UriWrapper Uri { get; set; }
+		public string Name { get { return "web"; } set { } }
 
 		// Define root project directory containing web interfaces, or "themes"
 		private static string webRoot = ServerUtility.ExecutablePath() + "themes" + Path.DirectorySeparatorChar;
 
 		/// <summary>
-		/// Constructor for WebInterfaceHandler
-		/// </summary>
-		public WebInterfaceHandler(UriWrapper uri, IHttpProcessor processor)
-		{
-			Uri = uri;
-			Processor = processor;
-		}
-
-		/// <summary>
 		/// Process returns a page from the WaveBox web interface
 		/// </summary>
-		public void Process()
+		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			// Store root path, return index by default
 			string path = webRoot;
@@ -41,7 +32,7 @@ namespace WaveBox.ApiHandler.Handlers
 				logger.Error("No theme set in WaveBox configuration, cannot serve Web UI");
 
 				// File not found
-				Processor.WriteErrorHeader();
+				processor.WriteErrorHeader();
 				return;
 			}
 
@@ -54,11 +45,11 @@ namespace WaveBox.ApiHandler.Handlers
 				logger.Error("Invalid theme '" + Injection.Kernel.Get<IServerSettings>().Theme + "' set in WaveBox configuration, cannot serve Web UI");
 
 				// File not found
-				Processor.WriteErrorHeader();
+				processor.WriteErrorHeader();
 				return;
 			}
 
-			if (Uri.UriParts.Count == 0)
+			if (uri.UriParts.Count == 0)
 			{
 				// No path, so return the home page
 				path += Path.DirectorySeparatorChar + "index.html";
@@ -69,25 +60,25 @@ namespace WaveBox.ApiHandler.Handlers
 					logger.Error("Theme '" + Injection.Kernel.Get<IServerSettings>().Theme + "' missing required file index.html");
 
 					// File not found
-					Processor.WriteErrorHeader();
+					processor.WriteErrorHeader();
 					return;
 				}
 			}
 			else
 			{
 				// Iterate UriParts to send web pages
-				for (int i = 0; i < Uri.UriParts.Count; i++)
+				for (int i = 0; i < uri.UriParts.Count; i++)
 				{
-					string pathPart = Uri.UriParts[i];
+					string pathPart = uri.UriParts[i];
 					if (pathPart.Length > 0 && pathPart[0] == '.')
 					{
 						// Do not return hidden files/folders
-						Processor.WriteErrorHeader();
+						processor.WriteErrorHeader();
 						return;
 					}
 					else
 					{
-						path += Path.DirectorySeparatorChar + Uri.UriParts[i];
+						path += Path.DirectorySeparatorChar + uri.UriParts[i];
 					}
 				}
 			}
@@ -98,7 +89,7 @@ namespace WaveBox.ApiHandler.Handlers
 				if (logger.IsInfoEnabled) logger.Info("File does not exist: " + path);
 
 				// File not found
-				Processor.WriteErrorHeader();
+				processor.WriteErrorHeader();
 				return;
 			}
 
@@ -109,9 +100,9 @@ namespace WaveBox.ApiHandler.Handlers
 			int startOffset = 0;
 
 			// Handle the Range header to start from later in the file
-			if (Processor.HttpHeaders.ContainsKey("Range"))
+			if (processor.HttpHeaders.ContainsKey("Range"))
 			{
-				string range = (string)Processor.HttpHeaders["Range"];
+				string range = (string)processor.HttpHeaders["Range"];
 				string start = range.Split(new char[]{'-', '='})[1];
 				if (logger.IsInfoEnabled) logger.Info("Connection retried.  Resuming from " + start);
 				startOffset = Convert.ToInt32(start);
@@ -119,7 +110,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 			long length = file.Length - startOffset;
 
-			Processor.WriteFile(file, startOffset, length, HttpHeader.MimeTypeForExtension(Path.GetExtension(path)), null, true, new FileInfo(path).LastWriteTimeUtc);
+			processor.WriteFile(file, startOffset, length, HttpHeader.MimeTypeForExtension(Path.GetExtension(path)), null, true, new FileInfo(path).LastWriteTimeUtc);
 			file.Close();
 		}
 	}

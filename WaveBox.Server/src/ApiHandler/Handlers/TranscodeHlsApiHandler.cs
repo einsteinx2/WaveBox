@@ -21,37 +21,27 @@ namespace WaveBox.ApiHandler.Handlers
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		private IHttpProcessor Processor { get; set; }
-		private UriWrapper Uri { get; set; }
-
-		/// <summary>
-		/// Constructor for TranscodeHlsApiHandler
-		/// </summary>
-		public TranscodeHlsApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
-		{
-			Processor = processor;
-			Uri = uri;
-		}
+		public string Name { get { return "transcodehls"; } set { } }
 
 		/// <summary>
 		/// Process performs a HLS transcode on a media item
 		/// </summary>
-		public void Process()
+		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			if (logger.IsInfoEnabled) logger.Info("Starting HLS transcoding sequence");
 
 			// Try to get the media item id
 			bool success = false;
 			int id = 0;
-			if (Uri.Parameters.ContainsKey("id"))
+			if (uri.Parameters.ContainsKey("id"))
 			{
-				success = Int32.TryParse(Uri.Parameters["id"], out id);
+				success = Int32.TryParse(uri.Parameters["id"], out id);
 			}
 
 			if (!success)
 			{
 				string json = JsonConvert.SerializeObject(new TranscodeHlsResponse("Missing required parameter 'id'"), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-				Processor.WriteJson(json);
+				processor.WriteJson(json);
 			}
 
 			try
@@ -77,25 +67,25 @@ namespace WaveBox.ApiHandler.Handlers
 				if ((item == null) || (!File.Exists(item.FilePath())))
 				{
 					string json = JsonConvert.SerializeObject(new TranscodeHlsResponse("No media item exists with ID: " + id), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-					Processor.WriteJson(json);
+					processor.WriteJson(json);
 					return;
 				}
 
 				// Generate the playlist file
 				string response = null;
-				string[] transQualities = Uri.Parameters.ContainsKey("transQuality") ? Uri.Parameters["transQuality"].Split(',') : new string[] {"Medium"};
+				string[] transQualities = uri.Parameters.ContainsKey("transQuality") ? uri.Parameters["transQuality"].Split(',') : new string[] {"Medium"};
 				if (transQualities.Length == 1)
 				{
 					// This is a single playlist
-					response = GeneratePlaylist(item, transQualities[0]);
+					response = this.GeneratePlaylist(item, transQualities[0], uri);
 				}
 				else
 				{
 					// This is a multi playlist
-					response = GenerateMultiPlaylist(item, transQualities);
+					response = this.GenerateMultiPlaylist(item, transQualities, uri);
 				}
 
-				Processor.WriteText(response, "application/x-mpegURL");
+				processor.WriteText(response, "application/x-mpegURL");
 				if (logger.IsInfoEnabled) logger.Info("Successfully HLS transcoded file!");
 			}
 			catch (Exception e)
@@ -107,7 +97,7 @@ namespace WaveBox.ApiHandler.Handlers
 		/// <summary>
 		/// Generates multiple item playlist
 		/// <summary>
-		private string GenerateMultiPlaylist(IMediaItem item, string[] transQualities)
+		private string GenerateMultiPlaylist(IMediaItem item, string[] transQualities, UriWrapper uri)
 		{
 			// Ensure duration is set
 			if ((object)item.Duration == null)
@@ -116,10 +106,10 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 
 			// Grab URI parameters
-			string s = Uri.Parameters["s"];
-			string id = Uri.Parameters["id"];
-			string width = Uri.Parameters.ContainsKey("width") ? Uri.Parameters["width"] : null;
-			string height = Uri.Parameters.ContainsKey("height") ? Uri.Parameters["height"] : null;
+			string s = uri.Parameters["s"];
+			string id = uri.Parameters["id"];
+			string width = uri.Parameters.ContainsKey("width") ? uri.Parameters["width"] : null;
+			string height = uri.Parameters.ContainsKey("height") ? uri.Parameters["height"] : null;
 
 			// Create new string, write M3U header
 			StringBuilder builder = new StringBuilder();
@@ -149,7 +139,7 @@ namespace WaveBox.ApiHandler.Handlers
 				// Append information about this transcode to the playlist
 				builder.AppendLine("#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=" + (bitrate * 1000));
 				builder.Append("transcodehls?s=" + s + "&id=" + id + "&transQuality=" + bitrate);
-				
+
 				// Add the optional parameters
 				if ((object)width != null)
 				{
@@ -159,7 +149,7 @@ namespace WaveBox.ApiHandler.Handlers
 				{
 					builder.Append("&height=" + height);
 				}
-				
+
 				builder.AppendLine();
 			}
 
@@ -170,7 +160,7 @@ namespace WaveBox.ApiHandler.Handlers
 		/// <summary>
 		/// Generate playlist for a single item
 		/// </summary>
-		private string GeneratePlaylist(IMediaItem item, string transQuality)
+		private string GeneratePlaylist(IMediaItem item, string transQuality, UriWrapper uri)
 		{
 			// If duration not set, null!
 			if ((object)item.Duration == null)
@@ -179,10 +169,10 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 
 			// Set default parameters from URL
-			string s = Uri.Parameters["s"];
-			string id = Uri.Parameters["id"];
-			string width = Uri.Parameters.ContainsKey("width") ? Uri.Parameters["width"] : null;
-			string height = Uri.Parameters.ContainsKey("height") ? Uri.Parameters["height"] : null;
+			string s = uri.Parameters["s"];
+			string id = uri.Parameters["id"];
+			string width = uri.Parameters.ContainsKey("width") ? uri.Parameters["width"] : null;
+			string height = uri.Parameters.ContainsKey("height") ? uri.Parameters["height"] : null;
 
 			// Begin creating M3U playlist
 			StringBuilder builder = new StringBuilder();

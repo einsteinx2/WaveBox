@@ -21,38 +21,28 @@ namespace WaveBox.ApiHandler.Handlers
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		private IHttpProcessor Processor { get; set; }
-		private UriWrapper Uri { get; set; }
-
-		/// <summary>
-		/// Constructor for StreamApiHandler
-		/// </summary>
-		public StreamApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
-		{
-			Processor = processor;
-			Uri = uri;
-		}
+		public string Name { get { return "stream"; } set { } }
 
 		/// <summary>
 		/// Process produces a direct file stream of the requested media file
 		/// </summary>
-		public void Process()
+		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			if (logger.IsInfoEnabled) logger.Info("Starting file streaming sequence");
 
 			// Try to get the media item id
 			bool success = false;
 			int id = 0;
-			if (Uri.Parameters.ContainsKey("id"))
+			if (uri.Parameters.ContainsKey("id"))
 			{
-				success = Int32.TryParse(Uri.Parameters["id"], out id);
+				success = Int32.TryParse(uri.Parameters["id"], out id);
 			}
 
 			if (!success)
 			{
 				// For missing ID parameter, print JSON error
 				string json = JsonConvert.SerializeObject(new StreamResponse("Missing required parameter 'id'"), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-				Processor.WriteJson(json);
+				processor.WriteJson(json);
 				return;
 			}
 
@@ -76,7 +66,7 @@ namespace WaveBox.ApiHandler.Handlers
 				if ((item == null) || (!File.Exists(item.FilePath())))
 				{
 					string json = JsonConvert.SerializeObject(new StreamResponse("No media item exists with ID: " + id), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-					Processor.WriteJson(json);
+					processor.WriteJson(json);
 					return;
 				}
 
@@ -87,9 +77,9 @@ namespace WaveBox.ApiHandler.Handlers
 				long? limitToSize = null;
 
 				// Handle the Range header to start from later in the file
-				if (Processor.HttpHeaders.ContainsKey("Range"))
+				if (processor.HttpHeaders.ContainsKey("Range"))
 				{
-					string range = (string)Processor.HttpHeaders["Range"];
+					string range = (string)processor.HttpHeaders["Range"];
 					var split = range.Split(new char[]{'-', '='});
 					string start = split[1];
 					string end = split.Length > 2 ? split[2] : null;
@@ -103,7 +93,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 
 				// Send the file
-				Processor.WriteFile(stream, startOffset, length, item.FileType.MimeType(), null, true, new FileInfo(item.FilePath()).LastWriteTimeUtc, limitToSize);
+				processor.WriteFile(stream, startOffset, length, item.FileType.MimeType(), null, true, new FileInfo(item.FilePath()).LastWriteTimeUtc, limitToSize);
 				stream.Close();
 
 				if (logger.IsInfoEnabled) logger.Info("Successfully streamed file!");

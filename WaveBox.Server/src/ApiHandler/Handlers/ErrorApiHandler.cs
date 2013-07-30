@@ -8,6 +8,7 @@ using WaveBox.Static;
 using WaveBox.Service.Services.Http;
 using WaveBox.Core.ApiResponse;
 using WaveBox.Core;
+using WaveBox.Core.Model;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -15,32 +16,26 @@ namespace WaveBox.ApiHandler.Handlers
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		private IHttpProcessor Processor { get; set; }
-		private UriWrapper Uri { get; set; }
-		private string Err { get; set; }
+		public string Name { get { return "error"; } set { } }
 
 		/// <summary>
-		/// Overload constructor for ErrorApiHandler class (custom error message)
+		/// Overload for IApiHandler interface
 		/// </summary>
-		public ErrorApiHandler(UriWrapper uri, IHttpProcessor processor, string err = "Invalid API call")
+		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
-			Processor = processor;
-			Uri = uri;
-			Err = err;
+			this.Process(uri, processor, user);
 		}
 
 		/// <summary>
-		/// Process logs the error, creates a JSON response, and sends
-		/// it back to the user on bad API call
+		/// Process logs the error, creates a JSON response, and send it back to the user on bad API call
 		/// </summary>
-		public void Process()
+		public void Process(UriWrapper uri, IHttpProcessor processor, User user, string error = "Invalid API call")
 		{
-			if (logger.IsInfoEnabled) logger.Info(Err);
+			if (logger.IsInfoEnabled) logger.Info(error);
 
-			ErrorResponse response = new ErrorResponse(Err);
-
+			ErrorResponse response = new ErrorResponse(error);
 			string json = JsonConvert.SerializeObject(response, Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-			Processor.WriteJson(json);
+			processor.WriteJson(json);
 		}
 	}
 }

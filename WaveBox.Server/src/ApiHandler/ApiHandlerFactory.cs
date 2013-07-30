@@ -37,7 +37,7 @@ namespace WaveBox.ApiHandler
 				{
 					// Discover and instantiate all available apiHandlers
 					IApiHandler instance = (IApiHandler)Activator.CreateInstance(t);
-					if (logger.IsInfoEnabled) logger.Info("Discovered API handler: " + instance.Name + " -> " + t);
+					if (logger.IsInfoEnabled) logger.Info("Discovered API: " + instance.Name + " -> " + t);
 					apiHandlers.Add(instance);
 				}
 			}

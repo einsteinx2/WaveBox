@@ -672,11 +672,11 @@ namespace WaveBox.Service.Services.Http
 				return;
 			}
 
-			// Check for valid API action
-			if (uri.Action == null)
+			// Check for valid API action ("web" and "error" are technically valid, but can't be used in this way)
+			if (uri.Action == null || uri.Action == "web" || uri.Action == "error")
 			{
-				api = (ErrorApiHandler)ApiHandlerFactory.CreateApiHandler("error");
-				api.Process(uri, this, apiUser, "Invalid API call");
+				ErrorApiHandler errorApi = (ErrorApiHandler)ApiHandlerFactory.CreateApiHandler("error");
+				errorApi.Process(uri, this, apiUser, "Invalid API call");
 				return;
 			}
 
@@ -695,8 +695,8 @@ namespace WaveBox.Service.Services.Http
 				// If user still null, failed authentication, so serve error
 				if (apiUser == null)
 				{
-					api = (ErrorApiHandler)ApiHandlerFactory.CreateApiHandler("error");
-					api.Process(uri, this, apiUser, "Failed to authenticate");
+					ErrorApiHandler errorApi = (ErrorApiHandler)ApiHandlerFactory.CreateApiHandler("error");
+					errorApi.Process(uri, this, apiUser, "Failed to authenticate");
 					return;
 				}
 			}
@@ -707,6 +707,16 @@ namespace WaveBox.Service.Services.Http
 
 			// Retrieve the requested API handler by its action
 			IApiHandler apiHandler = ApiHandlerFactory.CreateApiHandler(uri.Action);
+
+			// Check for valid API action
+			if (apiHandler == null)
+			{
+				ErrorApiHandler errorApi = (ErrorApiHandler)ApiHandlerFactory.CreateApiHandler("error");
+				errorApi.Process(uri, this, apiUser, "Invalid API call");
+				return;
+			}
+
+			// Finally, process and return results
 			apiHandler.Process(uri, this, apiUser);
 		}
 

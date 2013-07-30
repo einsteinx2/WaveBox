@@ -16,24 +16,12 @@ namespace WaveBox.ApiHandler.Handlers
 {
 	public class SearchApiHandler : IApiHandler
 	{
-		private IHttpProcessor Processor { get; set; }
-		private UriWrapper Uri { get; set; }
-		private User User { get; set; }
-
-		/// <summary>
-		/// Constructor for SearchApiHandler
-		/// </summary>
-		public SearchApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
-		{
-			Processor = processor;
-			Uri = uri;
-			User = user;
-		}
+		public string Name { get { return "search"; } set { } }
 
 		/// <summary>
 		/// Process performs a search for a query with specified types
 		/// </summary>
-		public void Process()
+		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			// Lists to return as results
 			IList<Artist> artists = new List<Artist>();
@@ -42,37 +30,37 @@ namespace WaveBox.ApiHandler.Handlers
 			IList<Video> videos = new List<Video>();
 
 			// If a query is provided...
-			if (Uri.Parameters.ContainsKey("query"))
+			if (uri.Parameters.ContainsKey("query"))
 			{
 				// URL decode to strip any URL-encoded characters
-				string query = HttpUtility.UrlDecode(Uri.Parameters["query"]);
+				string query = HttpUtility.UrlDecode(uri.Parameters["query"]);
 
 				// Ensure query is not blank
 				if (query.Length > 0)
 				{
 					// Check for query field
 					string field = null;
-					if (Uri.Parameters.ContainsKey("field"))
+					if (uri.Parameters.ContainsKey("field"))
 					{
 						// Use input field for query
-						field = HttpUtility.UrlDecode(Uri.Parameters["field"]);
+						field = HttpUtility.UrlDecode(uri.Parameters["field"]);
 					}
 
 					// Check for exact match parameter
 					bool exact = false;
-					if (Uri.Parameters.ContainsKey("exact"))
+					if (uri.Parameters.ContainsKey("exact"))
 					{
-						if (Uri.Parameters["exact"].IsTrue())
+						if (uri.Parameters["exact"].IsTrue())
 						{
 							exact = true;
 						}
 					}
 
 					// If a query type is provided...
-					if (Uri.Parameters.ContainsKey("type"))
+					if (uri.Parameters.ContainsKey("type"))
 					{
 						// Iterate all comma-separated values in query type
-						foreach (string type in Uri.Parameters["type"].Split(','))
+						foreach (string type in uri.Parameters["type"].Split(','))
 						{
 							// Return results, populating lists depending on parameters specified
 							switch (type)
@@ -116,20 +104,20 @@ namespace WaveBox.ApiHandler.Handlers
 
 					// Return all results
 					string json = JsonConvert.SerializeObject(new SearchResponse(error, artists, albums, songs, videos), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-					Processor.WriteJson(json);
+					processor.WriteJson(json);
 				}
 				else
 				{
 					// Return error JSON for empty query
 					string json = JsonConvert.SerializeObject(new SearchResponse("Query cannot be empty", artists, albums, songs, videos), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-					Processor.WriteJson(json);
+					processor.WriteJson(json);
 				}
 			}
 			else
 			{
 				// Return error JSON for no query parameter
 				string json = JsonConvert.SerializeObject(new SearchResponse("No search query provided", artists, albums, songs, videos), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-				Processor.WriteJson(json);
+				processor.WriteJson(json);
 			}
 		}
 	}

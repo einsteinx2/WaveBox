@@ -19,26 +19,16 @@ namespace WaveBox.ApiHandler.Handlers
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		private IHttpProcessor Processor { get; set; }
-		private UriWrapper Uri { get; set; }
-
-		/// <summary>
-		/// Constructor for DatabaseApiHandler class
-		/// </summary>
-		public DatabaseApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
-		{
-			Processor = processor;
-			Uri = uri;
-		}
+		public string Name { get { return "database"; } set { } }
 
 		/// <summary>
 		/// Process returns a copy of the media database, and can be used to return SQL deltas to update
 		/// the local copy of the media database
 		/// </summary>
-		public void Process()
+		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			// Try to get the update time
-			string id = Uri.Parameters.ContainsKey("id") ? Uri.Parameters["id"] : null;
+			string id = uri.Parameters.ContainsKey("id") ? uri.Parameters["id"] : null;
 
 			if ((object)id == null)
 			{
@@ -48,7 +38,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 				if ((object)databaseFileName == null)
 				{
-					Processor.WriteErrorHeader();
+					processor.WriteErrorHeader();
 				}
 				else
 				{
@@ -60,9 +50,9 @@ namespace WaveBox.ApiHandler.Handlers
 						int startOffset = 0;
 
 						// Handle the Range header to start from later in the file if connection interrupted
-						if (Processor.HttpHeaders.ContainsKey("Range"))
+						if (processor.HttpHeaders.ContainsKey("Range"))
 						{
-							string range = (string)Processor.HttpHeaders["Range"];
+							string range = (string)processor.HttpHeaders["Range"];
 							string start = range.Split(new char[]{'-', '='})[1];
 							if (logger.IsInfoEnabled) logger.Info("Connection retried.  Resuming from " + start);
 							startOffset = Convert.ToInt32(start);
@@ -73,14 +63,14 @@ namespace WaveBox.ApiHandler.Handlers
 						customHeader["WaveBox-LastQueryId"] = databaseLastQueryId.ToString();
 
 						// Send the database file
-						Processor.WriteFile(stream, startOffset, length, "application/octet-stream", customHeader, true, new FileInfo(ServerUtility.RootPath() + databaseFileName).LastWriteTimeUtc);
+						processor.WriteFile(stream, startOffset, length, "application/octet-stream", customHeader, true, new FileInfo(ServerUtility.RootPath() + databaseFileName).LastWriteTimeUtc);
                         stream.Close();
 					}
 					catch
 					{
 						// Send JSON on error
 						string json = JsonConvert.SerializeObject(new DatabaseResponse("Could not open backup database " + databaseFileName, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-						Processor.WriteJson(json);
+						processor.WriteJson(json);
 					}
 				}
 			}
@@ -91,7 +81,7 @@ namespace WaveBox.ApiHandler.Handlers
 				{
 					// Send DatabaseResponse containing list of queries
 					string json = JsonConvert.SerializeObject(new DatabaseResponse(null, Injection.Kernel.Get<IDatabase>().QueryLogsSinceId(Int32.Parse(id))), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-					Processor.WriteJson(json);
+					processor.WriteJson(json);
 				}
 				catch (Exception e)
 				{

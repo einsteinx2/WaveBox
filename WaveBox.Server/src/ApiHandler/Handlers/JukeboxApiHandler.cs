@@ -19,32 +19,21 @@ namespace WaveBox.ApiHandler.Handlers
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		private IHttpProcessor Processor { get; set; }
-		private UriWrapper Uri { get; set; }
-
-		private JukeboxService jukebox = null;
-
-		/// <summary>
-		/// Constructor for JukeboxApiHandler class
-		/// </summary>
-		public JukeboxApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
-		{
-			Processor = processor;
-			Uri = uri;
-
-			jukebox = (JukeboxService)ServiceManager.GetInstance("jukebox");
-		}
+		public string Name { get { return "jukebox"; } set { } }
 
 		/// <summary>
 		/// Process returns whether a specific call the Jukebox API was successful or not
 		/// </summary>
-		public void Process()
+		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
+			// Fetch JukeboxService instance
+			JukeboxService jukebox = (JukeboxService)ServiceManager.GetInstance("jukebox");
+
 			// Ensure Jukebox service is ready
 			if ((object)jukebox == null)
 			{
 				string json = JsonConvert.SerializeObject(new JukeboxResponse("JukeboxService is not running!", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-				Processor.WriteJson(json);
+				processor.WriteJson(json);
 				return;
 			}
 
@@ -52,10 +41,10 @@ namespace WaveBox.ApiHandler.Handlers
 			string s = "";
 
 			// Jukebox calls must contain an action
-			if (Uri.Parameters.ContainsKey("action"))
+			if (uri.Parameters.ContainsKey("action"))
 			{
 				string action = null;
-				Uri.Parameters.TryGetValue("action", out action);
+				uri.Parameters.TryGetValue("action", out action);
 
 				// Look for valid actions within the parameters
 				if (new string[] {"play", "pause", "stop", "prev", "next", "status", "playlist", "add", "remove", "move", "clear"}.Contains(action))
@@ -64,9 +53,9 @@ namespace WaveBox.ApiHandler.Handlers
 					{
 						case "play":
 							string indexString = null;
-							if (Uri.Parameters.ContainsKey("index"))
+							if (uri.Parameters.ContainsKey("index"))
 							{
-								Uri.Parameters.TryGetValue("index", out indexString);
+								uri.Parameters.TryGetValue("index", out indexString);
 								Int32.TryParse(indexString, out index);
 							}
 
@@ -79,68 +68,68 @@ namespace WaveBox.ApiHandler.Handlers
 								jukebox.PlaySongAtIndex(index);
 							}
 
-							Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, CreateJukeboxStatus(), null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+							processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, CreateJukeboxStatus(), null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 							break;
 						case "pause":
 							jukebox.Pause();
-							Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, CreateJukeboxStatus(), null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+							processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, CreateJukeboxStatus(), null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 							break;
 						case "stop":
 							jukebox.StopPlayback();
-							Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, CreateJukeboxStatus(), null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+							processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, CreateJukeboxStatus(), null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 							break;
 						case "prev":
 							jukebox.Prev();
-							Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, CreateJukeboxStatus(), null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+							processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, CreateJukeboxStatus(), null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 							break;
 						case "next":
 							jukebox.Next();
-							Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, CreateJukeboxStatus(), null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+							processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, CreateJukeboxStatus(), null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 							break;
 						case "status":
-							Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, CreateJukeboxStatus(), null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+							processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, CreateJukeboxStatus(), null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 							break;
 						case "playlist":
-							Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, null, jukebox.ListOfSongs()), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+							processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, null, jukebox.ListOfSongs()), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 							break;
 						case "add":
-							if (Uri.Parameters.ContainsKey("id"))
+							if (uri.Parameters.ContainsKey("id"))
 							{
 								s = "";
-								Uri.Parameters.TryGetValue("id", out s);
-								if (AddSongs(s))
+								uri.Parameters.TryGetValue("id", out s);
+								if (this.AddSongs(s, processor))
 								{
-									Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, null, jukebox.ListOfSongs()), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+									processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, null, jukebox.ListOfSongs()), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 								}
 							}
 							break;
 						case "remove":
-							if (Uri.Parameters.ContainsKey("index"))
+							if (uri.Parameters.ContainsKey("index"))
 							{
 								s = "";
-								Uri.Parameters.TryGetValue("index", out s);
+								uri.Parameters.TryGetValue("index", out s);
 								RemoveSongs(s);
-								Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, null, jukebox.ListOfSongs()), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+								processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, null, jukebox.ListOfSongs()), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 							}
 							break;
 						case "move":
-							if (Uri.Parameters.ContainsKey("index"))
+							if (uri.Parameters.ContainsKey("index"))
 							{
 								string[] arr = null;
-								if (Uri.Parameters.TryGetValue("index", out s))
+								if (uri.Parameters.TryGetValue("index", out s))
 								{
 									arr = s.Split(',');
 									if (arr.Length == 2)
 									{
 										if (Move(arr[0], arr[1]))
 										{
-											Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, null, jukebox.ListOfSongs()), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+											processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, null, jukebox.ListOfSongs()), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 										}
 									}
 									else
 									{
 										if (logger.IsInfoEnabled) logger.Info("Move: Invalid number of indices");
-										Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("Invalid number of indices for action 'move'", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+										processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("Invalid number of indices for action 'move'", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 									}
 
 								}
@@ -148,36 +137,36 @@ namespace WaveBox.ApiHandler.Handlers
 							else
 							{
 								if (logger.IsInfoEnabled) logger.Info("Move: Missing 'index' parameter");
-								Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("Missing 'index' parameter for action 'move'", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+								processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("Missing 'index' parameter for action 'move'", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 							}
 							break;
 						case "clear":
 							jukebox.ClearPlaylist();
-							Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+							processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse(null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 							break;
 						default:
 							// This should never happen, unless we forget to add a case.
-							Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("You broke WaveBox", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+							processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("You broke WaveBox", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 							break;
 					}
 				}
 				else
 				{
 					// Else, invalid action specified, return an error
-					Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("Invalid action '" + action + "' specified", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+					processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("Invalid action '" + action + "' specified", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 				}
 			}
 			else
 			{
 				// Else, no action provided, return an error
-				Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("No action specified for jukebox", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+				processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("No action specified for jukebox", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 			}
 		}
 
 		/// <summary>
 		/// Add comma-separated list of songs to the Jukebox
 		/// </summary>
-		public bool AddSongs(string songIds)
+		private bool AddSongs(string songIds, IHttpProcessor processor)
 		{
 			bool allSongsAddedSuccessfully = true;
 			IList<Song> songs = new List<Song>();
@@ -198,15 +187,19 @@ namespace WaveBox.ApiHandler.Handlers
 				catch (Exception e)
 				{
 					logger.Error("Error getting songs to add: ", e);
-					Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("Error getting songs to add", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+					processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("Error getting songs to add", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 					return false;
 				}
 			}
+
+			// Fetch JukeboxService instance
+			JukeboxService jukebox = (JukeboxService)ServiceManager.GetInstance("jukebox");
+
 			jukebox.AddSongs(songs);
 
 			if (!allSongsAddedSuccessfully)
 			{
-				Processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("One or more items provided were not of the appropriate type and were not added to the playlist.", null, jukebox.ListOfSongs()), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+				processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("One or more items provided were not of the appropriate type and were not added to the playlist.", null, jukebox.ListOfSongs()), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 			}
 
 			return allSongsAddedSuccessfully;
@@ -215,7 +208,7 @@ namespace WaveBox.ApiHandler.Handlers
 		/// <summary>
 		/// Remove comma-separated list of songs from Jukebox
 		/// </summary>
-		public void RemoveSongs(string songIds)
+		private void RemoveSongs(string songIds)
 		{
 			IList<int> indices = new List<int>();
 			foreach (string p in songIds.Split(','))
@@ -230,18 +223,25 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 			}
 
+			// Fetch JukeboxService instance
+			JukeboxService jukebox = (JukeboxService)ServiceManager.GetInstance("jukebox");
+
 			jukebox.RemoveSongsAtIndexes(indices);
 		}
 
 		/// <summary>
 		/// Move song in Jukebox
 		/// </summary>
-		public bool Move(string from, string to)
+		private bool Move(string from, string to)
 		{
 			try
 			{
 				int fromI = int.Parse(from);
 				int toI = int.Parse(to);
+
+				// Fetch JukeboxService instance
+				JukeboxService jukebox = (JukeboxService)ServiceManager.GetInstance("jukebox");
+
 				jukebox.MoveSong(fromI, toI);
 				return true;
 			}
@@ -254,6 +254,9 @@ namespace WaveBox.ApiHandler.Handlers
 
 		private JukeboxStatus CreateJukeboxStatus()
 		{
+			// Fetch JukeboxService instance
+			JukeboxService jukebox = (JukeboxService)ServiceManager.GetInstance("jukebox");
+
 			return new JukeboxStatus(JukeboxService.State.ToString(), JukeboxService.CurrentIndex, jukebox.Progress());
 		}
 	}
