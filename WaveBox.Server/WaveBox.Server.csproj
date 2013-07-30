@@ -122,6 +122,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="src\ApiHandler\ApiAuthenticate.cs" />
     <Compile Include="src\ApiHandler\ApiHandlerFactory.cs" />
     <Compile Include="src\ApiHandler\Handlers\AlbumsApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\ArtApiHandler.cs" />
@@ -311,7 +312,7 @@
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
