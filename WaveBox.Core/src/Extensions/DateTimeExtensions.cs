@@ -17,7 +17,7 @@ namespace WaveBox.Core.Extensions
 		/// <summary>
 		public static string ToETag(this DateTime dateTime)
 		{
-			return dateTime.ToRFC113().SHA1();
+			return dateTime.ToRFC1123().SHA1();
 		}
 
 		/// <summary>
