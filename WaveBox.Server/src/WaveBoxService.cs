@@ -12,6 +12,7 @@ using Mono.Unix.Native;
 using Mono.Unix;
 using Ninject;
 using WaveBox.Core.Extensions;
+using WaveBox.Server;
 using WaveBox.Server.Extensions;
 using WaveBox.Service;
 using WaveBox.Static;
@@ -121,9 +122,13 @@ namespace WaveBox
 		/// </summary>
 		private static void InjectClasses()
 		{
+			// Core
 			Injection.Kernel.Bind<IDatabase>().To<Database>().InSingletonScope();
 			Injection.Kernel.Bind<IServerSettings>().To<ServerSettings>().InSingletonScope();
 			Injection.Kernel.Bind<IPodcastShim>().To<PodcastShim>().InSingletonScope();
+
+			// Load Server
+			Injection.Kernel.Load(new ServerModule());
 		}
 
 		/// <summary>
@@ -209,7 +214,7 @@ namespace WaveBox
 			// Gracefully terminate
 			Environment.Exit(0);
 		}
-	
+
 		/// <summary>
 		/// OnContinue does nothing yet
 		/// </summary>
@@ -233,7 +238,7 @@ namespace WaveBox
 		{
 			if (logger.IsInfoEnabled) logger.Info("Shutting down");
 		}
-		
+
 		/// <summary>
 		/// Function to register shutdown handler for various platforms.  Windows uses its own, while UNIX variants
 		/// use a specialized Unix shutdown handler.

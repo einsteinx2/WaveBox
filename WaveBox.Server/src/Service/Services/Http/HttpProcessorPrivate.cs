@@ -16,6 +16,7 @@ using WaveBox.Core;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
 using WaveBox.Core.Static;
+using WaveBox.Server;
 using WaveBox.Static;
 using WaveBox.Transcoding;
 
@@ -224,7 +225,7 @@ namespace WaveBox.Service.Services.Http
 			// No API request found?  Serve web UI
 			if (!uri.IsApiCall)
 			{
-				api = ApiHandlerFactory.CreateApiHandler("web");
+				api = Injection.Kernel.Get<IApiHandlerFactory>().CreateApiHandler("web");
 				api.Process(uri, this, apiUser);
 				return;
 			}
@@ -232,7 +233,7 @@ namespace WaveBox.Service.Services.Http
 			// Check for valid API action ("web" and "error" are technically valid, but can't be used in this way)
 			if (uri.Action == null || uri.Action == "web" || uri.Action == "error")
 			{
-				ErrorApiHandler errorApi = (ErrorApiHandler)ApiHandlerFactory.CreateApiHandler("error");
+				ErrorApiHandler errorApi = (ErrorApiHandler)Injection.Kernel.Get<IApiHandlerFactory>().CreateApiHandler("error");
 				errorApi.Process(uri, this, apiUser, "Invalid API call");
 				return;
 			}
@@ -242,17 +243,17 @@ namespace WaveBox.Service.Services.Http
 
 			// Check for session cookie authentication
 			string sessionId = this.GetSessionCookie();
-			apiUser = ApiAuthenticate.AuthenticateSession(sessionId);
+			apiUser = Injection.Kernel.Get<IApiAuthenticate>().AuthenticateSession(sessionId);
 
 			// If no cookie, try parameter authentication
 			if (apiUser == null)
 			{
-				apiUser = ApiAuthenticate.AuthenticateUri(uri);
+				apiUser = Injection.Kernel.Get<IApiAuthenticate>().AuthenticateUri(uri);
 
 				// If user still null, failed authentication, so serve error
 				if (apiUser == null)
 				{
-					ErrorApiHandler errorApi = (ErrorApiHandler)ApiHandlerFactory.CreateApiHandler("error");
+					ErrorApiHandler errorApi = (ErrorApiHandler)Injection.Kernel.Get<IApiHandlerFactory>().CreateApiHandler("error");
 					errorApi.Process(uri, this, apiUser, "Failed to authenticate");
 					return;
 				}
@@ -263,12 +264,12 @@ namespace WaveBox.Service.Services.Http
 			this.SetSessionCookie(sessionId);
 
 			// Retrieve the requested API handler by its action
-			IApiHandler apiHandler = ApiHandlerFactory.CreateApiHandler(uri.Action);
+			IApiHandler apiHandler = Injection.Kernel.Get<IApiHandlerFactory>().CreateApiHandler(uri.Action);
 
 			// Check for valid API action
 			if (apiHandler == null)
 			{
-				ErrorApiHandler errorApi = (ErrorApiHandler)ApiHandlerFactory.CreateApiHandler("error");
+				ErrorApiHandler errorApi = (ErrorApiHandler)Injection.Kernel.Get<IApiHandlerFactory>().CreateApiHandler("error");
 				errorApi.Process(uri, this, apiUser, "Invalid API call");
 				return;
 			}

@@ -154,6 +154,9 @@
     <Compile Include="src\FolderScanning\FolderScanOperation.cs" />
     <Compile Include="src\FolderScanning\OrphanScanOperation.cs" />
     <Compile Include="src\ImageMagickInterop.cs" />
+    <Compile Include="src\Injection\Interfaces\IApiAuthenticate.cs" />
+    <Compile Include="src\Injection\Interfaces\IApiHandlerFactory.cs" />
+    <Compile Include="src\Injection\ServerModule.cs" />
     <Compile Include="src\Lastfm.cs" />
     <Compile Include="src\Service\IService.cs" />
     <Compile Include="src\Service\ServiceFactory.cs" />

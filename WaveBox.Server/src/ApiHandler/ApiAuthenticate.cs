@@ -7,16 +7,17 @@ using WaveBox.Core;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
 using WaveBox.Core.Model.Repository;
+using WaveBox.Server;
 using WaveBox.Static;
 
 namespace WaveBox.ApiHandler
 {
-	public static class ApiAuthenticate
+	public class ApiAuthenticate : IApiAuthenticate
 	{
 		/// <summary>
 		/// Attempt to authenticate a user using a session ID
 		/// </summary>
-		public static User AuthenticateSession(string session)
+		public User AuthenticateSession(string session)
 		{
 			string username = Injection.Kernel.Get<IUserRepository>().UserNameForSessionid(session);
 			if (username != null)
@@ -37,7 +38,7 @@ namespace WaveBox.ApiHandler
 		/// <summary>
 		/// Attempt to authenticate a user using URI parameters
 		/// </summary>
-		public static User AuthenticateUri(UriWrapper uri)
+		public User AuthenticateUri(UriWrapper uri)
 		{
 			// Attempt to parse various parameters from the URI
 			string sessionId = null;
@@ -73,7 +74,7 @@ namespace WaveBox.ApiHandler
 			if (sessionId != null)
 			{
 				// This will return the user on success, or null on failure
-				return AuthenticateSession(sessionId);
+				return this.AuthenticateSession(sessionId);
 			}
 
 			// On failure or no session, return null
