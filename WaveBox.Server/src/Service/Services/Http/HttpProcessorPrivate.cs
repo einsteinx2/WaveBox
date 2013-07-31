@@ -31,61 +31,12 @@ namespace WaveBox.Service.Services.Http
 	// This class contains all private methods for the HttpProcessor class, to better abstract their functionality
 	public partial class HttpProcessor : IHttpProcessor
 	{
-		// Read in a full line from an input stream
-		private string StreamReadLine(Stream inputStream)
-		{
-			int next_char = 0;
-			int readTries = 0;
-			string data = "";
-
-			// Loop until newline
-			while (true)
-			{
-				// Read character
-				next_char = inputStream.ReadByte();
-
-				// Check for valid character
-				if (next_char == -1)
-				{
-					if (readTries >= 29)
-					{
-						throw new IOException("ReadByte timed out", null);
-					}
-					readTries++;
-					Thread.Sleep(1);
-					continue;
-				}
-				else
-				{
-					readTries = 0;
-				}
-
-				// Skip carriage returns
-				if (next_char == '\r')
-				{
-					continue;
-				}
-
-				// Stop reading on newline
-				if (next_char == '\n')
-				{
-					break;
-				}
-
-				// Parse valid characters
-				data += Convert.ToChar(next_char);
-			}
-
-			// Return the line
-			return data;
-		}
-
 		// Parse tokens from a HTTP request
 		private void ParseRequest()
 		{
 			try
 			{
-				string[] tokens = this.StreamReadLine(InputStream).Split(' ');
+				string[] tokens = InputStream.ReadLine().Split(' ');
 
 				// Expects: GET /url HTTP/1.1 or similar
 				if (tokens.Length != 3)
@@ -114,7 +65,7 @@ namespace WaveBox.Service.Services.Http
 			try
 			{
 				string line = null;
-				while ((line = this.StreamReadLine(InputStream)) != null)
+				while ((line = InputStream.ReadLine()) != null)
 				{
 					// Done reading, empty content
 					if (line == "" || line.Length == 0)

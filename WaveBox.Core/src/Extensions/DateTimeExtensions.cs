@@ -36,7 +36,6 @@ namespace WaveBox.Core.Extensions
 			return dateTime.ToUniversalTime().ToString("ddd, dd MMM yyyy HH:mm:ss") + " GMT";
 		}
 
-
 		/// <summary>
 		/// Creates a GMT UNIX timestamp from a DateTime object
 		/// </summary>
@@ -46,4 +45,3 @@ namespace WaveBox.Core.Extensions
 		}
 	}
 }
-
