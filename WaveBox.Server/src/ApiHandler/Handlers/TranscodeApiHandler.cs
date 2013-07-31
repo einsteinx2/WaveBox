@@ -46,8 +46,6 @@ namespace WaveBox.ApiHandler.Handlers
 			// Create transcoder
 			ITranscoder transcoder = null;
 
-			if (logger.IsInfoEnabled) logger.Info("Starting file transcoding sequence");
-
 			// Try to get the media item id
 			bool success = false;
 			int id = 0;
@@ -249,7 +247,7 @@ namespace WaveBox.ApiHandler.Handlers
 							if ((object)transcoder.TranscodeProcess != null && (object)transcoder.TranscodeProcess.StandardOutput.BaseStream != null)
 							{
 								// The base stream exists, so the transcoding process has started
-								if (logger.IsInfoEnabled) logger.Info("Base stream exists, so start the transfer");
+								if (logger.IsInfoEnabled) logger.Info("Base stream exists, starting transfer");
 								stream = transcoder.TranscodeProcess.StandardOutput.BaseStream;
 								break;
 							}
@@ -281,7 +279,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 					if (uri.Parameters.ContainsKey("offsetSeconds"))
 					{
-						if (logger.IsInfoEnabled) logger.Info("ApiHandlerFactory writing file at offsetSeconds " + uri.Parameters["offsetSeconds"]);
+						if (logger.IsInfoEnabled) logger.Info("Writing file at offsetSeconds " + uri.Parameters["offsetSeconds"]);
 					}
 
 					DateTime lastModified = transcoder.IsDirect ? DateTime.UtcNow : new FileInfo(transcoder.OutputPath).LastWriteTimeUtc;
@@ -293,7 +291,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 					if (uri.Parameters.ContainsKey("offsetSeconds"))
 					{
-						if (logger.IsInfoEnabled) logger.Info("ApiHandlerFactory DONE writing file at offsetSeconds " + uri.Parameters["offsetSeconds"]);
+						if (logger.IsInfoEnabled) logger.Info("DONE writing file at offsetSeconds " + uri.Parameters["offsetSeconds"]);
 					}
 				}
 				else

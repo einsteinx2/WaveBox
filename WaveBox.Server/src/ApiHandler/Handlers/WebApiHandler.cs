@@ -93,8 +93,6 @@ namespace WaveBox.ApiHandler.Handlers
 				return;
 			}
 
-			if (logger.IsInfoEnabled) logger.Info("Serving file: " + path);
-
 			// Serve up files inside html directory
 			FileStream file = new FileStream(path, FileMode.Open, FileAccess.Read);
 			int startOffset = 0;
