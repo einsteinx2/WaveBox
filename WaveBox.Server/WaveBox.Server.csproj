@@ -152,6 +152,7 @@
     <Compile Include="src\ApiHandler\UriWrapper.cs" />
     <Compile Include="src\AssemblyInfo.cs" />
     <Compile Include="src\Extensions\IMediaItemExtensions.cs" />
+    <Compile Include="src\Extensions\StreamExtensions.cs" />
     <Compile Include="src\FolderScanning\FolderScanOperation.cs" />
     <Compile Include="src\FolderScanning\OrphanScanOperation.cs" />
     <Compile Include="src\ImageMagickInterop.cs" />

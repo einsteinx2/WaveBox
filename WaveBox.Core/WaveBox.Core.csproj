@@ -84,7 +84,6 @@
     <Compile Include="src\Extensions\ByteExtensions.cs" />
     <Compile Include="src\Extensions\DateTimeExtensions.cs" />
     <Compile Include="src\Extensions\IListExtensions.cs" />
-    <Compile Include="src\Extensions\StreamExtensions.cs" />
     <Compile Include="src\Extensions\StringExtensions.cs" />
     <Compile Include="src\Injection\CoreModule.cs" />
     <Compile Include="src\Injection\Injection.cs" />
