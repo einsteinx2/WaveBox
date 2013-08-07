@@ -105,10 +105,18 @@ namespace WaveBox.FolderScanning
 						}
 					}
 
-					Parallel.ForEach(Directory.GetFiles(folderPath), currentFile =>
+					// NOTE: File processing was previously using Parallel.ForEach, but it has been changed to be
+					// single-threaded because:
+					//   1) Parallel scanning has the potential to cause race conditions on this code
+					//   2) Thanks to using "PRAGMA synchronous = OFF" in SQLite, scanning is much faster
+					//   3) Single-threaded scanning may be faster on HDDs, due to less thrashing of disk as the disk
+					//      seeks to the next file
+					// In the future, we may revisit the issue, and perhaps detect if media lies on a SSD, allowing
+					// us to benefit more from parallel scanning.
+					foreach (string file in Directory.GetFiles(folderPath))
 					{
-						ProcessFile(currentFile, topFolder.FolderId);
-					});
+						ProcessFile(file, topFolder.FolderId);
+					}
 				}
 			}
 			catch (FileNotFoundException e)
