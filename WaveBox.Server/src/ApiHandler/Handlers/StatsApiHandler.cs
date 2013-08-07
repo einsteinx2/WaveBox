@@ -15,45 +15,35 @@ namespace WaveBox.ApiHandler
 {
 	class StatsApiHandler : IApiHandler
 	{
-		private IHttpProcessor Processor { get; set; }
-		private UriWrapper Uri { get; set; }
-
-		/// <summary>
-		/// Constructor for StatsApiHandler
-		/// </summary>
-		public StatsApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
-		{
-			Processor = processor;
-			Uri = uri;
-		}
+		public string Name { get { return "stats"; } set { } }
 
 		/// <summary>
 		/// Process records play stats for artists, albums, songs
 		/// </summary>
-		public void Process()
+		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			// Ensure an event is present
-			if (!Uri.Parameters.ContainsKey("event"))
+			if (!uri.Parameters.ContainsKey("event"))
 			{
-				Processor.WriteJson(JsonConvert.SerializeObject(new StatsResponse("Please specify an event parameter with comma separated list of events")));
+				processor.WriteJson(JsonConvert.SerializeObject(new StatsResponse("Please specify an event parameter with comma separated list of events")));
 				return;
 			}
 
 			// Split events into id, stat type, UNIX timestamp triples
-			string[] events = Uri.Parameters["event"].Split(',');
+			string[] events = uri.Parameters["event"].Split(',');
 
 			// Ensure data sent
 			if (events.Length < 1)
 			{
 				// Report empty data list
-				Processor.WriteJson(JsonConvert.SerializeObject(new StatsResponse("Event data list is empty")));
+				processor.WriteJson(JsonConvert.SerializeObject(new StatsResponse("Event data list is empty")));
 				return;
 			}
 
 			// Ensure events are in triples
 			if (events.Length % 3 != 0)
 			{
-				Processor.WriteJson(JsonConvert.SerializeObject(new StatsResponse("Event data list must be in comma-separated triples of form itemId,statType,timestamp")));
+				processor.WriteJson(JsonConvert.SerializeObject(new StatsResponse("Event data list must be in comma-separated triples of form itemId,statType,timestamp")));
 				return;
 			}
 
@@ -110,7 +100,7 @@ namespace WaveBox.ApiHandler
 			}
 
 			// After all stat iterations, return a successful response
-			Processor.WriteJson(JsonConvert.SerializeObject(new StatsResponse(null)));
+			processor.WriteJson(JsonConvert.SerializeObject(new StatsResponse(null)));
 		}
 	}
 }

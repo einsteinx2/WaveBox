@@ -34,27 +34,17 @@ namespace WaveBox.ApiHandler.Handlers
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		private IHttpProcessor Processor { get; set; }
-		private UriWrapper Uri { get; set; }
+		public string Name { get { return "status"; } set { } }
 
 		// Status API cache
 		private static StatusApiCache statusCache = new StatusApiCache();
 		public static StatusApiCache StatusCache { get { return statusCache; } }
 
 		/// <summary>
-		/// Constructor for StatusApiHandler class
-		/// </summary>
-		public StatusApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
-		{
-			Processor = processor;
-			Uri = uri;
-		}
-
-		/// <summary>
 		/// Process is used to return a JSON object containing a variety of information about the host system
 		/// which is running the WaveBox server
 		/// </summary>
-		public void Process()
+		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			try
 			{
@@ -111,9 +101,9 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 
 				// Call for extended status, which uses some database intensive calls
-				if (Uri.Parameters.ContainsKey("extended"))
+				if (uri.Parameters.ContainsKey("extended"))
 				{
-					if (Uri.Parameters["extended"].IsTrue())
+					if (uri.Parameters["extended"].IsTrue())
 					{
 						// Check if any destructive queries have been performed since the last cache
 						if ((statusCache.LastQueryId == null) || (queryLogId > statusCache.LastQueryId))
@@ -121,7 +111,7 @@ namespace WaveBox.ApiHandler.Handlers
 							// Update to the latest query log ID
 							statusCache.LastQueryId = queryLogId;
 
-							if (logger.IsInfoEnabled) logger.Info("Gathering extended status metrics from database");
+							logger.IfInfo("Gathering extended status metrics from database");
 
 							// Get count of artists
 							statusCache.Cache["artistCount"] = Injection.Kernel.Get<IArtistRepository>().CountArtists();
@@ -140,7 +130,7 @@ namespace WaveBox.ApiHandler.Handlers
 							// Get total video duration
 							statusCache.Cache["videoDuration"] = Injection.Kernel.Get<IVideoRepository>().TotalVideoDuration();
 
-							if (logger.IsInfoEnabled) logger.Info("Metric gathering complete, cached results!");
+							logger.IfInfo("Metric gathering complete, cached results!");
 						}
 
 						// Append cached status dictionary to status
@@ -149,7 +139,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 
 				string json = JsonConvert.SerializeObject(new StatusResponse(null, status), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-				Processor.WriteJson(json);
+				processor.WriteJson(json);
 			}
 			catch(Exception e)
 			{

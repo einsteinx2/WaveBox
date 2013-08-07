@@ -109,7 +109,7 @@ namespace WaveBox.Core.Model.Repository
 			}
 			catch (NullReferenceException)
 			{
-				logger.Info("User '" + userName + "' already exists, skipping...");
+				logger.IfInfo("User '" + userName + "' already exists, skipping...");
 			}
 			catch (Exception e)
 			{

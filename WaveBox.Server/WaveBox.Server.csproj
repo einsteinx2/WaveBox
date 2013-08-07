@@ -122,6 +122,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="src\ApiHandler\ApiAuthenticate.cs" />
     <Compile Include="src\ApiHandler\ApiHandlerFactory.cs" />
     <Compile Include="src\ApiHandler\Handlers\AlbumsApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\ArtApiHandler.cs" />
@@ -132,6 +133,7 @@
     <Compile Include="src\ApiHandler\Handlers\GenresApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\JukeboxApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\LoginApiHandler.cs" />
+    <Compile Include="src\ApiHandler\Handlers\LogoutApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\PlaylistsApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\PodcastApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\ScrobbleApiHandler.cs" />
@@ -145,14 +147,18 @@
     <Compile Include="src\ApiHandler\Handlers\TranscodeHlsApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\UsersApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\VideosApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\WebInterfaceHandler.cs" />
+    <Compile Include="src\ApiHandler\Handlers\WebApiHandler.cs" />
     <Compile Include="src\ApiHandler\IApiHandler.cs" />
     <Compile Include="src\ApiHandler\UriWrapper.cs" />
     <Compile Include="src\AssemblyInfo.cs" />
     <Compile Include="src\Extensions\IMediaItemExtensions.cs" />
+    <Compile Include="src\Extensions\StreamExtensions.cs" />
     <Compile Include="src\FolderScanning\FolderScanOperation.cs" />
     <Compile Include="src\FolderScanning\OrphanScanOperation.cs" />
     <Compile Include="src\ImageMagickInterop.cs" />
+    <Compile Include="src\Injection\Interfaces\IApiAuthenticate.cs" />
+    <Compile Include="src\Injection\Interfaces\IApiHandlerFactory.cs" />
+    <Compile Include="src\Injection\ServerModule.cs" />
     <Compile Include="src\Lastfm.cs" />
     <Compile Include="src\Service\IService.cs" />
     <Compile Include="src\Service\ServiceFactory.cs" />
@@ -172,6 +178,7 @@
     <Compile Include="src\Service\Services\HttpService.cs" />
     <Compile Include="src\Service\Services\Http\HttpHeader.cs" />
     <Compile Include="src\Service\Services\Http\HttpProcessor.cs" />
+    <Compile Include="src\Service\Services\Http\HttpProcessorPrivate.cs" />
     <Compile Include="src\Service\Services\Http\IHttpProcessor.cs" />
     <Compile Include="src\Service\Services\JukeboxService.cs" />
     <Compile Include="src\Service\Services\NatService.cs" />
@@ -311,7 +318,7 @@
     </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>

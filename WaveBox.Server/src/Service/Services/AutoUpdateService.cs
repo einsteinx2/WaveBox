@@ -73,7 +73,7 @@ namespace WaveBox.Service.Services
 
 		private void CheckForUpdate(object state)
 		{
-			if (logger.IsInfoEnabled) logger.Info("Checking for updates");
+			logger.IfInfo("Checking for updates");
 
 			// Cancel any existing connection
 			if ((object)client != null)

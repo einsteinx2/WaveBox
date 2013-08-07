@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using WaveBox.Core.Extensions;
 
 namespace WaveBox.Core.OperationQueue
 {
@@ -23,7 +24,7 @@ namespace WaveBox.Core.OperationQueue
 
 		public void startQueue()
 		{
-			queueThread = new Thread(delegate() 
+			queueThread = new Thread(delegate()
 			{
 				while (queueShouldLoop)
 				{
@@ -43,7 +44,7 @@ namespace WaveBox.Core.OperationQueue
 							if (currentOperation != null)
 							{
 								currentOperation.Run();
-								if (logger.IsInfoEnabled) logger.Info(currentOperation.ToString() + " fired");
+								logger.IfInfo(currentOperation.ToString() + " fired");
 							}
 						}
 					}
@@ -84,12 +85,12 @@ namespace WaveBox.Core.OperationQueue
 							op.ResetWait();
 						}
 					}
-					if (logger.IsInfoEnabled) logger.Info("ExtendWaitOrRestart " + op.OperationType + "!");
+					logger.IfInfo("ExtendWaitOrRestart " + op.OperationType + "!");
 				}
 				else
 				{
 					operationQueue.Enqueue(op);
-					if (logger.IsInfoEnabled) logger.Info("Queuing new " + op.OperationType + "!");
+					logger.IfInfo("Queuing new " + op.OperationType + "!");
 				}
 			}
 		}

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using Ninject;
+using WaveBox.Core.Extensions;
 using WaveBox.Service.Services;
 using WaveBox.Static;
 
@@ -41,7 +42,7 @@ namespace WaveBox.Service
 				{
 					// Discover and instantiate all available services
 					IService instance = (IService)Activator.CreateInstance(t);
-					if (logger.IsInfoEnabled) logger.Info("Discovered service: " + instance.Name + " -> " + t);
+					logger.IfInfo("Discovered service: " + instance.Name + " -> " + t);
 					services.Add(instance);
 				}
 			}

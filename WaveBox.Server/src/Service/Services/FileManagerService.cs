@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Ninject;
-using WaveBox.FolderScanning;
-using WaveBox.Core.Model;
-using WaveBox.Core.OperationQueue;
-using WaveBox.Service;
-using WaveBox.Static;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Ninject;
 using WaveBox.Core;
+using WaveBox.Core.Extensions;
+using WaveBox.Core.Model;
+using WaveBox.Core.OperationQueue;
+using WaveBox.FolderScanning;
+using WaveBox.Service;
+using WaveBox.Static;
 
 namespace WaveBox.Service.Services
 {
@@ -95,29 +96,29 @@ namespace WaveBox.Service.Services
 					if (((FSEventFlags)eventFlag & FSEventFlags.FlagItemCreated) == FSEventFlags.FlagItemCreated)
 					{
 						ItemCreated(path);
-						logger.Info("FSEvents - item created at path: " + path);
+						logger.IfInfo("FSEvents - item created at path: " + path);
 					}
 					else if (((FSEventFlags)eventFlag & FSEventFlags.FlagItemRemoved) == FSEventFlags.FlagItemRemoved)
 					{
 						ItemDeleted();
-						logger.Info("FSEvents - item deleted at path: " + path);
+						logger.IfInfo("FSEvents - item deleted at path: " + path);
 					}
 					else if (((FSEventFlags)eventFlag & FSEventFlags.FlagItemRenamed) == FSEventFlags.FlagItemRenamed)
 					{
 						ItemRenamed(path);
-						logger.Info("FSEvents - item renamed at path: " + path);
+						logger.IfInfo("FSEvents - item renamed at path: " + path);
 					}
 					else if (((FSEventFlags)eventFlag & FSEventFlags.FlagItemModified) == FSEventFlags.FlagItemModified)
 					{
 						// Do nothing for now
-						logger.Info("FSEvents - item modified at path: " + path);
+						logger.IfInfo("FSEvents - item modified at path: " + path);
 					}
 					else
 					{
 						// For now, in any other cases, just do the safe thing and do an orphan scan as well
 						ItemDeleted();
 						ItemCreated(path);
-						logger.Info("FSEvents - other event at path: " + path);
+						logger.IfInfo("FSEvents - other event at path: " + path);
 					}
 				}
 				else
@@ -189,7 +190,7 @@ namespace WaveBox.Service.Services
 						watch.EnableRaisingEvents = true;
 
 						// Confirm watcher addition
-						if (logger.IsInfoEnabled) logger.Info("File system watcher added for: " + folder.FolderPath);
+						logger.IfInfo("File system watcher added for: " + folder.FolderPath);
 					}
 					else
 					{
@@ -254,19 +255,19 @@ namespace WaveBox.Service.Services
 		/// </summary>
 		private void OnRenamed(object source, RenamedEventArgs e)
 		{
-			if (logger.IsInfoEnabled) logger.Info(e.OldName + " renamed to " + e.Name);
+			logger.IfInfo(e.OldName + " renamed to " + e.Name);
 
 			ItemRenamed(e.FullPath);
 		}
 
 		private void ItemCreated(string fullPath)
 		{
-			if (logger.IsInfoEnabled) logger.Info("File created: " + fullPath);
+			logger.IfInfo("File created: " + fullPath);
 
 			// If a file is detected, start a scan of the folder it exists in
 			if (File.Exists(fullPath))
 			{
-				if (logger.IsInfoEnabled) logger.Info("New file detected, starting scanning operation.");
+				logger.IfInfo("New file detected, starting scanning operation.");
 
 				string dir = new FileInfo(fullPath).DirectoryName;
 				scanQueue.queueOperation(new FolderScanOperation(dir, DelayedOperationQueue.DEFAULT_DELAY));
@@ -274,7 +275,7 @@ namespace WaveBox.Service.Services
 			// If a directory is created, start a scan of the directory
 			else if (Directory.Exists(fullPath))
 			{
-				if (logger.IsInfoEnabled) logger.Info("New directory detected, starting scanning operation.");
+				logger.IfInfo("New directory detected, starting scanning operation.");
 				scanQueue.queueOperation(new FolderScanOperation(fullPath, DelayedOperationQueue.DEFAULT_DELAY));
 			}
 			// Else, edge-case?  Might pick up something weird like a named pipe or socket with a valid media extension.

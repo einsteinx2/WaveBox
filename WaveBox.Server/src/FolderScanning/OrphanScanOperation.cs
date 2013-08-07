@@ -33,45 +33,45 @@ namespace WaveBox.FolderScanning
 		{
 			Stopwatch sw = new Stopwatch();
 
-			if (logger.IsInfoEnabled) logger.Info("---------------- ORPHAN SCAN ----------------");
-			if (logger.IsInfoEnabled) logger.Info("Folders:");
+			logger.IfInfo("---------------- ORPHAN SCAN ----------------");
+			logger.IfInfo("Folders:");
 			sw.Start();
 			CheckFolders();
 			sw.Stop();
-			if (logger.IsInfoEnabled) logger.Info("Done, elapsed: " + sw.ElapsedMilliseconds + "ms");
+			logger.IfInfo("Done, elapsed: " + sw.ElapsedMilliseconds + "ms");
 
-			if (logger.IsInfoEnabled) logger.Info("Songs:");
+			logger.IfInfo("Songs:");
 			sw.Restart();
 			CheckSongs();
 			sw.Stop();
-			if (logger.IsInfoEnabled) logger.Info("Done, elapsed: " + sw.ElapsedMilliseconds + "ms");
+			logger.IfInfo("Done, elapsed: " + sw.ElapsedMilliseconds + "ms");
 
-			if (logger.IsInfoEnabled) logger.Info("Artists:");
+			logger.IfInfo("Artists:");
 			sw.Restart();
 			CheckArtists();
 			sw.Stop();
-			if (logger.IsInfoEnabled) logger.Info("Done, elapsed: " + sw.ElapsedMilliseconds + "ms");
+			logger.IfInfo("Done, elapsed: " + sw.ElapsedMilliseconds + "ms");
 
-			if (logger.IsInfoEnabled) logger.Info("Albums:");
+			logger.IfInfo("Albums:");
 			sw.Restart();
 			CheckAlbums();
 			sw.Stop();
-			if (logger.IsInfoEnabled) logger.Info("Done, elapsed: " + sw.ElapsedMilliseconds + "ms");
+			logger.IfInfo("Done, elapsed: " + sw.ElapsedMilliseconds + "ms");
 
-			if (logger.IsInfoEnabled) logger.Info("Genres:");
+			logger.IfInfo("Genres:");
 			sw.Restart();
 			CheckGenres();
 			sw.Stop();
-			if (logger.IsInfoEnabled) logger.Info("Done, elapsed: " + sw.ElapsedMilliseconds + "ms");
+			logger.IfInfo("Done, elapsed: " + sw.ElapsedMilliseconds + "ms");
 
-			if (logger.IsInfoEnabled) logger.Info("Videos:");
+			logger.IfInfo("Videos:");
 			sw.Restart();
 			CheckVideos();
 			sw.Stop();
-			if (logger.IsInfoEnabled) logger.Info("Done, elapsed: " + sw.ElapsedMilliseconds + "ms");
+			logger.IfInfo("Done, elapsed: " + sw.ElapsedMilliseconds + "ms");
 
-			if (logger.IsInfoEnabled) logger.Info("DONE, TOTAL ELAPSED: " + (totalExistsTime / 10000) + "ms");
-			if (logger.IsInfoEnabled) logger.Info("---------------------------------------------");
+			logger.IfInfo("DONE, TOTAL ELAPSED: " + (totalExistsTime / 10000) + "ms");
+			logger.IfInfo("---------------------------------------------");
 		}
 
 		private void CheckFolders()
@@ -102,7 +102,7 @@ namespace WaveBox.FolderScanning
 					{
 						if (!mediaFolderIds.Contains(folder.MediaFolderId) || !Directory.Exists(folder.FolderPath)) 
 						{
-							logger.Info(folder.FolderId + " is orphaned");
+							logger.IfInfo(folder.FolderId + " is orphaned");
 							orphanFolderIds.Add(folder.FolderId);
 						}
 					}
@@ -134,7 +134,7 @@ namespace WaveBox.FolderScanning
 					try 
 					{
 						conn.ExecuteLogged("DELETE FROM Folder WHERE FolderId = ?", folderId);
-						if (logger.IsInfoEnabled) logger.Info("  - Folder " + folderId + " deleted");
+						logger.IfInfo("  - Folder " + folderId + " deleted");
 					} 
 					catch (Exception e) 
 					{
@@ -195,7 +195,7 @@ namespace WaveBox.FolderScanning
 					try
 					{
 						conn.ExecuteLogged("DELETE FROM Song WHERE ItemId = ?", itemId);
-						if (logger.IsInfoEnabled) logger.Info("Song " + itemId + " deleted");
+						logger.IfInfo("Song " + itemId + " deleted");
 					}
 					catch (Exception e)
 					{
@@ -242,7 +242,7 @@ namespace WaveBox.FolderScanning
 					try
 					{
 						conn.ExecuteLogged("DELETE FROM Artist WHERE ArtistId = ?", artistId);
-						if (logger.IsInfoEnabled) logger.Info("Artist " + artistId + " deleted");
+						logger.IfInfo("Artist " + artistId + " deleted");
 					}
 					catch (Exception e)
 					{
@@ -288,7 +288,7 @@ namespace WaveBox.FolderScanning
 					try
 					{
 						conn.ExecuteLogged("DELETE FROM Album WHERE AlbumId = ?", albumId);
-						if (logger.IsInfoEnabled) logger.Info("Album " + albumId + " deleted");
+						logger.IfInfo("Album " + albumId + " deleted");
 					}
 					catch (Exception e)
 					{
@@ -334,7 +334,7 @@ namespace WaveBox.FolderScanning
 					try
 					{
 						conn.ExecuteLogged("DELETE FROM Genre WHERE GenreId = ?", genreId);
-						if (logger.IsInfoEnabled) logger.Info("Genre " + genreId + " deleted");
+						logger.IfInfo("Genre " + genreId + " deleted");
 					}
 					catch (Exception e)
 					{
@@ -381,7 +381,7 @@ namespace WaveBox.FolderScanning
 					try
 					{
 						conn.ExecuteLogged("DELETE FROM Video WHERE ItemId = ?", itemId);
-						if (logger.IsInfoEnabled) logger.Info("  - Video " + itemId + " deleted");
+						logger.IfInfo("  - Video " + itemId + " deleted");
 					}
 					catch (Exception e)
 					{

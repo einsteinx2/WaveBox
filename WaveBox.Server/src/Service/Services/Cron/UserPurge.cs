@@ -33,11 +33,11 @@ namespace WaveBox.Service.Services.Cron
 			{
 				if (u.Delete())
 				{
-					if (logger.IsInfoEnabled) logger.Info(String.Format("Purged expired user: [id: {0}, name: {1}]", u.UserId, u.UserName));
+					logger.IfInfo(String.Format("Purged expired user: [id: {0}, name: {1}]", u.UserId, u.UserName));
 				}
 				else
 				{
-					if (logger.IsInfoEnabled) logger.Info(String.Format("Failed to purge expired user: [id: {0}, name: {1}]", u.UserId, u.UserName));
+					logger.IfInfo(String.Format("Failed to purge expired user: [id: {0}, name: {1}]", u.UserId, u.UserName));
 				}
 			}
 
@@ -55,11 +55,11 @@ namespace WaveBox.Service.Services.Cron
 				{
 					if (s.DeleteSession())
 					{
-						if (logger.IsInfoEnabled) logger.Info(String.Format("Purged session: [id: {0}, user: {1}]", s.RowId, s.UserId));
+						logger.IfInfo(String.Format("Purged session: [id: {0}, user: {1}]", s.RowId, s.UserId));
 					}
 					else
 					{
-						if (logger.IsInfoEnabled) logger.Info(String.Format("Failed to purge session: [id: {0}, user: {1}]", s.RowId, s.UserId));
+						logger.IfInfo(String.Format("Failed to purge session: [id: {0}, user: {1}]", s.RowId, s.UserId));
 					}
 				}
 			}

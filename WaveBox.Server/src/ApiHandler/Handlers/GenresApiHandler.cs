@@ -15,22 +15,12 @@ namespace WaveBox.ApiHandler.Handlers
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		private IHttpProcessor Processor { get; set; }
-		private UriWrapper Uri { get; set; }
-
-		/// <summary>
-		/// Constructor for FoldersApiHandler
-		/// </summary>
-		public GenresApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
-		{
-			Processor = processor;
-			Uri = uri;
-		}
+		public string Name { get { return "genres"; } set { } }
 
 		/// <summary>
 		/// Process returns a JSON response list of genres
 		/// </summary>
-		public void Process()
+		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			// Generate return lists of folders, songs, videos
 			IList<Genre> listOfGenres = new List<Genre>();
@@ -42,17 +32,18 @@ namespace WaveBox.ApiHandler.Handlers
 			// Try to get the folder id
 			bool success = false;
 			int id = 0;
-			if (Uri.Parameters.ContainsKey("id"))
+			if (uri.Parameters.ContainsKey("id"))
 			{
-				success = Int32.TryParse(Uri.Parameters["id"], out id);
+				success = Int32.TryParse(uri.Parameters["id"], out id);
 			}
 
 			if (success)
 			{
-				string type = "artists"; // Default to artist
-				if (Uri.Parameters.ContainsKey("type"))
+				// Default: artists
+				string type = "artists";
+				if (uri.Parameters.ContainsKey("type"))
 				{
-					type = Uri.Parameters["type"];
+					type = uri.Parameters["type"];
 				}
 
 				Genre genre = Injection.Kernel.Get<IGenreRepository>().GenreForId(id);
@@ -84,7 +75,7 @@ namespace WaveBox.ApiHandler.Handlers
 			try
 			{
 				string json = JsonConvert.SerializeObject(new GenresResponse(null, listOfGenres, listOfFolders, listOfArtists, listOfAlbums, listOfSongs), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-				Processor.WriteJson(json);
+				processor.WriteJson(json);
 			}
 			catch (Exception e)
 			{
