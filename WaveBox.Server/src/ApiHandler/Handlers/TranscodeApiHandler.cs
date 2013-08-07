@@ -83,7 +83,7 @@ namespace WaveBox.ApiHandler.Handlers
 				if (itemType == ItemType.Song)
 				{
 					item = Injection.Kernel.Get<ISongRepository>().SongForId(id);
-					if (logger.IsInfoEnabled) logger.Info("Preparing audio transcode: " + item.FileName);
+					logger.IfInfo("Preparing audio transcode: " + item.FileName);
 
 					// Default to MP3 transcoding
 					transType = TranscodeType.MP3;
@@ -91,7 +91,7 @@ namespace WaveBox.ApiHandler.Handlers
 				else if (itemType == ItemType.Video)
 				{
 					item = Injection.Kernel.Get<IVideoRepository>().VideoForId(id);
-					if (logger.IsInfoEnabled) logger.Info("Preparing video transcode: " + item.FileName);
+					logger.IfInfo("Preparing video transcode: " + item.FileName);
 
 					// Default to h.264 transcoding
 					transType = TranscodeType.X264;
@@ -118,7 +118,7 @@ namespace WaveBox.ApiHandler.Handlers
 					var split = range.Split(new char[]{'-', '='});
 					string start = split[1];
 					string end = split.Length > 2 ? split[2] : null;
-					if (logger.IsInfoEnabled) logger.Info("Range header: " + range + "  Resuming from " + start + " end: " + end);
+					logger.IfInfo("Range header: " + range + "  Resuming from " + start + " end: " + end);
 
 					if (isDirect)
 					{
@@ -243,18 +243,18 @@ namespace WaveBox.ApiHandler.Handlers
 					{
 						if (transcoder.IsDirect)
 						{
-							if (logger.IsInfoEnabled) logger.Info("Checking if base stream exists");
+							logger.IfInfo("Checking if base stream exists");
 							if ((object)transcoder.TranscodeProcess != null && (object)transcoder.TranscodeProcess.StandardOutput.BaseStream != null)
 							{
 								// The base stream exists, so the transcoding process has started
-								if (logger.IsInfoEnabled) logger.Info("Base stream exists, starting transfer");
+								logger.IfInfo("Base stream exists, starting transfer");
 								stream = transcoder.TranscodeProcess.StandardOutput.BaseStream;
 								break;
 							}
 						}
 						else
 						{
-							if (logger.IsInfoEnabled) logger.Info("Checking if file exists (" + transcoder.OutputPath + ")");
+							logger.IfInfo("Checking if file exists (" + transcoder.OutputPath + ")");
 							if (File.Exists(transcoder.OutputPath))
 							{
 								// The file exists, so the transcoding process has started
@@ -273,13 +273,13 @@ namespace WaveBox.ApiHandler.Handlers
 					(transcoder.IsDirect && (object)stream != null) ||
 					(!transcoder.IsDirect && File.Exists(transcoder.OutputPath)))
 				{
-					if (logger.IsInfoEnabled) logger.Info("Sending direct stream");
+					logger.IfInfo("Sending direct stream");
 					string mimeType = (object)transcoder == null ? item.FileType.MimeType() : transcoder.MimeType;
 					processor.Transcoder = transcoder;
 
 					if (uri.Parameters.ContainsKey("offsetSeconds"))
 					{
-						if (logger.IsInfoEnabled) logger.Info("Writing file at offsetSeconds " + uri.Parameters["offsetSeconds"]);
+						logger.IfInfo("Writing file at offsetSeconds " + uri.Parameters["offsetSeconds"]);
 					}
 
 					DateTime lastModified = transcoder.IsDirect ? DateTime.UtcNow : new FileInfo(transcoder.OutputPath).LastWriteTimeUtc;
@@ -287,11 +287,11 @@ namespace WaveBox.ApiHandler.Handlers
 					// Direct write file
 					processor.WriteFile(stream, startOffset, length, mimeType, null, estimateContentLength, lastModified, limitToSize);
 					stream.Close();
-					if (logger.IsInfoEnabled) logger.Info("Successfully sent direct stream");
+					logger.IfInfo("Successfully sent direct stream");
 
 					if (uri.Parameters.ContainsKey("offsetSeconds"))
 					{
-						if (logger.IsInfoEnabled) logger.Info("DONE writing file at offsetSeconds " + uri.Parameters["offsetSeconds"]);
+						logger.IfInfo("DONE writing file at offsetSeconds " + uri.Parameters["offsetSeconds"]);
 					}
 				}
 				else

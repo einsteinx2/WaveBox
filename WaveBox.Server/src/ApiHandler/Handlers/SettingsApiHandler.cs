@@ -7,6 +7,7 @@ using Newtonsoft.Json.Schema;
 using Newtonsoft.Json;
 using Ninject;
 using WaveBox.Core;
+using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
 using WaveBox.Static;
 using WaveBox.Service.Services.Http;
@@ -26,7 +27,7 @@ namespace WaveBox.ApiHandler
 			{
 				// Take in settings in the JSON format (same as it is stored on disk) and pass it on to the Settings class for processing=
 				string json = HttpUtility.UrlDecode(uri.Parameters["json"]);
-				if (logger.IsInfoEnabled) logger.Info("Received settings JSON: " + json);
+				logger.IfInfo("Received settings JSON: " + json);
 
 				// Attempt to write settings
 				bool success = false;

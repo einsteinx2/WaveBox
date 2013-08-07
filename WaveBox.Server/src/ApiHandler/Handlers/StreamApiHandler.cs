@@ -6,14 +6,15 @@ using System.IO;
 using System.Threading;
 using Newtonsoft.Json;
 using Ninject;
+using WaveBox.Core;
+using WaveBox.Core.ApiResponse;
+using WaveBox.Core.Extensions;
+using WaveBox.Core.Model.Repository;
 using WaveBox.Core.Model;
 using WaveBox.Server.Extensions;
-using WaveBox.Static;
 using WaveBox.Service.Services.Http;
+using WaveBox.Static;
 using WaveBox.Transcoding;
-using WaveBox.Core.Model.Repository;
-using WaveBox.Core.ApiResponse;
-using WaveBox.Core;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -28,7 +29,7 @@ namespace WaveBox.ApiHandler.Handlers
 		/// </summary>
 		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
-			if (logger.IsInfoEnabled) logger.Info("Starting file streaming sequence");
+			logger.IfInfo("Starting file streaming sequence");
 
 			// Try to get the media item id
 			bool success = false;
@@ -54,12 +55,12 @@ namespace WaveBox.ApiHandler.Handlers
 				if (itemType == ItemType.Song)
 				{
 					item = Injection.Kernel.Get<ISongRepository>().SongForId(id);
-					if (logger.IsInfoEnabled) logger.Info("Preparing audio stream: " + item.FileName);
+					logger.IfInfo("Preparing audio stream: " + item.FileName);
 				}
 				else if (itemType == ItemType.Video)
 				{
 					item = Injection.Kernel.Get<IVideoRepository>().VideoForId(id);
-					if (logger.IsInfoEnabled) logger.Info("Preparing video stream: " + item.FileName);
+					logger.IfInfo("Preparing video stream: " + item.FileName);
 				}
 
 				// Return an error if none exists
@@ -84,7 +85,7 @@ namespace WaveBox.ApiHandler.Handlers
 					string start = split[1];
 					string end = split.Length > 2 ? split[2] : null;
 
-					if (logger.IsInfoEnabled) logger.Info("Range header: " + range + "  Resuming from " + start);
+					logger.IfInfo("Range header: " + range + "  Resuming from " + start);
 					startOffset = Convert.ToInt32(start);
 					if (!ReferenceEquals(end, null))
 					{
@@ -96,7 +97,7 @@ namespace WaveBox.ApiHandler.Handlers
 				processor.WriteFile(stream, startOffset, length, item.FileType.MimeType(), null, true, new FileInfo(item.FilePath()).LastWriteTimeUtc, limitToSize);
 				stream.Close();
 
-				if (logger.IsInfoEnabled) logger.Info("Successfully streamed file!");
+				logger.IfInfo("Successfully streamed file!");
 			}
 			catch (Exception e)
 			{

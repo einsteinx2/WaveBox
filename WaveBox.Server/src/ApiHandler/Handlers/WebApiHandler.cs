@@ -2,10 +2,11 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using Ninject;
+using WaveBox.Core;
+using WaveBox.Core.Extensions;
+using WaveBox.Core.Model;
 using WaveBox.Service.Services.Http;
 using WaveBox.Static;
-using WaveBox.Core;
-using WaveBox.Core.Model;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -86,7 +87,7 @@ namespace WaveBox.ApiHandler.Handlers
 			// Make sure the file exists
 			if (!File.Exists(path))
 			{
-				if (logger.IsInfoEnabled) logger.Info("File does not exist: " + path);
+				logger.IfInfo("File does not exist: " + path);
 
 				// File not found
 				processor.WriteErrorHeader();
@@ -102,7 +103,7 @@ namespace WaveBox.ApiHandler.Handlers
 			{
 				string range = (string)processor.HttpHeaders["Range"];
 				string start = range.Split(new char[]{'-', '='})[1];
-				if (logger.IsInfoEnabled) logger.Info("Connection retried.  Resuming from " + start);
+				logger.IfInfo("Connection retried.  Resuming from " + start);
 				startOffset = Convert.ToInt32(start);
 			}
 

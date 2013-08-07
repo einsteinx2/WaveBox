@@ -66,7 +66,7 @@ namespace WaveBox
 			if (sessionKey == null)
 			{
 				this.CreateAuthUrl();
-				if (logger.IsInfoEnabled) logger.Info(this.AuthUrl);
+				logger.IfInfo(this.AuthUrl);
 			}
 			else if (sessionKey.Substring(0, 6) == "token:")
 			{
@@ -238,7 +238,7 @@ namespace WaveBox
 				sessionKey = jsonResponse.session.key.ToString();
 				sessionAuthenticated = true;
 				user.UpdateLastfmSession(sessionKey);
-				logger.Info("(" + user.UserName + ") Obtain last.fm session key: success");
+				logger.IfInfo("(" + user.UserName + ") Obtain last.fm session key: success");
 			}
 			else sessionAuthenticated = false;
 		}
@@ -267,7 +267,7 @@ namespace WaveBox
 			if (requestToken != null)
 			{
 				user.UpdateLastfmSession("token:" + requestToken);
-				logger.Info("(" + user.UserName + ") Obtain last.fm authentication request token: success");
+				logger.IfInfo("(" + user.UserName + ") Obtain last.fm authentication request token: success");
 			}
 
 			this.authUrl = String.Format("http://www.last.fm/api/auth/?api_key={0}&token={1}", apiKey, requestToken);

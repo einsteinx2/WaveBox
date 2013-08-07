@@ -174,7 +174,7 @@ namespace WaveBox.Service.Services.Http
 			// Only log API responses
 			if (HttpUrl.Contains("api"))
 			{
-				if (logger.IsInfoEnabled) logger.Info(String.Format("Success, status: {0}, length: {1}, encoding: {2}, ETag: {3}, Last-Modified: {4}",
+				logger.IfInfo(String.Format("Success, status: {0}, length: {1}, encoding: {2}, ETag: {3}, Last-Modified: {4}",
 					status,
 					contentLength,
 					encoding ?? "none",
@@ -385,7 +385,7 @@ namespace WaveBox.Service.Services.Http
 			}
 
 			WriteSuccessHeader(isSendContentLength ? contentLength : -1, mimeType, customHeaders, lastMod, isPartial);
-			if (logger.IsInfoEnabled) logger.Info("File header, contentLength: " + contentLength + ", contentType: " + mimeType);
+			logger.IfInfo("File header, contentLength: " + contentLength + ", contentType: " + mimeType);
 
 			sw.Start();
 			while (true)
@@ -417,7 +417,7 @@ namespace WaveBox.Service.Services.Http
 					{
 						if (logger.IsInfoEnabled)
 						{
-							logger.Info(String.Format("[ {0,10} / {1,10} | {2:000}% | {3:00.00000} Mbps ]",
+							logger.IfInfo(String.Format("[ {0,10} / {1,10} | {2:000}% | {3:00.00000} Mbps ]",
 								totalBytesWritten,
 								(contentLength + startOffset),
 								((Convert.ToDouble(totalBytesWritten) / Convert.ToDouble(contentLength + startOffset)) * 100),
@@ -461,7 +461,7 @@ namespace WaveBox.Service.Services.Http
 						SocketException se = (SocketException)e.InnerException;
 						if (se.SocketErrorCode == System.Net.Sockets.SocketError.ConnectionReset)
 						{
-							if (logger.IsInfoEnabled) logger.Info("Connection was forcibly closed by the remote host");
+							logger.IfInfo("Connection was forcibly closed by the remote host");
 						}
 					}
 

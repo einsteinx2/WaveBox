@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
 
 namespace WaveBox.Transcoding
@@ -73,7 +74,7 @@ namespace WaveBox.Transcoding
 				if (this.State == TranscodeState.Finished)
 				{
 					var transFileInfo = new FileInfo(this.OutputPath);
-					if (logger.IsInfoEnabled) logger.Info(this.Item.FileName + " finished transcoding (estimated size: " + transFileInfo.Length + ")");
+					logger.IfInfo(this.Item.FileName + " finished transcoding (estimated size: " + transFileInfo.Length + ")");
 					return transFileInfo.Length;
 				}
 				if (Item != null)
@@ -98,7 +99,7 @@ namespace WaveBox.Transcoding
 		{
 			if (TranscodeProcess != null)
 			{
-				if (logger.IsInfoEnabled) logger.Info("Cancelling transcode for " + Item.FileName);
+				logger.IfInfo("Cancelling transcode for " + Item.FileName);
 
 				// Kill the process
 				TranscodeProcess.Kill();
@@ -145,7 +146,7 @@ namespace WaveBox.Transcoding
 		{
 			try
 			{
-				if (logger.IsInfoEnabled) logger.Info("Forking: " + Command + " " + Arguments);
+				logger.IfInfo("Forking: " + Command + " " + Arguments);
 
 				// Fork the process
 				TranscodeProcess = new Process();
@@ -156,16 +157,16 @@ namespace WaveBox.Transcoding
 				TranscodeProcess.StartInfo.RedirectStandardError = true;
 				TranscodeProcess.Start();
 
-				if (logger.IsInfoEnabled) logger.Info("Waiting for '" + Command + "' to finish...");
+				logger.IfInfo("Waiting for '" + Command + "' to finish...");
 
 				// Block until done
 				TranscodeProcess.WaitForExit();
 
-				if (logger.IsInfoEnabled) logger.Info("'" + Command + "' finished (exit: " + TranscodeProcess.ExitCode + ")");
+				logger.IfInfo("'" + Command + "' finished (exit: " + TranscodeProcess.ExitCode + ")");
 			}
 			catch (Exception e)
 			{
-				if (logger.IsInfoEnabled) logger.Info("\t" + "Failed to start transcode process " + e);
+				logger.IfInfo("\t" + "Failed to start transcode process " + e);
 
 				// Set the state
 				State = TranscodeState.Failed;

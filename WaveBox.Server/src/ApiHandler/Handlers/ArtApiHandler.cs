@@ -237,7 +237,7 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 			catch (TagLib.CorruptFileException e)
 			{
-				if (logger.IsInfoEnabled) logger.Info(song.FileName + " has a corrupt tag so can't return the art. " + e);
+				logger.IfInfo(song.FileName + " has a corrupt tag so can't return the art. " + e);
 			}
 			catch (Exception e)
 			{

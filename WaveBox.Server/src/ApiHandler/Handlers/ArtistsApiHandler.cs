@@ -66,11 +66,11 @@ namespace WaveBox.ApiHandler.Handlers
 				{
 					if (uri.Parameters["lastfmInfo"].IsTrue())
 					{
-						logger.Info("Querying Last.fm for artist: " + a.ArtistName);
+						logger.IfInfo("Querying Last.fm for artist: " + a.ArtistName);
 						try
 						{
 							lastfmInfo = Lastfm.GetArtistInfo(a);
-							logger.Info("Last.fm query complete!");
+							logger.IfInfo("Last.fm query complete!");
 						}
 						catch (Exception e)
 						{

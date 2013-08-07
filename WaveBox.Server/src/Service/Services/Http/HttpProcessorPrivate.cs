@@ -190,7 +190,7 @@ namespace WaveBox.Service.Services.Http
 			}
 
 			// Log API call
-			logger.Info("API: " + this.HttpUrl);
+			logger.IfInfo("API: " + this.HttpUrl);
 
 			// Check for session cookie authentication, unless this is a login request
 			string sessionId = null;
@@ -248,7 +248,7 @@ namespace WaveBox.Service.Services.Http
 					if (cookies[i] == "wavebox_session")
 					{
 						string cookie = cookies[i + 1];
-						logger.Info("wavebox_session: " + cookie);
+						logger.IfInfo("wavebox_session: " + cookie);
 						return cookie;
 					}
 				}

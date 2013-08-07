@@ -4,11 +4,12 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using Ninject;
-using WaveBox.Static;
-using WaveBox.Service.Services.Http;
-using WaveBox.Core.ApiResponse;
 using WaveBox.Core;
+using WaveBox.Core.ApiResponse;
+using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
+using WaveBox.Service.Services.Http;
+using WaveBox.Static;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -31,7 +32,7 @@ namespace WaveBox.ApiHandler.Handlers
 		/// </summary>
 		public void Process(UriWrapper uri, IHttpProcessor processor, User user, string error)
 		{
-			if (logger.IsInfoEnabled) logger.Info(error);
+			logger.IfInfo(error);
 
 			ErrorResponse response = new ErrorResponse(error);
 			string json = JsonConvert.SerializeObject(response, Injection.Kernel.Get<IServerSettings>().JsonFormatting);

@@ -2,6 +2,7 @@ using System;
 using Newtonsoft.Json;
 using Ninject;
 using WaveBox.Core;
+using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
 using WaveBox.Service.Services.Http;
 using WaveBox.Static;
@@ -25,7 +26,7 @@ namespace WaveBox.ApiHandler.Handlers
 				string error = null;
 				if (user.DeleteSession(user.SessionId))
 				{
-					logger.Info(String.Format("Logged out user, destroyed session: [user: {0}, key: {1}]", user.UserName, user.SessionId));
+					logger.IfInfo(String.Format("Logged out user, destroyed session: [user: {0}, key: {1}]", user.UserName, user.SessionId));
 				}
 				else
 				{

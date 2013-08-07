@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using WaveBox.ApiHandler;
-using WaveBox.Core.Model;
-using WaveBox.Static;
-using WaveBox.Service.Services.Http;
 using WaveBox.Core.ApiResponse;
+using WaveBox.Core.Model;
+using WaveBox.Core.Extensions;
+using WaveBox.Service.Services.Http;
+using WaveBox.Static;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -50,7 +51,7 @@ namespace WaveBox.ApiHandler.Handlers
 			// If Last.fm is not authenticated, provide an authorization URL
 			if (!lfm.SessionAuthenticated)
 			{
-				if (logger.IsInfoEnabled) logger.Info("You must authenticate before you can scrobble.");
+				logger.IfInfo("You must authenticate before you can scrobble.");
 
 				processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMNotAuthenticated", lfm.AuthUrl)));
 				return;

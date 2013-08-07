@@ -5,9 +5,10 @@ using System.IO;
 using System.Reflection;
 using System.Threading;
 using Cirrious.MvvmCross.Plugins.Sqlite;
-using WaveBox.Static;
 using WaveBox.Core;
+using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
+using WaveBox.Static;
 
 namespace WaveBox.Static
 {
@@ -43,7 +44,7 @@ namespace WaveBox.Static
 			{
 				try
 				{
-					if (logger.IsInfoEnabled) logger.Info("Database file doesn't exist; Creating it : " + DATABASE_FILE_NAME);
+					logger.IfInfo("Database file doesn't exist; Creating it : " + DATABASE_FILE_NAME);
 
 					// new filestream on the template
 					FileStream dbTemplate = new FileStream(DatabaseTemplatePath, FileMode.Open);
@@ -59,7 +60,7 @@ namespace WaveBox.Static
 
 					// close the template file
 					dbTemplate.Close();
-				} 
+				}
 				catch (Exception e)
 				{
 					logger.Error(e);
@@ -70,7 +71,7 @@ namespace WaveBox.Static
 			{
 				try
 				{
-					if (logger.IsInfoEnabled) logger.Info("Query log database file doesn't exist; Creating it : " + QUERY_LOG_FILE_NAME);
+					logger.IfInfo("Query log database file doesn't exist; Creating it : " + QUERY_LOG_FILE_NAME);
 
 					// new filestream on the template
 					FileStream dbTemplate = new FileStream(QuerylogTemplatePath, FileMode.Open);
@@ -86,7 +87,7 @@ namespace WaveBox.Static
 
 					// close the template file
 					dbTemplate.Close();
-				} 
+				}
 				catch (Exception e)
 				{
 					logger.Error(e);

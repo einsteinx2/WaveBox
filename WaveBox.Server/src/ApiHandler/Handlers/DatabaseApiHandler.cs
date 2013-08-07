@@ -7,11 +7,12 @@ using System.Text;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using Newtonsoft.Json;
 using Ninject;
-using WaveBox.Core.Model;
-using WaveBox.Static;
-using WaveBox.Service.Services.Http;
-using WaveBox.Core.ApiResponse;
 using WaveBox.Core;
+using WaveBox.Core.ApiResponse;
+using WaveBox.Core.Extensions;
+using WaveBox.Core.Model;
+using WaveBox.Service.Services.Http;
+using WaveBox.Static;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -54,7 +55,7 @@ namespace WaveBox.ApiHandler.Handlers
 						{
 							string range = (string)processor.HttpHeaders["Range"];
 							string start = range.Split(new char[]{'-', '='})[1];
-							if (logger.IsInfoEnabled) logger.Info("Connection retried.  Resuming from " + start);
+							logger.IfInfo("Connection retried.  Resuming from " + start);
 							startOffset = Convert.ToInt32(start);
 						}
 

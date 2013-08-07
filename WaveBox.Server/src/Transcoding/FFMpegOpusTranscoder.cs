@@ -1,12 +1,13 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using WaveBox.Core.Model;
-using WaveBox.Static;
-using WaveBox.Server.Extensions;
 using Ninject;
-using WaveBox.Core.Model.Repository;
 using WaveBox.Core;
+using WaveBox.Core.Extensions;
+using WaveBox.Core.Model;
+using WaveBox.Core.Model.Repository;
+using WaveBox.Server.Extensions;
+using WaveBox.Static;
 
 namespace WaveBox.Transcoding
 {
@@ -33,11 +34,11 @@ namespace WaveBox.Transcoding
 
 		public override void Run()
 		{
-			try 
+			try
 			{
 				string ffmpegArguments = "-loglevel quiet -i \"" + Item.FilePath() + "\" -f wav -";
-				if (logger.IsInfoEnabled) logger.Info("Forking the process");
-				if (logger.IsInfoEnabled) logger.Info("ffmpeg " + ffmpegArguments);
+				logger.IfInfo("Forking the process");
+				logger.IfInfo("ffmpeg " + ffmpegArguments);
 
 				// Create the ffmpeg process
 				FfmpegProcess = new Process();
@@ -48,7 +49,7 @@ namespace WaveBox.Transcoding
 				FfmpegProcess.StartInfo.RedirectStandardError = true;
 
 				// Create the opusenc object
-				if (logger.IsInfoEnabled) logger.Info("opusenc " + Arguments);
+				logger.IfInfo("opusenc " + Arguments);
 				TranscodeProcess = new Process();
 				TranscodeProcess.StartInfo.FileName = "opusenc";
 				TranscodeProcess.StartInfo.Arguments = Arguments;
@@ -81,16 +82,16 @@ namespace WaveBox.Transcoding
 					}
 				}
 
-				if (logger.IsInfoEnabled) logger.Info("Waiting for processes to finish");
+				logger.IfInfo("Waiting for processes to finish");
 
 				// Block until done
 				TranscodeProcess.WaitForExit();
 
-				if (logger.IsInfoEnabled) logger.Info("Process finished");
+				logger.IfInfo("Process finished");
 			}
-			catch (Exception e) 
+			catch (Exception e)
 			{
-				if (logger.IsInfoEnabled) logger.Info("\t" + "Failed to start transcode process " + e);
+				logger.IfInfo("\t" + "Failed to start transcode process " + e);
 
 				try
 				{
@@ -108,7 +109,7 @@ namespace WaveBox.Transcoding
 
 				// Set the state
 				State = TranscodeState.Failed;
-				
+
 				// Inform the delegate
 				if ((object)TranscoderDelegate != null)
 				{
@@ -121,12 +122,12 @@ namespace WaveBox.Transcoding
 			if (TranscodeProcess != null)
 			{
 				int exitValue = TranscodeProcess.ExitCode;
-				if (logger.IsInfoEnabled) logger.Info("Exit value " + exitValue);
+				logger.IfInfo("Exit value " + exitValue);
 
 				if (exitValue == 0)
 				{
 					State = TranscodeState.Finished;
-					
+
 					if ((object)TranscoderDelegate != null)
 					{
 						TranscoderDelegate.TranscodeFinished(this);
@@ -135,7 +136,7 @@ namespace WaveBox.Transcoding
 				else
 				{
 					State = TranscodeState.Failed;
-					
+
 					if ((object)TranscoderDelegate != null)
 					{
 						TranscoderDelegate.TranscodeFailed(this);
@@ -146,7 +147,7 @@ namespace WaveBox.Transcoding
 
 		public override string Arguments
 		{
-			get 
+			get
 			{
 				string codec = "libopus";
 				string options = null;
@@ -176,27 +177,27 @@ namespace WaveBox.Transcoding
 				return options;
 			}
 		}
-		
+
 		public override uint? EstimatedBitrate
 		{
-			get 
-			{ 
+			get
+			{
 				uint? bitrate = null;
 				switch (Quality)
 				{
-					case (uint)TranscodeQuality.Low: 
+					case (uint)TranscodeQuality.Low:
 						bitrate = 64;
 						break;
-					case (uint)TranscodeQuality.Medium: 
-						bitrate = 96;	   
+					case (uint)TranscodeQuality.Medium:
+						bitrate = 96;
 						break;
-					case (uint)TranscodeQuality.High: 
+					case (uint)TranscodeQuality.High:
 						bitrate = 128;
 						break;
-					case (uint)TranscodeQuality.Extreme: 
+					case (uint)TranscodeQuality.Extreme:
 						bitrate = 160;
 						break;
-					default: 
+					default:
 						bitrate = Quality;
 						break;
 				}
@@ -204,7 +205,7 @@ namespace WaveBox.Transcoding
 				return bitrate;
 			}
 		}
-		
+
 		private string OpusencOptions(String codec, uint quality)
 		{
 			string theString = "--bitrate " + quality;

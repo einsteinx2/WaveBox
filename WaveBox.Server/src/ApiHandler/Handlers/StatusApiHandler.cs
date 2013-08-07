@@ -111,7 +111,7 @@ namespace WaveBox.ApiHandler.Handlers
 							// Update to the latest query log ID
 							statusCache.LastQueryId = queryLogId;
 
-							if (logger.IsInfoEnabled) logger.Info("Gathering extended status metrics from database");
+							logger.IfInfo("Gathering extended status metrics from database");
 
 							// Get count of artists
 							statusCache.Cache["artistCount"] = Injection.Kernel.Get<IArtistRepository>().CountArtists();
@@ -130,7 +130,7 @@ namespace WaveBox.ApiHandler.Handlers
 							// Get total video duration
 							statusCache.Cache["videoDuration"] = Injection.Kernel.Get<IVideoRepository>().TotalVideoDuration();
 
-							if (logger.IsInfoEnabled) logger.Info("Metric gathering complete, cached results!");
+							logger.IfInfo("Metric gathering complete, cached results!");
 						}
 
 						// Append cached status dictionary to status

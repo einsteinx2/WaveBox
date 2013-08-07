@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
-using WaveBox.Core.OperationQueue;
+using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
+using WaveBox.Core.OperationQueue;
 
 namespace WaveBox.Service.Services.Cron
 {
@@ -26,7 +27,7 @@ namespace WaveBox.Service.Services.Cron
 		private static long contentLength, totalBytesRead;
 
 		public static void Enqueue(PodcastEpisode p)
-		{ 
+		{
 			lock (listLock)
 			{
 				q.Add(p);
@@ -126,7 +127,7 @@ namespace WaveBox.Service.Services.Cron
 							{
 								File.Delete(q[index].FilePath);
 							}
-							if (logger.IsInfoEnabled) logger.Info("Download canceled");
+							logger.IfInfo("Download canceled");
 
 							// remove the item from the queue
 							Dequeue();
@@ -169,14 +170,14 @@ namespace WaveBox.Service.Services.Cron
 				{
 					// cancel the download
 					webClient.CancelAsync();
-					
+
 					// clean up any partially downloaded file
 					if (File.Exists(q[i].FilePath))
 					{
 						File.Delete(q[i].FilePath);
 					}
-					if (logger.IsInfoEnabled) logger.Info("Download canceled");
-					
+					logger.IfInfo("Download canceled");
+
 					// remove the item from the queue
 					Dequeue();
 				}
@@ -192,7 +193,7 @@ namespace WaveBox.Service.Services.Cron
 		{
 			var sw = new Stopwatch();
 			webClient = new WebClient();
-			webClient.DownloadProgressChanged += new DownloadProgressChangedEventHandler((sender, e) => 
+			webClient.DownloadProgressChanged += new DownloadProgressChangedEventHandler((sender, e) =>
 			{
 				if (contentLength == 0)
 				{
@@ -201,11 +202,11 @@ namespace WaveBox.Service.Services.Cron
 				totalBytesRead = e.BytesReceived;
 			});
 
-			webClient.DownloadFileCompleted += new System.ComponentModel.AsyncCompletedEventHandler((sender, e) => 
+			webClient.DownloadFileCompleted += new System.ComponentModel.AsyncCompletedEventHandler((sender, e) =>
 			{
 				ep.AddToDatabase();
 				sw.Stop();
-				if (logger.IsInfoEnabled) logger.Info("Finished downloading " + ep.Title + " [ " + sw.ElapsedMilliseconds / 1000 + ", " + ((double)totalBytesRead / (double)131072) / (sw.ElapsedMilliseconds / 1000) + "Mbps avg ]");
+				logger.IfInfo("Finished downloading " + ep.Title + " [ " + sw.ElapsedMilliseconds / 1000 + ", " + ((double)totalBytesRead / (double)131072) / (sw.ElapsedMilliseconds / 1000) + "Mbps avg ]");
 
 				if (DownloadQueue.Count > 0)
 				{
@@ -225,7 +226,7 @@ namespace WaveBox.Service.Services.Cron
 			ep.FilePath = Podcast.PodcastMediaDirectory + Path.DirectorySeparatorChar + pc.Title + Path.DirectorySeparatorChar + fn;
 
 			webClient.DownloadFileAsync(uri, ep.FilePath);
-			if (logger.IsInfoEnabled) logger.Info("Started downloading " + ep.Title);
+			logger.IfInfo("Started downloading " + ep.Title);
 			sw.Start();
 		}
 

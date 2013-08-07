@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using Ninject;
+using WaveBox.Core.Extensions;
 using WaveBox.Server;
 using WaveBox.Static;
 
@@ -41,7 +42,7 @@ namespace WaveBox.ApiHandler
 				{
 					// Discover and instantiate all available apiHandlers
 					IApiHandler instance = (IApiHandler)Activator.CreateInstance(t);
-					if (logger.IsInfoEnabled) logger.Info("Discovered API: " + instance.Name + " -> " + t);
+					logger.IfInfo("Discovered API: " + instance.Name + " -> " + t);
 					this.apiHandlers.Add(instance);
 				}
 			}

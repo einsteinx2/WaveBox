@@ -2,6 +2,7 @@ using System;
 using Newtonsoft.Json;
 using Ninject;
 using WaveBox.Core;
+using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
 using WaveBox.Service.Services.Http;
 using WaveBox.Static;
@@ -21,7 +22,7 @@ namespace WaveBox.ApiHandler.Handlers
 		{
 			try
 			{
-				logger.Info(String.Format("Authenticated user, generated new session: [user: {0}, key: {1}]", user.UserName, user.SessionId));
+				logger.IfInfo(String.Format("Authenticated user, generated new session: [user: {0}, key: {1}]", user.UserName, user.SessionId));
 
 				string json = JsonConvert.SerializeObject(new LoginResponse(null, user.SessionId), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 				processor.WriteJson(json);

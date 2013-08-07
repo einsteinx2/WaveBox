@@ -6,14 +6,15 @@ using System.IO;
 using System.Threading;
 using Newtonsoft.Json;
 using Ninject;
-using WaveBox.Core.Model;
-using WaveBox.Server.Extensions;
-using WaveBox.Static;
-using WaveBox.Service.Services.Http;
-using WaveBox.Transcoding;
-using WaveBox.Core.Model.Repository;
-using WaveBox.Core.ApiResponse;
 using WaveBox.Core;
+using WaveBox.Core.ApiResponse;
+using WaveBox.Core.Extensions;
+using WaveBox.Core.Model;
+using WaveBox.Core.Model.Repository;
+using WaveBox.Server.Extensions;
+using WaveBox.Service.Services.Http;
+using WaveBox.Static;
+using WaveBox.Transcoding;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -28,7 +29,7 @@ namespace WaveBox.ApiHandler.Handlers
 		/// </summary>
 		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
-			if (logger.IsInfoEnabled) logger.Info("Starting HLS transcoding sequence");
+			logger.IfInfo("Starting HLS transcoding sequence");
 
 			// Try to get the media item id
 			bool success = false;
@@ -52,7 +53,7 @@ namespace WaveBox.ApiHandler.Handlers
 				if (itemType == ItemType.Song)
 				{
 					item = Injection.Kernel.Get<ISongRepository>().SongForId(id);
-					if (logger.IsInfoEnabled) logger.Info("HLS transcoding for songs not currently supported");
+					logger.IfInfo("HLS transcoding for songs not currently supported");
 
 					// CURRENTLY DO NOT SUPPORT HLS STREAMING FOR SONGS
 					return;
@@ -60,7 +61,7 @@ namespace WaveBox.ApiHandler.Handlers
 				else if (itemType == ItemType.Video)
 				{
 					item = Injection.Kernel.Get<IVideoRepository>().VideoForId(id);
-					if (logger.IsInfoEnabled) logger.Info("Preparing video stream: " + item.FileName);
+					logger.IfInfo("Preparing video stream: " + item.FileName);
 				}
 
 				// Return an error if none exists
@@ -86,7 +87,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 
 				processor.WriteText(response, "application/x-mpegURL");
-				if (logger.IsInfoEnabled) logger.Info("Successfully HLS transcoded file!");
+				logger.IfInfo("Successfully HLS transcoded file!");
 			}
 			catch (Exception e)
 			{

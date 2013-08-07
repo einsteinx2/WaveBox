@@ -4,14 +4,15 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using Ninject;
-using WaveBox.Core.Model;
-using WaveBox.Static;
-using WaveBox.Service;
-using WaveBox.Service.Services;
-using WaveBox.Service.Services.Http;
-using WaveBox.Core.Model.Repository;
-using WaveBox.Core.ApiResponse;
 using WaveBox.Core;
+using WaveBox.Core.ApiResponse;
+using WaveBox.Core.Extensions;
+using WaveBox.Core.Model.Repository;
+using WaveBox.Core.Model;
+using WaveBox.Service.Services.Http;
+using WaveBox.Service.Services;
+using WaveBox.Service;
+using WaveBox.Static;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -128,7 +129,7 @@ namespace WaveBox.ApiHandler.Handlers
 									}
 									else
 									{
-										if (logger.IsInfoEnabled) logger.Info("Move: Invalid number of indices");
+										logger.IfInfo("Move: Invalid number of indices");
 										processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("Invalid number of indices for action 'move'", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 									}
 
@@ -136,7 +137,7 @@ namespace WaveBox.ApiHandler.Handlers
 							}
 							else
 							{
-								if (logger.IsInfoEnabled) logger.Info("Move: Missing 'index' parameter");
+								logger.IfInfo("Move: Missing 'index' parameter");
 								processor.WriteJson(JsonConvert.SerializeObject(new JukeboxResponse("Missing 'index' parameter for action 'move'", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 							}
 							break;

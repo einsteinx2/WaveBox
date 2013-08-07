@@ -4,11 +4,12 @@ using System.Linq;
 using System.Web;
 using Newtonsoft.Json;
 using Ninject;
+using WaveBox.Core;
+using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
+using WaveBox.Core.Model.Repository;
 using WaveBox.Service.Services.Http;
 using WaveBox.Static;
-using WaveBox.Core.Model.Repository;
-using WaveBox.Core;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -136,7 +137,7 @@ namespace WaveBox.ApiHandler.Handlers
 								{
 									int fromIndex = moveIndexes[i];
 									int toIndex = moveIndexes[i+1];
-									logger.Info("Calling move media item fromIndex: " + fromIndex + " toIndex: " + toIndex);
+									logger.IfInfo("Calling move media item fromIndex: " + fromIndex + " toIndex: " + toIndex);
 									playlist.MoveMediaItem(fromIndex, toIndex);
 								}
 								listOfMediaItems = playlist.ListOfMediaItems();

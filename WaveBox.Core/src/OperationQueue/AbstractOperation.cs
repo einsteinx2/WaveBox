@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using WaveBox.Core.Extensions;
 
 namespace WaveBox.Core.OperationQueue
 {
@@ -42,7 +43,7 @@ namespace WaveBox.Core.OperationQueue
 		{
 			state = DelayedOperationState.Running;
 
-			do 
+			do
 			{
 				isRestart = false;
 				Start();
@@ -64,7 +65,7 @@ namespace WaveBox.Core.OperationQueue
 			if (state == DelayedOperationState.Queued)
 			{
 				ResetWait();
-				if (logger.IsInfoEnabled) logger.Info("Extending wait period.");
+				logger.IfInfo("Extending wait period.");
 			}
 			else if (state == DelayedOperationState.Running)
 			{

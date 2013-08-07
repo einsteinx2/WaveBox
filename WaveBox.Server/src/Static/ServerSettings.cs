@@ -55,7 +55,7 @@ namespace WaveBox.Static
 
 		private void ParseSettings()
 		{
-			if (logger.IsInfoEnabled) logger.Info("Reading settings: " + SettingsPath());
+			logger.IfInfo("Reading settings: " + SettingsPath());
 
 			string configFile = "";
 			try
@@ -87,7 +87,7 @@ namespace WaveBox.Static
 			}
 			catch { }
 
-			if (logger.IsInfoEnabled) logger.Info("settings changed: " + settingsChanged);
+			logger.IfInfo("settings changed: " + settingsChanged);
 		}
 
 		public bool WriteSettings(string jsonString)
@@ -103,7 +103,7 @@ namespace WaveBox.Static
 				{
 					settingsModel.Port = (short)port;
 					settingsChanged = true;
-					if (logger.IsInfoEnabled) logger.Info("Setting 'port': " + settingsModel.Port);
+					logger.IfInfo("Setting 'port': " + settingsModel.Port);
 				}
 			}
 			catch { }
@@ -115,7 +115,7 @@ namespace WaveBox.Static
 				{
 					settingsModel.WsPort = (short)wsPort;
 					settingsChanged = true;
-					if (logger.IsInfoEnabled) logger.Info("Setting 'wsPort': " + settingsModel.WsPort);
+					logger.IfInfo("Setting 'wsPort': " + settingsModel.WsPort);
 				}
 			}
 			catch { }
@@ -127,7 +127,7 @@ namespace WaveBox.Static
 				{
 					settingsModel.Theme = themeTemp;
 					settingsChanged = true;
-					if (logger.IsInfoEnabled) logger.Info("Setting 'theme': " + settingsModel.Theme);
+					logger.IfInfo("Setting 'theme': " + settingsModel.Theme);
 				}
 			}
 			catch { }
@@ -137,11 +137,11 @@ namespace WaveBox.Static
 				if (json.mediaFolders != null)
 				{
 					List<string> mediaFoldersTemp = new List<string>();
-					if (logger.IsInfoEnabled) logger.Info("Setting 'mediaFolders':");
+					logger.IfInfo("Setting 'mediaFolders':");
 					foreach (string mediaFolderString in json.mediaFolders)
 					{
 						mediaFoldersTemp.Add(mediaFolderString);
-						if (logger.IsInfoEnabled) logger.Info("\t" + mediaFolderString);
+						logger.IfInfo("\t" + mediaFolderString);
 					}
 					settingsModel.MediaFolders = mediaFoldersTemp;
 					MediaFolders = PopulateMediaFolders();
@@ -157,7 +157,7 @@ namespace WaveBox.Static
 				{
 					settingsModel.PodcastFolder = podcastFolderTemp;
 					settingsChanged = true;
-					if (logger.IsInfoEnabled) logger.Info("Setting 'podcastFolder': " + settingsModel.PodcastFolder);
+					logger.IfInfo("Setting 'podcastFolder': " + settingsModel.PodcastFolder);
 				}
 			}
 			catch { }
@@ -169,7 +169,7 @@ namespace WaveBox.Static
 				{
 					settingsModel.PrettyJson = (bool)prettyJsonTemp;
 					settingsChanged = true;
-					if (logger.IsInfoEnabled) logger.Info("Setting 'prettyJson': " + settingsModel.PrettyJson);
+					logger.IfInfo("Setting 'prettyJson': " + settingsModel.PrettyJson);
 				}
 			}
 			catch { }
@@ -181,7 +181,7 @@ namespace WaveBox.Static
 				{
 					settingsModel.PodcastCheckInterval = (int)podcastCheckIntervalTemp;
 					settingsChanged = true;
-					if (logger.IsInfoEnabled) logger.Info("Setting 'podcastCheckInterval': " + settingsModel.PodcastCheckInterval);
+					logger.IfInfo("Setting 'podcastCheckInterval': " + settingsModel.PodcastCheckInterval);
 				}
 			}
 			catch { }
@@ -193,7 +193,7 @@ namespace WaveBox.Static
 				{
 					settingsModel.SessionTimeout = (int)sessionTimeoutTemp;
 					settingsChanged = true;
-					if (logger.IsInfoEnabled) logger.Info("Setting 'sessionTimeout': " + settingsModel.SessionTimeout);
+					logger.IfInfo("Setting 'sessionTimeout': " + settingsModel.SessionTimeout);
 				}
 			}
 			catch { }
@@ -203,11 +203,11 @@ namespace WaveBox.Static
 				if (json.folderArtNames != null)
 				{
 					List<string> folderArtNamesTemp = new List<string>();
-					if (logger.IsInfoEnabled) logger.Info("Setting 'folderArtNames': ");
+					logger.IfInfo("Setting 'folderArtNames': ");
 					foreach (string artName in json.folderArtNames)
 					{
 						folderArtNamesTemp.Add(artName);
-						if (logger.IsInfoEnabled) logger.Info("\t" + artName);
+						logger.IfInfo("\t" + artName);
 					}
 					settingsModel.FolderArtNames = folderArtNamesTemp;
 					settingsChanged = true;
@@ -224,7 +224,7 @@ namespace WaveBox.Static
 				{
 					settingsModel.CrashReportEnable = (bool)crashReportEnable;
 					settingsChanged = true;
-					if (logger.IsInfoEnabled) logger.Info("Setting 'crashReportEnable': " + settingsModel.CrashReportEnable);
+					logger.IfInfo("Setting 'crashReportEnable': " + settingsModel.CrashReportEnable);
 				}
 			}
 			catch { }
@@ -234,11 +234,11 @@ namespace WaveBox.Static
 				if (json.services != null)
 				{
 					List<string> servicesTemp = new List<string>();
-					if (logger.IsInfoEnabled) logger.Info("Setting 'services':");
+					logger.IfInfo("Setting 'services':");
 					foreach (string service in json.services)
 					{
 						servicesTemp.Add(service);
-						if (logger.IsInfoEnabled) logger.Info("\t" + service);
+						logger.IfInfo("\t" + service);
 					}
 					settingsModel.Services = servicesTemp;
 					settingsChanged = true;
@@ -345,7 +345,7 @@ namespace WaveBox.Static
 			{
 				try
 				{
-					if (logger.IsInfoEnabled) logger.Info("Setting file doesn't exist; Creating it : " + settingsFileName);
+					logger.IfInfo("Setting file doesn't exist; Creating it : " + settingsFileName);
 					StreamReader settingsTemplate = new StreamReader(SettingsTemplatePath());
 					StreamWriter settingsOut = new StreamWriter(SettingsPath());
 
@@ -382,7 +382,7 @@ namespace WaveBox.Static
 					}
 					else
 					{
-						if (logger.IsInfoEnabled) logger.Info("Media folder does not exist: " + mediaFolderString);
+						logger.IfInfo("Media folder does not exist: " + mediaFolderString);
 					}
 				}
 			}
