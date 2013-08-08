@@ -19,22 +19,12 @@ namespace WaveBox.ApiHandler.Handlers
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		private IHttpProcessor Processor { get; set; }
-		private UriWrapper Uri { get; set; }
-
-		/// <summary>
-		/// Constructor for FoldersApiHandler
-		/// </summary>
-		public FoldersApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
-		{
-			Processor = processor;
-			Uri = uri;
-		}
+		public string Name { get { return "folders"; } set { } }
 
 		/// <summary>
 		/// Process returns a JSON response list of folders
 		/// </summary>
-		public void Process()
+		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			// Generate return lists of folders, songs, videos
 			IList<Folder> listOfFolders = new List<Folder>();
@@ -46,9 +36,9 @@ namespace WaveBox.ApiHandler.Handlers
 			// Try to get the folder id
 			bool success = false;
 			int id = 0;
-			if (Uri.Parameters.ContainsKey("id"))
+			if (uri.Parameters.ContainsKey("id"))
 			{
-				success = Int32.TryParse(Uri.Parameters["id"], out id);
+				success = Int32.TryParse(uri.Parameters["id"], out id);
 			}
 
 			if (success)
@@ -57,7 +47,7 @@ namespace WaveBox.ApiHandler.Handlers
 				containingFolder = Injection.Kernel.Get<IFolderRepository>().FolderForId(id);
 				listOfFolders = containingFolder.ListOfSubFolders();
 
-				if (Uri.Parameters.ContainsKey("recursiveMedia") && Uri.Parameters["recursiveMedia"].IsTrue())
+				if (uri.Parameters.ContainsKey("recursiveMedia") && uri.Parameters["recursiveMedia"].IsTrue())
 				{
 					recursive = true;
 				}
@@ -69,7 +59,7 @@ namespace WaveBox.ApiHandler.Handlers
 			else
 			{
 				// No id parameter
-				if (Uri.Parameters.ContainsKey("mediaFolders") && Uri.Parameters["mediaFolders"].IsTrue())
+				if (uri.Parameters.ContainsKey("mediaFolders") && uri.Parameters["mediaFolders"].IsTrue())
 				{
 					// They asked for the media folders
 					listOfFolders = Injection.Kernel.Get<IFolderRepository>().MediaFolders();
@@ -85,7 +75,7 @@ namespace WaveBox.ApiHandler.Handlers
 			try
 			{
 				string json = JsonConvert.SerializeObject(new FoldersResponse(null, containingFolder, listOfFolders, listOfSongs, listOfVideos), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-				Processor.WriteJson(json);
+				processor.WriteJson(json);
 			}
 			catch (Exception e)
 			{

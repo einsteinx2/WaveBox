@@ -34,7 +34,7 @@ namespace WaveBox
 			{
 				if (authUrl == null)
 				{
-					CreateAuthUrl();
+					this.CreateAuthUrl();
 					return authUrl;
 				}
 				else
@@ -65,13 +65,13 @@ namespace WaveBox
 
 			if (sessionKey == null)
 			{
-				CreateAuthUrl();
-				if (logger.IsInfoEnabled) logger.Info(this.AuthUrl);
+				this.CreateAuthUrl();
+				logger.IfInfo(this.AuthUrl);
 			}
 			else if (sessionKey.Substring(0, 6) == "token:")
 			{
 				string token = sessionKey.Substring(6);
-				GetSessionKeyAndUpdateUser(token);
+				this.GetSessionKeyAndUpdateUser(token);
 			}
 			else
 			{
@@ -101,7 +101,8 @@ namespace WaveBox
 
 			// add the scrobble data to the parameter list
 			int limit = scrobbleType == LfmScrobbleType.NOWPLAYING ? 1 : scrobbles.Count > 100 ? 100 : scrobbles.Count;
-			long timestamp = Convert.ToInt64((DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds);
+
+			long timestamp = DateTime.Now.ToUniversalUnixTimestamp();
 
 			for (int i = 0; i < limit; i++)
 			{
@@ -125,10 +126,9 @@ namespace WaveBox
 				parameters.Add("method", "track.updateNowPlaying");
 				parameters.Add("duration", song.Duration.ToString());
 			}
-
-			// or if it's invalid, return without doing anything.
 			else
 			{
+				// or if it's invalid, return without doing anything.
 				return null;
 			}
 
@@ -187,7 +187,10 @@ namespace WaveBox
 				{
 					cmd += "&";
 				}
-				else firstKey = false;
+				else
+				{
+					firstKey = false;
+				}
 
 				cmd += string.Format("{0}={1}", enumerator.Current.Key, enumerator.Current.Value);
 			}
@@ -235,7 +238,7 @@ namespace WaveBox
 				sessionKey = jsonResponse.session.key.ToString();
 				sessionAuthenticated = true;
 				user.UpdateLastfmSession(sessionKey);
-				logger.Info ("[SCROBBLE] (" + user.UserName + ") Obtain last.fm session key: success");
+				logger.IfInfo("(" + user.UserName + ") Obtain last.fm session key: success");
 			}
 			else sessionAuthenticated = false;
 		}
@@ -264,19 +267,10 @@ namespace WaveBox
 			if (requestToken != null)
 			{
 				user.UpdateLastfmSession("token:" + requestToken);
-				logger.Info ("[SCROBBLE] (" + user.UserName + ") Obtain last.fm authentication request token: success");
+				logger.IfInfo("(" + user.UserName + ") Obtain last.fm authentication request token: success");
 			}
 
-			string url = "http://www.last.fm/api/auth/?" +
-			string.Format ("api_key={0}", apiKey) +
-			string.Format ("&token={0}", requestToken);
-
-			authUrl = url;
-		}
-
-		private static string DoGetRestRequest(string url)
-		{
-			return string.Empty;
+			this.authUrl = String.Format("http://www.last.fm/api/auth/?api_key={0}&token={1}", apiKey, requestToken);
 		}
 
 		/// <summary>

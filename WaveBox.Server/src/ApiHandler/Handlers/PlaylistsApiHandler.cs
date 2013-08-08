@@ -4,11 +4,12 @@ using System.Linq;
 using System.Web;
 using Newtonsoft.Json;
 using Ninject;
+using WaveBox.Core;
+using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
+using WaveBox.Core.Model.Repository;
 using WaveBox.Service.Services.Http;
 using WaveBox.Static;
-using WaveBox.Core.Model.Repository;
-using WaveBox.Core;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -16,22 +17,12 @@ namespace WaveBox.ApiHandler.Handlers
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		private IHttpProcessor Processor { get; set; }
-		private UriWrapper Uri { get; set; }
-
-		/// <summary>
-		/// Constructor for PlaylistsApiHandler
-		/// </summary>
-		public PlaylistsApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
-		{
-			Processor = processor;
-			Uri = uri;
-		}
+		public string Name { get { return "playlists"; } set { } }
 
 		/// <summary>
 		/// Process returns a JSON response list of playlists
 		/// </summary>
-		public void Process()
+		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			// Generate return lists of playlists, media items in them
 			string error = null;
@@ -41,16 +32,16 @@ namespace WaveBox.ApiHandler.Handlers
 			// Try to get the playlist id
 			bool success = false;
 			int id = 0;
-			if (Uri.Parameters.ContainsKey("id"))
+			if (uri.Parameters.ContainsKey("id"))
 			{
-				success = Int32.TryParse(Uri.Parameters["id"], out id);
+				success = Int32.TryParse(uri.Parameters["id"], out id);
 			}
 
 			// Try to get the action
 			string action = "list";
-			if (Uri.Parameters.ContainsKey("action"))
+			if (uri.Parameters.ContainsKey("action"))
 			{
-				action = Uri.Parameters["action"];
+				action = uri.Parameters["action"];
 			}
 
 			if (success)
@@ -67,7 +58,7 @@ namespace WaveBox.ApiHandler.Handlers
 					{
 						case "add":
 							// Try to get the itemIds to add them to the playlist if necessary
-							IList<int> itemIds = ParseItemIds();
+							IList<int> itemIds = this.ParseItemIds(uri);
 							if (itemIds.Count == 0)
 							{
 								error = "Missing item ids";
@@ -114,8 +105,8 @@ namespace WaveBox.ApiHandler.Handlers
 							playlist.DeletePlaylist();
 							break;
 						case "insert":
-							IList<int> insertItemIds = ParseItemIds();
-							IList<int> insertIndexes = ParseIndexes();
+							IList<int> insertItemIds = this.ParseItemIds(uri);
+							IList<int> insertIndexes = this.ParseIndexes(uri);
 							if (insertItemIds.Count == 0 || insertItemIds.Count != insertIndexes.Count)
 							{
 								error = "Incorrect number of items and indexes supplied";
@@ -135,7 +126,7 @@ namespace WaveBox.ApiHandler.Handlers
 							listOfMediaItems = playlist.ListOfMediaItems();
 							break;
 						case "move":
-							IList<int> moveIndexes = ParseIndexes();
+							IList<int> moveIndexes = this.ParseIndexes(uri);
 							if (moveIndexes.Count == 0 || moveIndexes.Count % 2 != 0)
 							{
 								error = "Incorrect number of indexes supplied";
@@ -146,14 +137,14 @@ namespace WaveBox.ApiHandler.Handlers
 								{
 									int fromIndex = moveIndexes[i];
 									int toIndex = moveIndexes[i+1];
-									logger.Info("Calling move media item fromIndex: " + fromIndex + " toIndex: " + toIndex);
+									logger.IfInfo("Calling move media item fromIndex: " + fromIndex + " toIndex: " + toIndex);
 									playlist.MoveMediaItem(fromIndex, toIndex);
 								}
 								listOfMediaItems = playlist.ListOfMediaItems();
 							}
 							break;
 						case "remove":
-							IList<int> removeIndexes = ParseIndexes();
+							IList<int> removeIndexes = this.ParseIndexes(uri);
 							if (removeIndexes.Count == 0)
 							{
 								error = "No indexes supplied";
@@ -177,9 +168,9 @@ namespace WaveBox.ApiHandler.Handlers
 			{
 				// Try to get the name
 				string name = null;
-				if (Uri.Parameters.ContainsKey("name"))
+				if (uri.Parameters.ContainsKey("name"))
 				{
-					name = HttpUtility.UrlDecode(Uri.Parameters["name"]);
+					name = HttpUtility.UrlDecode(uri.Parameters["name"]);
 				}
 
 				if (ReferenceEquals(name, null))
@@ -197,7 +188,7 @@ namespace WaveBox.ApiHandler.Handlers
 						playlist.CreatePlaylist();
 
 						// Try to get the itemIds to add them to the playlist if necessary
-						IList<int> itemIds = ParseItemIds();
+						IList<int> itemIds = this.ParseItemIds(uri);
 						if (itemIds.Count > 0)
 						{
 							playlist.AddMediaItems(itemIds);
@@ -222,7 +213,7 @@ namespace WaveBox.ApiHandler.Handlers
 			try
 			{
 				string json = JsonConvert.SerializeObject(new PlaylistsResponse(error, listOfPlaylists, listOfMediaItems), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-				Processor.WriteJson(json);
+				processor.WriteJson(json);
 			}
 			catch (Exception e)
 			{
@@ -230,13 +221,13 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 		}
 
-		private IList<int> ParseItemIds()
+		private IList<int> ParseItemIds(UriWrapper uri)
 		{
 			// Try to get the itemIds
 			IList<int> itemIds = new List<int>();
-			if (Uri.Parameters.ContainsKey("itemIds"))
+			if (uri.Parameters.ContainsKey("itemIds"))
 			{
-				string[] itemIdStrings = Uri.Parameters["itemIds"].Split(',');
+				string[] itemIdStrings = uri.Parameters["itemIds"].Split(',');
 
 				foreach (string itemIdString in itemIdStrings)
 				{
@@ -251,13 +242,13 @@ namespace WaveBox.ApiHandler.Handlers
 			return itemIds;
 		}
 
-		private IList<int> ParseIndexes()
+		private IList<int> ParseIndexes(UriWrapper uri)
 		{
 			// Try to get the itemIds
 			IList<int> itemIds = new List<int>();
-			if (Uri.Parameters.ContainsKey("indexes"))
+			if (uri.Parameters.ContainsKey("indexes"))
 			{
-				string[] itemIdStrings = Uri.Parameters["indexes"].Split(',');
+				string[] itemIdStrings = uri.Parameters["indexes"].Split(',');
 
 				foreach (string itemIdString in itemIdStrings)
 				{

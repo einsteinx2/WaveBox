@@ -22,38 +22,28 @@ namespace WaveBox.ApiHandler.Handlers
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		private IHttpProcessor Processor { get; set; }
-		private UriWrapper Uri { get; set; }
-
-		/// <summary>
-		/// Constructor for ArtApiHandler class
-		/// </summary>
-		public ArtApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
-		{
-			Processor = processor;
-			Uri = uri;
-		}
+		public string Name { get { return "art"; } set { } }
 
 		/// <summary>
 		/// Process returns a file stream containing album art
 		/// </summary>
-		public void Process()
+		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			// Check for the itemId
-			if (!Uri.Parameters.ContainsKey("id"))
+			if (!uri.Parameters.ContainsKey("id"))
 			{
-				Processor.WriteErrorHeader();
+				processor.WriteErrorHeader();
 				return;
 			}
 
 			// Convert to integer
 			int artId = Int32.MaxValue;
-			Int32.TryParse(Uri.Parameters["id"], out artId);
+			Int32.TryParse(uri.Parameters["id"], out artId);
 
 			// If art ID was invalid, write error header
 			if (artId == Int32.MaxValue)
 			{
-				Processor.WriteErrorHeader();
+				processor.WriteErrorHeader();
 				return;
 			}
 
@@ -64,15 +54,15 @@ namespace WaveBox.ApiHandler.Handlers
 			// If the stream could not be produced, return error
 			if ((object)stream == null)
 			{
-				Processor.WriteErrorHeader();
+				processor.WriteErrorHeader();
 				return;
 			}
 
 			// If art size requested...
-			if (Uri.Parameters.ContainsKey("size"))
+			if (uri.Parameters.ContainsKey("size"))
 			{
 				int size = Int32.MaxValue;
-				Int32.TryParse(Uri.Parameters["size"], out size);
+				Int32.TryParse(uri.Parameters["size"], out size);
 
 				// Parse size if valid
 				if (size != Int32.MaxValue)
@@ -106,9 +96,9 @@ namespace WaveBox.ApiHandler.Handlers
 			DateTime? lastModified = null;
 			if (!ReferenceEquals(art.LastModified, null))
 			{
-				lastModified = ((long)art.LastModified).ToDateTimeFromUnixTimestamp();
+				lastModified = ((long)art.LastModified).ToDateTime();
 			}
-			Processor.WriteFile(stream, 0, stream.Length, HttpHeader.MimeTypeForExtension(".jpg"), null, true, lastModified);
+			processor.WriteFile(stream, 0, stream.Length, HttpHeader.MimeTypeForExtension(".jpg"), null, true, lastModified);
 
 			// Close the file so we don't get sharing violations on future accesses
 			stream.Close();
@@ -247,7 +237,7 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 			catch (TagLib.CorruptFileException e)
 			{
-				if (logger.IsInfoEnabled) logger.Info(song.FileName + " has a corrupt tag so can't return the art. " + e);
+				logger.IfInfo(song.FileName + " has a corrupt tag so can't return the art. " + e);
 			}
 			catch (Exception e)
 			{

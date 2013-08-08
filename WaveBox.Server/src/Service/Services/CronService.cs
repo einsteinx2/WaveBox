@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Ninject;
+using WaveBox.Core.Extensions;
 using WaveBox.Service.Services.Cron;
 using WaveBox.Static;
 
@@ -26,7 +27,7 @@ namespace WaveBox.Service.Services
 		{
 			// FOR NOW: Use the pre-existing delayed operation queues.  Once more work has been done, cron will
 			// run a unified timer and spin each of these off as needed
-			if (logger.IsInfoEnabled) logger.Info("Scheduling and starting all cronjobs...");
+			logger.IfInfo("Scheduling and starting all cronjobs...");
 
 			// Start podcast download queue
 			DownloadQueue.FeedChecks.queueOperation(new FeedCheckOperation(0));
@@ -36,7 +37,7 @@ namespace WaveBox.Service.Services
 			UserPurge.Queue.queueOperation(new UserPurgeOperation(0));
 			UserPurge.Queue.startQueue();
 
-			if (logger.IsInfoEnabled) logger.Info("All cronjobs started!");
+			logger.IfInfo("All cronjobs started!");
 
 			return true;
 		}

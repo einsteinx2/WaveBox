@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using WaveBox.Core.Extensions;
 using WaveBox.Service.Services;
 
 namespace WaveBox.Service
@@ -24,14 +25,14 @@ namespace WaveBox.Service
 			// Check if service is disabled
 			if (name[0] == '!')
 			{
-				if (logger.IsInfoEnabled) logger.Info("Skipping disabled service: " + name);
+				logger.IfInfo("Skipping disabled service: " + name);
 				return true;
 			}
 
 			// Check if service is already present in list
 			if (Services.Any(x => x.Name == name))
 			{
-				if (logger.IsInfoEnabled) logger.Info("Skipping duplicate service: " + name);
+				logger.IfInfo("Skipping duplicate service: " + name);
 				return false;
 			}
 
@@ -86,7 +87,7 @@ namespace WaveBox.Service
 		/// </summary>
 		public static bool Clear()
 		{
-			if (logger.IsInfoEnabled) logger.Info("Clearing all registered services...");
+			logger.IfInfo("Clearing all registered services...");
 			Services.Clear();
 
 			return true;
@@ -138,7 +139,7 @@ namespace WaveBox.Service
 		/// </summary>
 		public static bool StartAll()
 		{
-			if (logger.IsInfoEnabled) logger.Info("Starting all registered services...");
+			logger.IfInfo("Starting all registered services...");
 			bool success = true;
 
 			// Add all required services
@@ -162,7 +163,7 @@ namespace WaveBox.Service
 
 			if (success)
 			{
-				if (logger.IsInfoEnabled) logger.Info("All registered services started!");
+				logger.IfInfo("All registered services started!");
 			}
 			else
 			{
@@ -177,7 +178,7 @@ namespace WaveBox.Service
 		/// </summary>
 		public static bool StopAll()
 		{
-			if (logger.IsInfoEnabled) logger.Info("Stopping all registered services...");
+			logger.IfInfo("Stopping all registered services...");
 			bool success = true;
 
 			// Stop all services
@@ -192,7 +193,7 @@ namespace WaveBox.Service
 
 			if (success)
 			{
-				if (logger.IsInfoEnabled) logger.Info("All registered services stopped!");
+				logger.IfInfo("All registered services stopped!");
 			}
 			else
 			{
@@ -217,7 +218,7 @@ namespace WaveBox.Service
 			// Check if it's already running
 			if (service.Running)
 			{
-				if (logger.IsInfoEnabled) logger.Info("  - Already running: " + service.Name);
+				logger.IfInfo("  - Already running: " + service.Name);
 				return true;
 			}
 
@@ -228,7 +229,7 @@ namespace WaveBox.Service
 				{
 					output += " *";
 				}
-				if (logger.IsInfoEnabled) logger.Info(output);
+				logger.IfInfo(output);
 				service.Running = true;
 				success = true;
 			}
@@ -262,13 +263,13 @@ namespace WaveBox.Service
 			// Check if it's already stopped
 			if (!service.Running)
 			{
-				if (logger.IsInfoEnabled) logger.Info("  - Already stopped: " + service.Name);
+				logger.IfInfo("  - Already stopped: " + service.Name);
 				return true;
 			}
 
 			if (service.Stop())
 			{
-				if (logger.IsInfoEnabled) logger.Info("  - Stopped: " + service.Name);
+				logger.IfInfo("  - Stopped: " + service.Name);
 				service.Running = false;
 				success = true;
 			}

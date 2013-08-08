@@ -4,10 +4,11 @@ using System.Net;
 using System.Linq;
 using System.Net.Sockets;
 using Cirrious.MvvmCross.Plugins.Sqlite;
-using WaveBox.Service;
-using WaveBox.Static;
 using Ninject;
 using WaveBox.Core;
+using WaveBox.Core.Extensions;
+using WaveBox.Service;
+using WaveBox.Static;
 
 namespace WaveBox.Service.Services
 {
@@ -85,14 +86,14 @@ namespace WaveBox.Service.Services
 			if ((object)serverUrl != null)
 			{
 				// Compose the registration request URL
-				string urlString = "http://register.wavebox.es" + 
-					"?host=" + Uri.EscapeUriString(serverUrl) + 
-					"&serverId=" + Uri.EscapeUriString(serverGuid) + 
-					"&port=" + Injection.Kernel.Get<IServerSettings>().Port + 
-					"&isSecure=0" + 
+				string urlString = "http://register.wavebox.es" +
+					"?host=" + Uri.EscapeUriString(serverUrl) +
+					"&serverId=" + Uri.EscapeUriString(serverGuid) +
+					"&port=" + Injection.Kernel.Get<IServerSettings>().Port +
+					"&isSecure=0" +
 					"&localIp=" + LocalIPAddress().ToString();
 
-				if (logger.IsInfoEnabled) logger.Info("Registering URL: " + urlString);
+				logger.IfInfo("Registering URL: " + urlString);
 
 				// Perform registration with registration server
 				WebClient client = new WebClient();

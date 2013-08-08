@@ -11,12 +11,12 @@ using System.Threading.Tasks;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using Ninject;
 using TagLib;
+using WaveBox.Core;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
+using WaveBox.Core.Model.Repository;
 using WaveBox.Core.OperationQueue;
 using WaveBox.Static;
-using WaveBox.Core.Model.Repository;
-using WaveBox.Core;
 
 namespace WaveBox.FolderScanning
 {
@@ -24,7 +24,7 @@ namespace WaveBox.FolderScanning
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public override string OperationType { get { return String.Format ("FolderScanOperation: {0}", FolderPath); } }
+		public override string OperationType { get { return String.Format("FolderScanOperation: {0}", FolderPath); } }
 
 		private string folderPath;
 		public string FolderPath { get { return folderPath; } }
@@ -44,15 +44,15 @@ namespace WaveBox.FolderScanning
 		{
 			this.ProcessFolder(FolderPath);
 
-			if (logger.IsInfoEnabled) logger.Info("---------------- FOLDER SCAN ----------------");
-			if (logger.IsInfoEnabled) logger.Info("folders inserted: " + testNumberOfFoldersInserted);
-			if (logger.IsInfoEnabled) logger.Info("folder object create time: " + testFolderObjCreateTime.ElapsedMilliseconds + "ms");
-			if (logger.IsInfoEnabled) logger.Info("get directories time: " + testGetDirectoriesTime.ElapsedMilliseconds + "ms");
-			if (logger.IsInfoEnabled) logger.Info("media file needs updating time: " + testMediaItemNeedsUpdatingTime.ElapsedMilliseconds + "ms");
-			if (logger.IsInfoEnabled) logger.Info("extension valid check time: " + testIsExtensionValidTime.ElapsedMilliseconds + "ms");
+			logger.IfInfo("---------------- FOLDER SCAN ----------------");
+			logger.IfInfo("folders inserted: " + testNumberOfFoldersInserted);
+			logger.IfInfo("folder object create time: " + testFolderObjCreateTime.ElapsedMilliseconds + "ms");
+			logger.IfInfo("get directories time: " + testGetDirectoriesTime.ElapsedMilliseconds + "ms");
+			logger.IfInfo("media file needs updating time: " + testMediaItemNeedsUpdatingTime.ElapsedMilliseconds + "ms");
+			logger.IfInfo("extension valid check time: " + testIsExtensionValidTime.ElapsedMilliseconds + "ms");
 			long total = testFolderObjCreateTime.ElapsedMilliseconds + testGetDirectoriesTime.ElapsedMilliseconds + testMediaItemNeedsUpdatingTime.ElapsedMilliseconds + testIsExtensionValidTime.ElapsedMilliseconds;
-			if (logger.IsInfoEnabled) logger.Info("total: " + total + "ms = " + total / 1000 + "s");
-			if (logger.IsInfoEnabled) logger.Info("---------------------------------------------");
+			logger.IfInfo("total: " + total + "ms = " + total / 1000 + "s");
+			logger.IfInfo("---------------------------------------------");
 		}
 
 		public void ProcessFolder(int folderId)
@@ -162,7 +162,7 @@ namespace WaveBox.FolderScanning
 
 					if (needsUpdating)
 					{
-						if (logger.IsInfoEnabled) logger.Info("Updating: " + file);
+						logger.IfInfo("Updating: " + file);
 
 						TagLib.File f = null;
 						try
@@ -182,7 +182,7 @@ namespace WaveBox.FolderScanning
 						if (f == null)
 						{
 							// Must be something not supported by TagLib-Sharp
-							if (logger.IsInfoEnabled) logger.Info(file + " is not supported by taglib and will not be inserted.");
+							logger.IfInfo(file + " is not supported by taglib and will not be inserted.");
 						}
 						else
 						{
@@ -230,7 +230,7 @@ namespace WaveBox.FolderScanning
 
 						if ((object)oldArtId == null)
 						{
-							if (logger.IsInfoEnabled) logger.Info("Adding new art for folderId: " + folderId);
+							logger.IfInfo("Adding new art for folderId: " + folderId);
 
 							// Insert the relationship
 							Injection.Kernel.Get<IArtRepository>().UpdateArtItemRelationship(newArtId, folder.FolderId, true);
@@ -243,7 +243,7 @@ namespace WaveBox.FolderScanning
 							if ((object)oldArt.FilePath == null)
 							{
 								// This was embedded tag art, so only update the folder's relationship
-								if (logger.IsInfoEnabled) logger.Info(String.Format("It was embedded art, {0}, newArtId: {1}, folderId: {2}", Injection.Kernel.Get<IArtRepository>().UpdateArtItemRelationship(newArtId, folder.FolderId, true), newArtId, folder.FolderId));
+								logger.IfInfo(String.Format("It was embedded art, {0}, newArtId: {1}, folderId: {2}", Injection.Kernel.Get<IArtRepository>().UpdateArtItemRelationship(newArtId, folder.FolderId, true), newArtId, folder.FolderId));
 							}
 							else
 							{
@@ -260,12 +260,12 @@ namespace WaveBox.FolderScanning
 						{
 							if (m.ArtId == null)
 							{
-								if (logger.IsInfoEnabled) logger.Info("Updating art id for item " + m.ItemId + ". (" + (m.ArtId == null ? "null" : m.ArtId.ToString()) + " -> " + newArtId + ")");
+								logger.IfInfo("Updating art id for item " + m.ItemId + ". (" + (m.ArtId == null ? "null" : m.ArtId.ToString()) + " -> " + newArtId + ")");
 								Injection.Kernel.Get<IArtRepository>().UpdateArtItemRelationship(newArtId, m.ItemId, false);
 							}
 						}
 
-						if (logger.IsInfoEnabled) logger.Info("Updating art for folderId: " + folderId);
+						logger.IfInfo("Updating art for folderId: " + folderId);
 					}
 				}
 			}
@@ -338,7 +338,7 @@ namespace WaveBox.FolderScanning
 
 			if (song.FileType == FileType.Unknown)
 			{
-				if (logger.IsInfoEnabled) logger.Info("\"" + filePath + "\" Unknown file type: " + file.Properties.Description);
+				logger.IfInfo("\"" + filePath + "\" Unknown file type: " + file.Properties.Description);
 			}
 
 			try
@@ -452,7 +452,7 @@ namespace WaveBox.FolderScanning
 
 			// compute the hash of the file stream
 			Art art = new Art();
-			art.Md5Hash = CalcMd5Hash(fs);
+			art.Md5Hash = fs.MD5();
 			art.FileSize = fs.Length;
 			art.LastModified = System.IO.File.GetLastWriteTime(fs.Name).ToUniversalUnixTimestamp();
 			art.ArtId = Injection.Kernel.Get<IArtRepository>().ArtIdForMd5(art.Md5Hash);
@@ -478,7 +478,7 @@ namespace WaveBox.FolderScanning
 			if (file.Tag.Pictures.Length > 0)
 			{
 				byte[] data = file.Tag.Pictures[0].Data.Data;
-				art.Md5Hash = CalcMd5Hash(data);
+				art.Md5Hash = data.MD5();
 				art.FileSize = data.Length;
 				art.LastModified = System.IO.File.GetLastWriteTime(file.Name).ToUniversalUnixTimestamp();
 
@@ -494,53 +494,6 @@ namespace WaveBox.FolderScanning
 			file.Dispose();
 
 			return art;
-		}
-
-		static string CalcMd5Hash(Stream input)
-		{
-			using (MD5 md5 = MD5.Create())
-			{
-				// Convert the input string to a byte array and compute the hash.
-				byte[] data = md5.ComputeHash(input);
-
-				// Create a new Stringbuilder to collect the bytes
-				// and create a string.
-				StringBuilder sBuilder = new StringBuilder();
-
-				// Loop through each byte of the hashed data
-				// and format each one as a hexadecimal string.
-				for (int i = 0; i < data.Length; i++)
-				{
-					sBuilder.Append(data[i].ToString("x2"));
-				}
-
-				// Return the hexadecimal string.
-				return sBuilder.ToString();
-			}
-		}
-
-		// Based off of example at http://msdn.microsoft.com/en-us/library/s02tk69a.aspx
-		static string CalcMd5Hash(byte[] input)
-		{
-			using (MD5 md5 = MD5.Create())
-			{
-				// Convert the input string to a byte array and compute the hash.
-				byte[] data = md5.ComputeHash(input);
-
-				// Create a new Stringbuilder to collect the bytes
-				// and create a string.
-				StringBuilder sBuilder = new StringBuilder();
-
-				// Loop through each byte of the hashed data
-				// and format each one as a hexadecimal string.
-				for (int i = 0; i < data.Length; i++)
-				{
-					sBuilder.Append(data[i].ToString("x2"));
-				}
-
-				// Return the hexadecimal string.
-				return sBuilder.ToString();
-			}
 		}
 
 		private bool FileNeedsUpdating(string filePath, int? folderId, out bool isNew, out int? itemId)
@@ -658,7 +611,7 @@ namespace WaveBox.FolderScanning
 
 			if (video.FileType == FileType.Unknown)
 			{
-				if (logger.IsInfoEnabled) logger.Info("\"" + filePath + "\" Unknown file type: " + file.Properties.Description);
+				logger.IfInfo("\"" + filePath + "\" Unknown file type: " + file.Properties.Description);
 			}
 
 			video.Width = file.Properties.VideoWidth;

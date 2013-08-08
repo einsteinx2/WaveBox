@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using WaveBox.ApiHandler;
-using WaveBox.Core.Model;
-using WaveBox.Static;
-using WaveBox.Service.Services.Http;
 using WaveBox.Core.ApiResponse;
+using WaveBox.Core.Model;
+using WaveBox.Core.Extensions;
+using WaveBox.Service.Services.Http;
+using WaveBox.Static;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -15,46 +16,34 @@ namespace WaveBox.ApiHandler.Handlers
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		private IHttpProcessor Processor { get; set; }
-		private UriWrapper Uri { get; set; }
-		private User User { get; set; }
-
-		/// <summary>
-		/// Constructor for ScrobbleApiHandler class
-		/// </summary>
-		public ScrobbleApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
-		{
-			Processor = processor;
-			Uri = uri;
-			User = user;
-		}
+		public string Name { get { return "scrobble"; } set { } }
 
 		/// <summary>
 		/// Process a Last.fm API request
 		/// </summary>
-		public void Process()
+		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			// Create Last.fm object for this user
-			Lastfm lfm = new Lastfm(User);
+			Lastfm lfm = new Lastfm(user);
 
 			// Pull URL parameters for Last.fm integration
 			string action = null;
 			string eve = null;
 
-			Uri.Parameters.TryGetValue("action", out action);
-			Uri.Parameters.TryGetValue("event", out eve);
+			uri.Parameters.TryGetValue("action", out action);
+			uri.Parameters.TryGetValue("event", out eve);
 
 			if (action == null || action == "auth")
 			{
 				// If not authenticated, pass back authorization URL
 				if (!lfm.SessionAuthenticated)
 				{
-					Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse(null, lfm.AuthUrl)));
+					processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse(null, lfm.AuthUrl)));
 				}
 				else
 				{
 					// Else, already authenticated
-					Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMAlreadyAuthenticated")));
+					processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMAlreadyAuthenticated")));
 				}
 				return;
 			}
@@ -62,9 +51,9 @@ namespace WaveBox.ApiHandler.Handlers
 			// If Last.fm is not authenticated, provide an authorization URL
 			if (!lfm.SessionAuthenticated)
 			{
-				if (logger.IsInfoEnabled) logger.Info("You must authenticate before you can scrobble.");
+				logger.IfInfo("You must authenticate before you can scrobble.");
 
-				Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMNotAuthenticated", lfm.AuthUrl)));
+				processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMNotAuthenticated", lfm.AuthUrl)));
 				return;
 			}
 
@@ -77,7 +66,7 @@ namespace WaveBox.ApiHandler.Handlers
 			// On invalid scrobble type, return error JSON
 			if (scrobbleType == LfmScrobbleType.INVALID)
 			{
-				Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMInvalidScrobbleType")));
+				processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMInvalidScrobbleType")));
 				return;
 			}
 			// On now playing scrobble type
@@ -85,16 +74,16 @@ namespace WaveBox.ApiHandler.Handlers
 			{
 				// Ensure ID specified for scrobble
 				int id = Int32.MaxValue;
-				if (!Uri.Parameters.ContainsKey("id"))
+				if (!uri.Parameters.ContainsKey("id"))
 				{
-					Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMNoIdSpecifiedForNowPlaying")));
+					processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMNoIdSpecifiedForNowPlaying")));
 					return;
 				}
 
 				// Try to parse a valid ID
 				bool getIdSuccess = false;
 				string idTemp;
-				if (!Uri.Parameters.TryGetValue("id", out idTemp))
+				if (!uri.Parameters.TryGetValue("id", out idTemp))
 				{
 				   getIdSuccess = false;
 				}
@@ -110,7 +99,7 @@ namespace WaveBox.ApiHandler.Handlers
 				// On failure, return invalid ID error
 				if (!getIdSuccess)
 				{
-					Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMInvalidIdSpecifiedForNowPlaying")));
+					processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMInvalidIdSpecifiedForNowPlaying")));
 					return;
 				}
 
@@ -124,7 +113,7 @@ namespace WaveBox.ApiHandler.Handlers
 				// On null event, return error JSON
 				if (eve == null)
 				{
-					Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMNoEventSpecifiedForScrobble")));
+					processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMNoEventSpecifiedForScrobble")));
 					return;
 				}
 
@@ -132,7 +121,7 @@ namespace WaveBox.ApiHandler.Handlers
 				string[] input = eve.Split(',');
 				if ((input.Length % 2) != 0)
 				{
-					Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMInvalidInput")));
+					processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMInvalidInput")));
 					return;
 				}
 
@@ -172,7 +161,7 @@ namespace WaveBox.ApiHandler.Handlers
 				// Write blank scrobble response
 				try
 				{
-					Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse()));
+					processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse()));
 				}
 				catch (Exception e)
 				{
@@ -185,7 +174,7 @@ namespace WaveBox.ApiHandler.Handlers
 			{
 				try
 				{
-					Processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse(string.Format("LFM{0}: {1}", resp.error, resp.message))));
+					processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse(string.Format("LFM{0}: {1}", resp.error, resp.message))));
 				}
 				catch (Exception e)
 				{

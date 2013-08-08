@@ -294,7 +294,7 @@ namespace WaveBox.Core.Model
 				// delete the items at the indicated indices
 				foreach (int index in indices)
 				{
-					logger.Info("Deleting row at ItemPosition: " + index);
+					logger.IfInfo("Deleting row at ItemPosition: " + index);
 					conn.ExecuteLogged("DELETE FROM PlaylistItem WHERE PlaylistId = ? AND ItemPosition = ?", PlaylistId, index);
 				}
 
@@ -334,7 +334,7 @@ namespace WaveBox.Core.Model
 				return;
 			}
 
-			logger.Info("Moving media item");
+			logger.IfInfo("Moving media item");
 
 			ISQLiteConnection conn = null;
 			try
@@ -351,7 +351,7 @@ namespace WaveBox.Core.Model
 					// Do this as a reversed loop because a single update statement can have a constraint violation
 					for (int position = fromIndex - 1; position >= toIndex; position--)
 					{
-						logger.Info("Updating position " + position + " to " + (position + 1));
+						logger.IfInfo("Updating position " + position + " to " + (position + 1));
 						conn.ExecuteLogged("UPDATE PlaylistItem SET ItemPosition = ItemPosition + 1 WHERE PlaylistId = ? AND ItemPosition = ?", PlaylistId, position);
 					}
 					// conditional rollback here
@@ -361,7 +361,7 @@ namespace WaveBox.Core.Model
 					// Do this as a reversed loop because a single update statement can have a constraint violation
 					for (int position = fromIndex + 1; position <= toIndex; position++)
 					{
-						logger.Info("Updating position " + position + " to " + (position + 1));
+						logger.IfInfo("Updating position " + position + " to " + (position + 1));
 						conn.ExecuteLogged("UPDATE PlaylistItem SET ItemPosition = ItemPosition - 1 WHERE PlaylistId = ? AND ItemPosition = ?", PlaylistId, position);
 					}
 					// conditional rollback here
@@ -454,11 +454,11 @@ namespace WaveBox.Core.Model
 			IList<IMediaItem> items = new List<IMediaItem>();
 			foreach (int itemId in itemIds)
 			{
-				logger.Info("Checking item id " + itemId);
+				logger.IfInfo("Checking item id " + itemId);
 				IMediaItem item = Injection.Kernel.Get<IMediaItemRepository>().MediaItemForId(itemId);
 				if (!ReferenceEquals(item, null))
 				{
-					logger.Info("Found item " + item);
+					logger.IfInfo("Found item " + item);
 					items.Add(item);
 				}
 			}
@@ -492,7 +492,7 @@ namespace WaveBox.Core.Model
 					conn.BeginTransaction();
 					for (int position = (int)PlaylistCount - 1; position >= index; position--)
 					{
-						logger.Info("Updating position " + position + " to " + (position + 1));
+						logger.IfInfo("Updating position " + position + " to " + (position + 1));
 						conn.ExecuteLogged("UPDATE PlaylistItem SET ItemPosition = ItemPosition + 1 WHERE PlaylistId = ? AND ItemPosition = ?", PlaylistId, position);
 					}
 

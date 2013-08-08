@@ -1,10 +1,11 @@
 using System;
 using Newtonsoft.Json;
 using Ninject;
+using WaveBox.Core;
+using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
 using WaveBox.Service.Services.Http;
 using WaveBox.Static;
-using WaveBox.Core;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -12,31 +13,19 @@ namespace WaveBox.ApiHandler.Handlers
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		private IHttpProcessor Processor { get; set; }
-		private UriWrapper Uri { get; set; }
-		private User User { get; set; }
-
-		/// <summary>
-		/// Constructor for LoginApiHandler
-		/// </summary>
-		public LoginApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
-		{
-			Processor = processor;
-			Uri = uri;
-			User = user;
-		}
+		public string Name { get { return "login"; } set { } }
 
 		/// <summary>
 		/// Process returns a new session key for this user upon successful login
 		/// <summary>
-		public void Process()
+		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			try
 			{
-				logger.Info(String.Format("Authenticated user, generated new session: [user: {0}, key: {1}]", User.UserName, User.SessionId));
+				logger.IfInfo(String.Format("Authenticated user, generated new session: [user: {0}, key: {1}]", user.UserName, user.SessionId));
 
-				string json = JsonConvert.SerializeObject(new LoginResponse(null, User.SessionId), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-				Processor.WriteJson(json);
+				string json = JsonConvert.SerializeObject(new LoginResponse(null, user.SessionId), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+				processor.WriteJson(json);
 			}
 			catch (Exception e)
 			{

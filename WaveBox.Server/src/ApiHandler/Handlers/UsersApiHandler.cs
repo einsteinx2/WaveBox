@@ -17,36 +17,24 @@ namespace WaveBox.ApiHandler.Handlers
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		private IHttpProcessor Processor { get; set; }
-		private UriWrapper Uri { get; set; }
-		private User User { get; set; }
-
-		/// <summary>
-		/// Constructors for UsersApiHandler
-		/// </summary>
-		public UsersApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
-		{
-			Processor = processor;
-			Uri = uri;
-			User = user;
-		}
+		public string Name { get { return "users"; } set { } }
 
 		/// <summary>
 		/// Process allows the modification of users and their properties
 		/// </summary>
-		public void Process()
+		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			// Return list of users to be passed as JSON
 			IList<User> listOfUsers = new List<User>();
 
 			// See if we need to make a test user
-			if (Uri.Parameters.ContainsKey("testUser") && Uri.Parameters["testUser"].IsTrue())
+			if (uri.Parameters.ContainsKey("testUser") && uri.Parameters["testUser"].IsTrue())
 			{
 				bool success = false;
 				int durationSeconds = 0;
-				if (Uri.Parameters.ContainsKey("durationSeconds"))
+				if (uri.Parameters.ContainsKey("durationSeconds"))
 				{
-					success = Int32.TryParse(Uri.Parameters["durationSeconds"], out durationSeconds);
+					success = Int32.TryParse(uri.Parameters["durationSeconds"], out durationSeconds);
 				}
 
 				// Create a test user and reply with the account info
@@ -57,7 +45,7 @@ namespace WaveBox.ApiHandler.Handlers
 					try
 					{
 						string json = JsonConvert.SerializeObject(new UsersResponse(null, listOfUsers), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-						Processor.WriteJson(json);
+						processor.WriteJson(json);
 					}
 					catch (Exception e)
 					{
@@ -69,7 +57,7 @@ namespace WaveBox.ApiHandler.Handlers
 					try
 					{
 						string json = JsonConvert.SerializeObject(new UsersResponse("Couldn't create user", listOfUsers), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-						Processor.WriteJson(json);
+						processor.WriteJson(json);
 					}
 					catch (Exception e)
 					{
@@ -78,19 +66,19 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 			}
 			// See if we need to manage users
-			else if (Uri.Parameters.ContainsKey("action"))
+			else if (uri.Parameters.ContainsKey("action"))
 			{
 				// killSession - remove a session by rowId
-				if (Uri.Parameters["action"] == "killSession")
+				if (uri.Parameters["action"] == "killSession")
 				{
 					// Try to pull rowId from parameters for session management
 					int rowId = 0;
-					if (!Uri.Parameters.ContainsKey("rowId"))
+					if (!uri.Parameters.ContainsKey("rowId"))
 					{
 						try
 						{
 							string json = JsonConvert.SerializeObject(new UsersResponse("Missing parameter 'rowId' for action 'killSession'", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-							Processor.WriteJson(json);
+							processor.WriteJson(json);
 						}
 						catch (Exception e)
 						{
@@ -99,12 +87,12 @@ namespace WaveBox.ApiHandler.Handlers
 					}
 
 					// Try to parse rowId integer
-					if (!Int32.TryParse(Uri.Parameters["rowId"], out rowId))
+					if (!Int32.TryParse(uri.Parameters["rowId"], out rowId))
 					{
 						try
 						{
 							string json = JsonConvert.SerializeObject(new UsersResponse("Invalid integer for 'rowId' for action 'killSession'", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-							Processor.WriteJson(json);
+							processor.WriteJson(json);
 						}
 						catch (Exception e)
 						{
@@ -123,7 +111,7 @@ namespace WaveBox.ApiHandler.Handlers
 					try
 					{
 						string json = JsonConvert.SerializeObject(new UsersResponse(null, listOfUsers), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-						Processor.WriteJson(json);
+						processor.WriteJson(json);
 					}
 					catch (Exception e)
 					{
@@ -135,8 +123,8 @@ namespace WaveBox.ApiHandler.Handlers
 					// Invalid action
 					try
 					{
-						string json = JsonConvert.SerializeObject(new UsersResponse("Invalid action '" + Uri.Parameters["action"] + "'", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-						Processor.WriteJson(json);
+						string json = JsonConvert.SerializeObject(new UsersResponse("Invalid action '" + uri.Parameters["action"] + "'", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+						processor.WriteJson(json);
 					}
 					catch (Exception e)
 					{
@@ -150,16 +138,16 @@ namespace WaveBox.ApiHandler.Handlers
 				// Try to get a user ID
 				bool success = false;
 				int id = 0;
-				if (Uri.Parameters.ContainsKey("id"))
+				if (uri.Parameters.ContainsKey("id"))
 				{
-					success = Int32.TryParse(Uri.Parameters["id"], out id);
+					success = Int32.TryParse(uri.Parameters["id"], out id);
 				}
 
 				// On valid key, return a specific user, and their attributes
 				if (success)
 				{
-					User user = Injection.Kernel.Get<IUserRepository>().UserForId(id);
-					listOfUsers.Add(user);
+					User oneUser = Injection.Kernel.Get<IUserRepository>().UserForId(id);
+					listOfUsers.Add(oneUser);
 				}
 				else
 				{
@@ -170,7 +158,7 @@ namespace WaveBox.ApiHandler.Handlers
 				try
 				{
 					string json = JsonConvert.SerializeObject(new UsersResponse(null, listOfUsers), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-					Processor.WriteJson(json);
+					processor.WriteJson(json);
 				}
 				catch (Exception e)
 				{

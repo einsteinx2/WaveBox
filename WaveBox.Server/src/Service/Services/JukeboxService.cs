@@ -157,7 +157,7 @@ namespace WaveBox.Service.Services
 		public void PlaySongAtIndex(int index)
 		{
 			IMediaItem item = playlist.MediaItemAtIndex(index);
-			if (logger.IsInfoEnabled) logger.Info("Playing song: " + item.FileName);
+			logger.IfInfo("Playing song: " + item.FileName);
 
 			if (item != null)
 			{
@@ -168,7 +168,7 @@ namespace WaveBox.Service.Services
 
 					// re-initialize bass
 					BassInit();
-					if (logger.IsInfoEnabled) logger.Info("Re-initializing BASS");
+					logger.IfInfo("Re-initializing BASS");
 
 					// create the stream
 					string path = item.File().Name;
@@ -176,11 +176,11 @@ namespace WaveBox.Service.Services
 
 					if (currentStream == 0)
 					{
-						if (logger.IsInfoEnabled) logger.Info("BASS failed to create stream for " + path);
+						logger.IfInfo("BASS failed to create stream for " + path);
 					}
 					else
 					{
-						if (logger.IsInfoEnabled) logger.Info("Current stream handle: " + currentStream);
+						logger.IfInfo("Current stream handle: " + currentStream);
 
 						SYNCPROC end = new SYNCPROC(delegate (int handle, int channel, int data, IntPtr user)
 						{
@@ -248,14 +248,14 @@ namespace WaveBox.Service.Services
 			// if we are initializing, we want to make sure that we're not already initialized.
 			if (IsInitialized)
 			{
-				if (logger.IsInfoEnabled) logger.Info("Freeing BASS");
+				logger.IfInfo("Freeing BASS");
 				BassFree();
 			}
 
 			// set the buffer to 200ms, which is the minimum.
-			if (logger.IsInfoEnabled) logger.Info("Setting up BASS");
+			logger.IfInfo("Setting up BASS");
 			//Bass.BASS_SetConfig(BASSConfig.BASS_CONFIG_BUFFER, Bass.BASS_GetConfig(BASSConfig.BASS_CONFIG_UPDATEPERIOD + 200));
-			if (logger.IsInfoEnabled) logger.Info("BASS buffer size: " + Bass.BASS_GetConfig(BASSConfig.BASS_CONFIG_BUFFER) + "ms");
+			logger.IfInfo("BASS buffer size: " + Bass.BASS_GetConfig(BASSConfig.BASS_CONFIG_BUFFER) + "ms");
 
 			// dsp effects for floating point math to avoid clipping
 			Bass.BASS_SetConfig(BASSConfig.BASS_CONFIG_FLOATDSP, 1);
@@ -263,7 +263,7 @@ namespace WaveBox.Service.Services
 			// initialize the audio output device
 			if (!Bass.BASS_Init(-1, 44100, BASSInit.BASS_DEVICE_DEFAULT, System.IntPtr.Zero))
 			{
-				if (logger.IsInfoEnabled) logger.Info("Error initializing BASS!");
+				logger.IfInfo("Error initializing BASS!");
 			}
 
 			else IsInitialized = true;

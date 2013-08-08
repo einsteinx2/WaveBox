@@ -1,9 +1,10 @@
 using System;
 using Mono.Nat;
 using Ninject;
+using WaveBox.Core;
+using WaveBox.Core.Extensions;
 using WaveBox.Service;
 using WaveBox.Static;
-using WaveBox.Core;
 
 namespace WaveBox.Service.Services
 {
@@ -43,7 +44,7 @@ namespace WaveBox.Service.Services
 			NatUtility.DeviceFound += DeviceFound;
 			NatUtility.DeviceLost += DeviceLost;
 			NatUtility.UnhandledException += UnhandledException;
-			
+
 			// Start searching for upnp enabled routers
 			NatUtility.StartDiscovery();
 
@@ -52,7 +53,7 @@ namespace WaveBox.Service.Services
 
 		public bool Stop()
 		{
-			if ((object)Device != null && Status == NatStatus.PortForwardedSuccessfully) 
+			if ((object)Device != null && Status == NatStatus.PortForwardedSuccessfully)
 			{
 				Device.DeletePortMap(new Mapping(Protocol.Tcp, Injection.Kernel.Get<IServerSettings>().Port, Injection.Kernel.Get<IServerSettings>().Port));
 				Status = NatStatus.NotInitialized;
@@ -60,10 +61,10 @@ namespace WaveBox.Service.Services
 
 			return true;
 		}
-		
+
 		private void DeviceFound(object sender, DeviceEventArgs args)
 		{
-			if (logger.IsInfoEnabled) logger.Info("Device Found");
+			logger.IfInfo("Device Found");
 
 			this.Status = NatStatus.DeviceFound;
 
@@ -82,15 +83,15 @@ namespace WaveBox.Service.Services
 				logger.Error("Port mapping failed", e);
 			}
 		}
-		
+
 		private void DeviceLost(object sender, DeviceEventArgs args)
 		{
 			this.Status = NatStatus.PortForwardingFailed;
 
 			INatDevice device = args.Device;
-			
-			if (logger.IsInfoEnabled) logger.Info("Device Lost");
-			if (logger.IsInfoEnabled) logger.Info("Type: " + device.GetType().Name);
+
+			logger.IfInfo("Device Lost");
+			logger.IfInfo("Type: " + device.GetType().Name);
 		}
 
 		private void UnhandledException(object sender, UnhandledExceptionEventArgs args)

@@ -97,7 +97,7 @@ namespace WaveBox.Service.Services.DeviceSync
 
 		public override Task OnConnected()
 		{
-			logger.Info("OnConnected called, Context.ConnectionId: " + Context.ConnectionId);
+			logger.IfInfo("OnConnected called, Context.ConnectionId: " + Context.ConnectionId);
 
 			// Ask the client to identify itself, so we can create the session id - connection id association
 			return Clients.Caller.identify();
@@ -105,7 +105,7 @@ namespace WaveBox.Service.Services.DeviceSync
 
 		public override Task OnReconnected()
 		{
-			logger.Info("OnReconnected called, Context.ConnectionId: " + Context.ConnectionId);
+			logger.IfInfo("OnReconnected called, Context.ConnectionId: " + Context.ConnectionId);
 
 			// Ask the client to identify itself, so we can recreate the session id - connection id association
 			return Clients.Caller.identify();
@@ -113,7 +113,7 @@ namespace WaveBox.Service.Services.DeviceSync
 
 		public override Task OnDisconnected()
 		{
-			logger.Info("OnDisconnected called, Context.ConnectionId: " + Context.ConnectionId);
+			logger.IfInfo("OnDisconnected called, Context.ConnectionId: " + Context.ConnectionId);
 
 			// Remove the session id - connection id association
 			return Task.Factory.StartNew(() => 
@@ -133,7 +133,7 @@ namespace WaveBox.Service.Services.DeviceSync
 		// Client calls this upon connecting to associate the session id with the connection id
 		public Task Identify(string sessionId, string clientName)
 		{
-			logger.Info("Identify: " + sessionId + ", " + clientName);
+			logger.IfInfo("Identify: " + sessionId + ", " + clientName);
 
 			return Task.Factory.StartNew(() => 
 			{
@@ -153,7 +153,7 @@ namespace WaveBox.Service.Services.DeviceSync
 		// Client calls this to inform the other clients that it is taking over playback and to pause the other clients
 		public Task TakeOverPlayback()
 		{
-			logger.Info("TakeOverPlayback");
+			logger.IfInfo("TakeOverPlayback");
 
 			return Task.Factory.StartNew(() => 
 			{
@@ -170,7 +170,7 @@ namespace WaveBox.Service.Services.DeviceSync
 		// Client calls this to inform the other clients and the server than it's play queue has changed
 		public Task PlayQueueChanged(List<int> songIds)
 		{
-			logger.Info("PlayQueueChanged: " + string.Join(",", songIds.Select(i => i.ToString()).ToArray()));
+			logger.IfInfo("PlayQueueChanged: " + string.Join(",", songIds.Select(i => i.ToString()).ToArray()));
 
 			return Task.Factory.StartNew(() => 
 			{
@@ -187,7 +187,7 @@ namespace WaveBox.Service.Services.DeviceSync
 		// Client calls this to inform the other clients that it has switched songs
 		public Task PlayQueueIndexChanged(int currentIndex)
 		{
-			logger.Info("PlayQueueIndexChanged: " + currentIndex);
+			logger.IfInfo("PlayQueueIndexChanged: " + currentIndex);
 
 			return Task.Factory.StartNew(() => 
 			{
@@ -202,7 +202,7 @@ namespace WaveBox.Service.Services.DeviceSync
 		// Client calls this periodically to ensure that the player progress is properly synced
 		public Task ProgressUpdate(float progress)
 		{
-			logger.Info("ProgressUpdate: " + progress);
+			logger.IfInfo("ProgressUpdate: " + progress);
 
 			return Task.Factory.StartNew(() => 
 			{
@@ -224,7 +224,7 @@ namespace WaveBox.Service.Services.DeviceSync
 		// Client calls this to toggle playback on the currently playing device
 		public Task RemoteTogglePlayback()
 		{
-			logger.Info("RemoteTogglePlayback");
+			logger.IfInfo("RemoteTogglePlayback");
 
 			return Task.Factory.StartNew(() => 
 			{
@@ -244,7 +244,7 @@ namespace WaveBox.Service.Services.DeviceSync
 		// this is used in place of next/prev methods
 		public Task RemoteSkipToIndex(int index)
 		{
-			logger.Info("RemoteSkipToIndex: " + index);
+			logger.IfInfo("RemoteSkipToIndex: " + index);
 
 			return Task.Factory.StartNew(() => 
 			{
@@ -263,7 +263,7 @@ namespace WaveBox.Service.Services.DeviceSync
 		// Client calls this to toggle shuffle mode on the currently playing device
 		public Task RemoteToggleShuffle()
 		{
-			logger.Info("RemoteToggleShuffle");
+			logger.IfInfo("RemoteToggleShuffle");
 
 			return Task.Factory.StartNew(() => 
 			{
@@ -282,7 +282,7 @@ namespace WaveBox.Service.Services.DeviceSync
 		// Client calls this to toggle repeat mode on the currently playing device
 		public Task RemoteToggleRepeat()
 		{
-			logger.Info("RemoteToggleRepeat");
+			logger.IfInfo("RemoteToggleRepeat");
 
 			return Task.Factory.StartNew(() => 
 			{

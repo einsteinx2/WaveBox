@@ -15,103 +15,93 @@ namespace WaveBox.ApiHandler.Handlers
 {
 	class PodcastApiHandler : IApiHandler
 	{
-		private IHttpProcessor Processor { get; set; }
-		private UriWrapper Uri { get; set; }
-
-		/// <summary>
-		/// Constructor for PodcastApiHandler
-		/// </summary>
-		public PodcastApiHandler(UriWrapper uri, IHttpProcessor processor, User user)
-		{
-			Processor = processor;
-			Uri = uri;
-		}
+		public string Name { get { return "podcast"; } set { } }
 
 		/// <summary>
 		/// Process handles all functions needed for the Podcast API
 		/// </summary>
-		public void Process()
+		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			IList<Podcast> listToReturn = new List<Podcast>();
 
-			if (Uri.UriPart(2) == null)
+			if (uri.UriPart(2) == null)
 			{
-				if (Uri.Parameters.ContainsKey("action"))
+				if (uri.Parameters.ContainsKey("action"))
 				{
 					string action = null;
-					Uri.Parameters.TryGetValue("action", out action);
+					uri.Parameters.TryGetValue("action", out action);
 
 					if (action == null)
 					{
-						Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Parameter 'action' contained an invalid value", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+						processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Parameter 'action' contained an invalid value", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 					}
 
 					else
 					{
 						if (action == "add")
 						{
-							if ((Uri.Parameters.ContainsKey("url")) && (Uri.Parameters.ContainsKey("keepCap")))
+							if ((uri.Parameters.ContainsKey("url")) && (uri.Parameters.ContainsKey("keepCap")))
 							{
 								string url = null;
 								string keepCapTemp = null;
 								int keepCap = 0;
-								Uri.Parameters.TryGetValue("url", out url);
-								Uri.Parameters.TryGetValue("keepCap", out keepCapTemp);
+								uri.Parameters.TryGetValue("url", out url);
+								uri.Parameters.TryGetValue("keepCap", out keepCapTemp);
 
 								if (url == null)
 								{
-									Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Parameter 'url' contained an invalid value", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+									processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Parameter 'url' contained an invalid value", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 								}
 
 								else if (keepCapTemp == null)
 								{
-									Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Parameter 'keepCap' contained an invalid value", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+									processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Parameter 'keepCap' contained an invalid value", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 								}
 								else
 								{
 									if (!Int32.TryParse(keepCapTemp, out keepCap))
 									{
-										Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Parameter 'keepCap' contained an invalid value", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+										processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Parameter 'keepCap' contained an invalid value", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 									}
 									url = System.Web.HttpUtility.UrlDecode(url);
 									Podcast pod = new Podcast.Factory().CreatePodcast(url, keepCap);
 
 									pod.DownloadNewEpisodes();
-									Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse(null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+									processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse(null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 									return;
 								}
 							}
 							else
 							{
-								Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Missing parameter for action 'add'", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+								processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Missing parameter for action 'add'", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 							}
 						}
 						else if (action == "delete")
 						{
-							if (!(Uri.Parameters.ContainsKey("id") || Uri.Parameters.ContainsKey("episodeId")))
+							if (!(uri.Parameters.ContainsKey("id") || uri.Parameters.ContainsKey("episodeId")))
 							{
-								Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Missing parameter for action 'delete'", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+								processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Missing parameter for action 'delete'", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 								return;
 							}
-							else if (Uri.Parameters.ContainsKey("id") && Uri.Parameters.ContainsKey("episodeId"))
+							else if (uri.Parameters.ContainsKey("id") && uri.Parameters.ContainsKey("episodeId"))
 							{
-								Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Ambiguous parameters for action 'delete'.  'delete' accepts either a id or a episodeId, but not both.", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+								processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Ambiguous parameters for action 'delete'.  'delete' accepts either a id or a episodeId, but not both.", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 								return;
 							}
-							else if (Uri.Parameters.ContainsKey("id"))
+							else if (uri.Parameters.ContainsKey("id"))
 							{
 								int id = 0;
 								string idString = null;
 
-								Uri.Parameters.TryGetValue("id", out idString);
+								uri.Parameters.TryGetValue("id", out idString);
 								if (Int32.TryParse(idString, out id))
 								{
-									Processor.WriteJson(JsonConvert.SerializeObject(new PodcastActionResponse(null, new Podcast.Factory().CreatePodcast(id).Delete()), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+									processor.WriteJson(JsonConvert.SerializeObject(new PodcastActionResponse(null, new Podcast.Factory().CreatePodcast(id).Delete()), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 									return;
 								}
 								else
 								{
-									Processor.WriteJson(JsonConvert.SerializeObject(new PodcastActionResponse("Parameter 'id' contained an invalid value", false), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+									processor.WriteJson(JsonConvert.SerializeObject(new PodcastActionResponse("Parameter 'id' contained an invalid value", false), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 									return;
 								}
 							}
@@ -120,15 +110,15 @@ namespace WaveBox.ApiHandler.Handlers
 								int id = 0;
 								string idString = null;
 
-								Uri.Parameters.TryGetValue("episodeId", out idString);
+								uri.Parameters.TryGetValue("episodeId", out idString);
 								if (Int32.TryParse(idString, out id))
 								{
-									Processor.WriteJson(JsonConvert.SerializeObject(new PodcastActionResponse(null, new PodcastEpisode.Factory().CreatePodcastEpisode(id).Delete()), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+									processor.WriteJson(JsonConvert.SerializeObject(new PodcastActionResponse(null, new PodcastEpisode.Factory().CreatePodcastEpisode(id).Delete()), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 									return;
 								}
 								else
 								{
-									Processor.WriteJson(JsonConvert.SerializeObject(new PodcastActionResponse("Parameter 'episodeId' contained an invalid value", false), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+									processor.WriteJson(JsonConvert.SerializeObject(new PodcastActionResponse("Parameter 'episodeId' contained an invalid value", false), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 									return;
 								}
 							}
@@ -137,26 +127,26 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 
 				listToReturn = Podcast.ListOfStoredPodcasts();
-				Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse(null, listToReturn), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+				processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse(null, listToReturn), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 				return;
 			}
 			else
 			{
 				int id = 0;
-				Int32.TryParse(Uri.UriPart(2), out id);
+				Int32.TryParse(uri.UriPart(2), out id);
 
 				if (id != 0)
 				{
 					Podcast thisPodcast = new Podcast.Factory().CreatePodcast(id);
 					IList<PodcastEpisode> epList = thisPodcast.ListOfStoredEpisodes();
 
-					Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse(null, thisPodcast, epList), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+					processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse(null, thisPodcast, epList), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 					return;
 				}
 
 				else
 				{
-					Processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Invalid Podcast ID", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+					processor.WriteJson(JsonConvert.SerializeObject(new PodcastContentResponse("Invalid Podcast ID", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 					return;
 				}
 			}

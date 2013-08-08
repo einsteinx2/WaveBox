@@ -19,8 +19,9 @@ using WaveBox.Core.Model;
 using WaveBox.Service;
 using WaveBox.Static;
 using WaveBox.Transcoding;
-using WaveBox.Core.Model.Repository;
 using WaveBox.Core;
+using WaveBox.Core.Extensions;
+using WaveBox.Core.Model.Repository;
 
 namespace WaveBox
 {
@@ -35,7 +36,7 @@ namespace WaveBox
 		/// </summary>
 		public void Start()
 		{
-			if (logger.IsInfoEnabled) logger.Info("Initializing WaveBox " + WaveBoxService.BuildVersion + " on " + WaveBoxService.Platform + " platform...");
+			logger.IfInfo("Initializing WaveBox " + WaveBoxService.BuildVersion + " on " + WaveBoxService.Platform + " platform...");
 
 			// Initialize ImageMagick
 			try

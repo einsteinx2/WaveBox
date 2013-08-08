@@ -12,6 +12,7 @@ using Mono.Unix.Native;
 using Mono.Unix;
 using Ninject;
 using WaveBox.Core.Extensions;
+using WaveBox.Server;
 using WaveBox.Server.Extensions;
 using WaveBox.Service;
 using WaveBox.Static;
@@ -48,7 +49,7 @@ namespace WaveBox
 		/// </summary>
 		public WaveBoxService()
 		{
-			if (logger.IsInfoEnabled) logger.Info("Initializing WaveBoxService");
+			logger.IfInfo("Initializing WaveBoxService");
 			try
 			{
 				// Name the service
@@ -91,7 +92,7 @@ namespace WaveBox
 				// Build date detection
 				BuildDate = ServerUtility.GetBuildDate();
 
-				if (logger.IsInfoEnabled) logger.Info("BuildDate timestamp: " + BuildDate.ToUniversalUnixTimestamp());
+				logger.IfInfo("BuildDate timestamp: " + BuildDate.ToUniversalUnixTimestamp());
 
 				// Get start up time
 				StartTime = DateTime.Now;
@@ -100,7 +101,7 @@ namespace WaveBox
 				if (!Directory.Exists(TempFolder))
 				{
 					Directory.CreateDirectory(TempFolder);
-					if (logger.IsInfoEnabled) logger.Info("Created temp folder: " + TempFolder);
+					logger.IfInfo("Created temp folder: " + TempFolder);
 				}
 
 				// Instantiate a WaveBox object
@@ -121,9 +122,13 @@ namespace WaveBox
 		/// </summary>
 		private static void InjectClasses()
 		{
+			// Core
 			Injection.Kernel.Bind<IDatabase>().To<Database>().InSingletonScope();
 			Injection.Kernel.Bind<IServerSettings>().To<ServerSettings>().InSingletonScope();
 			Injection.Kernel.Bind<IPodcastShim>().To<PodcastShim>().InSingletonScope();
+
+			// Load Server
+			Injection.Kernel.Load(new ServerModule());
 		}
 
 		/// <summary>
@@ -162,12 +167,12 @@ namespace WaveBox
 		/// </summary>
 		protected void OnStart()
 		{
-			if (logger.IsInfoEnabled) logger.Info("Starting...");
+			logger.IfInfo("Starting...");
 
 			// Launch the WaveBox thread using the Start() function from WaveBox
 			init = new Thread(new ThreadStart(wavebox.Start));
 			init.Start();
-			if (logger.IsInfoEnabled) logger.Info("Started!");
+			logger.IfInfo("Started!");
 		}
 
 		/// <summary>
@@ -176,7 +181,7 @@ namespace WaveBox
 		/// </summary>
 		protected override void OnStop()
 		{
-			if (logger.IsInfoEnabled) logger.Info("Stopping...");
+			logger.IfInfo("Stopping...");
 
 			// Abort main thread, nullify the WaveBox object
 			init.Abort();
@@ -197,25 +202,25 @@ namespace WaveBox
 				// Remove folder
 				Directory.Delete(TempFolder);
 
-				if (logger.IsInfoEnabled) logger.Info("Deleted temp folder: " + TempFolder + " (" + i + " files)");
+				logger.IfInfo("Deleted temp folder: " + TempFolder + " (" + i + " files)");
 			}
 
 			// Stop the server
 			wavebox.Stop();
 			wavebox = null;
 
-			if (logger.IsInfoEnabled) logger.Info("Stopped!");
+			logger.IfInfo("Stopped!");
 
 			// Gracefully terminate
 			Environment.Exit(0);
 		}
-	
+
 		/// <summary>
 		/// OnContinue does nothing yet
 		/// </summary>
 		protected override void OnContinue()
 		{
-			if (logger.IsInfoEnabled) logger.Info("Continuing");
+			logger.IfInfo("Continuing");
 		}
 
 		/// <summary>
@@ -223,7 +228,7 @@ namespace WaveBox
 		/// </summary>
 		protected override void OnPause()
 		{
-			if (logger.IsInfoEnabled) logger.Info("Pausing");
+			logger.IfInfo("Pausing");
 		}
 
 		/// <summary>
@@ -231,9 +236,9 @@ namespace WaveBox
 		/// </summary>
 		protected override void OnShutdown()
 		{
-			if (logger.IsInfoEnabled) logger.Info("Shutting down");
+			logger.IfInfo("Shutting down");
 		}
-		
+
 		/// <summary>
 		/// Function to register shutdown handler for various platforms.  Windows uses its own, while UNIX variants
 		/// use a specialized Unix shutdown handler.
@@ -247,7 +252,7 @@ namespace WaveBox
 				case PlatformID.Win32S:
 				case PlatformID.Win32Windows:
 					// register application kill notifier
-					if (logger.IsInfoEnabled) logger.Info("Registering shutdown hook for Windows...");
+					logger.IfInfo("Registering shutdown hook for Windows...");
 					windowsShutdownHandler += new EventHandler(ShutdownWindows);
 					SetConsoleCtrlHandler(windowsShutdownHandler, true);
 					break;

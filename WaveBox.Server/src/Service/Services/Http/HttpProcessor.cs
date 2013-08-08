@@ -8,8 +8,15 @@ using System.Net.Sockets;
 using System.Net;
 using System.Text;
 using System.Threading;
+using Ninject;
 using WaveBox;
+using WaveBox.ApiHandler;
+using WaveBox.ApiHandler.Handlers;
+using WaveBox.Core;
 using WaveBox.Core.Extensions;
+using WaveBox.Core.Model;
+using WaveBox.Core.Static;
+using WaveBox.Static;
 using WaveBox.Transcoding;
 
 // offered to the public domain for any use with no restriction
@@ -17,13 +24,10 @@ using WaveBox.Transcoding;
 
 // simple HTTP explanation
 // http://www.jmarshall.com/easy/http/
-using WaveBox.ApiHandler;
-using WaveBox.Static;
-using WaveBox.Core.Static;
 
 namespace WaveBox.Service.Services.Http
 {
-	public class HttpProcessor : IHttpProcessor
+	public partial class HttpProcessor : IHttpProcessor
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -49,37 +53,6 @@ namespace WaveBox.Service.Services.Http
 			Socket = s;
 		}
 
-		private string StreamReadLine(Stream inputStream)
-		{
-			int next_char, readTries = 0;
-			string data = "";
-			while (true)
-			{
-				next_char = inputStream.ReadByte();
-
-				if (next_char == -1)
-				{
-					if (readTries >= 29)
-					{
-						throw new IOException("ReadByte timed out", null);
-					}
-					readTries++;
-					Thread.Sleep(1);
-					continue;
-				}
-				else
-				{
-					readTries = 0;
-				}
-
-				if (next_char == '\n') { break; }
-				if (next_char == '\r') { continue; }
-
-				data += Convert.ToChar(next_char);
-			}
-			return data;
-		}
-
 		public void Process()
 		{
 			// we can't use a StreamReader for input, because it buffers up extra data on us inside it's
@@ -90,147 +63,41 @@ namespace WaveBox.Service.Services.Http
 			try
 			{
 				InputStream.ReadTimeout = 30000;
-				ParseRequest();
-				ReadHeaders();
-				if (HttpMethod.Equals("GET"))
+
+				// Read in first line of request, get tokens for HTTP method, URL, version
+				this.ParseRequest();
+
+				// Captures hashtable of HTTP headers sent with request
+				this.ReadHeaders();
+
+				if (HttpMethod == "GET")
 				{
-					HandleGETRequest();
+					this.HandleGETRequest();
 				}
-				else if (HttpMethod.Equals("POST"))
+				else if (HttpMethod == "POST")
 				{
-					HandlePOSTRequest();
+					this.HandlePOSTRequest();
 				}
 				else
 				{
-					WriteMethodNotAllowedHeader();
+					// HTTP 405: Unsupported method
+					this.WriteMethodNotAllowedHeader();
 				}
 			}
 			catch (Exception e)
 			{
 				logger.Error("Exception occurred during HTTP processing");
 				logger.Error(e);
-				WriteErrorHeader();
+				this.WriteErrorHeader();
 			}
 			finally
 			{
+				// Ensure all streams and sockets are closed
 				InputStream = null;
 				Socket.GetStream().Close();
 				Socket.Client.Close();
 				Socket.Close();
 			}
-		}
-
-		public void ParseRequest()
-		{
-			try
-			{
-				String request = StreamReadLine(InputStream);
-				string[] tokens = request.Split(' ');
-				if (tokens.Length != 3)
-				{
-					logger.Error("Failed reading HTTP request");
-					throw new Exception("Failed reading HTTP request");
-				}
-				HttpMethod = tokens[0].ToUpper();
-				HttpUrl = tokens[1];
-				HttpProtocolVersionString = tokens[2];
-			}
-			// If client disconnects, ignore and continue
-			catch (IOException)
-			{
-			}
-			catch (NullReferenceException)
-			{
-			}
-		}
-
-		public void ReadHeaders()
-		{
-			String line;
-			try
-			{
-				while ((line = StreamReadLine(InputStream)) != null)
-				{
-					if (line.Equals(""))
-					{
-						return;
-					}
-
-					int separator = line.IndexOf(':');
-					if (separator == -1)
-					{
-						logger.Error("Failed reading HTTP headers");
-						throw new Exception("Failed reading HTTP headers: " + line);
-					}
-					String name = line.Substring(0, separator);
-					int pos = separator + 1;
-					while ((pos < line.Length) && (line[pos] == ' '))
-					{
-						pos++; // strip any spaces
-					}
-
-					string value = line.Substring(pos, line.Length - pos);
-					HttpHeaders[name] = value;
-				}
-			}
-			// If client disconnects, ignore and continue
-			catch (IOException)
-			{
-			}
-		}
-
-		public void HandleGETRequest()
-		{
-			IApiHandler apiHandler = ApiHandlerFactory.CreateApiHandler(HttpUrl, this);
-
-			apiHandler.Process();
-		}
-
-		private const int BUF_SIZE = 4096;
-		public void HandlePOSTRequest()
-		{
-			// this post data processing just reads everything into a memory stream.
-			// this is fine for smallish things, but for large stuff we should really
-			// hand an input stream to the request processor. However, the input stream
-			// we hand him needs to let him see the "end of the stream" at this content
-			// length, because otherwise he won't know when he's seen it all!
-
-			int content_len = 0;
-			MemoryStream ms = new MemoryStream();
-			if (HttpHeaders.ContainsKey("Content-Length"))
-			{
-				content_len = Convert.ToInt32(HttpHeaders["Content-Length"]);
-				if (content_len > MAX_POST_SIZE)
-				{
-					throw new Exception(String.Format("POST Content-Length({0}) too big for this simple server", content_len));
-				}
-				byte[] buf = new byte[BUF_SIZE];
-				int to_read = content_len;
-				while (to_read > 0)
-				{
-					int numread = InputStream.Read(buf, 0, Math.Min(BUF_SIZE, to_read));
-					if (numread == 0)
-					{
-						if (to_read == 0)
-						{
-							break;
-						}
-						else
-						{
-							throw new Exception("Client disconnected during HTTP POST");
-						}
-					}
-					to_read -= numread;
-					ms.Write(buf, 0, numread);
-				}
-				ms.Seek(0, SeekOrigin.Begin);
-			}
-
-			string data = HttpUrl + "?" + new StreamReader(ms).ReadToEnd();
-
-			IApiHandler apiHandler = ApiHandlerFactory.CreateApiHandler(data, this);
-
-			apiHandler.Process();
 		}
 
 		public void WriteNotModifiedHeader()
@@ -269,7 +136,7 @@ namespace WaveBox.Service.Services.Http
 			outStream.WriteLine("Date: " + DateTime.UtcNow.ToRFC1123());
 			outStream.WriteLine("Server: WaveBox/" + WaveBoxService.BuildVersion);
 			outStream.WriteLine("Last-Modified: " + lastModified.ToRFC1123());
-			outStream.WriteLine("ETag: \"" + CreateETagString(lastModified) + "\"");
+			outStream.WriteLine("ETag: \"" + lastModified.ToETag() + "\"");
 			outStream.WriteLine("Accept-Ranges: bytes");
 
 			// Check request for compression
@@ -307,11 +174,11 @@ namespace WaveBox.Service.Services.Http
 			// Only log API responses
 			if (HttpUrl.Contains("api"))
 			{
-				if (logger.IsInfoEnabled) logger.Info(String.Format("Success, status: {0}, length: {1}, encoding: {2}, ETag: {3}, Last-Modified: {4}",
+				logger.IfInfo(String.Format("Success, status: {0}, length: {1}, encoding: {2}, ETag: {3}, Last-Modified: {4}",
 					status,
 					contentLength,
 					encoding ?? "none",
-					CreateETagString(lastModified),
+					lastModified.ToETag(),
 					lastModified.ToRFC1123()
 				));
 			}
@@ -448,7 +315,7 @@ namespace WaveBox.Service.Services.Http
 			}
 			if (HttpHeaders.ContainsKey("If-None-Match"))
 			{
-				if (HttpHeaders["If-None-Match"].Equals(CreateETagString(lastMod)))
+				if (HttpHeaders["If-None-Match"].Equals(lastMod.ToETag()))
 				{
 					WriteNotModifiedHeader();
 					return;
@@ -518,7 +385,7 @@ namespace WaveBox.Service.Services.Http
 			}
 
 			WriteSuccessHeader(isSendContentLength ? contentLength : -1, mimeType, customHeaders, lastMod, isPartial);
-			if (logger.IsInfoEnabled) logger.Info("File header, contentLength: " + contentLength + ", contentType: " + mimeType);
+			logger.IfInfo("File header, contentLength: " + contentLength + ", contentType: " + mimeType);
 
 			sw.Start();
 			while (true)
@@ -550,7 +417,7 @@ namespace WaveBox.Service.Services.Http
 					{
 						if (logger.IsInfoEnabled)
 						{
-							logger.Info(String.Format("[ {0,10} / {1,10} | {2:000}% | {3:00.00000} Mbps ]",
+							logger.IfInfo(String.Format("[ {0,10} / {1,10} | {2:000}% | {3:00.00000} Mbps ]",
 								totalBytesWritten,
 								(contentLength + startOffset),
 								((Convert.ToDouble(totalBytesWritten) / Convert.ToDouble(contentLength + startOffset)) * 100),
@@ -594,7 +461,7 @@ namespace WaveBox.Service.Services.Http
 						SocketException se = (SocketException)e.InnerException;
 						if (se.SocketErrorCode == System.Net.Sockets.SocketError.ConnectionReset)
 						{
-							if (logger.IsInfoEnabled) logger.Info("Connection was forcibly closed by the remote host");
+							logger.IfInfo("Connection was forcibly closed by the remote host");
 						}
 					}
 
@@ -602,32 +469,8 @@ namespace WaveBox.Service.Services.Http
 					break;
 				}
 			}
+
 			sw.Stop();
-		}
-
-		private DateTime CleanLastModified(DateTime? lastModified)
-		{
-			// If null, use current time
-			if (ReferenceEquals(lastModified, null))
-			{
-				return DateTime.UtcNow;
-			}
-
-			// Make sure we're using UTC
-			DateTime lastMod = ((DateTime)lastModified).ToUniversalTime();
-
-			// If the time is later than now, use now
-			if (DateTime.Compare(DateTime.UtcNow, lastMod) < 0)
-			{
-				lastMod = DateTime.UtcNow;
-			}
-
-			return lastMod;
-		}
-
-		private string CreateETagString(DateTime lastModified)
-		{
-			return lastModified.ToRFC1123().SHA1();
 		}
 	}
 }

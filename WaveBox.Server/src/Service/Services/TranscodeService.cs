@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
 using WaveBox.Service;
 using WaveBox.Transcoding;
@@ -48,8 +49,8 @@ namespace WaveBox.Service.Services
 				return null;
 			}
 
-			if (logger.IsInfoEnabled) logger.Info("Asked to transcode song: " + song.FileName);
-			lock (transcoders) 
+			logger.IfInfo("Asked to transcode song: " + song.FileName);
+			lock (transcoders)
 			{
 				ITranscoder transcoder = null;
 				switch (type)
@@ -63,7 +64,7 @@ namespace WaveBox.Service.Services
 					case TranscodeType.OPUS:
 						transcoder = new FFMpegOpusTranscoder(song, quality, isDirect, offsetSeconds, lengthSeconds);
 						break;
-					case TranscodeType.AAC: 
+					case TranscodeType.AAC:
 						transcoder = new FFMpegAACTranscoder(song, quality, isDirect, offsetSeconds, lengthSeconds);
 						break;
 				}
@@ -82,16 +83,16 @@ namespace WaveBox.Service.Services
 				return null;
 			}
 
-			if (logger.IsInfoEnabled) logger.Info("Asked to transcode video: " + video.FileName);
-			lock (transcoders) 
+			logger.IfInfo("Asked to transcode video: " + video.FileName);
+			lock (transcoders)
 			{
 				ITranscoder transcoder = null;;
 				switch (type)
 				{
-					case TranscodeType.X264: 
+					case TranscodeType.X264:
 						transcoder = new FFMpegX264Transcoder(video, quality, isDirect, width, height, maintainAspect, offsetSeconds, lengthSeconds);
 						break;
-					case TranscodeType.MPEGTS: 
+					case TranscodeType.MPEGTS:
 						transcoder = new FFMpegMpegtsTranscoder(video, quality, isDirect, width, height, maintainAspect, offsetSeconds, lengthSeconds);
 						break;
 				}
@@ -110,7 +111,7 @@ namespace WaveBox.Service.Services
 				// Don't reuse direct transcoders
 				if (!transcoder.IsDirect && transcoders.Contains(transcoder))
 				{
-					if (logger.IsInfoEnabled) logger.Info("Using existing transcoder");
+					logger.IfInfo("Using existing transcoder");
 
 					// Get the existing transcoder
 					int index = transcoders.IndexOf(transcoder);
@@ -121,7 +122,7 @@ namespace WaveBox.Service.Services
 				}
 				else
 				{
-					if (logger.IsInfoEnabled) logger.Info("Creating a new transcoder");
+					logger.IfInfo("Creating a new transcoder");
 
 					// Add the transcoder to the array
 					transcoders.Add(transcoder);
@@ -139,7 +140,7 @@ namespace WaveBox.Service.Services
 
 		public void ConsumedTranscode(ITranscoder transcoder)
 		{
-			if (logger.IsInfoEnabled) logger.Info("Waiting on " + transcoder.Item.FileName + " for 30 more seconds... State: " + transcoder.State);
+			logger.IfInfo("Waiting on " + transcoder.Item.FileName + " for 30 more seconds... State: " + transcoder.State);
 
 			for (int i = 30; i > 0; i--)
 			{
@@ -163,12 +164,12 @@ namespace WaveBox.Service.Services
 
 			lock (transcoders)
 			{
-				if (logger.IsInfoEnabled) logger.Info("Consumed transcoder for " + transcoder.Item.FileName);
+				logger.IfInfo("Consumed transcoder for " + transcoder.Item.FileName);
 
 				// Decrement the reference count
 				transcoder.ReferenceCount--;
 
-				if (transcoder.ReferenceCount == 0) 
+				if (transcoder.ReferenceCount == 0)
 				{
 					// No other clients need this file, remove it
 					transcoders.Remove(transcoder);
@@ -192,7 +193,7 @@ namespace WaveBox.Service.Services
 
 			lock (transcoders)
 			{
-				if (logger.IsInfoEnabled) logger.Info("Cancelling transcoder for " + transcoder.Item.FileName);
+				logger.IfInfo("Cancelling transcoder for " + transcoder.Item.FileName);
 
 				if (transcoder.ReferenceCount == 1)
 				{
@@ -222,13 +223,13 @@ namespace WaveBox.Service.Services
 		public void TranscodeFinished(ITranscoder transcoder)
 		{
 			// Do something
-			if (logger.IsInfoEnabled) logger.Info("Transcode finished for " + transcoder.Item.FileName);
+			logger.IfInfo("Transcode finished for " + transcoder.Item.FileName);
 		}
 
 		public void TranscodeFailed(ITranscoder transcoder)
 		{
 			// Do something
-			if (logger.IsInfoEnabled) logger.Info("Transcode failed for " + transcoder.Item.FileName);
+			logger.IfInfo("Transcode failed for " + transcoder.Item.FileName);
 		}
 	}
 }

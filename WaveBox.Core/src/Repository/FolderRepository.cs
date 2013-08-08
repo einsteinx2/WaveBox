@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
-using Cirrious.MvvmCross.Plugins.Sqlite;
-using WaveBox.Core.Static;
 using System.IO;
+using Cirrious.MvvmCross.Plugins.Sqlite;
+using WaveBox.Core.Extensions;
+using WaveBox.Core.Static;
 
 namespace WaveBox.Core.Model.Repository
 {
@@ -18,13 +19,24 @@ namespace WaveBox.Core.Model.Repository
 		public FolderRepository(IDatabase database, IServerSettings serverSettings, ISongRepository songRepository, IVideoRepository videoRepository)
 		{
 			if (database == null)
+			{
 				throw new ArgumentNullException("database");
+			}
+
 			if (serverSettings == null)
+			{
 				throw new ArgumentNullException("serverSettings");
+			}
+
 			if (songRepository == null)
+			{
 				throw new ArgumentNullException("songRepository");
+			}
+
 			if (videoRepository == null)
+			{
 				throw new ArgumentNullException("videoRepository");
+			}
 
 			this.database = database;
 			this.serverSettings = serverSettings;
@@ -108,23 +120,23 @@ namespace WaveBox.Core.Model.Repository
 
 		public IList<Folder> MediaFolders()
 		{
-			if (serverSettings.MediaFolders == null) 
+			if (serverSettings.MediaFolders == null)
 			{
 				ISQLiteConnection conn = null;
-				try 
+				try
 				{
 					conn = database.GetSqliteConnection();
 					return conn.Query<Folder>("SELECT * FROM Folder WHERE ParentFolderId IS NULL");
-				} 
-				catch (Exception e) 
+				}
+				catch (Exception e)
 				{
-					logger.Info ("Failed reading list of media folders : " + e);
-				} 
+					logger.IfInfo ("Failed reading list of media folders : " + e);
+				}
 				finally
 				{
 					database.CloseSqliteConnection(conn);
 				}
-			} 
+			}
 			else
 			{
 				return serverSettings.MediaFolders;
@@ -218,7 +230,7 @@ namespace WaveBox.Core.Model.Repository
 
 				if (id == 0)
 				{
-					if (logger.IsInfoEnabled) logger.Info("No db result for parent folder.  Constructing parent folder object.");
+					logger.IfInfo("No db result for parent folder.  Constructing parent folder object.");
 					Folder f = FolderForPath(parentFolderPath);
 					f.InsertFolder(false);
 					pFolderId = f.FolderId;
