@@ -278,7 +278,7 @@ namespace WaveBox
 		/// </summary>
 		public static string ExecutablePath()
 		{
-			return Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar;
+			return AppDomain.CurrentDomain.BaseDirectory;
 		}
 
 		/// <summary>
