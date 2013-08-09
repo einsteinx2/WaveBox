@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Timers;
 using Ninject;
 using WaveBox.Core.ApiResponse;
 using WaveBox.Core.Extensions;
@@ -61,6 +62,12 @@ namespace WaveBox.Service.Services
 
 			// Capture play time to set up automatic unregister on playback end
 			nowPlaying["startTime"] = DateTime.Now.ToUniversalUnixTimestamp();
+			nowPlaying["endTime"] = DateTime.Now.AddSeconds(Convert.ToInt32(m.Duration)).ToUniversalUnixTimestamp();
+
+			// Start a timer, set to elapse and unregister this song exactly when it should finish playback
+			Timer t = new Timer(Convert.ToInt32(m.Duration) * 1000);
+			t.Elapsed += delegate { this.Unregister(userName, clientName); };
+			t.Start();
 
 			// Capture media item's type
 			Type mediaType = m.GetType();
