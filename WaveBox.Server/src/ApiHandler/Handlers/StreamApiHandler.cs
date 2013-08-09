@@ -12,6 +12,8 @@ using WaveBox.Core.Extensions;
 using WaveBox.Core.Model.Repository;
 using WaveBox.Core.Model;
 using WaveBox.Server.Extensions;
+using WaveBox.Service;
+using WaveBox.Service.Services;
 using WaveBox.Service.Services.Http;
 using WaveBox.Static;
 using WaveBox.Transcoding;
@@ -91,6 +93,14 @@ namespace WaveBox.ApiHandler.Handlers
 					{
 						limitToSize = (Convert.ToInt64(end) + 1) - startOffset;
 					}
+				}
+
+				// Register transcode with NowPlayingService if available
+				NowPlayingService nowPlaying = (NowPlayingService)ServiceManager.GetInstance("nowplaying");
+				if (nowPlaying != null)
+				{
+					// Register this item as now playing for this user with this client
+					nowPlaying.Register(user, item);
 				}
 
 				// Send the file
