@@ -284,14 +284,6 @@ namespace WaveBox.ApiHandler.Handlers
 
 					DateTime lastModified = transcoder.IsDirect ? DateTime.UtcNow : new FileInfo(transcoder.OutputPath).LastWriteTimeUtc;
 
-					// Register transcode with NowPlayingService if available
-					NowPlayingService nowPlaying = (NowPlayingService)ServiceManager.GetInstance("nowplaying");
-					if (nowPlaying != null)
-					{
-						// Register this item as now playing for this user with this client
-						nowPlaying.Register(user, item);
-					}
-
 					// Direct write file
 					processor.WriteFile(stream, startOffset, length, mimeType, null, estimateContentLength, lastModified, limitToSize);
 					stream.Close();

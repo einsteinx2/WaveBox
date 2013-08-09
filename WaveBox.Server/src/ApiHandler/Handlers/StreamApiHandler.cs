@@ -95,14 +95,6 @@ namespace WaveBox.ApiHandler.Handlers
 					}
 				}
 
-				// Register transcode with NowPlayingService if available
-				NowPlayingService nowPlaying = (NowPlayingService)ServiceManager.GetInstance("nowplaying");
-				if (nowPlaying != null)
-				{
-					// Register this item as now playing for this user with this client
-					nowPlaying.Register(user, item);
-				}
-
 				// Send the file
 				processor.WriteFile(stream, startOffset, length, item.FileType.MimeType(), null, true, new FileInfo(item.FilePath()).LastWriteTimeUtc, limitToSize);
 				stream.Close();
