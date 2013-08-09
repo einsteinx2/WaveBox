@@ -38,7 +38,19 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 
 			// Store list of now playing dictionaries
-			IList<Dictionary<string, object>> nowPlaying = nowPlayingService.Playing;
+			List<Dictionary<string, object>> nowPlaying = nowPlayingService.Playing.ToList();
+
+			// Filter by user name
+			if (uri.Parameters.ContainsKey("user"))
+			{
+				nowPlaying.RemoveAll(x => x["userName"].ToString() != uri.Parameters["user"]);
+			}
+
+			// Filter by client name
+			if (uri.Parameters.ContainsKey("client"))
+			{
+				nowPlaying.RemoveAll(x => x["clientName"].ToString() != uri.Parameters["client"]);
+			}
 
 			// Return list of now playing items
 			string json = JsonConvert.SerializeObject(new NowPlayingResponse(null, nowPlaying), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
