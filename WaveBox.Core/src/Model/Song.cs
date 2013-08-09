@@ -97,7 +97,7 @@ namespace WaveBox.Core.Model
 
 		public override string ToString()
 		{
-			return string.Format("[Song: ItemId={0}, SongName={1}]", ItemId, SongName);
+			return string.Format("[Song: ItemId={0}, SongName={1}, FileName={2}]", this.ItemId, this.SongName, this.FileName);
 		}
 	}
 }

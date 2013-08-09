@@ -33,7 +33,7 @@ namespace WaveBox.Core.Model
 		/// <summary>
 		/// Constructors
 		/// </summary>
-		
+
 		public Artist()
 		{
 		}
@@ -50,6 +50,11 @@ namespace WaveBox.Core.Model
 		public IList<Song> ListOfSongs()
 		{
 			return Injection.Kernel.Get<ISongRepository>().SearchSongs("ArtistId", ArtistId.ToString());
+		}
+
+		public override string ToString()
+		{
+			return String.Format("[Artist: ItemId={0}, ArtistId={1}, ArtistName={2}]", this.ItemId, this.ArtistId, this.ArtistName);
 		}
 
 		public static int CompareArtistsByName(Artist x, Artist y)

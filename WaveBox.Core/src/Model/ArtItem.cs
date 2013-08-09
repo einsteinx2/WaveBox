@@ -11,6 +11,11 @@ namespace WaveBox.Core
 		public ArtItem()
 		{
 		}
+
+		public override string ToString()
+		{
+			return String.Format("[ArtItem: ItemId={0}, ArtId={1}]", this.ItemId, this.ArtId);
+		}
 	}
 }
 

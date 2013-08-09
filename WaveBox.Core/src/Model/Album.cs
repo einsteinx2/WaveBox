@@ -86,7 +86,9 @@ namespace WaveBox.Core.Model
 		private IList<int> SongArtIds()
 		{
 			if (AlbumId == null)
+			{
 				return new List<int>();
+			}
 
 			return Injection.Kernel.Get<IAlbumRepository>().SongArtIds((int)AlbumId);
 		}
@@ -107,6 +109,11 @@ namespace WaveBox.Core.Model
 		public IList<Song> ListOfSongs()
 		{
 			return Injection.Kernel.Get<ISongRepository>().SearchSongs("AlbumId", AlbumId.ToString());
+		}
+
+		public override string ToString()
+		{
+			return String.Format("[Album: ItemId={0}, AlbumId={1}, AlbumName={2}]", this.ItemId, this.AlbumId, this.AlbumName);
 		}
 
 		public static int CompareAlbumsByName(Album x, Album y)

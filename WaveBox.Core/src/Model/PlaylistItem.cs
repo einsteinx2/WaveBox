@@ -17,5 +17,10 @@ namespace WaveBox.Core.Model
 		public PlaylistItem()
 		{
 		}
+
+		public override string ToString()
+		{
+			return String.Format("[PlaylistItem: ItemId={0}, PlaylistItemId={1}, PlaylistId={2}]", this.ItemId, this.PlaylistItemId, this.PlaylistItemId, this.PlaylistId);
+		}
 	}
 }

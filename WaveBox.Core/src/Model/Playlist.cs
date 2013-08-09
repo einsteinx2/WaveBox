@@ -597,6 +597,11 @@ namespace WaveBox.Core.Model
 			}
 		}
 
+		public override string ToString()
+		{
+			return String.Format("[Playlist: ItemId={0}, PlaylistId={1}, PlaylistName={2}]", this.ItemId, this.PlaylistId, this.PlaylistName);
+		}
+
 		public class Factory
 		{
 			public Playlist CreatePlaylist(int playlistId)
