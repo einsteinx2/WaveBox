@@ -1,0 +1,49 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Newtonsoft.Json;
+using Ninject;
+using WaveBox.Core;
+using WaveBox.Core.ApiResponse;
+using WaveBox.Core.Extensions;
+using WaveBox.Core.Model;
+using WaveBox.Service;
+using WaveBox.Service.Services;
+using WaveBox.Service.Services.Http;
+using WaveBox.Static;
+
+namespace WaveBox.ApiHandler.Handlers
+{
+	class NowPlayingApiHandler : IApiHandler
+	{
+		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+		public string Name { get { return "nowplaying"; } set { } }
+
+		/// <summary>
+		/// Process returns a readonly list of now playing media items, filtered by optional parameters
+		/// </summary>
+		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
+		{
+			// Get NowPlayingService instance
+			NowPlayingService nowPlayingService = (NowPlayingService)ServiceManager.GetInstance("nowplaying");
+
+			// Ensure service is running
+			if (nowPlayingService == null)
+			{
+				string errorJson = JsonConvert.SerializeObject(new NowPlayingResponse("NowPlayingService is not running!", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+				processor.WriteJson(errorJson);
+				return;
+			}
+
+			// Store list of now playing dictionaries
+			IList<Dictionary<string, object>> nowPlaying = nowPlayingService.Playing;
+
+			// Return list of now playing items
+			string json = JsonConvert.SerializeObject(new NowPlayingResponse(null, nowPlaying), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+			processor.WriteJson(json);
+			return;
+		}
+	}
+}

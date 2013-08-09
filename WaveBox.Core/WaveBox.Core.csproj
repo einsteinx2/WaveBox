@@ -66,6 +66,7 @@
     <Compile Include="src\ApiResponse\JukeboxStatus.cs" />
     <Compile Include="src\ApiResponse\LoginResponse.cs" />
     <Compile Include="src\ApiResponse\LogoutResponse.cs" />
+    <Compile Include="src\ApiResponse\NowPlayingResponse.cs" />
     <Compile Include="src\ApiResponse\PlaylistsResponse.cs" />
     <Compile Include="src\ApiResponse\PodcastActionResponse.cs" />
     <Compile Include="src\ApiResponse\PodcastContentResponse.cs" />
@@ -84,6 +85,7 @@
     <Compile Include="src\Extensions\ByteExtensions.cs" />
     <Compile Include="src\Extensions\DateTimeExtensions.cs" />
     <Compile Include="src\Extensions\IListExtensions.cs" />
+    <Compile Include="src\Extensions\IntExtensions.cs" />
     <Compile Include="src\Extensions\Log4NetExtensions.cs" />
     <Compile Include="src\Extensions\StringExtensions.cs" />
     <Compile Include="src\Injection\CoreModule.cs" />
