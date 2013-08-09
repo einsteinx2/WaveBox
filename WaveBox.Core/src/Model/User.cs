@@ -55,6 +55,14 @@ namespace WaveBox.Core.Model
 		{
 		}
 
+		// Return the user's current session, as it is the one most recently modified
+		public Session CurrentSession()
+		{
+			// Get user's session which was last modified
+			long maxTime = this.Sessions.Max(x => Convert.ToInt64(x.UpdateTime));
+			return this.Sessions.Single(x => x.UpdateTime == maxTime);
+		}
+
 		public bool UpdateSession(string sessionId)
 		{
 			// Update user's session based on its session ID
