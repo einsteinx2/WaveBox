@@ -74,29 +74,31 @@ namespace WaveBox.Core
 		}
 
 		// TODO: Fix this isn't async
-		public void CloseAllConnections(Action action)
+		public async Task CloseAllConnections(Action action)
 		{
-			lock (connectionPoolLock)
-			{
-				getConnectionsAllowed = false;
-			}
+			await new Task(() => {
+				lock (connectionPoolLock)
+				{
+					getConnectionsAllowed = false;
+				}
 
-			// Wait for the connections to dry up
-			while (usedConnections > 0)
-			{
-				Thread.Sleep(50);
-			}
+				// Wait for the connections to dry up
+				while (usedConnections > 0)
+				{
+					Thread.Sleep(50);
+				}
 
-			// Close the connections in the pool
-			if (action != null)
-			{
-				action();
-			}
+				// Close the connections in the pool
+				if (action != null)
+				{
+					action();
+				}
 
-			lock (connectionPoolLock)
-			{
-				getConnectionsAllowed = false;
-			}
+				lock (connectionPoolLock)
+				{
+					getConnectionsAllowed = false;
+				}
+			});
 		}
 	}
 }

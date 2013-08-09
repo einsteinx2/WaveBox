@@ -23,6 +23,18 @@ namespace WaveBox.Core.Extensions
 		}
 
 		/// <summary>
+		/// InsertRange() for IList<T>, to insert a collection to another collection
+		/// </summary>
+		public static void InsertRange<T>(this IList<T> list, int index, IEnumerable<T> input)
+		{
+			foreach (T item in input)
+			{
+				list.Insert(index, item);
+				index++;
+			}
+		}
+
+		/// <summary>
 		/// Randomly shuffle an IList<T> list
 		/// </summary>
 		public static void Shuffle<T>(this IList<T> list)

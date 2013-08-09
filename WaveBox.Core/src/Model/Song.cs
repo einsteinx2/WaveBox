@@ -94,5 +94,10 @@ namespace WaveBox.Core.Model
 				return x.DiscNumber > y.DiscNumber ? 1 : -1;
 			}
 		}
+
+		public override string ToString()
+		{
+			return string.Format("[Song: ItemId={0}, SongName={1}]", ItemId, SongName);
+		}
 	}
 }
