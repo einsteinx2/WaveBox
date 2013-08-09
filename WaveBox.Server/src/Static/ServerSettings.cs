@@ -20,7 +20,7 @@ namespace WaveBox.Static
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private static readonly string settingsFileName = "wavebox.conf";
-		public string SettingsTemplatePath() { return "res" + Path.DirectorySeparatorChar + settingsFileName; }
+		public string SettingsTemplatePath() { return ServerUtility.ExecutablePath() + "res" + Path.DirectorySeparatorChar + settingsFileName; }
 		public string SettingsPath() { return ServerUtility.RootPath() + settingsFileName; }
 
 		private ServerSettingsData settingsModel = new ServerSettingsData();

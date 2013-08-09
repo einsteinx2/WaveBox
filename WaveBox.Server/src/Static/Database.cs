@@ -17,11 +17,11 @@ namespace WaveBox.Static
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private static readonly string DATABASE_FILE_NAME = "wavebox.db";
-		public string DatabaseTemplatePath { get { return "res" + Path.DirectorySeparatorChar + DATABASE_FILE_NAME; } }
+		public string DatabaseTemplatePath { get { return ServerUtility.ExecutablePath() + "res" + Path.DirectorySeparatorChar + DATABASE_FILE_NAME; } }
 		public string DatabasePath { get { return ServerUtility.RootPath() + DATABASE_FILE_NAME; } }
 
 		private static readonly string QUERY_LOG_FILE_NAME = "wavebox_querylog.db";
-		public string QuerylogTemplatePath { get { return "res" + Path.DirectorySeparatorChar + QUERY_LOG_FILE_NAME; } }
+		public string QuerylogTemplatePath { get { return ServerUtility.ExecutablePath() + "res" + Path.DirectorySeparatorChar + QUERY_LOG_FILE_NAME; } }
 		public string QuerylogPath { get { return ServerUtility.RootPath() + QUERY_LOG_FILE_NAME; } }
 
 		private static readonly object dbBackupLock = new object();
