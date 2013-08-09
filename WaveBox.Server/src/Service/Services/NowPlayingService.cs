@@ -46,7 +46,7 @@ namespace WaveBox.Service.Services
 			return true;
 		}
 
-		public bool Register(User user, IMediaItem m)
+		public bool Register(User user, IMediaItem m, long? timestamp = null)
 		{
 			// Begin building object
 			NowPlaying nowPlaying = new NowPlaying();
@@ -60,9 +60,15 @@ namespace WaveBox.Service.Services
 			clientName = clientName ?? "wavebox";
 			nowPlaying.ClientName = clientName;
 
+			// Check if client sent a timestamp (if not, use current time)
+			if (timestamp == null)
+			{
+				timestamp = DateTime.Now.ToUniversalUnixTimestamp();
+			}
+
 			// Capture play time to set up automatic unregister on playback end
-			nowPlaying.StartTime = DateTime.Now.ToUniversalUnixTimestamp();
-			nowPlaying.EndTime = DateTime.Now.AddSeconds(Convert.ToInt32(m.Duration)).ToUniversalUnixTimestamp();
+			nowPlaying.StartTime = timestamp;
+			nowPlaying.EndTime = timestamp + Convert.ToInt32(m.Duration);
 
 			// Start a timer, set to elapse and unregister this song exactly when it should finish playback
 			Timer t = new Timer(Convert.ToInt32(m.Duration) * 1000);
