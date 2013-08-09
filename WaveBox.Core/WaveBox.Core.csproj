@@ -104,6 +104,7 @@
     <Compile Include="src\Model\Interfaces\IPodcastShim.cs" />
     <Compile Include="src\Model\ItemType.cs" />
     <Compile Include="src\Model\MediaItem.cs" />
+    <Compile Include="src\Model\NowPlaying.cs" />
     <Compile Include="src\Model\Playlist.cs" />
     <Compile Include="src\Model\PlaylistItem.cs" />
     <Compile Include="src\Model\Podcast.cs" />

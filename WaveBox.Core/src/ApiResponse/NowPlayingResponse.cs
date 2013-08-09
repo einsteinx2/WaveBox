@@ -11,9 +11,9 @@ namespace WaveBox.Core.ApiResponse
 		public string Error { get; set; }
 
 		[JsonProperty("nowPlaying")]
-		public IList<Dictionary<string, object>> NowPlaying { get; set; }
+		public IList<NowPlaying> NowPlaying { get; set; }
 
-		public NowPlayingResponse(string error, IList<Dictionary<string, object>> nowPlaying)
+		public NowPlayingResponse(string error, IList<NowPlaying> nowPlaying)
 		{
 			Error = error;
 			NowPlaying = nowPlaying;

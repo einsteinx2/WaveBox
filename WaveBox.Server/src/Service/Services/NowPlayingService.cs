@@ -22,9 +22,9 @@ namespace WaveBox.Service.Services
 
 		public bool Running { get; set; }
 
-		// List of NowPlaying dictionaries
-		public IList<Dictionary<string, object>> Playing { get { return this.playing; } set { } }
-		private List<Dictionary<string, object>> playing;
+		// List of NowPlaying objects
+		public IList<NowPlaying> Playing { get { return this.playing; } set { } }
+		private List<NowPlaying> playing;
 
 		public NowPlayingService()
 		{
@@ -33,7 +33,7 @@ namespace WaveBox.Service.Services
 		public bool Start()
 		{
 			// Initialize list
-			this.playing = new List<Dictionary<string, object>>();
+			this.playing = new List<NowPlaying>();
 
 			return true;
 		}
@@ -48,21 +48,21 @@ namespace WaveBox.Service.Services
 
 		public bool Register(User user, IMediaItem m)
 		{
-			// Begin building dictionary
-			Dictionary<string, object> nowPlaying = new Dictionary<string, object>();
+			// Begin building object
+			NowPlaying nowPlaying = new NowPlaying();
 
 			// Capture username, user's current client name from session
 			string userName = user.UserName;
-			nowPlaying["userName"] = userName;
+			nowPlaying.UserName = userName;
 			string clientName = user.CurrentSession().ClientName;
 
 			// If no client name, use default
 			clientName = clientName ?? "wavebox";
-			nowPlaying["clientName"] = clientName;
+			nowPlaying.ClientName = clientName;
 
 			// Capture play time to set up automatic unregister on playback end
-			nowPlaying["startTime"] = DateTime.Now.ToUniversalUnixTimestamp();
-			nowPlaying["endTime"] = DateTime.Now.AddSeconds(Convert.ToInt32(m.Duration)).ToUniversalUnixTimestamp();
+			nowPlaying.StartTime = DateTime.Now.ToUniversalUnixTimestamp();
+			nowPlaying.EndTime = DateTime.Now.AddSeconds(Convert.ToInt32(m.Duration)).ToUniversalUnixTimestamp();
 
 			// Start a timer, set to elapse and unregister this song exactly when it should finish playback
 			Timer t = new Timer(Convert.ToInt32(m.Duration) * 1000);
@@ -77,7 +77,7 @@ namespace WaveBox.Service.Services
 			{
 				// Box IMediaItem to Song
 				Song s = (Song)m;
-				nowPlaying["mediaItem"] = s;
+				nowPlaying.MediaItem = s;
 
 				// Unregister any items with matching user and client
 				this.Unregister(userName, clientName);
@@ -98,7 +98,7 @@ namespace WaveBox.Service.Services
 			{
 				// Box IMediaItem to Video
 				Video v = (Video)m;
-				nowPlaying["mediaItem"] = v;
+				nowPlaying.MediaItem = v;
 
 				// Unregister any items with matching user and client
 				this.Unregister(userName, clientName);
@@ -124,7 +124,7 @@ namespace WaveBox.Service.Services
 		public bool Unregister(string userName, string clientName)
 		{
 			// Unregister song with matching user and client
-			this.playing.RemoveAll(x => x["userName"].ToString() == userName && x["clientName"].ToString() == clientName);
+			this.playing.RemoveAll(x => x.UserName == userName && x.ClientName == clientName);
 			return true;
 		}
 	}

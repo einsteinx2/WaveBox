@@ -37,19 +37,19 @@ namespace WaveBox.ApiHandler.Handlers
 				return;
 			}
 
-			// Store list of now playing dictionaries
-			List<Dictionary<string, object>> nowPlaying = nowPlayingService.Playing.ToList();
+			// Store list of now playing objects
+			IList<NowPlaying> nowPlaying = nowPlayingService.Playing;
 
 			// Filter by user name
 			if (uri.Parameters.ContainsKey("user"))
 			{
-				nowPlaying.RemoveAll(x => x["userName"].ToString() != uri.Parameters["user"]);
+				nowPlaying = nowPlaying.Where(x => x.UserName == uri.Parameters["user"]).ToList();
 			}
 
 			// Filter by client name
 			if (uri.Parameters.ContainsKey("client"))
 			{
-				nowPlaying.RemoveAll(x => x["clientName"].ToString() != uri.Parameters["client"]);
+				nowPlaying = nowPlaying.Where(x => x.ClientName == uri.Parameters["client"]).ToList();
 			}
 
 			// Return list of now playing items
