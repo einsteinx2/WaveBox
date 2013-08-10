@@ -153,7 +153,7 @@ namespace WaveBox.Core.Model
 
 		public override string ToString()
 		{
-			return String.Format("[Folder: ItemId={0}, FolderId={1}, FolderName={2}]", this.ItemId, this.FolderId, this.FolderName);
+			return String.Format("[Folder: ItemId={0}, FolderName={1}]", this.ItemId, this.FolderName);
 		}
 
 		public static int CompareFolderByName(Folder x, Folder y)

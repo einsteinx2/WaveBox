@@ -113,7 +113,7 @@ namespace WaveBox.Core.Model
 
 		public override string ToString()
 		{
-			return String.Format("[Album: ItemId={0}, AlbumId={1}, AlbumName={2}]", this.ItemId, this.AlbumId, this.AlbumName);
+			return String.Format("[Album: ItemId={0}, AlbumName={1}]", this.ItemId, this.AlbumName);
 		}
 
 		public static int CompareAlbumsByName(Album x, Album y)

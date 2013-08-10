@@ -599,7 +599,7 @@ namespace WaveBox.Core.Model
 
 		public override string ToString()
 		{
-			return String.Format("[Playlist: ItemId={0}, PlaylistId={1}, PlaylistName={2}]", this.ItemId, this.PlaylistId, this.PlaylistName);
+			return String.Format("[Playlist: ItemId={0}, PlaylistName={1}]", this.ItemId, this.PlaylistName);
 		}
 
 		public class Factory
