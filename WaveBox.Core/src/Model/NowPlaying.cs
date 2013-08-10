@@ -30,5 +30,10 @@ namespace WaveBox.Core.Model
 		public NowPlaying()
 		{
 		}
+
+		public override string ToString()
+		{
+			return String.Format("[NowPlaying: UserName={0}, ClientName={1}, StartTime={2}]", this.UserName, this.ClientName, this.StartTime);
+		}
 	}
 }
