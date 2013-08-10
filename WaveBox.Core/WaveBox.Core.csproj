@@ -83,6 +83,7 @@
     <Compile Include="src\BaseClasses.cs" />
     <Compile Include="src\Extensions\ByteExtensions.cs" />
     <Compile Include="src\Extensions\DateTimeExtensions.cs" />
+    <Compile Include="src\Extensions\FileTypeExtensions.cs" />
     <Compile Include="src\Extensions\IListExtensions.cs" />
     <Compile Include="src\Extensions\Log4NetExtensions.cs" />
     <Compile Include="src\Extensions\StringExtensions.cs" />

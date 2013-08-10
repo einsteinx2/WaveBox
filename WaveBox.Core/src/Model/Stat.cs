@@ -28,6 +28,11 @@ namespace WaveBox.Core.Model
 		public int? ItemId { get; set; }
 
 		public long? Timestamp { get; set; }
+
+		public override string ToString()
+		{
+			return String.Format("[Stat: ItemId={0}, StatId={1}, StatType={2}]", this.ItemId, this.StatId, this.StatType);
+		}
 	}
 }
 
