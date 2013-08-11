@@ -70,22 +70,6 @@ CREATE TABLE "Folder" (
     "ParentFolderId" INTEGER,
     "MediaFolderId" INTEGER
 );
-CREATE TABLE "Song" (
-    "ItemId" INTEGER UNIQUE NOT NULL,
-    "FolderId" INTEGER,
-    "ArtistId" INTEGER,
-    "AlbumId" INTEGER,
-    "FileType" INTEGER,
-    "SongName" TEXT,
-    "TrackNumber" INTEGER,
-    "DiscNumber" INTEGER,
-    "Duration" INTEGER,
-    "Bitrate" INTEGER,
-    "FileSize" INTEGER,
-    "LastModified" INTEGER,
-    "FileName" TEXT,
-    "ReleaseYear" INTEGER,
-    "GenreId" INTEGER);
 CREATE TABLE "Album" (
     "AlbumId" INTEGER UNIQUE NOT NULL,
     "AlbumName" TEXT NOT NULL,
@@ -166,6 +150,30 @@ CREATE TABLE "User" (
     "CreateTime" INTEGER NOT NULL,
     "DeleteTime" INTEGER
 );
+CREATE TABLE "Song" (
+    "ItemId" INTEGER UNIQUE NOT NULL,
+    "FolderId" INTEGER,
+    "ArtistId" INTEGER,
+    "AlbumArtistId" INTEGER,
+    "AlbumId" INTEGER,
+    "FileType" INTEGER,
+    "SongName" TEXT,
+    "TrackNumber" INTEGER,
+    "DiscNumber" INTEGER,
+    "Duration" INTEGER,
+    "Bitrate" INTEGER,
+    "FileSize" INTEGER,
+    "LastModified" INTEGER,
+    "FileName" TEXT,
+    "ReleaseYear" INTEGER,
+    "GenreId" INTEGER,
+    "BeatsPerMinute" INTEGER,
+    "Lyrics" TEXT,
+    "Comment" TEXT);
+CREATE TABLE "AlbumArtist" (
+    "AlbumArtistId" integer UNIQUE NOT NULL,
+    "AlbumArtistName" text UNIQUE NOT NULL ON CONFLICT IGNORE
+);
 DELETE FROM sqlite_sequence;
 INSERT INTO "sqlite_sequence" VALUES('item_type',12);
 CREATE UNIQUE INDEX "title_author_unique" ON "Podcast" ("Title", "Author");
@@ -173,12 +181,12 @@ CREATE UNIQUE INDEX "bookmark_item" ON "BookmarkItem" ("BookmarkId", "ItemPositi
 CREATE UNIQUE INDEX "folder_NamePath" ON "Folder" ("FolderName","FolderPath");
 CREATE INDEX "folder_Parent" ON "Folder" ("FolderName", "ParentFolderId");
 CREATE INDEX "folder_Path" ON "Folder" ("FolderPath");
-CREATE INDEX "song_ItemId" ON "Song" ("ItemId");
-CREATE INDEX "song_FolderIdFileName" ON "song" ("FolderId","FileName");
 CREATE UNIQUE INDEX "album_AlbumNameArtistId" ON "Album" ("AlbumName", "ArtistId");
 CREATE INDEX art_LastModFilePath ON art("LastModified","FilePath");
 CREATE INDEX art_Md5Hash ON art("Md5Hash");
 CREATE INDEX item_Timestamp ON item ("Timestamp");
 CREATE UNIQUE INDEX "playlist_item_PlaylistIdPosition" ON "PlaylistItem" ("PlaylistId", "ItemPosition");
 CREATE INDEX "stat_Timestamp" ON "Stat" ("Timestamp");
+CREATE INDEX "song_FolderIdFileName" ON "song" ("FolderId","FileName");
+CREATE INDEX "song_ItemId" ON "Song" ("ItemId");
 COMMIT;

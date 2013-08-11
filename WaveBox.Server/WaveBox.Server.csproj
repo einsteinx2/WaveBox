@@ -205,6 +205,7 @@
     </Compile>
     <Compile Include="src\WaveBoxServiceInstaller.cs" />
     <Compile Include="src\PodcastManagement\PodcastShim.cs" />
+    <Compile Include="src\ApiHandler\Handlers\AlbumArtistsApiHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">

@@ -21,6 +21,7 @@ namespace WaveBox.Core.Model
 		BookmarkItem = 12,
 		Art = 13,
 		Genre = 14,
+		AlbumArtist = 15,
 		Unknown = 2147483647 // Int32.MaxValue used for database compatibility
 	}
 

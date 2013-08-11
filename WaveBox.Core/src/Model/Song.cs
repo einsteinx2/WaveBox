@@ -32,6 +32,12 @@ namespace WaveBox.Core.Model
 		[JsonProperty("artistName"), IgnoreWrite]
 		public string ArtistName { get; set; }
 
+		[JsonProperty("albumArtistId")]
+		public int? AlbumArtistId { get; set; }
+
+		[JsonProperty("albumArtistName"), IgnoreWrite]
+		public string AlbumArtistName { get; set; }
+
 		[JsonProperty("albumId")]
 		public int? AlbumId { get; set; }
 
@@ -49,6 +55,15 @@ namespace WaveBox.Core.Model
 
 		[JsonProperty("releaseYear")]
 		public int? ReleaseYear { get; set; }
+
+		[JsonProperty("beatsPerMinute")]
+		public uint? BeatsPerMinute { get; set; }
+
+		[JsonProperty("lyrics")]
+		public string Lyrics { get; set; }
+
+		[JsonProperty("comment")]
+		public string Comment { get; set; }
 
 		public Song()
 		{

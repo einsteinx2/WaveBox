@@ -139,12 +139,12 @@ namespace WaveBox
 			return RemoveHttpHeaders(resp);
 		}
 
-		public static string GetArtistInfo(Artist artist)
+		private static string GetInfo(string artistName)
 		{
 			var p = new SortedDictionary<string, string>();
 
 			// URL encode to ensure spaces get parsed properly
-			p.Add("artist", HttpUtility.UrlEncode(artist.ArtistName));
+			p.Add("artist", HttpUtility.UrlEncode(artistName));
 			p.Add("api_key", apiKey);
 			p.Add("method", "artist.getInfo");
 
@@ -154,9 +154,24 @@ namespace WaveBox
 			return RemoveHttpHeaders(result);
 		}
 
+		public static string GetArtistInfo(Artist artist)
+		{
+			return GetInfo(artist.ArtistName);
+		}
+
 		public static string GetArtistInfo(int artistId)
 		{
 			return GetArtistInfo(Injection.Kernel.Get<IArtistRepository>().ArtistForId(artistId));
+		}
+
+		public static string GetAlbumArtistInfo(AlbumArtist albumArtist)
+		{
+			return GetInfo(albumArtist.AlbumArtistName);
+		}
+
+		public static string GetAlbumArtistInfo(int albumArtistId)
+		{
+			return GetAlbumArtistInfo(Injection.Kernel.Get<IAlbumArtistRepository>().AlbumArtistForId(albumArtistId));
 		}
 
 		private static string CompileApiCall(SortedDictionary<string, string> parameters)

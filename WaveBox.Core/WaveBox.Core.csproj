@@ -146,6 +146,10 @@
     <Compile Include="src\SQLiteNet.cs" />
     <Compile Include="src\Static\ThreadSafeRandom.cs" />
     <Compile Include="src\Static\Utility.cs" />
+    <Compile Include="src\Model\AlbumArtist.cs" />
+    <Compile Include="src\Repository\AlbumArtistRepository.cs" />
+    <Compile Include="src\Repository\Interfaces\IAlbumArtistRepository.cs" />
+    <Compile Include="src\ApiResponse\AlbumArtistsResponse.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
