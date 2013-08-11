@@ -14,7 +14,7 @@ namespace WaveBox.ApiHandler.Handlers
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public string Name { get { return "web"; } set { } }
+		public string Name { get { return "web"; } }
 
 		// Define root project directory containing web interfaces, or "themes"
 		private static string webRoot = ServerUtility.ExecutablePath() + "themes" + Path.DirectorySeparatorChar;

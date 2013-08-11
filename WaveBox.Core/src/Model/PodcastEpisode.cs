@@ -95,6 +95,11 @@ namespace WaveBox.Core.Model
 			}
 		}
 
+		public override string ToString()
+		{
+			return String.Format("[PodcastEpisode: PodcastId={0}, EpisodeId={1}, Title={2}]", this.PodcastId, this.EpisodeId, this.Title);
+		}
+
 		public class Factory
 		{
 			public PodcastEpisode CreatePodcastEpisode(XmlNode episode, XmlNamespaceManager mgr, long? podcastId)

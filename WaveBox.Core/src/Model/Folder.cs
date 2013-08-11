@@ -103,7 +103,7 @@ namespace WaveBox.Core.Model
 			{
 				return true;
 			}
-			
+
 			return false;
 		}
 
@@ -127,7 +127,7 @@ namespace WaveBox.Core.Model
 			{
 				return;
 			}
-			
+
 			ISQLiteConnection conn = null;
 			try
 			{
@@ -149,6 +149,11 @@ namespace WaveBox.Core.Model
 			{
 				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
+		}
+
+		public override string ToString()
+		{
+			return String.Format("[Folder: ItemId={0}, FolderName={1}]", this.ItemId, this.FolderName);
 		}
 
 		public static int CompareFolderByName(Folder x, Folder y)

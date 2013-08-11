@@ -10,7 +10,7 @@ namespace WaveBox.ApiHandler
 	public interface IApiHandler
 	{
 		// API handler's name
-		string Name { get; set; }
+		string Name { get; }
 
 		// API handler's action
 		void Process(UriWrapper uri, IHttpProcessor processor, User user);

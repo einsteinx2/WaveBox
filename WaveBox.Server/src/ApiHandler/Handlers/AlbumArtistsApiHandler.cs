@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,19 +15,19 @@ using WaveBox.Static;
 
 namespace WaveBox.ApiHandler.Handlers
 {
-	class ArtistsApiHandler : IApiHandler
+	class AlbumArtistsApiHandler : IApiHandler
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public string Name { get { return "artists"; } }
+		public string Name { get { return "albumartists"; } }
 
 		/// <summary>
-		/// Process returns an ArtistsResponse containing a list of artists, albums, and songs
+		/// Process returns an AlbumArtistsResponse containing a list of artists, albums, and songs
 		/// </summary>
 		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			// Lists of artists, albums, songs to be returned via handler
-			IList<Artist> artists = new List<Artist>();
+			IList<AlbumArtist> albumArtists = new List<AlbumArtist>();
 			IList<Album> albums = new List<Album>();
 			IList<Song> songs = new List<Song>();
 
@@ -40,14 +40,14 @@ namespace WaveBox.ApiHandler.Handlers
 			{
 				if (!Int32.TryParse(uri.Parameters["id"], out id))
 				{
-					string json = JsonConvert.SerializeObject(new ArtistsResponse("Parameter 'id' requires a valid integer", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+					string json = JsonConvert.SerializeObject(new AlbumArtistsResponse("Parameter 'id' requires a valid integer", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 					processor.WriteJson(json);
 					return;
 				}
 
 				// Add artist by ID to the list
-				Artist a = Injection.Kernel.Get<IArtistRepository>().ArtistForId(id);
-				artists.Add(a);
+				AlbumArtist a = Injection.Kernel.Get<IAlbumArtistRepository>().AlbumArtistForId(id);
+				albumArtists.Add(a);
 
 				// Add artist's albums to response
 				albums = a.ListOfAlbums();
@@ -66,10 +66,10 @@ namespace WaveBox.ApiHandler.Handlers
 				{
 					if (uri.Parameters["lastfmInfo"].IsTrue())
 					{
-						logger.IfInfo("Querying Last.fm for artist: " + a.ArtistName);
+						logger.IfInfo("Querying Last.fm for artist: " + a.AlbumArtistName);
 						try
 						{
-							lastfmInfo = Lastfm.GetArtistInfo(a);
+							lastfmInfo = Lastfm.GetAlbumArtistInfo(a);
 							logger.IfInfo("Last.fm query complete!");
 						}
 						catch (Exception e)
@@ -88,7 +88,7 @@ namespace WaveBox.ApiHandler.Handlers
 				// Ensure valid range was parsed
 				if (range.Length != 2)
 				{
-					string json = JsonConvert.SerializeObject(new ArtistsResponse("Parameter 'range' requires a valid, comma-separated character tuple", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+					string json = JsonConvert.SerializeObject(new AlbumArtistsResponse("Parameter 'range' requires a valid, comma-separated character tuple", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 					processor.WriteJson(json);
 					return;
 				}
@@ -97,13 +97,13 @@ namespace WaveBox.ApiHandler.Handlers
 				char start, end;
 				if (!Char.TryParse(range[0], out start) || !Char.TryParse(range[1], out end))
 				{
-					string json = JsonConvert.SerializeObject(new ArtistsResponse("Parameter 'range' requires characters which are single alphanumeric values", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+					string json = JsonConvert.SerializeObject(new AlbumArtistsResponse("Parameter 'range' requires characters which are single alphanumeric values", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 					processor.WriteJson(json);
 					return;
 				}
 
 				// Grab range of artists
-				artists = Injection.Kernel.Get<IArtistRepository>().RangeArtists(start, end);
+				albumArtists = Injection.Kernel.Get<IAlbumArtistRepository>().RangeAlbumArtists(start, end);
 			}
 
 			// Check for a request to limit/paginate artists, like SQL
@@ -115,7 +115,7 @@ namespace WaveBox.ApiHandler.Handlers
 				// Ensure valid limit was parsed
 				if (limit.Length < 1 || limit.Length > 2 )
 				{
-					string json = JsonConvert.SerializeObject(new ArtistsResponse("Parameter 'limit' requires a single integer, or a valid, comma-separated integer tuple", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+					string json = JsonConvert.SerializeObject(new AlbumArtistsResponse("Parameter 'limit' requires a single integer, or a valid, comma-separated integer tuple", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 					processor.WriteJson(json);
 					return;
 				}
@@ -125,7 +125,7 @@ namespace WaveBox.ApiHandler.Handlers
 				int duration = Int32.MinValue;
 				if (!Int32.TryParse(limit[0], out index))
 				{
-					string json = JsonConvert.SerializeObject(new ArtistsResponse("Parameter 'limit' requires a valid integer start index", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+					string json = JsonConvert.SerializeObject(new AlbumArtistsResponse("Parameter 'limit' requires a valid integer start index", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 					processor.WriteJson(json);
 					return;
 				}
@@ -133,7 +133,7 @@ namespace WaveBox.ApiHandler.Handlers
 				// Ensure positive index
 				if (index < 0)
 				{
-					string json = JsonConvert.SerializeObject(new ArtistsResponse("Parameter 'limit' requires a non-negative integer start index", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+					string json = JsonConvert.SerializeObject(new AlbumArtistsResponse("Parameter 'limit' requires a non-negative integer start index", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 					processor.WriteJson(json);
 					return;
 				}
@@ -143,7 +143,7 @@ namespace WaveBox.ApiHandler.Handlers
 				{
 					if (!Int32.TryParse(limit[1], out duration))
 					{
-						string json = JsonConvert.SerializeObject(new ArtistsResponse("Parameter 'limit' requires a valid integer duration", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+						string json = JsonConvert.SerializeObject(new AlbumArtistsResponse("Parameter 'limit' requires a valid integer duration", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 						processor.WriteJson(json);
 						return;
 					}
@@ -151,43 +151,43 @@ namespace WaveBox.ApiHandler.Handlers
 					// Ensure positive duration
 					if (duration < 0)
 					{
-						string json = JsonConvert.SerializeObject(new ArtistsResponse("Parameter 'limit' requires a non-negative integer duration", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+						string json = JsonConvert.SerializeObject(new AlbumArtistsResponse("Parameter 'limit' requires a non-negative integer duration", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 						processor.WriteJson(json);
 						return;
 					}
 				}
 
 				// Check if results list already populated by range
-				if (artists.Count > 0)
+				if (albumArtists.Count > 0)
 				{
 					// No duration?  Return just specified number of artists
 					if (duration == Int32.MinValue)
 					{
-						artists = artists.Skip(0).Take(index).ToList();
+						albumArtists = albumArtists.Skip(0).Take(index).ToList();
 					}
 					else
 					{
 						// Else, return artists starting at index, up to count duration
-						artists = artists.Skip(index).Take(duration).ToList();
+						albumArtists = albumArtists.Skip(index).Take(duration).ToList();
 					}
 				}
 				else
 				{
 					// If no artists in list, grab directly using model method
-					artists = Injection.Kernel.Get<IArtistRepository>().LimitArtists(index, duration);
+					albumArtists = Injection.Kernel.Get<IAlbumArtistRepository>().LimitAlbumArtists(index, duration);
 				}
 			}
 
 			// Finally, if no artists already in list, send the whole list
-			if (artists.Count == 0)
+			if (albumArtists.Count == 0)
 			{
-				artists = Injection.Kernel.Get<IArtistRepository>().AllArtists();
+				albumArtists = Injection.Kernel.Get<IAlbumArtistRepository>().AllAlbumArtists();
 			}
 
 			try
 			{
 				// Send it!
-				string json = JsonConvert.SerializeObject(new ArtistsResponse(null, artists, albums, songs, lastfmInfo), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+				string json = JsonConvert.SerializeObject(new AlbumArtistsResponse(null, albumArtists, albums, songs, lastfmInfo), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 				processor.WriteJson(json);
 			}
 			catch (Exception e)

@@ -30,6 +30,7 @@ namespace WaveBox.FolderScanning
 		public string FolderPath { get { return folderPath; } }
 
 		int testNumberOfFoldersInserted = 0;
+		Stopwatch testTotalScanTime = new Stopwatch();
 		Stopwatch testFolderObjCreateTime = new Stopwatch();
 		Stopwatch testGetDirectoriesTime = new Stopwatch();
 		Stopwatch testMediaItemNeedsUpdatingTime = new Stopwatch();
@@ -42,9 +43,13 @@ namespace WaveBox.FolderScanning
 
 		public override void Start()
 		{
+			testTotalScanTime.Start();
 			this.ProcessFolder(FolderPath);
+			testTotalScanTime.Stop();
 
 			logger.IfInfo("---------------- FOLDER SCAN ----------------");
+			logger.IfInfo("total scan time: " + testTotalScanTime.ElapsedMilliseconds + "ms");
+			logger.IfInfo("---------------------------------------------");
 			logger.IfInfo("folders inserted: " + testNumberOfFoldersInserted);
 			logger.IfInfo("folder object create time: " + testFolderObjCreateTime.ElapsedMilliseconds + "ms");
 			logger.IfInfo("get directories time: " + testGetDirectoriesTime.ElapsedMilliseconds + "ms");
@@ -308,9 +313,13 @@ namespace WaveBox.FolderScanning
 
 			try
 			{
-				Artist artist = Injection.Kernel.Get<IArtistRepository>().ArtistForNameOrCreate(tag.FirstPerformer);
-				song.ArtistId = artist.ArtistId;
-				song.ArtistName = artist.ArtistName;
+				string firstPerformer = tag.FirstPerformer;
+				if (firstPerformer != null)
+				{
+					Artist artist = Injection.Kernel.Get<IArtistRepository>().ArtistForNameOrCreate(firstPerformer.Trim());
+					song.ArtistId = artist.ArtistId;
+					song.ArtistName = artist.ArtistName;
+				}
 			}
 			catch (Exception e)
 			{
@@ -321,10 +330,31 @@ namespace WaveBox.FolderScanning
 
 			try
 			{
-				Album album = Injection.Kernel.Get<IAlbumRepository>().AlbumForName(tag.Album, song.ArtistId, Convert.ToInt32(tag.Year));
-				song.AlbumId = album.AlbumId;
-				song.AlbumName = album.AlbumName;
-				song.ReleaseYear = album.ReleaseYear;
+				string firstAlbumArtist = tag.FirstAlbumArtist;
+				if (firstAlbumArtist != null)
+				{
+					AlbumArtist albumArtist = Injection.Kernel.Get<IAlbumArtistRepository>().AlbumArtistForNameOrCreate(firstAlbumArtist.Trim());
+					song.AlbumArtistId = albumArtist.AlbumArtistId;
+					song.AlbumArtistName = albumArtist.AlbumArtistName;
+				}
+			}
+			catch (Exception e)
+			{
+				if (logger.IsErrorEnabled) logger.Error("Error creating album artist info for song: ", e);
+				song.AlbumArtistId = null;
+				song.AlbumArtistName = null;
+			}
+
+			try
+			{
+				string albumName = tag.Album;
+				if (albumName != null)
+				{
+					Album album = Injection.Kernel.Get<IAlbumRepository>().AlbumForName(albumName.Trim(), song.ArtistId, Convert.ToInt32(tag.Year));
+					song.AlbumId = album.AlbumId;
+					song.AlbumName = album.AlbumName;
+					song.ReleaseYear = album.ReleaseYear;
+				}
 			}
 			catch (Exception e)
 			{
@@ -343,7 +373,11 @@ namespace WaveBox.FolderScanning
 
 			try
 			{
-				song.SongName = tag.Title;
+				string title = tag.Title;
+				if (title != null)
+				{
+					song.SongName = title.Trim();
+				}
 			}
 			catch
 			{
@@ -370,11 +404,42 @@ namespace WaveBox.FolderScanning
 
 			try
 			{
-				song.GenreName = tag.FirstGenre;
+				string firstGenre = tag.FirstGenre;
+				if (firstGenre != null)
+				{
+					song.GenreName = firstGenre.Trim();
+				}
 			}
 			catch
 			{
 				song.GenreName = null;
+			}
+
+			try
+			{
+				song.BeatsPerMinute = tag.BeatsPerMinute;
+			}
+			catch
+			{
+				song.BeatsPerMinute = null;
+			}
+
+			try
+			{
+				song.Lyrics = tag.Lyrics;
+			}
+			catch
+			{
+				song.Lyrics = null;
+			}
+
+			try
+			{
+				song.Comment = tag.Comment;
+			}
+			catch
+			{
+				song.Comment = null;
 			}
 
 			// Dispose tag

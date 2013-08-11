@@ -267,5 +267,10 @@ namespace WaveBox.Core.Model
 
 			return false;
 		}
+
+		public override string ToString()
+		{
+			return String.Format("[User: UserId={0}, UserName={1}]", this.UserId, this.UserName);
+		}
 	}
 }

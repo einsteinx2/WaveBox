@@ -9,6 +9,7 @@ namespace WaveBox.Core
 		public override void Load() 
 		{
 			// Repositories
+			Bind<IAlbumArtistRepository>().To<AlbumArtistRepository>().InSingletonScope();
 			Bind<IAlbumRepository>().To<AlbumRepository>().InSingletonScope();
 			Bind<IArtRepository>().To<ArtRepository>().InSingletonScope();
 			Bind<IArtistRepository>().To<ArtistRepository>().InSingletonScope();

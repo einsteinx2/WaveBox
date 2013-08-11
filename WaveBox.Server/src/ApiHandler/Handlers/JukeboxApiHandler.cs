@@ -20,7 +20,7 @@ namespace WaveBox.ApiHandler.Handlers
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public string Name { get { return "jukebox"; } set { } }
+		public string Name { get { return "jukebox"; } }
 
 		/// <summary>
 		/// Process returns whether a specific call the Jukebox API was successful or not

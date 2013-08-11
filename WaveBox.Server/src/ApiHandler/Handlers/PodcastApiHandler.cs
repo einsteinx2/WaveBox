@@ -15,7 +15,7 @@ namespace WaveBox.ApiHandler.Handlers
 {
 	class PodcastApiHandler : IApiHandler
 	{
-		public string Name { get { return "podcast"; } set { } }
+		public string Name { get { return "podcast"; } }
 
 		/// <summary>
 		/// Process handles all functions needed for the Podcast API

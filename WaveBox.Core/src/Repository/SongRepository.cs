@@ -27,11 +27,12 @@ namespace WaveBox.Core.Model.Repository
 			try
 			{
 				conn = database.GetSqliteConnection();
-				var result = conn.DeferredQuery<Song>("SELECT Song.*, Artist.ArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
-				                                              "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
-				                                              "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
-				                                              "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
-				                                              "WHERE Song.ItemId = ? LIMIT 1", songId);
+				var result = conn.DeferredQuery<Song>("SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
+													  "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+													  "LEFT JOIN AlbumArtist ON Song.AlbumArtistId = AlbumArtist.AlbumArtistId " +
+													  "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
+													  "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
+													  "WHERE Song.ItemId = ? LIMIT 1", songId);
 
 				foreach (Song song in result)
 				{
@@ -59,8 +60,9 @@ namespace WaveBox.Core.Model.Repository
 			{
 				conn = database.GetSqliteConnection();
 
-				StringBuilder sb = new StringBuilder("SELECT Song.*, Artist.ArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
+				StringBuilder sb = new StringBuilder("SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
 				                                     "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+				                                     "LEFT JOIN AlbumArtist ON Song.AlbumArtistId = AlbumArtist.AlbumArtistId " +
 				                                     "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
 				                                     "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
 				                                     "WHERE");
@@ -96,8 +98,9 @@ namespace WaveBox.Core.Model.Repository
 			try
 			{
 				conn = database.GetSqliteConnection();
-				return conn.Query<Song>("SELECT Song.*, Artist.ArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
+				return conn.Query<Song>("SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
 				                        "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+				                        "LEFT JOIN AlbumArtist ON Song.AlbumArtistId = AlbumArtist.AlbumArtistId " +
 				                        "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
 				                        "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId");
 			}
@@ -221,8 +224,9 @@ namespace WaveBox.Core.Model.Repository
 				if (exact)
 				{
 					// Search for exact match
-					songs = conn.Query<Song>("SELECT Song.*, Artist.ArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
+					songs = conn.Query<Song>("SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
 					                         "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+					                         "LEFT JOIN AlbumArtist ON Song.AlbumArtistId = AlbumArtist.AlbumArtistId " +
 					                         "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
 					                         "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
 					                         "WHERE Song." + field + " = ?", query);
@@ -230,8 +234,9 @@ namespace WaveBox.Core.Model.Repository
 				else
 				{
 					// Search for fuzzy match (containing query)
-					songs = conn.Query<Song>("SELECT Song.*, Artist.ArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
+					songs = conn.Query<Song>("SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
 					                         "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+					                         "LEFT JOIN AlbumArtist ON Song.AlbumArtistId = AlbumArtist.AlbumArtistId " +
 					                         "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
 					                         "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
 					                         "WHERE Song." + field + " LIKE ?", "%" + query + "%");
@@ -271,8 +276,9 @@ namespace WaveBox.Core.Model.Repository
 				conn = database.GetSqliteConnection();
 
 				List<Song> songs;
-				songs = conn.Query<Song>("SELECT Song.*, Artist.ArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
+				songs = conn.Query<Song>("SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
 				                         "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+				                         "LEFT JOIN AlbumArtist ON Song.AlbumArtistId = AlbumArtist.AlbumArtistId " +
 				                         "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
 				                         "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
 				                         "WHERE Song.SongName BETWEEN LOWER(?) AND LOWER(?) " +
@@ -304,11 +310,12 @@ namespace WaveBox.Core.Model.Repository
 
 				// Begin building query
 				List<Song> songs;
-				string query = "SELECT Song.*, Artist.ArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
-					"LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
-						"LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
-						"LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
-						"LIMIT ? ";
+				string query = "SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
+							   "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+							   "LEFT JOIN AlbumArtist ON Song.AlbumArtistId = AlbumArtist.AlbumArtistId " +
+							   "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
+							   "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
+							   "LIMIT ? ";
 
 				// Add duration to LIMIT if needed
 				if (duration != Int32.MinValue && duration > 0)

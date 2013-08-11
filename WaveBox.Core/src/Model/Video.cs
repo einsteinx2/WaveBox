@@ -26,14 +26,14 @@ namespace WaveBox.Core.Model
 
 		[JsonProperty("width")]
 		public int? Width { get; set; }
-		
+
 		[JsonProperty("height")]
 		public int? Height { get; set; }
 
 		[JsonProperty("aspectRatio")]
 		public float? AspectRatio
-		{ 
-			get 
+		{
+			get
 			{
 				if ((object)Width == null || (object)Height == null || Height == 0)
 				{
@@ -47,7 +47,7 @@ namespace WaveBox.Core.Model
 		public Video()
 		{
 		}
-		
+
 		public override void InsertMediaItem()
 		{
 			ISQLiteConnection conn = null;
@@ -67,6 +67,11 @@ namespace WaveBox.Core.Model
 
 			Injection.Kernel.Get<IArtRepository>().UpdateArtItemRelationship(ArtId, ItemId, true);
 			Injection.Kernel.Get<IArtRepository>().UpdateArtItemRelationship(ArtId, FolderId, false); // Only update a folder art relationship if it has no folder art
+		}
+
+		public override string ToString()
+		{
+			return String.Format("[Video: ItemId={0}, FileName={1}]", this.ItemId, this.FileName);
 		}
 
 		public static int CompareVideosByFileName(Video x, Video y)

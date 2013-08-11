@@ -17,7 +17,7 @@ namespace WaveBox.ApiHandler
 {
 	class StatsApiHandler : IApiHandler
 	{
-		public string Name { get { return "stats"; } set { } }
+		public string Name { get { return "stats"; } }
 
 		/// <summary>
 		/// Process records play stats for artists, albums, songs

@@ -197,6 +197,11 @@ namespace WaveBox.Core.Model
 			return new List<PodcastEpisode>();
 		}
 
+		public override string ToString()
+		{
+			return String.Format("[Podcast: PodcastId={0}, Title={1}, Author={2}]", this.PodcastId, this.Title, this.Author);
+		}
+
 		/* Class methods */
 		public static List<Podcast> ListOfStoredPodcasts()
 		{

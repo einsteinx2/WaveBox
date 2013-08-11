@@ -25,7 +25,7 @@ namespace WaveBox.ApiHandler.Handlers
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public string Name { get { return "transcode"; } set { } }
+		public string Name { get { return "transcode"; } }
 
 		/// <summary>
 		/// Process handles the initialization of the file transcoding sequence
