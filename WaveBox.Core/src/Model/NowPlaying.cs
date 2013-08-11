@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Timers;
 using Newtonsoft.Json;
 using Ninject;
 using WaveBox.Core.Model;
@@ -26,6 +27,9 @@ namespace WaveBox.Core.Model
 
 		[JsonProperty("mediaItem")]
 		public IMediaItem MediaItem { get; set; }
+
+		[JsonIgnore]
+		public Timer Timer { get; set; }
 
 		public NowPlaying()
 		{

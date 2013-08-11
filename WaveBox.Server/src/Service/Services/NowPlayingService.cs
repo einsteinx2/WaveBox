@@ -71,9 +71,9 @@ namespace WaveBox.Service.Services
 			nowPlaying.EndTime = timestamp + Convert.ToInt32(m.Duration);
 
 			// Start a timer, set to elapse and unregister this song exactly when it should finish playback
-			Timer t = new Timer(Convert.ToInt32(m.Duration) * 1000);
-			t.Elapsed += delegate { this.Unregister(userName, clientName); };
-			t.Start();
+			nowPlaying.Timer = new Timer(Convert.ToInt32(m.Duration) * 1000);
+			nowPlaying.Timer.Elapsed += delegate { this.Unregister(userName, clientName); };
+			nowPlaying.Timer.Start();
 
 			// Capture media item's type
 			Type mediaType = m.GetType();
