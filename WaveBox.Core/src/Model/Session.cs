@@ -94,5 +94,10 @@ namespace WaveBox.Core.Model
 
 			return success;
 		}
+
+		public override string ToString()
+		{
+			return String.Format("[Session: RowId={0}, SessionId={1}, UserId={2}]", this.RowId, this.SessionId, this.UserId);
+		}
 	}
 }

@@ -15,5 +15,10 @@ namespace WaveBox.Core.Model
 		public QueryLog()
 		{
 		}
+
+		public override string ToString()
+		{
+			return String.Format("[QueryLog: QueryId={0}, QueryString={1}, ValuesString={2}]", this.QueryId, this.QueryString, this.ValuesString);
+		}
 	}
 }

@@ -33,7 +33,7 @@ namespace WaveBox.Core.Model
 			{
 				return;
 			}
-			
+
 			ISQLiteConnection conn = null;
 			try
 			{
@@ -60,7 +60,9 @@ namespace WaveBox.Core.Model
 		public IList<Artist> ListOfArtists()
 		{
 			if (GenreId == null)
+			{
 				return new List<Artist>();
+			}
 
 			return Injection.Kernel.Get<IGenreRepository>().ListOfArtists((int)GenreId);
 		}
@@ -68,7 +70,9 @@ namespace WaveBox.Core.Model
 		public IList<Album> ListOfAlbums()
 		{
 			if (GenreId == null)
+			{
 				return new List<Album>();
+			}
 
 			return Injection.Kernel.Get<IGenreRepository>().ListOfAlbums((int)GenreId);
 		}
@@ -84,9 +88,16 @@ namespace WaveBox.Core.Model
 		public IList<Folder> ListOfFolders()
 		{
 			if (GenreId == null)
+			{
 				return new List<Folder>();
+			}
 
 			return Injection.Kernel.Get<IGenreRepository>().ListOfFolders((int)GenreId);
+		}
+
+		public override string ToString()
+		{
+			return String.Format("[Genre: GenreId={0}, GenreName={1}]", this.GenreId, this.GenreName);
 		}
 
 		public static int CompareGenresByName(Genre x, Genre y)

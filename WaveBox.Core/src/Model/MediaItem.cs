@@ -41,13 +41,13 @@ namespace WaveBox.Core.Model
 
 		[JsonProperty("lastModified")]
 		public long? LastModified { get; set; }
-		
+
 		[JsonProperty("fileName")]
 		public string FileName { get; set; }
 
 		[JsonProperty("genreId")]
 		public int? GenreId { get; set; }
-		
+
 		[JsonProperty("genreName"), IgnoreWrite]
 		public string GenreName { get; set; }
 
@@ -73,18 +73,18 @@ namespace WaveBox.Core.Model
 			{
 				return false;
 			}
-			
+
 			// If parameter cannot be cast to DelayedOperation return false.
 			IMediaItem op = obj as IMediaItem;
 			if ((object)op == null)
 			{
 				return false;
 			}
-			
+
 			// Return true if the fields match:
 			return Equals(op);
 		}
-		
+
 		public bool Equals(IMediaItem op)
 		{
 			// If parameter is null return false:
@@ -92,14 +92,19 @@ namespace WaveBox.Core.Model
 			{
 				return false;
 			}
-			
+
 			// Return true if they match
 			return ItemId.Equals(op.ItemId);
 		}
-		
+
 		public override int GetHashCode()
 		{
 			return ItemId.GetHashCode();
+		}
+
+		public override string ToString()
+		{
+			return String.Format("[MediaItem: ItemId={0}, FileName={1}, LastModified={2}]", this.ItemId, this.FileName, this.LastModified);
 		}
 	}
 }

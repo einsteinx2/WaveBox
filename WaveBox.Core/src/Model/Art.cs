@@ -74,5 +74,10 @@ namespace WaveBox.Core.Model
 				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 		}
+
+		public override string ToString()
+		{
+			return String.Format("[Art: ArtId={0}, FilePath={1}, LastModified={2}]", this.ArtId, this.FilePath, this.LastModified);
+		}
 	}
 }
