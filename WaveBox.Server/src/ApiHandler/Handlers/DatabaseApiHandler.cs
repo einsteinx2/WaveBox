@@ -20,7 +20,7 @@ namespace WaveBox.ApiHandler.Handlers
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public string Name { get { return "database"; } set { } }
+		public string Name { get { return "database"; } }
 
 		/// <summary>
 		/// Process returns a copy of the media database, and can be used to return SQL deltas to update

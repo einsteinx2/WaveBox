@@ -27,6 +27,12 @@ namespace WaveBox.Core.Model
 		[JsonProperty("artistName"), IgnoreWrite]
 		public string ArtistName { get; set; }
 
+		[JsonProperty("albumArtistId")]
+		public int? AlbumArtistId { get; set; }
+
+		[JsonProperty("albumArtistName"), IgnoreWrite]
+		public string AlbumArtistName { get; set; }
+
 		[JsonProperty("albumId")]
 		public int? AlbumId { get; set; }
 

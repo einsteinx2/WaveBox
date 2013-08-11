@@ -23,7 +23,7 @@ namespace WaveBox.ApiHandler
 		public IApiHandler CreateApiHandler(string name)
 		{
 			// Any API handlers with this name?  If yes, return it.  If no, return null.
-			return this.apiHandlers.Any(x => x.Name == name) ? apiHandlers.Single(x => x.Name == name) : null;
+			return this.apiHandlers.SingleOrDefault(x => x.Name == name);
 		}
 
 		/// <summary>

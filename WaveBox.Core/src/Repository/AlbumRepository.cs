@@ -31,9 +31,10 @@ namespace WaveBox.Core.Model.Repository
 			try
 			{
 				conn = database.GetSqliteConnection();
-				var result = conn.DeferredQuery<Album>("SELECT Album.*, Artist.ArtistName FROM Album " +
-				                                       "LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
-				                                       "WHERE Album.AlbumId = ?", albumId);
+				var result = conn.DeferredQuery<Album>("SELECT Album.*, Artist.ArtistName, AlbumArtist.AlbumArtistName FROM Album " +
+													   "LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
+													   "LEFT JOIN AlbumArtist ON Album.ArtistId = Artist.ArtistId " +
+													   "WHERE Album.AlbumId = ?", albumId);
 
 				foreach (Album a in result)
 				{
@@ -63,8 +64,9 @@ namespace WaveBox.Core.Model.Repository
 			try
 			{
 				conn = database.GetSqliteConnection();
-				var result = conn.DeferredQuery<Album>("SELECT Album.*, Artist.ArtistName FROM Album " +
+				var result = conn.DeferredQuery<Album>("SELECT Album.*, Artist.ArtistName, AlbumArtist.AlbumArtistName FROM Album " +
 				                                       "LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
+				                                       "LEFT JOIN AlbumArtist ON Album.ArtistId = Artist.ArtistId " +
 				                                       "WHERE Album.AlbumName = ? AND Album.ArtistId = ?", albumName, artistId);
 
 				foreach (Album a in result)
@@ -154,8 +156,9 @@ namespace WaveBox.Core.Model.Repository
 			try
 			{
 				conn = database.GetSqliteConnection();
-				return conn.Query<Album>("SELECT Album.*, Artist.ArtistName FROM Album " +
+				return conn.Query<Album>("SELECT Album.*, Artist.ArtistName, AlbumArtist.AlbumArtistName FROM Album " +
 				                         "LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
+				                         "LEFT JOIN AlbumArtist ON Album.ArtistId = Artist.ArtistId " +
 				                         "ORDER BY AlbumName");
 			}
 			catch (Exception e)
@@ -217,15 +220,17 @@ namespace WaveBox.Core.Model.Repository
 				if (exact)
 				{
 					// Search for exact match
-					return conn.Query<Album>("SELECT Album.*, Artist.ArtistName FROM Album " +
+					return conn.Query<Album>("SELECT Album.*, Artist.ArtistName, AlbumArtist.AlbumArtistName FROM Album " +
 					                         "LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
+					                         "LEFT JOIN AlbumArtist ON Album.ArtistId = Artist.ArtistId " +
 					                         "WHERE Album." + field + " = ? ORDER BY AlbumName", query);
 				}
 				else
 				{
 					// Search for fuzzy match (containing query)
-					return conn.Query<Album>("SELECT Album.*, Artist.ArtistName FROM Album " +
+					return conn.Query<Album>("SELECT Album.*, Artist.ArtistName, AlbumArtist.AlbumArtistName FROM Album " +
 					                         "LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
+					                         "LEFT JOIN AlbumArtist ON Album.ArtistId = Artist.ArtistId " +
 					                         "WHERE Album." + field + " LIKE ? ORDER BY AlbumName", "%" + query + "%");
 				}
 			}
@@ -247,8 +252,9 @@ namespace WaveBox.Core.Model.Repository
 			try
 			{
 				conn = database.GetSqliteConnection();
-				return conn.Query<Album>("SELECT Album.*, Artist.ArtistName FROM Album " +
+				return conn.Query<Album>("SELECT Album.*, Artist.ArtistName, AlbumArtist.AlbumArtistName FROM Album " +
 				                         "LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
+				                         "LEFT JOIN AlbumArtist ON Album.ArtistId = Artist.ArtistId " +
 				                         "ORDER BY RANDOM() LIMIT " + limit);
 			}
 			catch (Exception e)
@@ -282,8 +288,9 @@ namespace WaveBox.Core.Model.Repository
 				conn = database.GetSqliteConnection();
 
 				List<Album> albums;
-				albums = conn.Query<Album>("SELECT Album.*, Artist.ArtistName FROM Album " +
+				albums = conn.Query<Album>("SELECT Album.*, Artist.ArtistName, AlbumArtist.AlbumArtistName FROM Album " +
 				                           "LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
+				                           "LEFT JOIN AlbumArtist ON Album.ArtistId = Artist.ArtistId " +
 				                           "WHERE Album.AlbumName BETWEEN LOWER(?) AND LOWER(?) " +
 				                           "OR Album.AlbumName BETWEEN UPPER(?) AND UPPER(?)", s, en, s, en);
 
@@ -314,9 +321,10 @@ namespace WaveBox.Core.Model.Repository
 				// Begin building query
 				List<Album> albums;
 
-				string query = "SELECT Album.*, Artist.ArtistName FROM Album " +
-					"LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
-						"LIMIT ? ";
+				string query = "SELECT Album.*, Artist.ArtistName, AlbumArtist.AlbumArtistName FROM Album " +
+							   "LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
+							   "LEFT JOIN AlbumArtist ON Album.ArtistId = Artist.ArtistId " +
+							   "LIMIT ? ";
 
 				// Add duration to LIMIT if needed
 				if (duration != Int32.MinValue && duration > 0)
@@ -379,8 +387,8 @@ namespace WaveBox.Core.Model.Repository
 			{
 				conn = database.GetSqliteConnection();
 				var result = conn.DeferredQuery<Art>("SELECT ArtItem.ArtId FROM Song " +
-					"LEFT JOIN ArtItem ON Song.FolderId = ArtItem.ItemId " +
-					"WHERE Song.AlbumId = ? AND ArtItem.ArtId IS NOT NULL GROUP BY ArtItem.ArtId", albumId);
+													 "LEFT JOIN ArtItem ON Song.FolderId = ArtItem.ItemId " +
+													 "WHERE Song.AlbumId = ? AND ArtItem.ArtId IS NOT NULL GROUP BY ArtItem.ArtId", albumId);
 				foreach (Art art in result)
 				{
 					folderArtIds.Add((int)art.ArtId);

@@ -19,7 +19,7 @@ namespace WaveBox.ApiHandler.Handlers
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public string Name { get { return "artists"; } set { } }
+		public string Name { get { return "artists"; } }
 
 		/// <summary>
 		/// Process returns an ArtistsResponse containing a list of artists, albums, and songs

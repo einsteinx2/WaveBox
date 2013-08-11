@@ -34,7 +34,7 @@ namespace WaveBox.ApiHandler.Handlers
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public string Name { get { return "status"; } set { } }
+		public string Name { get { return "status"; } }
 
 		// Status API cache
 		private static StatusApiCache statusCache = new StatusApiCache();

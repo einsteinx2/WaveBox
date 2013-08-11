@@ -16,7 +16,7 @@ namespace WaveBox.ApiHandler.Handlers
 {
 	public class SearchApiHandler : IApiHandler
 	{
-		public string Name { get { return "search"; } set { } }
+		public string Name { get { return "search"; } }
 
 		/// <summary>
 		/// Process performs a search for a query with specified types
