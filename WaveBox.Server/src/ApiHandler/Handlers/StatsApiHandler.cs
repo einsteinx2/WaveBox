@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
-using WaveBox.Core.Model;
-using WaveBox.Static;
-using WaveBox.Service.Services.Http;
-using WaveBox.Core.Model.Repository;
 using Ninject;
-using WaveBox.Core.ApiResponse;
 using WaveBox.Core;
+using WaveBox.Core.ApiResponse;
+using WaveBox.Core.Model;
+using WaveBox.Core.Model.Repository;
+using WaveBox.Service;
+using WaveBox.Service.Services;
+using WaveBox.Service.Services.Http;
+using WaveBox.Static;
 
 namespace WaveBox.ApiHandler
 {
@@ -25,7 +27,7 @@ namespace WaveBox.ApiHandler
 			// Ensure an event is present
 			if (!uri.Parameters.ContainsKey("event"))
 			{
-				processor.WriteJson(JsonConvert.SerializeObject(new StatsResponse("Please specify an event parameter with comma separated list of events")));
+				processor.WriteJson(JsonConvert.SerializeObject(new StatsResponse("Please specify an event parameter with comma separated list of events"), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 				return;
 			}
 
@@ -36,19 +38,19 @@ namespace WaveBox.ApiHandler
 			if (events.Length < 1)
 			{
 				// Report empty data list
-				processor.WriteJson(JsonConvert.SerializeObject(new StatsResponse("Event data list is empty")));
+				processor.WriteJson(JsonConvert.SerializeObject(new StatsResponse("Event data list is empty"), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 				return;
 			}
 
 			// Ensure events are in triples
 			if (events.Length % 3 != 0)
 			{
-				processor.WriteJson(JsonConvert.SerializeObject(new StatsResponse("Event data list must be in comma-separated triples of form itemId,statType,timestamp")));
+				processor.WriteJson(JsonConvert.SerializeObject(new StatsResponse("Event data list must be in comma-separated triples of form itemId,statType,timestamp"), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 				return;
 			}
 
 			// Iterate all events
-			for (int i = 0; i < events.Length - 3; i += 3)
+			for (int i = 0; i <= events.Length - 3; i += 3)
 			{
 				// Store item ID, stat type, and UNIX timestamp
 				string itemId = events[i];
@@ -80,6 +82,14 @@ namespace WaveBox.ApiHandler
 					{
 						// Also record a play for the artist, album, and folder
 						Song song = Injection.Kernel.Get<ISongRepository>().SongForId(itemIdInt);
+
+						// Trigger now playing service if available
+						NowPlayingService nowPlaying = (NowPlayingService)ServiceManager.GetInstance("nowplaying");
+						if (nowPlaying != null)
+						{
+							nowPlaying.Register(user, song, timeStampLong);
+						}
+
 						if ((object)song.AlbumId != null)
 						{
 							Injection.Kernel.Get<IStatRepository>().RecordStat((int)song.AlbumId, statTypeEnum, timeStampLong);
@@ -100,7 +110,7 @@ namespace WaveBox.ApiHandler
 			}
 
 			// After all stat iterations, return a successful response
-			processor.WriteJson(JsonConvert.SerializeObject(new StatsResponse(null)));
+			processor.WriteJson(JsonConvert.SerializeObject(new StatsResponse(null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
 		}
 	}
 }

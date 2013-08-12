@@ -66,6 +66,7 @@
     <Compile Include="src\ApiResponse\JukeboxStatus.cs" />
     <Compile Include="src\ApiResponse\LoginResponse.cs" />
     <Compile Include="src\ApiResponse\LogoutResponse.cs" />
+    <Compile Include="src\ApiResponse\NowPlayingResponse.cs" />
     <Compile Include="src\ApiResponse\PlaylistsResponse.cs" />
     <Compile Include="src\ApiResponse\PodcastActionResponse.cs" />
     <Compile Include="src\ApiResponse\PodcastContentResponse.cs" />
@@ -85,6 +86,7 @@
     <Compile Include="src\Extensions\DateTimeExtensions.cs" />
     <Compile Include="src\Extensions\FileTypeExtensions.cs" />
     <Compile Include="src\Extensions\IListExtensions.cs" />
+    <Compile Include="src\Extensions\IntExtensions.cs" />
     <Compile Include="src\Extensions\Log4NetExtensions.cs" />
     <Compile Include="src\Extensions\StringExtensions.cs" />
     <Compile Include="src\Injection\CoreModule.cs" />
@@ -103,6 +105,7 @@
     <Compile Include="src\Model\Interfaces\IPodcastShim.cs" />
     <Compile Include="src\Model\ItemType.cs" />
     <Compile Include="src\Model\MediaItem.cs" />
+    <Compile Include="src\Model\NowPlaying.cs" />
     <Compile Include="src\Model\Playlist.cs" />
     <Compile Include="src\Model\PlaylistItem.cs" />
     <Compile Include="src\Model\Podcast.cs" />
