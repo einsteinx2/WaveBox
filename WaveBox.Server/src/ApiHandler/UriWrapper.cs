@@ -41,13 +41,21 @@ namespace WaveBox.ApiHandler
 		public UriWrapper(string uriString)
 		{
 			// Store the original URI in a string
-			UriString = uriString;
+			this.UriString = uriString;
 
 			// Parse parameters in the URI
 			this.ParseParameters();
 
 			// Store the parts of the URI in a List of strings
-			UriParts = RemoveEmptyElements(UriString.Split('/'));
+			this.UriParts = RemoveEmptyElements(this.UriString.Split('/'));
+
+			// Check for ID passed in REST form (e.g. /api/songs/6)
+			int id = 0;
+			if (Int32.TryParse(this.LastPart, out id))
+			{
+				// Add ID parameter if found
+				this.Parameters.Add("id", id.ToString());
+			}
 		}
 
 		/// <summary>
@@ -56,9 +64,9 @@ namespace WaveBox.ApiHandler
 		public string UriPart(int index)
 		{
 			// Make sure the URI's part count is greater than the index
-			if (UriParts.Count > index)
+			if (this.UriParts.Count > index)
 			{
-				return UriParts.ElementAt(index);
+				return this.UriParts.ElementAt(index);
 			}
 
 			// Return null if the index was out of range
@@ -71,23 +79,23 @@ namespace WaveBox.ApiHandler
 		private void ParseParameters()
 		{
 			// Initialize a dictionary
-			Parameters = new Dictionary<string,string>();
+			this.Parameters = new Dictionary<string, string>();
 
 			// Grab parameters, if they exist
 			if (UriString.Contains('?'))
 			{
 				// if we split the uri by the question mark, the second part of the split will be the params
-				string parametersString = UriString.Split('?')[1];
+				string parametersString = this.UriString.Split('?')[1];
 				string[] splitParams = parametersString.Split(new char[]{'=', '&'});
 
 				// Add parameters to the dictionary as we parse the parameters array
-				for( int i = 0; i <= splitParams.Length - 2; i = i + 2)
+				for (int i = 0; i <= splitParams.Length - 2; i = i + 2)
 				{
-					Parameters.Add(splitParams[i], splitParams[i + 1]);
+					this.Parameters.Add(splitParams[i], splitParams[i + 1]);
 				}
 
 				// Store the URI before parameters in the UriString property
-				UriString = UriString.Substring(0, UriString.IndexOf('?'));
+				this.UriString = this.UriString.Substring(0, this.UriString.IndexOf('?'));
 			}
 		}
 
