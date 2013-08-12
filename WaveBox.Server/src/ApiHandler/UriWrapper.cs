@@ -54,7 +54,7 @@ namespace WaveBox.ApiHandler
 			if (Int32.TryParse(this.LastPart, out id))
 			{
 				// Add ID parameter if found
-				this.Parameters.Add("id", id.ToString());
+				this.Parameters["id"] = id.ToString();
 			}
 		}
 
