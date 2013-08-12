@@ -30,7 +30,7 @@
 
 	// Choose whether to enable pretty formatting for API responses. Setting to false reduces the response size.
 	"prettyJson": {setting-prettyJson},
-	
+
 	// Defines the order that folder art is searched for
 	"folderArtNames": [{setting-folderArtNames}],
 
@@ -55,6 +55,9 @@
 
 		// nat - Enables NAT for UPnP/NAT-PMP and automatic router port forwarding.
 		"{setting-services-nat}",
+
+		// nowplaying - Enables tracking of currently playing media, for use with API clients.
+		"{setting-services-nowplaying}",
 
 		// zeroconf - Enables ZeroConf auto-discovery using mDNS.
 		"{setting-services-zeroconf}"

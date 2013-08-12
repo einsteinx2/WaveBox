@@ -135,6 +135,7 @@
     <Compile Include="src\ApiHandler\Handlers\JukeboxApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\LoginApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\LogoutApiHandler.cs" />
+    <Compile Include="src\ApiHandler\Handlers\NowPlayingApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\PlaylistsApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\PodcastApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\ScrobbleApiHandler.cs" />
@@ -183,6 +184,7 @@
     <Compile Include="src\Service\Services\Http\IHttpProcessor.cs" />
     <Compile Include="src\Service\Services\JukeboxService.cs" />
     <Compile Include="src\Service\Services\NatService.cs" />
+    <Compile Include="src\Service\Services\NowPlayingService.cs" />
     <Compile Include="src\Service\Services\TranscodeService.cs" />
     <Compile Include="src\Service\Services\ZeroConfService.cs" />
     <Compile Include="src\Static\Database.cs" />
