@@ -129,8 +129,22 @@ namespace WaveBox.Service.Services
 
 		public bool Unregister(string userName, string clientName)
 		{
-			// Unregister song with matching user and client
-			this.playing.RemoveAll(x => x.UserName == userName && x.ClientName == clientName);
+			// Check for existence
+			if (!this.Playing.Any(x => x.UserName == userName && x.ClientName == clientName))
+			{
+				return false;
+			}
+
+			// Grab instance
+			NowPlaying nowPlaying = this.playing.Single(x => x.UserName == userName && x.ClientName == clientName);
+
+			// Disable timer
+			nowPlaying.Timer.Stop();
+			nowPlaying.Timer = null;
+
+			// Remove from list
+			this.playing.Remove(nowPlaying);
+
 			return true;
 		}
 	}
