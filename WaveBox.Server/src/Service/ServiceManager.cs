@@ -42,7 +42,7 @@ namespace WaveBox.Service
 			// Ensure service was valid
 			if ((object)service == null)
 			{
-				logger.Error("Failed to register new service: " + service.Name);
+				logger.Error("Unknown service: " + name);
 				return false;
 			}
 
