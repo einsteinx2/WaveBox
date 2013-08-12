@@ -125,6 +125,7 @@
     </Compile>
     <Compile Include="src\ApiHandler\ApiAuthenticate.cs" />
     <Compile Include="src\ApiHandler\ApiHandlerFactory.cs" />
+    <Compile Include="src\ApiHandler\Handlers\AlbumArtistsApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\AlbumsApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\ArtApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\ArtistsApiHandler.cs" />
@@ -207,7 +208,6 @@
     </Compile>
     <Compile Include="src\WaveBoxServiceInstaller.cs" />
     <Compile Include="src\PodcastManagement\PodcastShim.cs" />
-    <Compile Include="src\ApiHandler\Handlers\AlbumArtistsApiHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">

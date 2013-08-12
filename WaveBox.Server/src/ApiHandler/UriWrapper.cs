@@ -50,11 +50,18 @@ namespace WaveBox.ApiHandler
 			this.UriParts = RemoveEmptyElements(this.UriString.Split('/'));
 
 			// Check for ID passed in REST form (e.g. /api/songs/6)
-			int id = 0;
-			if (Int32.TryParse(this.LastPart, out id))
+			// NOTE: try/catch'd to avoid exceptions thrown on web UI loading
+			try
 			{
-				// Add ID parameter if found
-				this.Parameters["id"] = id.ToString();
+				int id = 0;
+				if (Int32.TryParse(this.LastPart, out id))
+				{
+					// Add ID parameter if found
+					this.Parameters["id"] = id.ToString();
+				}
+			}
+			catch
+			{
 			}
 		}
 
