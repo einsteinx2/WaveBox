@@ -8,8 +8,8 @@ namespace WaveBox.Core.Model.Repository
 	{
 		Album AlbumForId(int albumId);
 		Album AlbumForName(string albumName, int? artistId);
-		bool InsertAlbum(string albumName, int? artistId, int? releaseYear);
-		Album AlbumForName(string albumName, int? artistId, int? releaseYear = null);
+		bool InsertAlbum(string albumName, int? artistId, int? albumArtistId, int? releaseYear);
+		Album AlbumForName(string albumName, int? artistId, int? albumArtistId, int? releaseYear = null);
 		IList<Album> AllAlbums();
 		int CountAlbums();
 		IList<Album> SearchAlbums(string field, string query, bool exact = true);

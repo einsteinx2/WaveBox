@@ -350,7 +350,7 @@ namespace WaveBox.FolderScanning
 				string albumName = tag.Album;
 				if (albumName != null)
 				{
-					Album album = Injection.Kernel.Get<IAlbumRepository>().AlbumForName(albumName.Trim(), song.ArtistId, Convert.ToInt32(tag.Year));
+					Album album = Injection.Kernel.Get<IAlbumRepository>().AlbumForName(albumName.Trim(), song.ArtistId, song.AlbumArtistId, Convert.ToInt32(tag.Year));
 					song.AlbumId = album.AlbumId;
 					song.AlbumName = album.AlbumName;
 					song.ReleaseYear = album.ReleaseYear;

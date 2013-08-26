@@ -33,7 +33,7 @@ namespace WaveBox.Core.Model.Repository
 				conn = database.GetSqliteConnection();
 				var result = conn.DeferredQuery<Album>("SELECT Album.*, Artist.ArtistName, AlbumArtist.AlbumArtistName FROM Album " +
 													   "LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
-													   "LEFT JOIN AlbumArtist ON Album.ArtistId = Artist.ArtistId " +
+													   "LEFT JOIN AlbumArtist ON Album.AlbumArtistId = AlbumArtist.AlbumArtistId " +
 													   "WHERE Album.AlbumId = ?", albumId);
 
 				foreach (Album a in result)
@@ -66,7 +66,7 @@ namespace WaveBox.Core.Model.Repository
 				conn = database.GetSqliteConnection();
 				var result = conn.DeferredQuery<Album>("SELECT Album.*, Artist.ArtistName, AlbumArtist.AlbumArtistName FROM Album " +
 				                                       "LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
-				                                       "LEFT JOIN AlbumArtist ON Album.ArtistId = Artist.ArtistId " +
+				                                       "LEFT JOIN AlbumArtist ON AlbumArtist.AlbumArtistId = Album.AlbumArtistId " +
 				                                       "WHERE Album.AlbumName = ? AND Album.ArtistId = ?", albumName, artistId);
 
 				foreach (Album a in result)
@@ -89,7 +89,7 @@ namespace WaveBox.Core.Model.Repository
 			return album;
 		}
 
-		public bool InsertAlbum(string albumName, int? artistId, int? releaseYear)
+		public bool InsertAlbum(string albumName, int? artistId, int? albumArtistId, int? releaseYear)
 		{
 			int? itemId = itemRepository.GenerateItemId(ItemType.Album);
 			if (itemId == null)
@@ -107,6 +107,7 @@ namespace WaveBox.Core.Model.Repository
 				album.AlbumId = itemId;
 				album.AlbumName = albumName;
 				album.ArtistId = artistId;
+				album.AlbumArtistId = albumArtistId;
 				album.ReleaseYear = releaseYear;
 				success = conn.InsertLogged(album, InsertType.InsertOrIgnore) > 0;
 			}
@@ -123,7 +124,7 @@ namespace WaveBox.Core.Model.Repository
 			return success;
 		}
 
-		public Album AlbumForName(string albumName, int? artistId, int? releaseYear = null)
+		public Album AlbumForName(string albumName, int? artistId, int? albumArtistId, int? releaseYear = null)
 		{
 			if (albumName == "" || albumName == null || artistId == null)
 			{
@@ -135,7 +136,7 @@ namespace WaveBox.Core.Model.Repository
 			if (a.AlbumId == null)
 			{
 				a = null;
-				if (InsertAlbum(albumName, artistId, releaseYear))
+				if (InsertAlbum(albumName, artistId, albumArtistId, releaseYear))
 				{
 					a = AlbumForName(albumName, artistId, releaseYear);
 				}
@@ -158,7 +159,7 @@ namespace WaveBox.Core.Model.Repository
 				conn = database.GetSqliteConnection();
 				return conn.Query<Album>("SELECT Album.*, Artist.ArtistName, AlbumArtist.AlbumArtistName FROM Album " +
 				                         "LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
-				                         "LEFT JOIN AlbumArtist ON Album.ArtistId = Artist.ArtistId " +
+				                         "LEFT JOIN AlbumArtist ON Album.AlbumArtistId = AlbumArtist.AlbumArtistId " +
 				                         "ORDER BY AlbumName");
 			}
 			catch (Exception e)
@@ -222,7 +223,7 @@ namespace WaveBox.Core.Model.Repository
 					// Search for exact match
 					return conn.Query<Album>("SELECT Album.*, Artist.ArtistName, AlbumArtist.AlbumArtistName FROM Album " +
 					                         "LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
-					                         "LEFT JOIN AlbumArtist ON Album.ArtistId = Artist.ArtistId " +
+					                         "LEFT JOIN AlbumArtist ON AlbumArtist.AlbumArtistId = Album.AlbumArtistId " +
 					                         "WHERE Album." + field + " = ? ORDER BY AlbumName", query);
 				}
 				else
@@ -230,7 +231,7 @@ namespace WaveBox.Core.Model.Repository
 					// Search for fuzzy match (containing query)
 					return conn.Query<Album>("SELECT Album.*, Artist.ArtistName, AlbumArtist.AlbumArtistName FROM Album " +
 					                         "LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
-					                         "LEFT JOIN AlbumArtist ON Album.ArtistId = Artist.ArtistId " +
+					                         "LEFT JOIN AlbumArtist ON AlbumArtist.AlbumArtistId = Album.AlbumArtistId " +
 					                         "WHERE Album." + field + " LIKE ? ORDER BY AlbumName", "%" + query + "%");
 				}
 			}
@@ -254,7 +255,7 @@ namespace WaveBox.Core.Model.Repository
 				conn = database.GetSqliteConnection();
 				return conn.Query<Album>("SELECT Album.*, Artist.ArtistName, AlbumArtist.AlbumArtistName FROM Album " +
 				                         "LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
-				                         "LEFT JOIN AlbumArtist ON Album.ArtistId = Artist.ArtistId " +
+				                         "LEFT JOIN AlbumArtist ON Album.AlbumArtistId = AlbumArtist.AlbumArtistId " +
 				                         "ORDER BY RANDOM() LIMIT " + limit);
 			}
 			catch (Exception e)
@@ -290,7 +291,7 @@ namespace WaveBox.Core.Model.Repository
 				List<Album> albums;
 				albums = conn.Query<Album>("SELECT Album.*, Artist.ArtistName, AlbumArtist.AlbumArtistName FROM Album " +
 				                           "LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
-				                           "LEFT JOIN AlbumArtist ON Album.ArtistId = Artist.ArtistId " +
+				                           "LEFT JOIN AlbumArtist ON AlbumArtist.AlbumArtistId = Album.AlbumArtistId " +
 				                           "WHERE Album.AlbumName BETWEEN LOWER(?) AND LOWER(?) " +
 				                           "OR Album.AlbumName BETWEEN UPPER(?) AND UPPER(?)", s, en, s, en);
 
@@ -323,7 +324,7 @@ namespace WaveBox.Core.Model.Repository
 
 				string query = "SELECT Album.*, Artist.ArtistName, AlbumArtist.AlbumArtistName FROM Album " +
 							   "LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
-							   "LEFT JOIN AlbumArtist ON Album.ArtistId = Artist.ArtistId " +
+							   "LEFT JOIN AlbumArtist ON Album.AlbumArtistId = AlbumArtist.AlbumArtistId " +
 							   "LIMIT ? ";
 
 				// Add duration to LIMIT if needed
