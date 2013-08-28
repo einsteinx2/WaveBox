@@ -15,6 +15,7 @@ using WaveBox.Static;
 using WaveBox.Service.Services.Http;
 using WaveBox.Core.Model.Repository;
 using WaveBox.Core;
+using System.Diagnostics;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -47,6 +48,20 @@ namespace WaveBox.ApiHandler.Handlers
 				return;
 			}
 
+			// Check for blur (value between 0 and 100)
+			double blurSigma = 0;
+			if (uri.Parameters.ContainsKey("blur"))
+			{
+				int blur = 0;
+				Int32.TryParse(uri.Parameters["blur"], out blur);
+				if (blur < 0)
+					blur = 0;
+				else if (blur > 100)
+					blur = 100;
+
+				blurSigma = (double)blur / 10.0;
+			}
+
 			// Grab art stream
 			Art art = Injection.Kernel.Get<IArtRepository>().ArtForId(artId);
 			Stream stream = CreateStream(art);
@@ -73,7 +88,7 @@ namespace WaveBox.ApiHandler.Handlers
 						// First try ImageMagick
 						try
 						{
-							Byte[] data = ResizeImageMagick(stream, size);
+							Byte[] data = ResizeImageMagick(stream, size, blurSigma);
 							stream = new MemoryStream(data, false);
 						}
 						catch
@@ -104,7 +119,7 @@ namespace WaveBox.ApiHandler.Handlers
 			stream.Close();
 		}
 
-		private byte[] ResizeImageMagick(Stream stream, int width)
+		private byte[] ResizeImageMagick(Stream stream, int width, double blurSigma)
 		{
 			// new wand
 			IntPtr wand = ImageMagickInterop.NewWand();
@@ -138,7 +153,23 @@ namespace WaveBox.ApiHandler.Handlers
 				int destWidth = (int)(sourceWidth * nPercent);
 				int destHeight = (int)(sourceHeight * nPercent);
 
+				Stopwatch s = new Stopwatch();
+				s.Start();
 				ImageMagickInterop.ResizeImage(wand, (IntPtr)destWidth, (IntPtr)destHeight, ImageMagickInterop.Filter.Lanczos, 1.0);
+				s.Stop();
+				logger.IfInfo("resize image time: " + s.ElapsedMilliseconds + "ms");
+
+				Stopwatch s1 = new Stopwatch();
+				if (blurSigma > 0.0)
+				{
+					s1.Start();
+					ImageMagickInterop.BlurImage(wand, 0.0, blurSigma);
+					s1.Stop();
+					logger.IfInfo("blur image time: " + s1.ElapsedMilliseconds + "ms");
+				}
+
+				logger.IfInfo("total image time: " + (s.ElapsedMilliseconds + s1.ElapsedMilliseconds) + "ms");
+
 				byte[] newData = ImageMagickInterop.GetImageBlob(wand);
 
 				// cleanup

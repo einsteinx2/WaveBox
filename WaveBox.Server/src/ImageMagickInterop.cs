@@ -51,6 +51,9 @@ namespace WaveBox
 		[DllImport("libMagickWand", EntryPoint = "MagickResizeImage")]
 		public static extern bool ResizeImage(IntPtr mgck_wand, IntPtr columns, IntPtr rows, Filter filter_type, double blur);
 
+		[DllImport("libMagickWand", EntryPoint = "MagickBlurImage")]
+		public static extern bool BlurImage(IntPtr mgck_wand, double radius, double sigma);
+
 		[DllImport("libMagickWand", EntryPoint = "MagickWandGenesis")]
 		public static extern void WandGenesis();
 
