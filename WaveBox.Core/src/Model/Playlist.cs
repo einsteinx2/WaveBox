@@ -23,7 +23,7 @@ namespace WaveBox.Core.Model
 		[JsonIgnore]
 		public ItemType ItemType { get { return ItemType.Playlist; } }
 
-		[JsonIgnore]
+		[JsonProperty("itemTypeId")]
 		public int ItemTypeId { get { return (int)ItemType; } }
 
 		[JsonProperty("id")]
@@ -600,61 +600,6 @@ namespace WaveBox.Core.Model
 		public override string ToString()
 		{
 			return String.Format("[Playlist: ItemId={0}, PlaylistName={1}]", this.ItemId, this.PlaylistName);
-		}
-
-		public class Factory
-		{
-			public Playlist CreatePlaylist(int playlistId)
-			{
-				ISQLiteConnection conn = null;
-				try
-				{
-					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-					var result = conn.DeferredQuery<Playlist>("SELECT * FROM Playlist WHERE PlaylistId = ?", playlistId);
-
-					foreach (Playlist p in result)
-					{
-						return p;
-					}
-				}
-				catch (Exception e)
-				{
-					logger.Error(e);
-				}
-				finally
-				{
-					Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-				}
-
-				return new Playlist();
-			}
-
-			public Playlist CreatePlaylist(string playlistName)
-			{
-				ISQLiteConnection conn = null;
-				try
-				{
-					conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-					var result = conn.DeferredQuery<Playlist>("SELECT * FROM Playlist WHERE PlaylistName = ?", playlistName);
-
-					foreach (Playlist p in result)
-					{
-						return p;
-					}
-				}
-				catch (Exception e)
-				{
-					logger.Error(e);
-				}
-				finally
-				{
-					Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-				}
-
-				Playlist playlist = new Playlist();
-				playlist.PlaylistName = playlistName;
-				return playlist;
-			}
 		}
 	}
 }

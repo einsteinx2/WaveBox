@@ -9,6 +9,8 @@ namespace WaveBox.Core
 	{
 		object DbBackupLock { get; }
 
+		int Version { get; }
+
 		string DatabaseTemplatePath { get; }
 		string DatabasePath { get; }
 
@@ -23,7 +25,7 @@ namespace WaveBox.Core
 		ISQLiteConnection GetQueryLogSqliteConnection();
 		void CloseQueryLogSqliteConnection(ISQLiteConnection conn);
 
-		long LastQueryLogId();
+		long LastQueryLogId { get; }
 		IList<QueryLog> QueryLogsSinceId(int queryId);
 	}
 }

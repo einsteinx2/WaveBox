@@ -5,15 +5,27 @@ using Cirrious.MvvmCross.Plugins.Sqlite;
 using Ninject;
 using WaveBox.Core.Static;
 using WaveBox.Core.Model.Repository;
+using Newtonsoft.Json;
 
 namespace WaveBox.Core.Model
 {
-	public class Genre
+	public class Genre : IItem
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+		[JsonIgnore, IgnoreRead, IgnoreWrite]
+		public int? ItemId { get { return GenreId; } set { GenreId = ItemId; } }
+
+		[JsonIgnore, IgnoreRead, IgnoreWrite]
+		public ItemType ItemType { get { return ItemType.Genre; } }
+
+		[JsonProperty("itemTypeId"), IgnoreRead, IgnoreWrite]
+		public int ItemTypeId { get { return (int)ItemType; } }
+
+		[JsonProperty("genreId")]
 		public int? GenreId { get; set; }
 
+		[JsonProperty("genreName")]
 		public string GenreName { get; set; }
 
 		public Genre()

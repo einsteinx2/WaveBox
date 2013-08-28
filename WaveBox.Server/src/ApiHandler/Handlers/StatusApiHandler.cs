@@ -58,7 +58,7 @@ namespace WaveBox.ApiHandler.Handlers
 				long unixTime = DateTime.Now.ToUniversalUnixTimestamp();
 
 				// Get current query log ID
-				long queryLogId = Injection.Kernel.Get<IDatabase>().LastQueryLogId();
+				long queryLogId = Injection.Kernel.Get<IDatabase>().LastQueryLogId;
 
 				// Get auto updater instance, if available
 				AutoUpdateService autoUpdater = (AutoUpdateService)ServiceManager.GetInstance("autoupdate");

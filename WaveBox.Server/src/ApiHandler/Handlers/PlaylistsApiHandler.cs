@@ -47,8 +47,8 @@ namespace WaveBox.ApiHandler.Handlers
 			if (success)
 			{
 				// Return the playlist for this id
-				Playlist playlist = new Playlist.Factory().CreatePlaylist(id);
-				if (ReferenceEquals(playlist.PlaylistId, null))
+				Playlist playlist = Injection.Kernel.Get<IPlaylistRepository>().PlaylistForId(id);
+				if (playlist.PlaylistId == null)
 				{
 					error = "Playlist does not exist";
 				}
@@ -180,7 +180,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 				else
 				{
-					Playlist playlist = new Playlist.Factory().CreatePlaylist(name);
+					Playlist playlist = Injection.Kernel.Get<IPlaylistRepository>().PlaylistForName(name);
 
 					if (ReferenceEquals(playlist.ItemId, null))
 					{

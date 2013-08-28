@@ -5,9 +5,12 @@ using System.Text;
 using Un4seen.Bass;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
+using WaveBox.Core.Model.Repository;
 using WaveBox.Core.Static;
 using WaveBox.Server.Extensions;
 using WaveBox.Service;
+using WaveBox.Core;
+using Ninject;
 
 namespace WaveBox.Service.Services
 {
@@ -53,7 +56,7 @@ namespace WaveBox.Service.Services
 
 		public bool Start()
 		{
-			playlist = new Playlist.Factory().CreatePlaylist(PLAYLIST_NAME);
+			playlist = Injection.Kernel.Get<IPlaylistRepository>().PlaylistForName(PLAYLIST_NAME);
 			if (playlist.PlaylistId == null)
 			{
 				// playlist doesn't exist, so create it.
