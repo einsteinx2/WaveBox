@@ -37,11 +37,11 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 
 			// Convert to integer
-			int artId = Int32.MaxValue;
+			int artId = 0;
 			Int32.TryParse(uri.Parameters["id"], out artId);
 
 			// If art ID was invalid, write error header
-			if (artId == Int32.MaxValue)
+			if (artId == 0)
 			{
 				processor.WriteErrorHeader();
 				return;
