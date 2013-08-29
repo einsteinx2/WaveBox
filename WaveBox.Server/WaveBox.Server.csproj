@@ -131,6 +131,7 @@
     <Compile Include="src\ApiHandler\Handlers\ArtistsApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\DatabaseApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\ErrorApiHandler.cs" />
+    <Compile Include="src\ApiHandler\Handlers\FavoritesApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\FoldersApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\GenresApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\JukeboxApiHandler.cs" />
@@ -163,6 +164,7 @@
     <Compile Include="src\Injection\Interfaces\IApiHandlerFactory.cs" />
     <Compile Include="src\Injection\ServerModule.cs" />
     <Compile Include="src\Lastfm.cs" />
+    <Compile Include="src\PodcastManagement\PodcastShim.cs" />
     <Compile Include="src\Service\IService.cs" />
     <Compile Include="src\Service\ServiceFactory.cs" />
     <Compile Include="src\Service\ServiceManager.cs" />
@@ -204,11 +206,9 @@
     <Compile Include="src\Transcoding\VideoTranscoder.cs" />
     <Compile Include="src\WaveBoxMain.cs" />
     <Compile Include="src\WaveBoxService.cs">
+    <Compile Include="src\WaveBoxServiceInstaller.cs" />
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="src\WaveBoxServiceInstaller.cs" />
-    <Compile Include="src\PodcastManagement\PodcastShim.cs" />
-    <Compile Include="src\ApiHandler\Handlers\FavoriteApiHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
