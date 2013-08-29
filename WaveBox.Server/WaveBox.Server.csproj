@@ -139,7 +139,7 @@
     <Compile Include="src\ApiHandler\Handlers\LogoutApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\NowPlayingApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\PlaylistsApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\PodcastApiHandler.cs" />
+    <Compile Include="src\ApiHandler\Handlers\PodcastsApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\ScrobbleApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\SearchApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\SettingsApiHandler.cs" />
