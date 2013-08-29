@@ -1,12 +1,12 @@
 using System;
-using WaveBox.Service.Services.Http;
-using WaveBox.Core.Model;
 using System.Collections.Generic;
-using WaveBox.Core;
-using Ninject;
-using WaveBox.Core.Model.Repository;
 using Newtonsoft.Json;
+using Ninject;
+using WaveBox.Core;
 using WaveBox.Core.ApiResponse;
+using WaveBox.Core.Model;
+using WaveBox.Core.Model.Repository;
+using WaveBox.Service.Services.Http;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -95,4 +95,3 @@ namespace WaveBox.ApiHandler.Handlers
 		}
 	}
 }
-
