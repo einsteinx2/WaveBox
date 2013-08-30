@@ -22,7 +22,7 @@ namespace WaveBox.Core.Model
 		[JsonIgnore, IgnoreRead, IgnoreWrite]
 		public ItemType ItemType { get { return ItemType.Folder; } }
 
-		[JsonIgnore, IgnoreRead, IgnoreWrite]
+		[JsonProperty("itemTypeId"), IgnoreRead, IgnoreWrite]
 		public int ItemTypeId { get { return (int)ItemType; } }
 
 		[JsonProperty("folderId")]

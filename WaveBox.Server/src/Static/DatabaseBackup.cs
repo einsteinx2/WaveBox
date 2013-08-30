@@ -85,7 +85,7 @@ namespace WaveBox
 		{
 			lock (Injection.Kernel.Get<IDatabase>().DbBackupLock)
 			{
-				lastQueryId = Injection.Kernel.Get<IDatabase>().LastQueryLogId();
+				lastQueryId = Injection.Kernel.Get<IDatabase>().LastQueryLogId;
 				string fileName = BackupFileName(lastQueryId);
 
 				// If the database is already backed up at this point, return it

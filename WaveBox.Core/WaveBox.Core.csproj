@@ -153,6 +153,12 @@
     <Compile Include="src\Repository\AlbumArtistRepository.cs" />
     <Compile Include="src\Repository\Interfaces\IAlbumArtistRepository.cs" />
     <Compile Include="src\ApiResponse\AlbumArtistsResponse.cs" />
+    <Compile Include="src\Model\Favorite.cs" />
+    <Compile Include="src\Repository\FavoriteRepository.cs" />
+    <Compile Include="src\Repository\PlaylistRepository.cs" />
+    <Compile Include="src\Repository\Interfaces\IPlaylistRepository.cs" />
+    <Compile Include="src\Repository\Interfaces\IFavoriteRepository.cs" />
+    <Compile Include="src\ApiResponse\FavoritesResponse.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

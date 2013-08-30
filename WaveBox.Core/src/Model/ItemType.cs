@@ -22,6 +22,7 @@ namespace WaveBox.Core.Model
 		Art = 13,
 		Genre = 14,
 		AlbumArtist = 15,
+		Favorite = 16,
 		Unknown = 2147483647 // Int32.MaxValue used for database compatibility
 	}
 

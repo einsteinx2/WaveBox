@@ -175,6 +175,16 @@ CREATE TABLE "Album" (
     "AlbumArtistId" INTEGER,
     "ReleaseYear" INTEGER
 );
+CREATE TABLE "Version" (
+    "VersionNumber" INTEGER NOT NULL
+);
+CREATE TABLE "Favorite" (
+    "FavoriteId" INTEGER NOT NULL UNIQUE,
+    "FavoriteUserId" INTEGER NOT NULL,
+    "FavoriteItemId" INTEGER NOT NULL,
+    "FavoriteItemTypeId" INTEGER NOT NULL,
+    "Timestamp" INTEGER NOT NULL
+);
 DELETE FROM sqlite_sequence;
 INSERT INTO "sqlite_sequence" VALUES('item_type',12);
 CREATE UNIQUE INDEX "title_author_unique" ON "Podcast" ("Title", "Author");
@@ -190,4 +200,5 @@ CREATE INDEX "stat_Timestamp" ON "Stat" ("Timestamp");
 CREATE INDEX "song_FolderIdFileName" ON "song" ("FolderId","FileName");
 CREATE INDEX "song_ItemId" ON "Song" ("ItemId");
 CREATE UNIQUE INDEX "album_AlbumNameArtistId" ON "Album" ("AlbumName", "ArtistId");
+CREATE INDEX "favorite_userId" ON "Favorite" ("FavoriteUserId");
 COMMIT;

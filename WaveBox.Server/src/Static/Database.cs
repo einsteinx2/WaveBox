@@ -27,6 +27,29 @@ namespace WaveBox.Static
 		private static readonly object dbBackupLock = new object();
 		public object DbBackupLock { get { return dbBackupLock; } }
 
+		public int Version 
+		{ 
+			get 
+			{
+				ISQLiteConnection conn = null;
+				try
+				{
+					conn = GetSqliteConnection();
+					return conn.ExecuteScalar<int>("SELECT VersionNumber FROM Version LIMIT 1");
+				}
+				catch (Exception e)
+				{
+					logger.Error(e);
+				}
+				finally
+				{
+					CloseSqliteConnection(conn);
+				}
+
+				return 0;
+			} 
+		}
+
 		// Sqlite connection pool
 		private static readonly int MAX_CONNECTIONS = 100;
 		private SQLiteConnectionPool mainPool;
@@ -115,25 +138,28 @@ namespace WaveBox.Static
 			logPool.CloseSqliteConnection(conn);
 		}
 
-		public long LastQueryLogId()
+		public long LastQueryLogId
 		{
-			// Log the query
-			ISQLiteConnection conn = null;
-			try
+			get
 			{
-				conn = GetQueryLogSqliteConnection();
-				return conn.ExecuteScalar<long>("SELECT MAX(QueryId) FROM QueryLog");
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				CloseQueryLogSqliteConnection(conn);
-			}
+				// Log the query
+				ISQLiteConnection conn = null;
+				try
+				{
+					conn = GetQueryLogSqliteConnection();
+					return conn.ExecuteScalar<long>("SELECT MAX(QueryId) FROM QueryLog");
+				}
+				catch (Exception e)
+				{
+					logger.Error(e);
+				}
+				finally
+				{
+					CloseQueryLogSqliteConnection(conn);
+				}
 
-			return -1;
+				return -1;
+			}
 		}
 
 		public IList<QueryLog> QueryLogsSinceId(int queryId)

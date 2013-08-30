@@ -13,9 +13,9 @@ using WaveBox.Core;
 
 namespace WaveBox.ApiHandler.Handlers
 {
-	class PodcastApiHandler : IApiHandler
+	class PodcastsApiHandler : IApiHandler
 	{
-		public string Name { get { return "podcast"; } }
+		public string Name { get { return "podcasts"; } }
 
 		/// <summary>
 		/// Process handles all functions needed for the Podcast API
