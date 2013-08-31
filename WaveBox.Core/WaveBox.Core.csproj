@@ -180,14 +180,6 @@
     <Folder Include="src\OperationQueue\Interfaces\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="lib\taglib-sharp.dll" />
-    <Content Include="lib\Newtonsoft.Json.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="lib\log4net.dll" />
-    <None Include="lib\Cirrious.MvvmCross.Plugins.Sqlite.dll" />
-    <None Include="lib\Cirrious.MvvmCross.dll" />
-    <None Include="lib\Ninject.dll" />
     <None Include="WaveBox.Core.dll.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
