@@ -48,26 +48,6 @@ namespace WaveBox.Core.Model
 		{
 		}
 
-		public static IList<Playlist> AllPlaylists()
-		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				return conn.Query<Playlist>("SELECT * FROM Playlist");
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-			}
-
-			return new List<Playlist>();
-		}
-
 		public string CalculateHash()
 		{
 			StringBuilder itemIds = new StringBuilder();

@@ -1,6 +1,7 @@
 using System;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using Ninject;
+using System.Collections.Generic;
 
 namespace WaveBox.Core.Model.Repository
 {
@@ -68,6 +69,26 @@ namespace WaveBox.Core.Model.Repository
 			Playlist playlist = new Playlist();
 			playlist.PlaylistName = playlistName;
 			return playlist;
+		}
+
+		public IList<Playlist> AllPlaylists()
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+				return conn.Query<Playlist>("SELECT * FROM Playlist");
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+			}
+
+			return new List<Playlist>();
 		}
 	}
 }

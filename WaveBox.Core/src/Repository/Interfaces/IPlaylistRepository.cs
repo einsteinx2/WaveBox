@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace WaveBox.Core.Model.Repository
 {
@@ -6,5 +7,6 @@ namespace WaveBox.Core.Model.Repository
 	{
 		Playlist PlaylistForId(int playlistId);
 		Playlist PlaylistForName(string playlistName);
+		IList<Playlist> AllPlaylists();
 	}
 }

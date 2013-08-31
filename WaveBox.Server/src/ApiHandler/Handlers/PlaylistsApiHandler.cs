@@ -206,7 +206,7 @@ namespace WaveBox.ApiHandler.Handlers
 			else
 			{
 				// No id parameter, so return all playlists
-				listOfPlaylists = Playlist.AllPlaylists();
+				listOfPlaylists = Injection.Kernel.Get<IPlaylistRepository>().AllPlaylists();
 			}
 
 			// Return all results
