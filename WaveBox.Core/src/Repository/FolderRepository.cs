@@ -109,26 +109,19 @@ namespace WaveBox.Core.Model.Repository
 
 		public IList<Folder> MediaFolders()
 		{
-			if (serverSettings.MediaFolders == null)
+			ISQLiteConnection conn = null;
+			try
 			{
-				ISQLiteConnection conn = null;
-				try
-				{
-					conn = database.GetSqliteConnection();
-					return conn.Query<Folder>("SELECT * FROM Folder WHERE ParentFolderId IS NULL");
-				}
-				catch (Exception e)
-				{
-					logger.IfInfo ("Failed reading list of media folders : " + e);
-				}
-				finally
-				{
-					database.CloseSqliteConnection(conn);
-				}
+				conn = database.GetSqliteConnection();
+				return conn.Query<Folder>("SELECT * FROM Folder WHERE ParentFolderId IS NULL");
 			}
-			else
+			catch (Exception e)
 			{
-				return serverSettings.MediaFolders;
+				logger.IfInfo ("Failed reading list of media folders : " + e);
+			}
+			finally
+			{
+				database.CloseSqliteConnection(conn);
 			}
 
 			return new List<Folder>();

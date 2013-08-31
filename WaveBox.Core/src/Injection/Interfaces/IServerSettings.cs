@@ -20,7 +20,7 @@ namespace WaveBox.Core
 
 		string Theme { get; }
 
-		IList<Folder> MediaFolders { get; }
+		IList<string> MediaFolders { get; }
 
 		string PodcastFolder { get; }
 

@@ -13,6 +13,7 @@ using WaveBox.Core.OperationQueue;
 using WaveBox.FolderScanning;
 using WaveBox.Service;
 using WaveBox.Static;
+using WaveBox.Core.Model.Repository;
 
 namespace WaveBox.Service.Services
 {
@@ -137,7 +138,7 @@ namespace WaveBox.Service.Services
 		public bool Start()
 		{
 			// Grab list of media folders, initialize the scan queue
-			mediaFolders = Injection.Kernel.Get<IServerSettings>().MediaFolders;
+			mediaFolders = Injection.Kernel.Get<IFolderRepository>().MediaFolders();
 			scanQueue = new DelayedOperationQueue();
 			scanQueue.startQueue();
 			scanQueue.queueOperation(new FolderScanning.OrphanScanOperation(0));

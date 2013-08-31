@@ -14,6 +14,7 @@ using WaveBox.Core.OperationQueue;
 using WaveBox.Server.Extensions;
 using WaveBox.Static;
 using WaveBox.Core;
+using WaveBox.Core.Model.Repository;
 
 namespace WaveBox.FolderScanning
 {
@@ -84,7 +85,7 @@ namespace WaveBox.FolderScanning
 			ArrayList mediaFolderIds = new ArrayList();
 			ArrayList orphanFolderIds = new ArrayList();
 
-			foreach (Folder mediaFolder in Injection.Kernel.Get<IServerSettings>().MediaFolders)
+			foreach (Folder mediaFolder in Injection.Kernel.Get<IFolderRepository>().MediaFolders())
 			{
 				mediaFolderIds.Add (mediaFolder.FolderId);
 			}
@@ -111,7 +112,7 @@ namespace WaveBox.FolderScanning
 					{
 						// Check if it's in the list of root media folders.  If not, it's an orphan
 						bool success = false;
-						foreach (Folder f in Injection.Kernel.Get<IServerSettings>().MediaFolders)
+						foreach (Folder f in Injection.Kernel.Get<IFolderRepository>().MediaFolders())
 						{
 							if (f.FolderPath == folder.FolderPath)
 							{

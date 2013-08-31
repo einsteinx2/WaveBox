@@ -34,7 +34,7 @@ namespace WaveBox.Static
 
 		public string Theme { get { return settingsModel.Theme; } }
 
-		public IList<Folder> MediaFolders { get; private set; }
+		public IList<String> MediaFolders { get { return settingsModel.MediaFolders; } }
 
 		public string PodcastFolder { get { return settingsModel.PodcastFolder; } }
 
@@ -74,7 +74,7 @@ namespace WaveBox.Static
 			settingsModel = JsonConvert.DeserializeObject<ServerSettingsData>(configFile);
 
 			// Generate Folder objects from the media folders
-			MediaFolders = PopulateMediaFolders();
+			PrepareMediaFolders();
 
 			dynamic json = JsonConvert.DeserializeObject(configFile);
 			bool settingsChanged = false;
@@ -144,7 +144,6 @@ namespace WaveBox.Static
 						logger.IfInfo("\t" + mediaFolderString);
 					}
 					settingsModel.MediaFolders = mediaFoldersTemp;
-					MediaFolders = PopulateMediaFolders();
 					settingsChanged = true;
 				}
 			}
@@ -363,10 +362,8 @@ namespace WaveBox.Static
 			Reload();
 		}
 
-		private List<Folder> PopulateMediaFolders()
+		private void PrepareMediaFolders()
 		{
-			List<Folder> folders = new List<Folder>();
-
 			try
 			{
 				foreach (string mediaFolderString in settingsModel.MediaFolders)
@@ -378,7 +375,6 @@ namespace WaveBox.Static
 						{
 							mediaFolder.InsertFolder(true);
 						}
-						folders.Add(mediaFolder);
 					}
 					else
 					{
@@ -390,8 +386,6 @@ namespace WaveBox.Static
 			{
 				logger.Warn("No media folders specified in configuration file!");
 			}
-
-			return folders;
 		}
 
 		private Folder CreateFolder(string path, bool mediafolder)
