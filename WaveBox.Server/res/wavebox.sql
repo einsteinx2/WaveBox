@@ -168,13 +168,6 @@ CREATE TABLE "AlbumArtist" (
     "AlbumArtistId" integer UNIQUE NOT NULL,
     "AlbumArtistName" text UNIQUE NOT NULL ON CONFLICT IGNORE
 );
-CREATE TABLE "Album" (
-    "AlbumId" INTEGER UNIQUE NOT NULL,
-    "AlbumName" TEXT NOT NULL,
-    "ArtistId" INTEGER,
-    "AlbumArtistId" INTEGER,
-    "ReleaseYear" INTEGER
-);
 CREATE TABLE "Version" (
     "VersionNumber" INTEGER NOT NULL
 );
@@ -184,6 +177,13 @@ CREATE TABLE "Favorite" (
     "FavoriteItemId" INTEGER NOT NULL,
     "FavoriteItemTypeId" INTEGER NOT NULL,
     "Timestamp" INTEGER NOT NULL
+);
+CREATE TABLE "Album" (
+    "AlbumId" INTEGER UNIQUE NOT NULL,
+    "AlbumName" TEXT NOT NULL,
+    "ArtistId" INTEGER,
+    "AlbumArtistId" INTEGER,
+    "ReleaseYear" INTEGER
 );
 DELETE FROM sqlite_sequence;
 INSERT INTO "sqlite_sequence" VALUES('item_type',12);
@@ -199,6 +199,6 @@ CREATE UNIQUE INDEX "playlist_item_PlaylistIdPosition" ON "PlaylistItem" ("Playl
 CREATE INDEX "stat_Timestamp" ON "Stat" ("Timestamp");
 CREATE INDEX "song_FolderIdFileName" ON "song" ("FolderId","FileName");
 CREATE INDEX "song_ItemId" ON "Song" ("ItemId");
-CREATE UNIQUE INDEX "album_AlbumNameArtistId" ON "Album" ("AlbumName", "ArtistId");
 CREATE INDEX "favorite_userId" ON "Favorite" ("FavoriteUserId");
+CREATE UNIQUE INDEX "album_AlbumNameArtistId" ON "Album" ("AlbumName", "ArtistId", "AlbumArtistId");
 COMMIT;

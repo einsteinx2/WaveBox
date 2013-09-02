@@ -12,16 +12,20 @@ namespace WaveBox.Core.Model.Repository
 
 		private readonly IDatabase database;
 		private readonly IItemRepository itemRepository;
+		private readonly ISongRepository songRepository;
 
-		public AlbumArtistRepository(IDatabase database, IItemRepository itemRepository)
+		public AlbumArtistRepository(IDatabase database, IItemRepository itemRepository, ISongRepository songRepository)
 		{
 			if (database == null)
 				throw new ArgumentNullException("database");
 			if (itemRepository == null)
 				throw new ArgumentNullException("itemRepository");
+			if (songRepository == null)
+				throw new ArgumentNullException("songRepository");
 
 			this.database = database;
 			this.itemRepository = itemRepository;
+			this.songRepository = songRepository;
 		}
 
 		public AlbumArtist AlbumArtistForId(int? albumArtistId)
@@ -310,6 +314,44 @@ namespace WaveBox.Core.Model.Repository
 
 			// We had an exception somehow, so return an empty list
 			return new List<AlbumArtist>();
+		}
+
+		// TODO: Rewrite this to be more efficient
+		public IList<Song> SinglesForAlbumArtistId(int albumArtistId)
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = database.GetSqliteConnection();
+
+				IList<Song> songs;
+				songs = conn.Query<Song>("SELECT ItemId FROM Song WHERE AlbumArtistId = ? AND AlbumId IS NULL", albumArtistId);
+
+				if (songs.Count > 0)
+				{
+					IList<int> songIds = new List<int>();
+					foreach (Song song in songs)
+					{
+						songIds.Add((int)song.ItemId);
+					}
+					return songRepository.SongsForIds(songIds);
+				}
+				else
+				{
+					return new List<Song>();
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				database.CloseSqliteConnection(conn);
+			}
+
+			// We had an exception somehow, so return an empty list
+			return new List<Song>();
 		}
 	}
 }

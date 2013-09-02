@@ -345,6 +345,14 @@ namespace WaveBox.FolderScanning
 				song.AlbumArtistName = null;
 			}
 
+			// If we have an artist, but not an albumArtist, then use the artist info for albumArtist
+			if (song.AlbumArtistId == null && song.ArtistName != null)
+			{
+				AlbumArtist albumArtist = Injection.Kernel.Get<IAlbumArtistRepository>().AlbumArtistForNameOrCreate(song.ArtistName);
+				song.AlbumArtistId = albumArtist.AlbumArtistId;
+				song.AlbumArtistName = albumArtist.AlbumArtistName;
+			}
+
 			try
 			{
 				string albumName = tag.Album;
@@ -460,6 +468,12 @@ namespace WaveBox.FolderScanning
 			song.FileSize = fsFile.Length;
 			song.LastModified = fsFile.LastWriteTime.ToUniversalUnixTimestamp();
 			song.FileName = fsFile.Name;
+
+			// If there is no song name, use the file name
+			if (song.SongName == null || song.SongName == "")
+			{
+				song.SongName = song.FileName;
+			}
 
 			// Generate an art id from the embedded art, if it exists
 			int? artId = CreateArt(file).ArtId;

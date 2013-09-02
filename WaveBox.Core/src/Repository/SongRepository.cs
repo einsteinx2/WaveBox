@@ -207,7 +207,7 @@ namespace WaveBox.Core.Model.Repository
 			}
 
 			// Check to ensure a valid query field was set
-			if (!new string[] {"ItemId", "FolderId", "ArtistId", "AlbumId", "FileTypeId",
+			if (!new string[] {"ItemId", "FolderId", "ArtistId", "AlbumArtistId", "AlbumId", "FileTypeId",
 				"SongName", "TrackNum", "DiscNum", "Duration", "Bitrate", "FileSize",
 				"LastModified", "FileName", "ReleaseYear", "GenreId"}.Contains(field))
 			{

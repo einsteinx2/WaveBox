@@ -52,6 +52,11 @@ namespace WaveBox.Core.Model
 			return Injection.Kernel.Get<ISongRepository>().SearchSongs("AlbumArtistId", AlbumArtistId.ToString());
 		}
 
+		public IList<Song> ListOfSingles()
+		{
+			return Injection.Kernel.Get<IAlbumArtistRepository>().SinglesForAlbumArtistId((int)AlbumArtistId);
+		}
+
 		public override string ToString()
 		{
 			return String.Format("[AlbumArtist: ItemId={0}, AlbumArtistName={1}]", this.ItemId, this.AlbumArtistName);

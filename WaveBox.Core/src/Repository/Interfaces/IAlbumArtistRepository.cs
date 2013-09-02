@@ -14,5 +14,6 @@ namespace WaveBox.Core.Model.Repository
 		IList<AlbumArtist> SearchAlbumArtists(string field, string query, bool exact = true);
 		IList<AlbumArtist> RangeAlbumArtists(char start, char end);
 		IList<AlbumArtist> LimitAlbumArtists(int index, int duration = Int32.MinValue);
+		IList<Song> SinglesForAlbumArtistId(int albumArtistId);
 	}
 }

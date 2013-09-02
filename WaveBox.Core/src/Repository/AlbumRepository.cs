@@ -53,9 +53,9 @@ namespace WaveBox.Core.Model.Repository
 			return new Album();
 		}
 
-		public Album AlbumForName(string albumName, int? artistId)
+		public Album AlbumForName(string albumName, int? artistId, int? albumArtistId)
 		{
-			if (albumName == null || albumName == "")
+			if (albumName == null || albumName == "" || (artistId == null && albumArtistId == null))
 			{
 				return new Album();
 			}
@@ -63,11 +63,27 @@ namespace WaveBox.Core.Model.Repository
 			ISQLiteConnection conn = null;
 			try
 			{
+				string query = "SELECT Album.*, Artist.ArtistName, AlbumArtist.AlbumArtistName FROM Album " +
+							   "LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
+							   "LEFT JOIN AlbumArtist ON AlbumArtist.AlbumArtistId = Album.AlbumArtistId " +
+							   "WHERE Album.AlbumName = ?";
+				if (artistId != null)
+				{
+					query += " AND Album.ArtistId = ?";
+				}
+				if (albumArtistId != null)
+				{
+					query += " AND Album.AlbumArtistId = ?";
+				}
+
 				conn = database.GetSqliteConnection();
-				var result = conn.DeferredQuery<Album>("SELECT Album.*, Artist.ArtistName, AlbumArtist.AlbumArtistName FROM Album " +
-				                                       "LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId " +
-				                                       "LEFT JOIN AlbumArtist ON AlbumArtist.AlbumArtistId = Album.AlbumArtistId " +
-				                                       "WHERE Album.AlbumName = ? AND Album.ArtistId = ?", albumName, artistId);
+				IEnumerable<Album> result = null;
+				if (artistId != null && albumArtistId != null)
+					result = conn.DeferredQuery<Album>(query, albumName, artistId, albumArtistId);
+				else if (artistId != null)
+					result = conn.DeferredQuery<Album>(query, albumName, artistId);
+				else if (albumArtistId != null)
+					result = conn.DeferredQuery<Album>(query, albumName, albumArtistId);
 
 				foreach (Album a in result)
 				{
@@ -86,6 +102,7 @@ namespace WaveBox.Core.Model.Repository
 			Album album = new Album();
 			album.AlbumName = albumName;
 			album.ArtistId = artistId;
+			album.AlbumArtistId = albumArtistId;
 			return album;
 		}
 
@@ -131,20 +148,20 @@ namespace WaveBox.Core.Model.Repository
 				return new Album();
 			}
 
-			Album a = AlbumForName(albumName, artistId);
+			Album a = AlbumForName(albumName, artistId, albumArtistId);
 
 			if (a.AlbumId == null)
 			{
 				a = null;
 				if (InsertAlbum(albumName, artistId, albumArtistId, releaseYear))
 				{
-					a = AlbumForName(albumName, artistId, releaseYear);
+					a = AlbumForName(albumName, artistId, albumArtistId, releaseYear);
 				}
 				else
 				{
 					// The insert failed because this album was inserted by another
 					// thread, so grab the album id, it will exist this time
-					a = AlbumForName(albumName, artistId);
+					a = AlbumForName(albumName, artistId, albumArtistId);
 				}
 			}
 
@@ -208,7 +225,7 @@ namespace WaveBox.Core.Model.Repository
 			}
 
 			// Check to ensure a valid query field was set
-			if (!new string[] {"ItemId", "AlbumName", "ArtistId", "ReleaseYear"}.Contains(field))
+			if (!new string[] {"ItemId", "AlbumName", "ArtistId", "AlbumArtistId", "ReleaseYear"}.Contains(field))
 			{
 				return new List<Album>();
 			}

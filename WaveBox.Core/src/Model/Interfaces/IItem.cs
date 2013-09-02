@@ -18,6 +18,9 @@ namespace WaveBox.Core.Model
 		
 		[JsonProperty("itemId")]
 		int? ItemId { get; set; }
+
+		[JsonProperty("artId")]
+		int? ArtId { get; }
 	}
 
 	public static class IItemExtension

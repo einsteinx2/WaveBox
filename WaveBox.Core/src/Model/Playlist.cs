@@ -44,6 +44,10 @@ namespace WaveBox.Core.Model
 		[JsonProperty("lastUpdateTime")]
 		public long? LastUpdateTime { get; set; }
 
+		// Currently unused, only to satisfy IItem interface requirements
+		[JsonProperty("artId"), IgnoreRead, IgnoreWrite]
+		public int? ArtId { get; set; }
+
 		public Playlist()
 		{
 		}
