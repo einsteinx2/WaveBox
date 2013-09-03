@@ -8,12 +8,12 @@ Licensed under [The GNU General Public License v3.0](https://www.gnu.org/license
 API
 ---
 
-WaveBox features a very extensible JSON API, and is built with API developers in mind!  Full API documentation can be found in [API_DOCS.md]("https://github.com/einsteinx2/WaveBox/blob/master/API_DOCS.md").
+WaveBox features a very extensible JSON API, and is built with API developers in mind!  Full API documentation can be found in [API_DOCS.md](https://github.com/einsteinx2/WaveBox/blob/master/API_DOCS.md).
 
 Clients
 -------
 
 Though WaveBox is currently under heavy development, several clients and libraries exist which can interact with a WaveBox server. If you wish to have a client included in this list, please send a pull request!
 
-1. [WaveBoxWebClient]("https://github.com/einsteinx2/WaveBoxWebClient") - The official HTML5 web client for WaveBox.  GPL3 licensed.
-2. [php-wavebox]("https://github.com/mdlayher/php-wavebox") - A PHP 5.4+ client library, which may be used to build dynamic web applications. MIT licensed.
+1. [WaveBoxWebClient](https://github.com/einsteinx2/WaveBoxWebClient) - The official HTML5 web client for WaveBox.  GPL3 licensed.
+2. [php-wavebox](https://github.com/mdlayher/php-wavebox) - A PHP 5.4+ WaveBox API client library. MIT licensed.
