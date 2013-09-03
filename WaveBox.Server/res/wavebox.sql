@@ -181,7 +181,6 @@ CREATE TABLE "Favorite" (
 CREATE TABLE "Album" (
     "AlbumId" INTEGER UNIQUE NOT NULL,
     "AlbumName" TEXT NOT NULL,
-    "ArtistId" INTEGER,
     "AlbumArtistId" INTEGER,
     "ReleaseYear" INTEGER
 );
@@ -200,5 +199,5 @@ CREATE INDEX "stat_Timestamp" ON "Stat" ("Timestamp");
 CREATE INDEX "song_FolderIdFileName" ON "song" ("FolderId","FileName");
 CREATE INDEX "song_ItemId" ON "Song" ("ItemId");
 CREATE INDEX "favorite_userId" ON "Favorite" ("FavoriteUserId");
-CREATE UNIQUE INDEX "album_AlbumNameArtistId" ON "Album" ("AlbumName", "ArtistId", "AlbumArtistId");
+CREATE UNIQUE INDEX "album_AlbumNameArtistId" ON "Album" ("AlbumName", "AlbumArtistId");
 COMMIT;

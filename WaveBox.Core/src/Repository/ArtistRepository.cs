@@ -311,6 +311,33 @@ namespace WaveBox.Core.Model.Repository
 			// We had an exception somehow, so return an empty list
 			return new List<Artist>();
 		}
+
+		public IList<Album> AlbumsForArtistId(int artistId)
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = database.GetSqliteConnection();
+
+				// Search for exact match
+				return conn.Query<Album>("SELECT Album.*, AlbumArtist.AlbumArtistName FROM Song " +
+				                         "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+					                     "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
+				                         "LEFT JOIN AlbumArtist ON AlbumArtist.AlbumArtistId = Album.AlbumArtistId " +
+				                         "WHERE Song.ArtistId = ? GROUP BY Album.AlbumId ORDER BY Album.AlbumName", artistId);
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				database.CloseSqliteConnection(conn);
+			}
+
+			// We had an exception somehow, so return an empty list
+			return new List<Album>();
+		}
 	}
 }
 

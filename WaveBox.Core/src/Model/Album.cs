@@ -21,12 +21,6 @@ namespace WaveBox.Core.Model
 		[JsonProperty("itemTypeId"), IgnoreRead, IgnoreWrite]
 		public int ItemTypeId { get { return (int)ItemType; } }
 
-		[JsonProperty("artistId")]
-		public int? ArtistId { get; set; }
-
-		[JsonProperty("artistName"), IgnoreWrite]
-		public string ArtistName { get; set; }
-
 		[JsonProperty("albumArtistId")]
 		public int? AlbumArtistId { get; set; }
 
@@ -107,9 +101,9 @@ namespace WaveBox.Core.Model
 			return Injection.Kernel.Get<IAlbumRepository>().FolderArtIds((int)AlbumId);
 		}
 
-		public Artist Artist()
+		public AlbumArtist AlbumArtist()
 		{
-			return Injection.Kernel.Get<IArtistRepository>().ArtistForId(ArtistId);
+			return Injection.Kernel.Get<IAlbumArtistRepository>().AlbumArtistForId(AlbumArtistId);
 		}
 
 		public IList<Song> ListOfSongs()

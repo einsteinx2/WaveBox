@@ -44,7 +44,7 @@ namespace WaveBox.Core.Model
 
 		public IList<Album> ListOfAlbums()
 		{
-			return Injection.Kernel.Get<IAlbumRepository>().SearchAlbums("ArtistId", ArtistId.ToString());
+			return Injection.Kernel.Get<IArtistRepository>().AlbumsForArtistId((int)ArtistId);
 		}
 
 		public IList<Song> ListOfSongs()

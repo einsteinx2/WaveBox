@@ -34,9 +34,6 @@ namespace WaveBox.Core.Model
 		[JsonProperty("genreName")]
 		string GenreName { get; set; }
 
-		[JsonProperty("artId")]
-		int? ArtId { get; }
-
 		void AddToPlaylist(Playlist thePlaylist, int index);
 
 		void InsertMediaItem();

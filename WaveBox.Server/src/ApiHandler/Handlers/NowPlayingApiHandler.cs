@@ -17,8 +17,6 @@ namespace WaveBox.ApiHandler.Handlers
 {
 	class NowPlayingApiHandler : IApiHandler
 	{
-		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
 		public string Name { get { return "nowplaying"; } set { } }
 
 		/// <summary>
