@@ -159,6 +159,7 @@
     <Compile Include="src\Repository\Interfaces\IPlaylistRepository.cs" />
     <Compile Include="src\Repository\Interfaces\IFavoriteRepository.cs" />
     <Compile Include="src\ApiResponse\FavoritesResponse.cs" />
+    <Compile Include="src\ApiResponse\ExternalArtResponse.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
@@ -180,14 +181,6 @@
     <Folder Include="src\OperationQueue\Interfaces\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="lib\taglib-sharp.dll" />
-    <Content Include="lib\Newtonsoft.Json.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="lib\log4net.dll" />
-    <None Include="lib\Cirrious.MvvmCross.Plugins.Sqlite.dll" />
-    <None Include="lib\Cirrious.MvvmCross.dll" />
-    <None Include="lib\Ninject.dll" />
     <None Include="WaveBox.Core.dll.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
