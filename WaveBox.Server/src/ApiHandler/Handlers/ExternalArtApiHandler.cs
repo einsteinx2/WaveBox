@@ -5,6 +5,10 @@ using WaveBox.Core;
 using Ninject;
 using WaveBox.Core.Model.Repository;
 using System.IO;
+using System.Net;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
+using WaveBox.Core.ApiResponse;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -13,6 +17,8 @@ namespace WaveBox.ApiHandler.Handlers
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		public string Name { get { return "externalart"; } }
+
+		private readonly string fanArtApiKey = "";
 
 		/// <summary>
 		/// Process returns a file stream containing album art
@@ -38,17 +44,10 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 
 			// Check for blur (value between 0 and 100)
-			double blurSigma = 0;
-			if (uri.Parameters.ContainsKey("blur"))
+			bool thumbnail = false;
+			if (uri.Parameters.ContainsKey("thumbnail"))
 			{
-				int blur = 0;
-				Int32.TryParse(uri.Parameters["blur"], out blur);
-				if (blur < 0)
-					blur = 0;
-				else if (blur > 100)
-					blur = 100;
-
-				blurSigma = (double)blur / 10.0;
+				Boolean.TryParse(uri.Parameters["thumbnail"], out thumbnail);
 			}
 
 			IItemRepository itemRepository = Injection.Kernel.Get<IItemRepository>();
@@ -57,79 +56,68 @@ namespace WaveBox.ApiHandler.Handlers
 			// Only support artist art right now
 			if (type == ItemType.Artist || type == ItemType.AlbumArtist)
 			{
-				IAlbumArtistRepository albumArtistRepository = Injection.Kernel.Get<IAlbumArtistRepository>();
-				AlbumArtist artist = albumArtistRepository.AlbumArtistForId(itemId);
-
-				// Grab the artist info from MusicBrainz
-				MusicBrainz.Artist result = MusicBrainz.Artist.Query(artist.AlbumArtistName);
-
-				processor.WriteText("MusicBrainz - id: " + result.Id, "text");
-
-				/*
-
-				// Grab art stream
-				Art art = Injection.Kernel.Get<IArtRepository>().ArtForId(artId);
-				Stream stream = CreateStream(art);
-
-				// If the stream could not be produced, return error
-				if ((object)stream == null)
+				string artistName = null;
+				if (type == ItemType.Artist)
 				{
-					processor.WriteErrorHeader();
-					return;
-				}
-
-				// If art size requested...
-				if (uri.Parameters.ContainsKey("size"))
-				{
-					int size = Int32.MaxValue;
-					Int32.TryParse(uri.Parameters["size"], out size);
-
-					// Parse size if valid
-					if (size != Int32.MaxValue)
+					IArtistRepository artistRepository = Injection.Kernel.Get<IArtistRepository>();
+					Artist artist = artistRepository.ArtistForId(itemId);
+					if (artist != null)
 					{
-						bool imageMagickFailed = false;
-						if (ServerUtility.DetectOS() != ServerUtility.OS.Windows)
-						{
-							// First try ImageMagick
-							try
-							{
-								Byte[] data = ResizeImageMagick(stream, size, blurSigma);
-								stream = new MemoryStream(data, false);
-							}
-							catch
-							{
-								imageMagickFailed = true;
-							}
-						}
-
-						// If ImageMagick dll isn't loaded, or this is Windows,
-						if (imageMagickFailed || ServerUtility.DetectOS() == ServerUtility.OS.Windows)
-						{
-							// Resize image, put it in memory stream
-							Image resized = ResizeImageGDI(new Bitmap(stream), new Size(size, size));
-							stream = new MemoryStream();
-							resized.Save(stream, System.Drawing.Imaging.ImageFormat.Jpeg);
-						}
+						artistName = artist.ArtistName;
+					}
+				}
+				else
+				{
+					IAlbumArtistRepository albumArtistRepository = Injection.Kernel.Get<IAlbumArtistRepository>();
+					AlbumArtist albumArtist = albumArtistRepository.AlbumArtistForId(itemId);
+					if (albumArtist != null)
+					{
+						artistName = albumArtist.AlbumArtistName;
 					}
 				}
 
-				DateTime? lastModified = null;
-				if (!ReferenceEquals(art.LastModified, null))
+				if (artistName != null)
 				{
-					lastModified = ((long)art.LastModified).ToDateTime();
+					// Grab the artist info from MusicBrainz
+					MusicBrainz.Artist result = MusicBrainz.Artist.Query(artistName);
+
+					if (result != null && result.Id != null)
+					{
+						WebClient client = new WebClient();
+						try
+						{
+							string url = "http://api.fanart.tv/webservice/artist/" + fanArtApiKey + "/" + result.Id + "/json/artistbackground/1/1/";
+							string response = client.DownloadString(url);
+
+							JObject o = JObject.Parse(response);
+							JObject artistO = (JObject)o[result.GetName()];
+							JArray artistBackground = (JArray)artistO["artistbackground"];
+							if (artistBackground != null && artistBackground.Count > 0)
+							{
+								JObject firstBackground = (JObject)artistBackground[0];
+								string artUrl = (string)firstBackground["url"];
+								if (artUrl != null)
+								{
+									if (thumbnail)
+										artUrl += "/preview";
+
+									string json = JsonConvert.SerializeObject(new ExternalArtResponse(null, artUrl), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+									processor.WriteJson(json);
+									return;
+								}
+							}
+						}
+						catch (Exception e)
+						{
+							logger.Error("Exception retreiving art info from FanArt: " + e);
+						}
+					}
 				}
-				processor.WriteFile(stream, 0, stream.Length, HttpHeader.MimeTypeForExtension(".jpg"), null, true, lastModified);
+			}
 
-				// Close the file so we don't get sharing violations on future accesses
-				stream.Close();*/
-			}
-			else
-			{
-				processor.WriteErrorHeader();
-				return;
-			}
+			// If all else fails, return error
+			processor.WriteErrorHeader();
 		}
-
 	}
 }
 
