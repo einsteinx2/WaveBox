@@ -210,7 +210,7 @@
     <Compile Include="src\Transcoding\VideoTranscoder.cs" />
     <Compile Include="src\WaveBoxMain.cs" />
     <Compile Include="src\WaveBoxService.cs">
-    <Compile Include="src\WaveBoxServiceInstaller.cs" />
+      <Compile Include="src\WaveBoxServiceInstaller.cs" />
       <SubType>Component</SubType>
     </Compile>
   </ItemGroup>
@@ -308,7 +308,6 @@
     <None Include="lib_native\libWaveBoxFSEvents.dylib">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Hqub.MusicBrainze.API.dll.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
