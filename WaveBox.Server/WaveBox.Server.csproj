@@ -115,6 +115,9 @@
       <HintPath>lib\Ninject.dll</HintPath>
     </Reference>
     <Reference Include="System.Configuration.Install" />
+    <Reference Include="MusicBrainz">
+      <HintPath>lib\MusicBrainz.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -131,6 +134,7 @@
     <Compile Include="src\ApiHandler\Handlers\ArtistsApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\DatabaseApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\ErrorApiHandler.cs" />
+    <Compile Include="src\ApiHandler\Handlers\ExternalArtApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\FavoritesApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\FoldersApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\GenresApiHandler.cs" />
@@ -206,7 +210,7 @@
     <Compile Include="src\Transcoding\VideoTranscoder.cs" />
     <Compile Include="src\WaveBoxMain.cs" />
     <Compile Include="src\WaveBoxService.cs">
-    <Compile Include="src\WaveBoxServiceInstaller.cs" />
+      <Compile Include="src\WaveBoxServiceInstaller.cs" />
       <SubType>Component</SubType>
     </Compile>
   </ItemGroup>
@@ -246,7 +250,6 @@
     <None Include="res\wavebox.db">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="lib\Bass.Net.dll" />
     <None Include="res\wavebox_querylog.db">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -256,13 +259,9 @@
     <None Include="res\wavebox.conf.template">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="lib\Mono.Zeroconf.dll" />
-    <None Include="lib\Mono.Zeroconf.Providers.Bonjour.dll" />
     <None Include="Mono.Zeroconf.Providers.Bonjour.dll.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="lib\Mono.Zeroconf.Providers.AvahiDBus.dll" />
-    <None Include="lib\Mono.Nat.dll" />
     <None Include="log4net.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -306,18 +305,6 @@
     <None Include="System.Data.SQLite.dll.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="lib\Microsoft.AspNet.SignalR.Owin.dll" />
-    <None Include="lib\Microsoft.AspNet.SignalR.Core.dll" />
-    <None Include="lib\Microsoft.Owin.Hosting.dll" />
-    <None Include="lib\Microsoft.Owin.Host.HttpListener.dll" />
-    <None Include="lib\Owin.dll" />
-    <None Include="lib\Microsoft.Owin.Diagnostics.dll" />
-    <None Include="lib\log4net.dll" />
-    <None Include="lib\Newtonsoft.Json.dll" />
-    <None Include="lib\taglib-sharp.dll" />
-    <None Include="lib\System.Data.SQLite.dll" />
-    <None Include="lib\System.Data.SQLite.Linq.dll" />
-    <None Include="lib\Ninject.dll" />
     <None Include="lib_native\libWaveBoxFSEvents.dylib">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
