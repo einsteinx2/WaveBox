@@ -37,10 +37,15 @@ namespace WaveBox.Core.Model
 		public int? ReleaseYear { get; set; }
 
 		[JsonProperty("artId"), IgnoreWrite]
-		public int? ArtId { get { return DetermineArtId(); } }
+		public int? ArtId { get { return FastArtId(); } }//return DetermineArtId(); } }
 
 		public Album()
 		{
+		}
+
+		public int? FastArtId()
+		{
+			return Injection.Kernel.Get<IAlbumRepository>().FastArtId((int)AlbumId);
 		}
 
 		public int? DetermineArtId()

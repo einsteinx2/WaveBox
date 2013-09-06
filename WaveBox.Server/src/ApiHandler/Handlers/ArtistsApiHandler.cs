@@ -47,35 +47,44 @@ namespace WaveBox.ApiHandler.Handlers
 
 				// Add artist by ID to the list
 				Artist a = Injection.Kernel.Get<IArtistRepository>().ArtistForId(id);
-				artists.Add(a);
-
-				// Add artist's albums to response
-				albums = a.ListOfAlbums();
-
-				// If requested, add artist's songs to response
-				if (uri.Parameters.ContainsKey("includeSongs"))
+				if (a.ArtistId == null)
 				{
-					if (uri.Parameters["includeSongs"].IsTrue())
-					{
-						songs = a.ListOfSongs();
-					}
+					string json = JsonConvert.SerializeObject(new ArtistsResponse("Artist id not valid", null, null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+					processor.WriteJson(json);
+					return;
 				}
-
-				// If requested, add artist's Last.fm info to response
-				if (uri.Parameters.ContainsKey("lastfmInfo"))
+				else
 				{
-					if (uri.Parameters["lastfmInfo"].IsTrue())
+					artists.Add(a);
+
+					// Add artist's albums to response
+					albums = a.ListOfAlbums();
+
+					// If requested, add artist's songs to response
+					if (uri.Parameters.ContainsKey("includeSongs"))
 					{
-						logger.IfInfo("Querying Last.fm for artist: " + a.ArtistName);
-						try
+						if (uri.Parameters["includeSongs"].IsTrue())
 						{
-							lastfmInfo = Lastfm.GetArtistInfo(a);
-							logger.IfInfo("Last.fm query complete!");
+							songs = a.ListOfSongs();
 						}
-						catch (Exception e)
+					}
+
+					// If requested, add artist's Last.fm info to response
+					if (uri.Parameters.ContainsKey("lastfmInfo"))
+					{
+						if (uri.Parameters["lastfmInfo"].IsTrue())
 						{
-							logger.Error("Last.fm query failed!");
-							logger.Error(e);
+							logger.IfInfo("Querying Last.fm for artist: " + a.ArtistName);
+							try
+							{
+								lastfmInfo = Lastfm.GetArtistInfo(a);
+								logger.IfInfo("Last.fm query complete!");
+							}
+							catch (Exception e)
+							{
+								logger.Error("Last.fm query failed!");
+								logger.Error(e);
+							}
 						}
 					}
 				}
@@ -178,8 +187,8 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 			}
 
-			// Finally, if no artists already in list, send the whole list
-			if (artists.Count == 0)
+			// Finally, if no artists already in list and no ID attribute, send the whole list
+			if (artists.Count == 0 && id == 0)
 			{
 				artists = Injection.Kernel.Get<IArtistRepository>().AllArtists();
 			}

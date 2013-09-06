@@ -341,6 +341,31 @@ namespace WaveBox.Core.Model.Repository
 			return new List<Album>();
 		}
 
+		// Just uses the first song's art id for speed
+		public int? FastArtId(int albumId)
+		{
+			int artId = 0;
+
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = database.GetSqliteConnection();
+				artId = conn.ExecuteScalar<int>("SELECT ArtItem.ArtId FROM Song " +
+				                                "LEFT JOIN ArtItem ON Song.ItemId = ArtItem.ItemId " +
+				                                "WHERE Song.AlbumId = ? AND ArtItem.ArtId IS NOT NULL LIMIT 1", albumId);
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				database.CloseSqliteConnection(conn);
+			}
+
+			return artId == 0 ? null : (int?)artId;
+		}
+
 		public IList<int> SongArtIds(int albumId)
 		{
 			List<int> songArtIds = new List<int>();
