@@ -1,10 +1,10 @@
 # WaveBox API
 
 ## The basics:
-Every call to the WaveBox API requires authentication data, whether it is the &quot;s&quot; 
-session key parameter sent in GET or POST parameters, or the wavebox_session cookie 
+Every call to the WaveBox API requires authentication data, whether it is the &quot;s&quot;
+session key parameter sent in GET or POST parameters, or the wavebox_session cookie
 issued by the server.  Unless otherwise specified, all other parameters are optional.
-Each API call is prefixed by /api/ in the URL.  Responses are encoded in gzip or 
+Each API call is prefixed by /api/ in the URL.  Responses are encoded in gzip or
 deflate if requested, in order to compress large responses.
 
 ## Login
@@ -28,6 +28,26 @@ deflate if requested, in order to compress large responses.
 | :--- | :---------- |
 | error | An object containing information about any error that may have occurred.  Null if the call is successful.  The structure of the error object is discussed in the Data Structures segment. |
 | sessionId | The session id for this login session. |
+
+## Logout
+> Used to destroy the current session for an existing user. The session ID returned is the one which was destroyed.
+
+**URL:** /api/logout
+
+**Example:** http://localhost:6500/api/logout
+
+**Parameters**
+
+| Name | Description | Required |
+| :--- | :---------- | :------: |
+| n/a | n/a |
+
+**Returns**
+
+| Name | Description |
+| :--- | :---------- |
+| error | An object containing information about any error that may have occurred.  Null if the call is successful.  The structure of the error object is discussed in the Data Structures segment. |
+| sessionId | The session id destroyed by logging out. |
 
 ## Albums
 > Used to return information about all albums known to WaveBox, or with the 'id' parameter, information about a specific album. On invalid id, a null album object will be sent.
@@ -55,9 +75,9 @@ deflate if requested, in order to compress large responses.
 
 ## Art
 > Used to return a binary art file, which is tied to an album via an art ID.  With parameter ‘id’ specified, will attempt to fetch the album art with this ID.  Will return HTTP 404 error if no art found.
-> 
+>
 > Note that the Art API handler can use either ImageMagick or GDI to resize an image.  On Mac OSX and UNIX, ImageMagick will be tried, followed by GDI on failure.  On Windows, GDI will be used.
-> 
+>
 > In addition, note that the handler will send a HTTP Last-Modified header, so clients may cache art for a faster response.
 
 **URL:** /api/art/:id
@@ -180,15 +200,15 @@ deflate if requested, in order to compress large responses.
 ## Jukebox
 
 > Used to manipulate the jukebox function of WaveBox.  This includes functions such as “play”, “pause”, “stop”, and other related actions.  Can potentially return an error, the status of the jukebox, and the jukebox’s current playlist.
-> 
+>
 > The “playlist”, “add”, “remove”, “move”, and “clear” actions manipulate the jukebox play queue.
 > * Add takes only a song ID or a list of song IDs
 > * Remove takes an index or a comma-delimited list of indexes in the jukebox playlist
 > * Move takes a from index and a to index as a comma-delimited tuple. e.g. action=move&index=1,2 would move the song at index 1 to index 2
-> 
+>
 > “play”, “pause”, “stop”, “prev”, and “next” control the jukebox player.
 > * Play takes an index of the jukebox playlist, or if no index and paused or stopped, plays the current index
-> 
+>
 > **Note: Songs must be added to the jukebox’s playlist before they can be played.**
 
 **URL:** /api/jukebox
@@ -337,7 +357,7 @@ deflate if requested, in order to compress large responses.
 
 **URL:** /api/stats
 
-**Example:** http://localhost:6500/api/stats?event=10,213214621231&s=SESSIONID 
+**Example:** http://localhost:6500/api/stats?event=10,213214621231&s=SESSIONID
 
 **Parameters**
 
@@ -424,7 +444,7 @@ deflate if requested, in order to compress large responses.
 | error (if unsuccessful) | An object containing information about any error that may have occurred.  NO JSON IS RETURNED ON SUCCESS, ONLY BINARY DATA.  The structure of the error object is discussed in the Data Structures segment. |
 
 ## TranscodeHls
-> 
+>
 
 **URL:** /api/transcodehls
 
