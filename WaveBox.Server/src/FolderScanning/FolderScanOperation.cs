@@ -174,14 +174,20 @@ namespace WaveBox.FolderScanning
 						{
 							f = TagLib.File.Create(file);
 						}
-						catch (TagLib.CorruptFileException)
-						{
-							logger.Error(file + " has a corrupt tag and will not be inserted. ");
-							return;
-						}
 						catch (Exception e)
 						{
-							logger.Error("Error processing file " + file + ": " + e);
+							// Tag is invalid in some way
+							if (e is TagLib.CorruptFileException || e is ArgumentOutOfRangeException)
+							{
+								logger.Error(file + " has a corrupt tag and will not be inserted.");
+								return;
+							}
+							else
+							{
+								// Other exceptions
+								logger.Error("Error processing file " + file + ": " + e);
+								return;
+							}
 						}
 
 						if (f == null)
