@@ -34,14 +34,19 @@ namespace WaveBox.ApiHandler.Handlers
 			logger.IfInfo("Starting file streaming sequence");
 
 			// Try to get the media item id
-			bool success = false;
 			int id = 0;
 			if (uri.Parameters.ContainsKey("id"))
 			{
-				success = Int32.TryParse(uri.Parameters["id"], out id);
+				Int32.TryParse(uri.Parameters["id"], out id);
 			}
 
-			if (!success)
+			float seconds = 0f;
+			if (uri.Parameters.ContainsKey("seconds"))
+			{
+				float.TryParse(uri.Parameters["seconds"], out seconds);
+			}
+
+			if (id == 0)
 			{
 				// For missing ID parameter, print JSON error
 				string json = JsonConvert.SerializeObject(new StreamResponse("Missing required parameter 'id'"), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
@@ -79,9 +84,20 @@ namespace WaveBox.ApiHandler.Handlers
 				int startOffset = 0;
 				long? limitToSize = null;
 
-				// Handle the Range header to start from later in the file
-				if (processor.HttpHeaders.ContainsKey("Range"))
+				if (seconds > 0)
 				{
+					// Guess the file position based on the seconds requested
+					// this is just rough now, but will be improved to take into account the header size
+					float percent = seconds / (float)item.Duration;
+					if (percent < 1f)
+					{
+						startOffset = (int)(item.FileSize * percent);
+						logger.IfInfo("seconds: " + seconds + "  Resuming from " + startOffset);
+					}
+				}
+				else if (processor.HttpHeaders.ContainsKey("Range"))
+				{
+					// Handle the Range header to start from later in the file
 					string range = (string)processor.HttpHeaders["Range"];
 					var split = range.Split(new char[]{'-', '='});
 					string start = split[1];

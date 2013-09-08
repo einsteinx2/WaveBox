@@ -47,14 +47,19 @@ namespace WaveBox.ApiHandler.Handlers
 			ITranscoder transcoder = null;
 
 			// Try to get the media item id
-			bool success = false;
 			int id = 0;
 			if (uri.Parameters.ContainsKey("id"))
 			{
-				success = Int32.TryParse(uri.Parameters["id"], out id);
+				Int32.TryParse(uri.Parameters["id"], out id);
 			}
 
-			if (!success)
+			float seconds = 0f;
+			if (uri.Parameters.ContainsKey("seconds"))
+			{
+				float.TryParse(uri.Parameters["seconds"], out seconds);
+			}
+
+			if (id == 0)
 			{
 				string json = JsonConvert.SerializeObject(new TranscodeResponse("Missing required parameter 'id'"), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 				processor.WriteJson(json);
@@ -111,9 +116,21 @@ namespace WaveBox.ApiHandler.Handlers
 					isDirect = uri.Parameters["isDirect"].IsTrue();
 				}
 
-				// Handle the Range header to start from later in the file
-				if (processor.HttpHeaders.ContainsKey("Range"))
+				if (seconds > 0)
 				{
+					// Guess the file position based on the seconds requested
+					// this is wrong now, but will be improved to take into account the header size and transcode quality
+					// or even better, we should be able to just pass the offset seconds to ffmpeg
+					float percent = seconds / (float)item.Duration;
+					if (percent < 1f)
+					{
+						startOffset = (int)(item.FileSize * percent);
+						logger.IfInfo("seconds: " + seconds + "  Resuming from " + startOffset);
+					}
+				}
+				else if (processor.HttpHeaders.ContainsKey("Range"))
+				{
+					// Handle the Range header to start from later in the file
 					string range = (string)processor.HttpHeaders["Range"];
 					var split = range.Split(new char[]{'-', '='});
 					string start = split[1];
