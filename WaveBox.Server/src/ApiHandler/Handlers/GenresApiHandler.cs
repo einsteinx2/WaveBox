@@ -46,7 +46,9 @@ namespace WaveBox.ApiHandler.Handlers
 					type = uri.Parameters["type"];
 				}
 
+				// Get single genre, add it for output
 				Genre genre = Injection.Kernel.Get<IGenreRepository>().GenreForId(id);
+				listOfGenres.Add(genre);
 
 				switch (type)
 				{
