@@ -39,20 +39,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 				// Create a test user and reply with the account info
 				User testUser = Injection.Kernel.Get<IUserRepository>().CreateTestUser(success ? (int?)durationSeconds : null);
-				if (!ReferenceEquals(testUser, null))
-				{
-					listOfUsers.Add(testUser);
-					try
-					{
-						string json = JsonConvert.SerializeObject(new UsersResponse(null, listOfUsers), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-						processor.WriteJson(json);
-					}
-					catch (Exception e)
-					{
-						logger.Error(e);
-					}
-				}
-				else
+				if (testUser == null)
 				{
 					try
 					{
@@ -63,7 +50,11 @@ namespace WaveBox.ApiHandler.Handlers
 					{
 						logger.Error(e);
 					}
+
+					return;
 				}
+
+				listOfUsers.Add(testUser);
 			}
 			// See if we need to manage users
 			else if (uri.Parameters.ContainsKey("action"))
@@ -84,6 +75,8 @@ namespace WaveBox.ApiHandler.Handlers
 						{
 							logger.Error(e);
 						}
+
+						return;
 					}
 
 					// Try to parse rowId integer
@@ -98,6 +91,8 @@ namespace WaveBox.ApiHandler.Handlers
 						{
 							logger.Error(e);
 						}
+
+						return;
 					}
 
 					// After all checks pass, delete this session, return user associated with it
@@ -107,16 +102,106 @@ namespace WaveBox.ApiHandler.Handlers
 						session.DeleteSession();
 						listOfUsers.Add(Injection.Kernel.Get<IUserRepository>().UserForId(Convert.ToInt32(session.UserId)));
 					}
+				}
+				// register - create a new user
+				else if (uri.Parameters["action"] == "register")
+				{
+					// Check for required username and password parameters
+					if (!uri.Parameters.ContainsKey("username") || !uri.Parameters.ContainsKey("password"))
+					{
+						try
+						{
+							string json = JsonConvert.SerializeObject(new UsersResponse("Parameters 'username' and 'password' required for action 'register'", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+							processor.WriteJson(json);
+						}
+						catch (Exception e)
+						{
+							logger.Error(e);
+						}
 
-					try
-					{
-						string json = JsonConvert.SerializeObject(new UsersResponse(null, listOfUsers), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-						processor.WriteJson(json);
+						return;
 					}
-					catch (Exception e)
+
+					string username = uri.Parameters["username"];
+					string password = uri.Parameters["password"];
+
+					// Attempt to create the user
+					User newUser = Injection.Kernel.Get<IUserRepository>().CreateUser(username, password, null);
+					if (newUser == null)
 					{
-						logger.Error(e);
+						try
+						{
+							string json = JsonConvert.SerializeObject(new UsersResponse("Action 'register' failed to create new user", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+							processor.WriteJson(json);
+						}
+						catch (Exception e)
+						{
+							logger.Error(e);
+						}
+
+						return;
 					}
+
+					// Verify user didn't already exist
+					if (newUser.UserId == null)
+					{
+						try
+						{
+							string json = JsonConvert.SerializeObject(new UsersResponse("User '" + username + "' already exists!", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+							processor.WriteJson(json);
+						}
+						catch (Exception e)
+						{
+							logger.Error(e);
+						}
+
+						return;
+					}
+
+					// Return newly created user
+					logger.IfInfo(String.Format("Successfully created new user [id: {0}, username: {1}]", newUser.UserId, newUser.UserName));
+					listOfUsers.Add(newUser);
+				}
+				else if (uri.Parameters["action"] == "delete")
+				{
+					// Check for required username parameter
+					if (!uri.Parameters.ContainsKey("username"))
+					{
+						try
+						{
+							string json = JsonConvert.SerializeObject(new UsersResponse("Parameter 'username' is required for action 'delete'", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+							processor.WriteJson(json);
+						}
+						catch (Exception e)
+						{
+							logger.Error(e);
+						}
+
+						return;
+					}
+
+					string username = uri.Parameters["username"];
+
+					// Attempt to fetch and delete user
+					User deleteUser = Injection.Kernel.Get<IUserRepository>().UserForName(username);
+					if (deleteUser.UserId == null || !deleteUser.Delete())
+					{
+						try
+						{
+							string json = JsonConvert.SerializeObject(new UsersResponse("Action 'delete' failed to delete user", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+							processor.WriteJson(json);
+						}
+						catch (Exception e)
+						{
+							logger.Error(e);
+						}
+
+						return;
+					}
+
+					// Return deleted user
+					logger.IfInfo(String.Format("Successfully deleted user [id: {0}, username: {1}]", deleteUser.UserId, deleteUser.UserName));
+					listOfUsers.Add(deleteUser);
 				}
 				else
 				{
@@ -130,6 +215,8 @@ namespace WaveBox.ApiHandler.Handlers
 					{
 						logger.Error(e);
 					}
+
+					return;
 				}
 			}
 			// Else, list user information
@@ -154,17 +241,20 @@ namespace WaveBox.ApiHandler.Handlers
 					// On invalid key, return all users
 					listOfUsers = Injection.Kernel.Get<IUserRepository>().AllUsers();
 				}
-
-				try
-				{
-					string json = JsonConvert.SerializeObject(new UsersResponse(null, listOfUsers), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-					processor.WriteJson(json);
-				}
-				catch (Exception e)
-				{
-					logger.Error(e);
-				}
 			}
+
+			// Finally, output user information
+			try
+			{
+				string json = JsonConvert.SerializeObject(new UsersResponse(null, listOfUsers), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+				processor.WriteJson(json);
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+
+			return;
 		}
 	}
 }
