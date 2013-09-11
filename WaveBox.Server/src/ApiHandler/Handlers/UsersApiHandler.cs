@@ -162,6 +162,47 @@ namespace WaveBox.ApiHandler.Handlers
 					logger.IfInfo(String.Format("Successfully created new user [id: {0}, username: {1}]", newUser.UserId, newUser.UserName));
 					listOfUsers.Add(newUser);
 				}
+				else if (uri.Parameters["action"] == "delete")
+				{
+					// Check for required username parameter
+					if (!uri.Parameters.ContainsKey("username"))
+					{
+						try
+						{
+							string json = JsonConvert.SerializeObject(new UsersResponse("Parameter 'username' is required for action 'delete'", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+							processor.WriteJson(json);
+						}
+						catch (Exception e)
+						{
+							logger.Error(e);
+						}
+
+						return;
+					}
+
+					string username = uri.Parameters["username"];
+
+					// Attempt to fetch and delete user
+					User deleteUser = Injection.Kernel.Get<IUserRepository>().UserForName(username);
+					if (deleteUser.UserId == null || !deleteUser.Delete())
+					{
+						try
+						{
+							string json = JsonConvert.SerializeObject(new UsersResponse("Action 'delete' failed to delete user", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+							processor.WriteJson(json);
+						}
+						catch (Exception e)
+						{
+							logger.Error(e);
+						}
+
+						return;
+					}
+
+					// Return deleted user
+					logger.IfInfo(String.Format("Successfully deleted user [id: {0}, username: {1}]", deleteUser.UserId, deleteUser.UserName));
+					listOfUsers.Add(deleteUser);
+				}
 				else
 				{
 					// Invalid action
