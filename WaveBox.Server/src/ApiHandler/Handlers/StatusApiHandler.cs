@@ -84,11 +84,11 @@ namespace WaveBox.ApiHandler.Handlers
 				// Get peak memory usage in MB
 				status["peakMemoryMb"] = (float)proc.PeakWorkingSet64 / 1024f / 1024f;
 				// Get list of media types WaveBox can index and serve (removing "Unknown")
-				status["mediaTypes"] = Enum.GetNames(typeof(FileType)).Where(x => x != "Unknown").ToList().ToCSV();
+				status["mediaTypes"] = Enum.GetNames(typeof(FileType)).Where(x => x != "Unknown").ToList();
 				// Get list of transcoders available
-				status["transcoders"] = Enum.GetNames(typeof(TranscodeType)).ToList().ToCSV();
+				status["transcoders"] = Enum.GetNames(typeof(TranscodeType)).ToList();
 				// Get list of services
-				status["services"] = ServiceManager.GetServices().ToCSV();
+				status["services"] = ServiceManager.GetServices();
 				// Get last query log ID
 				status["lastQueryLogId"] = queryLogId;
 				// If auto updater running...
