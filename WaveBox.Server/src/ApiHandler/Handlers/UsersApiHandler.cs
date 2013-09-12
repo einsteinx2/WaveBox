@@ -59,6 +59,22 @@ namespace WaveBox.ApiHandler.Handlers
 			// See if we need to manage users
 			else if (uri.Parameters.ContainsKey("action"))
 			{
+				// Check for admin permission
+				if (!user.HasPermission(User.ROLE_ADMIN))
+				{
+					try
+					{
+						string json = JsonConvert.SerializeObject(new UsersResponse("Permission denied", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+						processor.WriteJson(json);
+					}
+					catch (Exception e)
+					{
+						logger.Error(e);
+					}
+
+					return;
+				}
+
 				// killSession - remove a session by rowId
 				if (uri.Parameters["action"] == "killSession")
 				{
@@ -106,22 +122,6 @@ namespace WaveBox.ApiHandler.Handlers
 				// create - create a new user
 				else if (uri.Parameters["action"] == "create")
 				{
-					// Check for admin permission
-					if (!user.HasPermission(User.ROLE_ADMIN))
-					{
-						try
-						{
-							string json = JsonConvert.SerializeObject(new UsersResponse("Permission denied for action 'create'", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-							processor.WriteJson(json);
-						}
-						catch (Exception e)
-						{
-							logger.Error(e);
-						}
-
-						return;
-					}
-
 					// Check for required username and password parameters
 					if (!uri.Parameters.ContainsKey("username") || !uri.Parameters.ContainsKey("password"))
 					{
