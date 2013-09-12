@@ -106,6 +106,22 @@ namespace WaveBox.ApiHandler.Handlers
 				// create - create a new user
 				else if (uri.Parameters["action"] == "create")
 				{
+					// Check for admin permission
+					if (!user.HasPermission(User.ROLE_ADMIN))
+					{
+						try
+						{
+							string json = JsonConvert.SerializeObject(new UsersResponse("Permission denied for action 'create'", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+							processor.WriteJson(json);
+						}
+						catch (Exception e)
+						{
+							logger.Error(e);
+						}
+
+						return;
+					}
+
 					// Check for required username and password parameters
 					if (!uri.Parameters.ContainsKey("username") || !uri.Parameters.ContainsKey("password"))
 					{
@@ -125,8 +141,8 @@ namespace WaveBox.ApiHandler.Handlers
 					string username = uri.Parameters["username"];
 					string password = uri.Parameters["password"];
 
-					// Attempt to create the user
-					User newUser = Injection.Kernel.Get<IUserRepository>().CreateUser(username, password, null);
+					// Attempt to create the user, with regular user role for now
+					User newUser = Injection.Kernel.Get<IUserRepository>().CreateUser(username, password, User.ROLE_USER, null);
 					if (newUser == null)
 					{
 						try

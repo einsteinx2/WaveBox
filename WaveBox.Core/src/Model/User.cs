@@ -64,6 +64,12 @@ namespace WaveBox.Core.Model
 		{
 		}
 
+		// Verifies that this user object has permission to view a section
+		public bool HasPermission(int role)
+		{
+			return this.Role >= role ? true : false;
+		}
+
 		// Return the user's current session, as it is the one most recently modified
 		public Session CurrentSession()
 		{
