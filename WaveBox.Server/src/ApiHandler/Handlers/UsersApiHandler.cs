@@ -41,16 +41,7 @@ namespace WaveBox.ApiHandler.Handlers
 				User testUser = Injection.Kernel.Get<IUserRepository>().CreateTestUser(success ? (int?)durationSeconds : null);
 				if (testUser == null)
 				{
-					try
-					{
-						string json = JsonConvert.SerializeObject(new UsersResponse("Couldn't create user", listOfUsers), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-						processor.WriteJson(json);
-					}
-					catch (Exception e)
-					{
-						logger.Error(e);
-					}
-
+					processor.WriteJson(new UsersResponse("Couldn't create user", listOfUsers));
 					return;
 				}
 
@@ -66,32 +57,14 @@ namespace WaveBox.ApiHandler.Handlers
 					int rowId = 0;
 					if (!uri.Parameters.ContainsKey("rowId"))
 					{
-						try
-						{
-							string json = JsonConvert.SerializeObject(new UsersResponse("Missing parameter 'rowId' for action 'killSession'", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-							processor.WriteJson(json);
-						}
-						catch (Exception e)
-						{
-							logger.Error(e);
-						}
-
+						processor.WriteJson(new UsersResponse("Missing parameter 'rowId' for action 'killSession'", null));
 						return;
 					}
 
 					// Try to parse rowId integer
 					if (!Int32.TryParse(uri.Parameters["rowId"], out rowId))
 					{
-						try
-						{
-							string json = JsonConvert.SerializeObject(new UsersResponse("Invalid integer for 'rowId' for action 'killSession'", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-							processor.WriteJson(json);
-						}
-						catch (Exception e)
-						{
-							logger.Error(e);
-						}
-
+						processor.WriteJson(new UsersResponse("Invalid integer for 'rowId' for action 'killSession'", null));
 						return;
 					}
 
@@ -109,16 +82,7 @@ namespace WaveBox.ApiHandler.Handlers
 					// Check for required username and password parameters
 					if (!uri.Parameters.ContainsKey("username") || !uri.Parameters.ContainsKey("password"))
 					{
-						try
-						{
-							string json = JsonConvert.SerializeObject(new UsersResponse("Parameters 'username' and 'password' required for action 'create'", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-							processor.WriteJson(json);
-						}
-						catch (Exception e)
-						{
-							logger.Error(e);
-						}
-
+						processor.WriteJson(new UsersResponse("Parameters 'username' and 'password' required for action 'create'", null));
 						return;
 					}
 
@@ -129,32 +93,14 @@ namespace WaveBox.ApiHandler.Handlers
 					User newUser = Injection.Kernel.Get<IUserRepository>().CreateUser(username, password, null);
 					if (newUser == null)
 					{
-						try
-						{
-							string json = JsonConvert.SerializeObject(new UsersResponse("Action 'create' failed to create new user", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-							processor.WriteJson(json);
-						}
-						catch (Exception e)
-						{
-							logger.Error(e);
-						}
-
+						processor.WriteJson(new UsersResponse("Action 'create' failed to create new user", null));
 						return;
 					}
 
 					// Verify user didn't already exist
 					if (newUser.UserId == null)
 					{
-						try
-						{
-							string json = JsonConvert.SerializeObject(new UsersResponse("User '" + username + "' already exists!", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-							processor.WriteJson(json);
-						}
-						catch (Exception e)
-						{
-							logger.Error(e);
-						}
-
+						processor.WriteJson(new UsersResponse("User '" + username + "' already exists!", null));
 						return;
 					}
 
@@ -167,16 +113,7 @@ namespace WaveBox.ApiHandler.Handlers
 					// Check for required ID parameter
 					if (!uri.Parameters.ContainsKey("id"))
 					{
-						try
-						{
-							string json = JsonConvert.SerializeObject(new UsersResponse("Parameter 'id' is required for action 'delete'", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-							processor.WriteJson(json);
-						}
-						catch (Exception e)
-						{
-							logger.Error(e);
-						}
-
+						processor.WriteJson(new UsersResponse("Parameter 'id' is required for action 'delete'", null));
 						return;
 					}
 
@@ -184,16 +121,7 @@ namespace WaveBox.ApiHandler.Handlers
 					int id = 0;
 					if (!Int32.TryParse(uri.Parameters["id"], out id))
 					{
-						try
-						{
-							string json = JsonConvert.SerializeObject(new UsersResponse("Invalid integer for 'id' for action 'delete'", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-							processor.WriteJson(json);
-						}
-						catch (Exception e)
-						{
-							logger.Error(e);
-						}
-
+						processor.WriteJson(new UsersResponse("Invalid integer for 'id' for action 'delete'", null));
 						return;
 					}
 
@@ -201,16 +129,7 @@ namespace WaveBox.ApiHandler.Handlers
 					User deleteUser = Injection.Kernel.Get<IUserRepository>().UserForId(id);
 					if (deleteUser.UserName == null || !deleteUser.Delete())
 					{
-						try
-						{
-							string json = JsonConvert.SerializeObject(new UsersResponse("Action 'delete' failed to delete user", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-							processor.WriteJson(json);
-						}
-						catch (Exception e)
-						{
-							logger.Error(e);
-						}
-
+						processor.WriteJson(new UsersResponse("Action 'delete' failed to delete user", null));
 						return;
 					}
 
@@ -221,16 +140,7 @@ namespace WaveBox.ApiHandler.Handlers
 				else
 				{
 					// Invalid action
-					try
-					{
-						string json = JsonConvert.SerializeObject(new UsersResponse("Invalid action '" + uri.Parameters["action"] + "'", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-						processor.WriteJson(json);
-					}
-					catch (Exception e)
-					{
-						logger.Error(e);
-					}
-
+					processor.WriteJson(new UsersResponse("Invalid action '" + uri.Parameters["action"] + "'", null));
 					return;
 				}
 			}
@@ -259,16 +169,7 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 
 			// Finally, output user information
-			try
-			{
-				string json = JsonConvert.SerializeObject(new UsersResponse(null, listOfUsers), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-				processor.WriteJson(json);
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-
+			processor.WriteJson(new UsersResponse(null, listOfUsers));
 			return;
 		}
 	}

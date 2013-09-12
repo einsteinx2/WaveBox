@@ -39,25 +39,25 @@ namespace WaveBox.ApiHandler
 				catch (JsonException)
 				{
 					// Failure if invalid JSON provided
-					processor.WriteJson(JsonConvert.SerializeObject(new SettingsResponse("Invalid JSON", Injection.Kernel.Get<IServerSettings>().SettingsModel), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+					processor.WriteJson(new SettingsResponse("Invalid JSON", Injection.Kernel.Get<IServerSettings>().SettingsModel));
 					return;
 				}
 
 				// If settings wrote successfully, return success object
 				if (success)
 				{
-					processor.WriteJson(JsonConvert.SerializeObject(new SettingsResponse(null, Injection.Kernel.Get<IServerSettings>().SettingsModel), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+					processor.WriteJson(new SettingsResponse(null, Injection.Kernel.Get<IServerSettings>().SettingsModel));
 				}
 				else
 				{
 					// If no settings changed, report a 'harmless' error
-					processor.WriteJson(JsonConvert.SerializeObject(new SettingsResponse("No settings were changed", Injection.Kernel.Get<IServerSettings>().SettingsModel), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+					processor.WriteJson(new SettingsResponse("No settings were changed", Injection.Kernel.Get<IServerSettings>().SettingsModel));
 				}
 			}
 			else
 			{
 				// If no parameter provided, return settings
-				processor.WriteJson(JsonConvert.SerializeObject(new SettingsResponse(null, Injection.Kernel.Get<IServerSettings>().SettingsModel), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+				processor.WriteJson(new SettingsResponse(null, Injection.Kernel.Get<IServerSettings>().SettingsModel));
 			}
 		}
 	}
