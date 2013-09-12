@@ -103,15 +103,15 @@ namespace WaveBox.ApiHandler.Handlers
 						listOfUsers.Add(Injection.Kernel.Get<IUserRepository>().UserForId(Convert.ToInt32(session.UserId)));
 					}
 				}
-				// register - create a new user
-				else if (uri.Parameters["action"] == "register")
+				// create - create a new user
+				else if (uri.Parameters["action"] == "create")
 				{
 					// Check for required username and password parameters
 					if (!uri.Parameters.ContainsKey("username") || !uri.Parameters.ContainsKey("password"))
 					{
 						try
 						{
-							string json = JsonConvert.SerializeObject(new UsersResponse("Parameters 'username' and 'password' required for action 'register'", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+							string json = JsonConvert.SerializeObject(new UsersResponse("Parameters 'username' and 'password' required for action 'create'", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 							processor.WriteJson(json);
 						}
 						catch (Exception e)
@@ -131,7 +131,7 @@ namespace WaveBox.ApiHandler.Handlers
 					{
 						try
 						{
-							string json = JsonConvert.SerializeObject(new UsersResponse("Action 'register' failed to create new user", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+							string json = JsonConvert.SerializeObject(new UsersResponse("Action 'create' failed to create new user", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 							processor.WriteJson(json);
 						}
 						catch (Exception e)
@@ -164,12 +164,12 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 				else if (uri.Parameters["action"] == "delete")
 				{
-					// Check for required username parameter
-					if (!uri.Parameters.ContainsKey("username"))
+					// Check for required ID parameter
+					if (!uri.Parameters.ContainsKey("id"))
 					{
 						try
 						{
-							string json = JsonConvert.SerializeObject(new UsersResponse("Parameter 'username' is required for action 'delete'", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+							string json = JsonConvert.SerializeObject(new UsersResponse("Parameter 'id' is required for action 'delete'", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
 							processor.WriteJson(json);
 						}
 						catch (Exception e)
@@ -180,11 +180,26 @@ namespace WaveBox.ApiHandler.Handlers
 						return;
 					}
 
-					string username = uri.Parameters["username"];
+					// Try to parse id integer
+					int id = 0;
+					if (!Int32.TryParse(uri.Parameters["id"], out id))
+					{
+						try
+						{
+							string json = JsonConvert.SerializeObject(new UsersResponse("Invalid integer for 'id' for action 'delete'", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
+							processor.WriteJson(json);
+						}
+						catch (Exception e)
+						{
+							logger.Error(e);
+						}
+
+						return;
+					}
 
 					// Attempt to fetch and delete user
-					User deleteUser = Injection.Kernel.Get<IUserRepository>().UserForName(username);
-					if (deleteUser.UserId == null || !deleteUser.Delete())
+					User deleteUser = Injection.Kernel.Get<IUserRepository>().UserForId(id);
+					if (deleteUser.UserName == null || !deleteUser.Delete())
 					{
 						try
 						{
