@@ -20,8 +20,9 @@ namespace WaveBox.Core.Model
 
 		// User role constants
 		public const int ROLE_TEST = 1;
-		public const int ROLE_USER = 2;
-		public const int ROLE_ADMIN = 3;
+		public const int ROLE_GUEST = 2;
+		public const int ROLE_USER = 4;
+		public const int ROLE_ADMIN = 8;
 
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
