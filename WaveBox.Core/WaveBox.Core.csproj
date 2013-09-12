@@ -160,6 +160,9 @@
     <Compile Include="src\Repository\Interfaces\IFavoriteRepository.cs" />
     <Compile Include="src\ApiResponse\FavoritesResponse.cs" />
     <Compile Include="src\ApiResponse\ExternalArtResponse.cs" />
+    <Compile Include="src\Model\MusicBrainzCheckDate.cs" />
+    <Compile Include="src\Repository\Interfaces\IMusicBrainzCheckDateRepository.cs" />
+    <Compile Include="src\Repository\MusicBrainzCheckDateRepository.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

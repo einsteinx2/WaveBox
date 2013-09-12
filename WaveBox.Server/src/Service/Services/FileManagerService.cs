@@ -141,7 +141,7 @@ namespace WaveBox.Service.Services
 			mediaFolders = Injection.Kernel.Get<IFolderRepository>().MediaFolders();
 			scanQueue = new DelayedOperationQueue();
 			scanQueue.startQueue();
-			scanQueue.queueOperation(new FolderScanning.OrphanScanOperation(0));
+			scanQueue.queueOperation(new OrphanScanOperation(0));
 
 			if (ServerUtility.DetectOS() == ServerUtility.OS.MacOSX)
 			{
@@ -200,6 +200,9 @@ namespace WaveBox.Service.Services
 					}
 				}
 			}
+
+			// Queue the musicbrainz scan after the folder scan 
+			scanQueue.queueOperation(new MusicBrainzScanOperation(0));
 
 			// Report if no media folders in configuration
 			if (mediaFolders.Count == 0)

@@ -348,6 +348,27 @@ namespace WaveBox.Core.Model.Repository
 			// We had an exception somehow, so return an empty list
 			return new List<Album>();
 		}
+
+		public IList<Album> AllWithNoMusicBrainzId()
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = database.GetSqliteConnection();
+				return conn.Query<Album>("SELECT * FROM Album WHERE MusicBrainzId IS NULL");
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				database.CloseSqliteConnection(conn);
+			}
+
+			// We had an exception somehow, so return an empty list
+			return new List<Album>();
+		}
 	}
 }
 

@@ -187,6 +187,10 @@ CREATE TABLE "Album" (
     "ReleaseYear" INTEGER,
     "MusicBrainzId" text
 );
+CREATE TABLE "MusicBrainzCheckDate" (
+    "ItemId" integer UNIQUE NOT NULL,
+    "Timestamp" INTEGER NOT NULL
+);
 DELETE FROM sqlite_sequence;
 INSERT INTO "sqlite_sequence" VALUES('item_type',12);
 CREATE UNIQUE INDEX "title_author_unique" ON "Podcast" ("Title", "Author");

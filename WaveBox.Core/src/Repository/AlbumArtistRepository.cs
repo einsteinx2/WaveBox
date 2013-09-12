@@ -91,7 +91,7 @@ namespace WaveBox.Core.Model.Repository
 			return artist;
 		}
 
-		public bool InsertAlbumArtist(string albumArtistName)
+		public bool InsertAlbumArtist(string albumArtistName, bool replace = false)
 		{
 			int? itemId = itemRepository.GenerateItemId(ItemType.AlbumArtist);
 			if (itemId == null)
@@ -107,13 +107,13 @@ namespace WaveBox.Core.Model.Repository
 				AlbumArtist artist = new AlbumArtist();
 				artist.AlbumArtistId = itemId;
 				artist.AlbumArtistName = albumArtistName;
-				int affected = conn.InsertLogged(artist, InsertType.InsertOrIgnore);
+				int affected = conn.InsertLogged(artist, replace ? InsertType.Replace : InsertType.InsertOrIgnore);
 
 				success = affected > 0;
 			}
 			catch (Exception e)
 			{
-				logger.Error("Error inserting artist " + albumArtistName, e);
+				logger.Error("Error inserting albumArtist " + albumArtistName, e);
 			}
 			finally
 			{
@@ -121,6 +121,24 @@ namespace WaveBox.Core.Model.Repository
 			}
 
 			return success;
+		}
+
+		public void InsertAlbumArtist(AlbumArtist albumArtist, bool replace = false)
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = database.GetSqliteConnection();
+				conn.InsertLogged(albumArtist, replace ? InsertType.Replace : InsertType.InsertOrIgnore);
+			}
+			catch (Exception e)
+			{
+				logger.Error("Error inserting albumArtist " + albumArtist, e);
+			}
+			finally
+			{
+				database.CloseSqliteConnection(conn);
+			}
 		}
 
 		public AlbumArtist AlbumArtistForNameOrCreate(string albumArtistName)
@@ -352,6 +370,27 @@ namespace WaveBox.Core.Model.Repository
 
 			// We had an exception somehow, so return an empty list
 			return new List<Song>();
+		}
+
+		public IList<AlbumArtist> AllWithNoMusicBrainzId()
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = database.GetSqliteConnection();
+				return conn.Query<AlbumArtist>("SELECT * FROM AlbumArtist WHERE MusicBrainzId IS NULL");
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				database.CloseSqliteConnection(conn);
+			}
+
+			// We had an exception somehow, so return an empty list
+			return new List<AlbumArtist>();
 		}
 	}
 }

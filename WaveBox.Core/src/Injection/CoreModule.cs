@@ -18,6 +18,7 @@ namespace WaveBox.Core
 			Bind<IGenreRepository>().To<GenreRepository>().InSingletonScope();
 			Bind<IItemRepository>().To<ItemRepository>().InSingletonScope();
 			Bind<IMediaItemRepository>().To<MediaItemRepository>().InSingletonScope();
+			Bind<IMusicBrainzCheckDateRepository>().To<MusicBrainzCheckDateRepository>().InSingletonScope();
 			Bind<IPlaylistRepository>().To<PlaylistRepository>().InSingletonScope();
 			Bind<ISessionRepository>().To<SessionRepository>().InSingletonScope();
 			Bind<ISongRepository>().To<SongRepository>().InSingletonScope();

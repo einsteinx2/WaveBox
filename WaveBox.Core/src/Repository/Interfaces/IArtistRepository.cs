@@ -7,7 +7,8 @@ namespace WaveBox.Core.Model.Repository
 	{
 		Artist ArtistForId(int? artistId);
 		Artist ArtistForName(string artistName);
-		bool InsertArtist(string artistName);
+		bool InsertArtist(string artistName, bool replace = false);
+		void InsertArtist(Artist artist, bool replace = false);
 		Artist ArtistForNameOrCreate(string artistName);
 		IList<Artist> AllArtists();
 		int CountArtists();
@@ -15,6 +16,7 @@ namespace WaveBox.Core.Model.Repository
 		IList<Artist> RangeArtists(char start, char end);
 		IList<Artist> LimitArtists(int index, int duration = Int32.MinValue);
 		IList<Album> AlbumsForArtistId(int artistId);
+		IList<Artist> AllWithNoMusicBrainzId();
 	}
 }
 

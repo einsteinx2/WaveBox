@@ -87,7 +87,7 @@ namespace WaveBox.Core.Model.Repository
 			return artist;
 		}
 
-		public bool InsertArtist(string artistName)
+		public bool InsertArtist(string artistName, bool replace = false)
 		{
 			int? itemId = itemRepository.GenerateItemId(ItemType.Artist);
 			if (itemId == null)
@@ -103,7 +103,7 @@ namespace WaveBox.Core.Model.Repository
 				Artist artist = new Artist();
 				artist.ArtistId = itemId;
 				artist.ArtistName = artistName;
-				int affected = conn.InsertLogged(artist, InsertType.InsertOrIgnore);
+				int affected = conn.InsertLogged(artist, replace ? InsertType.Replace : InsertType.InsertOrIgnore);
 
 				success = affected > 0;
 			}
@@ -117,6 +117,24 @@ namespace WaveBox.Core.Model.Repository
 			}
 
 			return success;
+		}
+
+		public void InsertArtist(Artist artist, bool replace = false)
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = database.GetSqliteConnection();
+				conn.InsertLogged(artist, replace ? InsertType.Replace : InsertType.InsertOrIgnore);
+			}
+			catch (Exception e)
+			{
+				logger.Error("Error inserting artist " + artist, e);
+			}
+			finally
+			{
+				database.CloseSqliteConnection(conn);
+			}
 		}
 
 		public Artist ArtistForNameOrCreate(string artistName)
@@ -338,6 +356,27 @@ namespace WaveBox.Core.Model.Repository
 
 			// We had an exception somehow, so return an empty list
 			return new List<Album>();
+		}
+
+		public IList<Artist> AllWithNoMusicBrainzId()
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = database.GetSqliteConnection();
+				return conn.Query<Artist>("SELECT * FROM Artist WHERE MusicBrainzId IS NULL");
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				database.CloseSqliteConnection(conn);
+			}
+
+			// We had an exception somehow, so return an empty list
+			return new List<Artist>();
 		}
 	}
 }
