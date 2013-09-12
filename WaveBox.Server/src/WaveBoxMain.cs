@@ -91,7 +91,7 @@ namespace WaveBox
 			}
 
 			// Temporary: create test user
-			Injection.Kernel.Get<IUserRepository>().CreateUser("test", "test", null);
+			Injection.Kernel.Get<IUserRepository>().CreateUser("test", "test", User.ROLE_USER, null);
 
 			return;
 		}
