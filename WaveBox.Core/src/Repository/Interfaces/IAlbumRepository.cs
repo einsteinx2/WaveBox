@@ -16,9 +16,6 @@ namespace WaveBox.Core.Model.Repository
 		IList<Album> RandomAlbums(int limit = 10);
 		IList<Album> RangeAlbums(char start, char end);
 		IList<Album> LimitAlbums(int index, int duration = Int32.MinValue);
-		int? FastArtId(int albumId);
-		IList<int> SongArtIds(int albumId);
-		IList<int> FolderArtIds(int albumId);
 	}
 }
 

@@ -152,10 +152,11 @@ namespace WaveBox.Core.Model.Repository
 			try
 			{
 				conn = database.GetSqliteConnection();
-				return conn.Query<Album>("SELECT Album.* " +
+				return conn.Query<Album>("SELECT Album.*, ArtItem.ArtId " +
 				                         "FROM Genre " + 
 				                         "LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
 				                         "LEFT JOIN Album ON Song.AlbumId = Album.ItemId " +
+				                         "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
 				                         "WHERE Genre.GenreId = ? GROUP BY Album.ItemId", genreId);
 			}
 			catch (Exception e)

@@ -36,74 +36,14 @@ namespace WaveBox.Core.Model
 		[JsonProperty("releaseYear")]
 		public int? ReleaseYear { get; set; }
 
+		[JsonProperty("musicBrainzId")]
+		public string MusicBrainzId { get; set; }
+
 		[JsonProperty("artId"), IgnoreWrite]
-		public int? ArtId { get { return FastArtId(); } }//return DetermineArtId(); } }
+		public int? ArtId { get; set; }
 
 		public Album()
 		{
-		}
-
-		public int? FastArtId()
-		{
-			return Injection.Kernel.Get<IAlbumRepository>().FastArtId((int)AlbumId);
-		}
-
-		public int? DetermineArtId()
-		{
-			// Return the art id (if any) for this album, based on the current best art id using either a song art id or the folder art id
-			IList<int> songArtIds = SongArtIds();
-			if (songArtIds.Count == 1)
-			{
-				// There is one unique art ID for these songs, so return it
-				return songArtIds[0];
-			}
-			else
-			{
-				// Check the folder art id(s)
-				IList<int> folderArtIds = FolderArtIds();
-				if (folderArtIds.Count == 0)
-				{
-					// There is no folder art
-					if (songArtIds.Count == 0)
-					{
-						// There is no art for this album
-						return null;
-					}
-					else
-					{
-						// For now, just return the first art id
-						return songArtIds[0];
-					}
-				}
-				else if (folderArtIds.Count == 1)
-				{
-					// There are multiple different art ids for the songs, but only one folder art, so use that. Likely this is a compilation album
-					return folderArtIds[0];
-				}
-				else
-				{
-					// There are multiple song and folder art ids, so let's just return the first song art id for now
-					return songArtIds[0];
-				}
-			}
-		}
-
-		private IList<int> SongArtIds()
-		{
-			if (AlbumId == null)
-			{
-				return new List<int>();
-			}
-
-			return Injection.Kernel.Get<IAlbumRepository>().SongArtIds((int)AlbumId);
-		}
-
-		private IList<int> FolderArtIds()
-		{
-			if (AlbumId == null)
-				return new List<int>();
-
-			return Injection.Kernel.Get<IAlbumRepository>().FolderArtIds((int)AlbumId);
 		}
 
 		public AlbumArtist AlbumArtist()

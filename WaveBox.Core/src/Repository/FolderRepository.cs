@@ -40,7 +40,9 @@ namespace WaveBox.Core.Model.Repository
 			{
 				conn = database.GetSqliteConnection();
 
-				List<Folder> folder = conn.Query<Folder>("SELECT * FROM Folder WHERE FolderId = ? LIMIT 1", folderId);
+				List<Folder> folder = conn.Query<Folder>("SELECT Folder.*, ArtItem.ArtId FROM Folder " + 
+				                                         "LEFT JOIN ArtItem ON Folder.FolderId = ArtItem.ItemId " + 
+				                                         "WHERE FolderId = ? LIMIT 1", folderId);
 				if (folder.Count > 0)
 				{
 					return folder[0];
@@ -232,6 +234,34 @@ namespace WaveBox.Core.Model.Repository
 			}
 
 			return pFolderId;
+		}
+
+		public IList<Album> AlbumsForFolderId(int folderId)
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = database.GetSqliteConnection();
+
+				// Search for exact match
+				return conn.Query<Album>("SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Song " +
+				                         "LEFT JOIN Folder ON Song.FolderId = Folder.FolderId " +
+				                         "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
+				                         "LEFT JOIN AlbumArtist ON AlbumArtist.AlbumArtistId = Album.AlbumArtistId " +
+				                         "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
+				                         "WHERE Song.FolderId = ? GROUP BY Album.AlbumId ORDER BY Album.AlbumName", folderId);
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				database.CloseSqliteConnection(conn);
+			}
+
+			// We had an exception somehow, so return an empty list
+			return new List<Album>();
 		}
 	}
 }

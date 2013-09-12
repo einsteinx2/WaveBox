@@ -14,6 +14,7 @@ namespace WaveBox.Core.Model.Repository
 		IList<Video> ListOfVideos(int folderId, bool recursive = false);
 		IList<Folder> ListOfSubFolders(int folderId);
 		int? GetParentFolderId(string path);
+		IList<Album> AlbumsForFolderId(int folderId);
 	}
 }
 

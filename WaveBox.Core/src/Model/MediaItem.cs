@@ -51,8 +51,8 @@ namespace WaveBox.Core.Model
 		[JsonProperty("genreName"), IgnoreWrite]
 		public string GenreName { get; set; }
 
-		[JsonProperty("artId"), IgnoreRead, IgnoreWrite]
-		public int? ArtId { get { return Injection.Kernel.Get<IArtRepository>().ArtIdForItemId(ItemId); } }
+		[JsonProperty("artId"), IgnoreWrite]
+		public int? ArtId { get; set; }
 
 		/// <summary>
 		/// Public methods

@@ -70,10 +70,6 @@ CREATE TABLE "Folder" (
     "ParentFolderId" INTEGER,
     "MediaFolderId" INTEGER
 );
-CREATE TABLE "Artist" (
-    "ArtistId" integer UNIQUE NOT NULL,
-    "ArtistName" text UNIQUE NOT NULL ON CONFLICT IGNORE
-);
 CREATE TABLE "Genre" (
     "GenreId" INTEGER UNIQUE NOT NULL,
     "GenreName" TEXT NOT NULL
@@ -164,10 +160,6 @@ CREATE TABLE "Song" (
     "BeatsPerMinute" INTEGER,
     "Lyrics" TEXT,
     "Comment" TEXT);
-CREATE TABLE "AlbumArtist" (
-    "AlbumArtistId" integer UNIQUE NOT NULL,
-    "AlbumArtistName" text UNIQUE NOT NULL ON CONFLICT IGNORE
-);
 CREATE TABLE "Version" (
     "VersionNumber" INTEGER NOT NULL
 );
@@ -178,11 +170,22 @@ CREATE TABLE "Favorite" (
     "FavoriteItemTypeId" INTEGER NOT NULL,
     "Timestamp" INTEGER NOT NULL
 );
+CREATE TABLE "Artist" (
+    "ArtistId" integer UNIQUE NOT NULL,
+    "ArtistName" text UNIQUE NOT NULL ON CONFLICT IGNORE,
+    "MusicBrainzId" text
+);
+CREATE TABLE "AlbumArtist" (
+    "AlbumArtistId" integer UNIQUE NOT NULL,
+    "AlbumArtistName" text UNIQUE NOT NULL ON CONFLICT IGNORE,
+    "MusicBrainzId" text
+);
 CREATE TABLE "Album" (
     "AlbumId" INTEGER UNIQUE NOT NULL,
     "AlbumName" TEXT NOT NULL,
     "AlbumArtistId" INTEGER,
-    "ReleaseYear" INTEGER
+    "ReleaseYear" INTEGER,
+    "MusicBrainzId" text
 );
 DELETE FROM sqlite_sequence;
 INSERT INTO "sqlite_sequence" VALUES('item_type',12);

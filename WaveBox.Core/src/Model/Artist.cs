@@ -27,6 +27,9 @@ namespace WaveBox.Core.Model
 		[JsonProperty("artistName")]
 		public string ArtistName { get; set; }
 
+		[JsonProperty("musicBrainzId")]
+		public string MusicBrainzId { get; set; }
+
 		[JsonProperty("artId"), IgnoreWrite]
 		public int? ArtId { get { return Injection.Kernel.Get<IArtRepository>().ArtIdForItemId(ArtistId); } }
 

@@ -231,9 +231,10 @@ namespace WaveBox.FolderScanning
 				}
 				else if (type == ItemType.Art)
 				{
-					if (ArtFileNeedsUpdating(file, folderId))
+					if (ArtFileNeedsUpdating(file))
 					{
-						var folder = Injection.Kernel.Get<IFolderRepository>().FolderForId((int)folderId);
+						Folder folder = Injection.Kernel.Get<IFolderRepository>().FolderForId((int)folderId);
+						IList<Album> albumsForFolder = Injection.Kernel.Get<IFolderRepository>().AlbumsForFolderId((int)folderId);
 
 						// Find the old art id, if it exists
 						int? oldArtId = folder.ArtId;
@@ -244,7 +245,14 @@ namespace WaveBox.FolderScanning
 							logger.IfInfo("Adding new art for folderId: " + folderId);
 
 							// Insert the relationship
-							Injection.Kernel.Get<IArtRepository>().UpdateArtItemRelationship(newArtId, folder.FolderId, true);
+							Injection.Kernel.Get<IArtRepository>().UpdateArtItemRelationship(newArtId, folderId, true);
+
+							// Update all matching albums, but only if they don't already have art (prefer song embedded for albums)
+							foreach (Album album in albumsForFolder)
+							{
+								// Insert the relationship for the album
+								Injection.Kernel.Get<IArtRepository>().UpdateArtItemRelationship(newArtId, album.AlbumId, false);
+							}
 						}
 						else
 						{
@@ -254,12 +262,20 @@ namespace WaveBox.FolderScanning
 							if ((object)oldArt.FilePath == null)
 							{
 								// This was embedded tag art, so only update the folder's relationship
-								logger.IfInfo(String.Format("It was embedded art, {0}, newArtId: {1}, folderId: {2}", Injection.Kernel.Get<IArtRepository>().UpdateArtItemRelationship(newArtId, folder.FolderId, true), newArtId, folder.FolderId));
+								bool updated = Injection.Kernel.Get<IArtRepository>().UpdateArtItemRelationship(newArtId, folder.FolderId, true);
+								logger.IfInfo(String.Format("It was embedded art, {0}, newArtId: {1}, folderId: {2}", updated, newArtId, folder.FolderId));
+
+								// Update all matching albums, but only if they don't already have art (prefer song embedded for albums)
+								foreach (Album album in albumsForFolder)
+								{
+									// Insert the relationship for the album
+									Injection.Kernel.Get<IArtRepository>().UpdateArtItemRelationship(newArtId, album.AlbumId, false);
+								}
 							}
 							else
 							{
 								// Update any existing references, that would include both this folder
-								// and any children that were using this art in lieu of embedded art
+								// and any songs or albums that were using this art in lieu of embedded art
 								Injection.Kernel.Get<IArtRepository>().UpdateItemsToNewArtId(oldArtId, newArtId);
 							}
 						}
@@ -497,9 +513,9 @@ namespace WaveBox.FolderScanning
 			return song;
 		}
 
-		private bool ArtFileNeedsUpdating(string filePath, int? folderId)
+		private bool ArtFileNeedsUpdating(string filePath)
 		{
-			if (filePath == null || folderId == null)
+			if (filePath == null)
 			{
 				return false;
 			}

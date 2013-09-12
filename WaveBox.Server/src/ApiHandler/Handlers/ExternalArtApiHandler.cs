@@ -86,7 +86,7 @@ namespace WaveBox.ApiHandler.Handlers
 						WebClient client = new WebClient();
 						try
 						{
-							string url = "http://api.fanart.tv/webservice/artist/" + fanArtApiKey + "/" + result.Id + "/json/artistbackground/1/1/";
+							string url = "http://api.fanart.tv/webservice/artist/" + fanArtApiKey + "/" + result.Id + "/json/artistbackground/1/1";
 							string response = client.DownloadString(url);
 
 							JObject o = JObject.Parse(response);

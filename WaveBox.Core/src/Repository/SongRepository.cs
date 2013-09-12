@@ -27,11 +27,12 @@ namespace WaveBox.Core.Model.Repository
 			try
 			{
 				conn = database.GetSqliteConnection();
-				var result = conn.DeferredQuery<Song>("SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
+				var result = conn.DeferredQuery<Song>("SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName, ArtItem.ArtId FROM Song " +
 													  "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
 													  "LEFT JOIN AlbumArtist ON Song.AlbumArtistId = AlbumArtist.AlbumArtistId " +
 													  "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
 													  "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
+				                                      "LEFT JOIN ArtItem ON Song.ItemId = ArtItem.ItemId " +
 													  "WHERE Song.ItemId = ? LIMIT 1", songId);
 
 				foreach (Song song in result)
@@ -60,11 +61,12 @@ namespace WaveBox.Core.Model.Repository
 			{
 				conn = database.GetSqliteConnection();
 
-				StringBuilder sb = new StringBuilder("SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
+				StringBuilder sb = new StringBuilder("SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName, ArtItem.ArtId FROM Song " +
 				                                     "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
 				                                     "LEFT JOIN AlbumArtist ON Song.AlbumArtistId = AlbumArtist.AlbumArtistId " +
 				                                     "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
 				                                     "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
+				                                     "LEFT JOIN ArtItem ON Song.ItemId = ArtItem.ItemId " +
 				                                     "WHERE");
 
 				for (int i = 0; i < songIds.Count; i++)
@@ -98,11 +100,12 @@ namespace WaveBox.Core.Model.Repository
 			try
 			{
 				conn = database.GetSqliteConnection();
-				return conn.Query<Song>("SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
+				return conn.Query<Song>("SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName, ArtItem.ArtId FROM Song " +
 				                        "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
 				                        "LEFT JOIN AlbumArtist ON Song.AlbumArtistId = AlbumArtist.AlbumArtistId " +
 				                        "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
-				                        "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId");
+				                        "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " + 
+				                        "LEFT JOIN ArtItem ON Song.ItemId = ArtItem.ItemId");
 			}
 			catch (Exception e)
 			{
@@ -224,21 +227,23 @@ namespace WaveBox.Core.Model.Repository
 				if (exact)
 				{
 					// Search for exact match
-					songs = conn.Query<Song>("SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
+					songs = conn.Query<Song>("SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName, ArtItem.ArtId FROM Song " +
 					                         "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
 					                         "LEFT JOIN AlbumArtist ON Song.AlbumArtistId = AlbumArtist.AlbumArtistId " +
 					                         "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
 					                         "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
+					                         "LEFT JOIN ArtItem ON Song.ItemId = ArtItem.ItemId " +
 					                         "WHERE Song." + field + " = ?", query);
 				}
 				else
 				{
 					// Search for fuzzy match (containing query)
-					songs = conn.Query<Song>("SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
+					songs = conn.Query<Song>("SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName, ArtItem.ArtId FROM Song " +
 					                         "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
 					                         "LEFT JOIN AlbumArtist ON Song.AlbumArtistId = AlbumArtist.AlbumArtistId " +
 					                         "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
 					                         "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
+					                         "LEFT JOIN ArtItem ON Song.ItemId = ArtItem.ItemId " +
 					                         "WHERE Song." + field + " LIKE ?", "%" + query + "%");
 				}
 				songs.Sort(Song.CompareSongsByDiscAndTrack);
@@ -276,11 +281,12 @@ namespace WaveBox.Core.Model.Repository
 				conn = database.GetSqliteConnection();
 
 				List<Song> songs;
-				songs = conn.Query<Song>("SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
+				songs = conn.Query<Song>("SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName, ArtItem.ArtId FROM Song " +
 				                         "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
 				                         "LEFT JOIN AlbumArtist ON Song.AlbumArtistId = AlbumArtist.AlbumArtistId " +
 				                         "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
 				                         "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
+				                         "LEFT JOIN ArtItem ON Song.ItemId = ArtItem.ItemId " +
 				                         "WHERE Song.SongName BETWEEN LOWER(?) AND LOWER(?) " +
 				                         "OR Song.SongName BETWEEN UPPER(?) AND UPPER(?)", s, en, s, en);
 
@@ -310,11 +316,12 @@ namespace WaveBox.Core.Model.Repository
 
 				// Begin building query
 				List<Song> songs;
-				string query = "SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName FROM Song " +
+				string query = "SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName, ArtItem.ArtId FROM Song " +
 							   "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
 							   "LEFT JOIN AlbumArtist ON Song.AlbumArtistId = AlbumArtist.AlbumArtistId " +
 							   "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
 							   "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
+							   "LEFT JOIN ArtItem ON Song.ItemId = ArtItem.ItemId " +
 							   "LIMIT ? ";
 
 				// Add duration to LIMIT if needed

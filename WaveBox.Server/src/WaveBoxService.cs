@@ -104,6 +104,9 @@ namespace WaveBox
 					logger.IfInfo("Created temp folder: " + TempFolder);
 				}
 
+				// Set the Musicbrainz URL TODO: do this somewhere else probably
+				MusicBrainz.MusicBrainzService.ServiceUrl = new Uri("http://herpderp.me:5000/ws/1/");
+
 				// Instantiate a WaveBox object
 				wavebox = new WaveBoxMain();
 

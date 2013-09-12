@@ -320,10 +320,11 @@ namespace WaveBox.Core.Model.Repository
 				conn = database.GetSqliteConnection();
 
 				// Search for exact match
-				return conn.Query<Album>("SELECT Album.*, AlbumArtist.AlbumArtistName FROM Song " +
+				return conn.Query<Album>("SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Song " +
 				                         "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
 					                     "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
 				                         "LEFT JOIN AlbumArtist ON AlbumArtist.AlbumArtistId = Album.AlbumArtistId " +
+				                         "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
 				                         "WHERE Song.ArtistId = ? GROUP BY Album.AlbumId ORDER BY Album.AlbumName", artistId);
 			}
 			catch (Exception e)
