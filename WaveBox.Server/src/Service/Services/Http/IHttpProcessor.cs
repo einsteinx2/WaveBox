@@ -20,7 +20,7 @@ namespace WaveBox.Service.Services.Http
 
 		// Body writing methods
 		void WriteNotModifiedHeader();
-		void WriteJson(AbstractApiResponse api);
+		void WriteJson(IApiResponse api);
 		void WriteText(string text, string mimeType);
 
 		void WriteFile(Stream fs, int startOffset, long length, string mimeType, IDictionary<string, string> customHeaders, bool isSendContentLength, DateTime? lastModified, long? limitToBytes = null);

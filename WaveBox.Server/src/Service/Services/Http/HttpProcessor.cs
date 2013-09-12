@@ -293,7 +293,7 @@ namespace WaveBox.Service.Services.Http
 		}
 
 		// Write an API response out serialized as JSON
-		public void WriteJson(AbstractApiResponse api)
+		public void WriteJson(IApiResponse api)
 		{
 			try
 			{

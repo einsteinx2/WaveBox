@@ -2,6 +2,7 @@ using System;
 using Newtonsoft.Json;
 using Ninject;
 using WaveBox.Core;
+using WaveBox.Core.ApiResponse;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
 using WaveBox.Service.Services.Http;

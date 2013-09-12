@@ -256,7 +256,7 @@ namespace WaveBox.ApiHandler.Handlers
 			// Fetch JukeboxService instance
 			JukeboxService jukebox = (JukeboxService)ServiceManager.GetInstance("jukebox");
 
-			return new JukeboxStatus(JukeboxService.State.ToString(), JukeboxService.CurrentIndex, jukebox.Progress());
+			return new JukeboxStatus(null, JukeboxService.State.ToString(), JukeboxService.CurrentIndex, jukebox.Progress());
 		}
 	}
 }
