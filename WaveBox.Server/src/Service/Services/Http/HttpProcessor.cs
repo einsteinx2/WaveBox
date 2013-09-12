@@ -8,11 +8,13 @@ using System.Net.Sockets;
 using System.Net;
 using System.Text;
 using System.Threading;
+using Newtonsoft.Json;
 using Ninject;
 using WaveBox;
 using WaveBox.ApiHandler;
 using WaveBox.ApiHandler.Handlers;
 using WaveBox.Core;
+using WaveBox.Core.ApiResponse;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
 using WaveBox.Core.Static;
@@ -290,9 +292,17 @@ namespace WaveBox.Service.Services.Http
 			}
 		}
 
-		public void WriteJson(string json)
+		// Write an API response out serialized as JSON
+		public void WriteJson(AbstractApiResponse api)
 		{
-			WriteText(json, "application/json");
+			try
+			{
+				this.WriteText(JsonConvert.SerializeObject(api, Injection.Kernel.Get<IServerSettings>().JsonFormatting), "application/json");
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
 		}
 
 		public void WriteFile(Stream fs, int startOffset, long length, string mimeType, IDictionary<string, string> customHeaders, bool isSendContentLength, DateTime? lastModified, long? limitToBytes = null)

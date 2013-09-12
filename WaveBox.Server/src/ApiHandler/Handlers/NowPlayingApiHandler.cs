@@ -30,8 +30,7 @@ namespace WaveBox.ApiHandler.Handlers
 			// Ensure service is running
 			if (nowPlayingService == null)
 			{
-				string errorJson = JsonConvert.SerializeObject(new NowPlayingResponse("NowPlayingService is not running!", null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-				processor.WriteJson(errorJson);
+				processor.WriteJson(new NowPlayingResponse("NowPlayingService is not running!", null));
 				return;
 			}
 
@@ -51,8 +50,7 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 
 			// Return list of now playing items
-			string json = JsonConvert.SerializeObject(new NowPlayingResponse(null, nowPlaying), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-			processor.WriteJson(json);
+			processor.WriteJson(new NowPlayingResponse(null, nowPlaying));
 			return;
 		}
 	}

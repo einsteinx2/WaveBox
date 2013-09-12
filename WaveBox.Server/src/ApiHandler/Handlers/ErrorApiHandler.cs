@@ -35,8 +35,7 @@ namespace WaveBox.ApiHandler.Handlers
 			logger.IfInfo(error);
 
 			ErrorResponse response = new ErrorResponse(error);
-			string json = JsonConvert.SerializeObject(response, Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-			processor.WriteJson(json);
+			processor.WriteJson(response);
 		}
 	}
 }

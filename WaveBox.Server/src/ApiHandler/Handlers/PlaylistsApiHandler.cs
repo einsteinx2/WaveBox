@@ -210,15 +210,7 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 
 			// Return all results
-			try
-			{
-				string json = JsonConvert.SerializeObject(new PlaylistsResponse(error, listOfPlaylists, listOfMediaItems), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-				processor.WriteJson(json);
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
+			processor.WriteJson(new PlaylistsResponse(error, listOfPlaylists, listOfMediaItems));
 		}
 
 		private IList<int> ParseItemIds(UriWrapper uri)

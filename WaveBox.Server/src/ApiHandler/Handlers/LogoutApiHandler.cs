@@ -34,8 +34,7 @@ namespace WaveBox.ApiHandler.Handlers
 					logger.Error(error);
 				}
 
-				string json = JsonConvert.SerializeObject(new LogoutResponse(error, user.SessionId), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-				processor.WriteJson(json);
+				processor.WriteJson(new LogoutResponse(error, user.SessionId));
 			}
 			catch (Exception e)
 			{
