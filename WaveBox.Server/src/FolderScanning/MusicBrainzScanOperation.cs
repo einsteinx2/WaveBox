@@ -8,6 +8,9 @@ using WaveBox.Core.Model.Repository;
 using System.Diagnostics;
 using System.Linq;
 using Ninject;
+using System.Net;
+using System.Xml.Linq;
+using System.Text;
 
 namespace WaveBox.FolderScanning
 {
@@ -88,6 +91,54 @@ namespace WaveBox.FolderScanning
 			logger.IfInfo("---------------------------------------------");
 		}
 
+		private string MusicBrainzIdForArtistName(string artistName)
+		{
+			if (artistName == null)
+				return null;
+
+			try
+			{
+				using (WebClient client = new WebClient())
+				{
+					string address = "http://herpderp.me:5000/ws/2/artist?query=" + System.Web.HttpUtility.UrlEncode(artistName);
+					//string address = "http://musicbrainz.org/ws/2/artist?query=" + System.Web.HttpUtility.UrlEncode(artistName);
+					string responseXML = client.DownloadString(address);
+
+					try
+					{
+						XDocument doc = XDocument.Parse(responseXML);
+						XElement firstElement = doc.Descendants().FirstOrDefault();
+						if (firstElement != null)
+						{
+							XElement artistList = firstElement.Descendants().FirstOrDefault();
+							if (artistList != null)
+							{
+								foreach (XElement artist in artistList.Descendants())
+								{
+									// Return the first id
+									XAttribute idAttribute = artist.Attribute("id");
+									if (idAttribute != null)
+									{
+										return idAttribute.Value;
+									}
+								}
+							}
+						}
+					}
+					catch (Exception e)
+					{
+						logger.Error("Exception parsing musicbrainz response for " + artistName + ", " + e);
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error("Exception contacting musicbrainz server for " + artistName + ", " + e);
+			}
+
+			return null;
+		}
+
 		private void ScanArtists()
 		{
 			IMusicBrainzCheckDateRepository musicBrainzCheckDateRepository = Injection.Kernel.Get<IMusicBrainzCheckDateRepository>();
@@ -108,8 +159,8 @@ namespace WaveBox.FolderScanning
 					// Only process if we didn't recently try
 					if (checkDates.SingleOrDefault(d => d.ItemId == artist.ArtistId) == null)
 					{
-						MusicBrainz.Artist result = MusicBrainz.Artist.Query(artist.ArtistName);
-						if (result == null || result.Id == null)
+						string id = MusicBrainzIdForArtistName(artist.ArtistName);
+						if (id == null)
 						{
 							// Store the time we tried, so we don't try again for a while
 							MusicBrainzCheckDate checkDate = new MusicBrainzCheckDate((int)artist.ArtistId);
@@ -118,7 +169,7 @@ namespace WaveBox.FolderScanning
 						else
 						{
 							// We found an ID
-							musicBrainzId = result.Id;
+							musicBrainzId = id;
 						}
 					}
 				}
@@ -153,8 +204,8 @@ namespace WaveBox.FolderScanning
 					// Only process if we didn't recently try
 					if (checkDates.SingleOrDefault(d => d.ItemId == albumArtist.AlbumArtistId) == null)
 					{
-						MusicBrainz.Artist result = MusicBrainz.Artist.Query(albumArtist.AlbumArtistName);
-						if (result == null || result.Id == null)
+						string id = MusicBrainzIdForArtistName(albumArtist.AlbumArtistName);
+						if (id == null)
 						{
 							// Store the time we tried, so we don't try again for a while
 							MusicBrainzCheckDate checkDate = new MusicBrainzCheckDate((int)albumArtist.AlbumArtistId);
@@ -163,7 +214,7 @@ namespace WaveBox.FolderScanning
 						else
 						{
 							// We found an ID
-							musicBrainzId = result.Id;
+							musicBrainzId = id;
 						}
 					}
 				}
