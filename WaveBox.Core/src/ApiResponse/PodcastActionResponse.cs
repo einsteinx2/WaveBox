@@ -3,17 +3,17 @@ using Newtonsoft.Json;
 
 namespace WaveBox.Core.ApiResponse
 {
-	public class PodcastActionResponse
+	public class PodcastActionResponse : IApiResponse
 	{
 		[JsonProperty("error")]
-		public bool Success { get; set; }
+		public string Error { get; set; }
 
 		[JsonProperty("success")]
-		public string ErrorMessage { get; set; }
+		public bool Success { get; set; }
 
-		public PodcastActionResponse(string errorMessage, bool success)
+		public PodcastActionResponse(string error, bool success)
 		{
-			ErrorMessage = errorMessage;
+			Error = error;
 			Success = success;
 		}
 	}

@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace WaveBox.Core.ApiResponse
 {
-	public class StatsResponse
+	public class StatsResponse : IApiResponse
 	{
 		[JsonProperty("error")]
 		public string Error { get; set; }

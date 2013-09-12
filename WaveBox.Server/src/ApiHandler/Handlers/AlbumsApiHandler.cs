@@ -36,8 +36,7 @@ namespace WaveBox.ApiHandler.Handlers
 			{
 				if (!Int32.TryParse(uri.Parameters["id"], out id))
 				{
-					string json = JsonConvert.SerializeObject(new AlbumsResponse("Parameter 'id' requires a valid integer", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-					processor.WriteJson(json);
+					processor.WriteJson(new AlbumsResponse("Parameter 'id' requires a valid integer", null, null));
 					return;
 				}
 
@@ -56,8 +55,7 @@ namespace WaveBox.ApiHandler.Handlers
 				// Ensure valid range was parsed
 				if (range.Length != 2)
 				{
-					string json = JsonConvert.SerializeObject(new AlbumsResponse("Parameter 'range' requires a valid, comma-separated character tuple", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-					processor.WriteJson(json);
+					processor.WriteJson(new AlbumsResponse("Parameter 'range' requires a valid, comma-separated character tuple", null, null));
 					return;
 				}
 
@@ -65,8 +63,7 @@ namespace WaveBox.ApiHandler.Handlers
 				char start, end;
 				if (!Char.TryParse(range[0], out start) || !Char.TryParse(range[1], out end))
 				{
-					string json = JsonConvert.SerializeObject(new AlbumsResponse("Parameter 'range' requires characters which are single alphanumeric values", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-					processor.WriteJson(json);
+					processor.WriteJson(new AlbumsResponse("Parameter 'range' requires characters which are single alphanumeric values", null, null));
 					return;
 				}
 
@@ -83,8 +80,7 @@ namespace WaveBox.ApiHandler.Handlers
 				// Ensure valid limit was parsed
 				if (limit.Length < 1 || limit.Length > 2 )
 				{
-					string json = JsonConvert.SerializeObject(new AlbumsResponse("Parameter 'limit' requires a single integer, or a valid, comma-separated integer tuple", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-					processor.WriteJson(json);
+					processor.WriteJson(new AlbumsResponse("Parameter 'limit' requires a single integer, or a valid, comma-separated integer tuple", null, null));
 					return;
 				}
 
@@ -93,16 +89,15 @@ namespace WaveBox.ApiHandler.Handlers
 				int duration = Int32.MinValue;
 				if (!Int32.TryParse(limit[0], out index))
 				{
-					string json = JsonConvert.SerializeObject(new AlbumsResponse("Parameter 'limit' requires a valid integer start index", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-					processor.WriteJson(json);
+					processor.WriteJson(new AlbumsResponse("Parameter 'limit' requires a valid integer start index", null, null));
 					return;
 				}
 
 				// Ensure positive index
 				if (index < 0)
 				{
-					string json = JsonConvert.SerializeObject(new AlbumsResponse("Parameter 'limit' requires a non-negative integer start index", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-					processor.WriteJson(json);
+					processor.WriteJson(new AlbumsResponse("Parameter 'limit' requires a non-negative integer start index", null, null));
+
 					return;
 				}
 
@@ -111,16 +106,16 @@ namespace WaveBox.ApiHandler.Handlers
 				{
 					if (!Int32.TryParse(limit[1], out duration))
 					{
-						string json = JsonConvert.SerializeObject(new AlbumsResponse("Parameter 'limit' requires a valid integer duration", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-						processor.WriteJson(json);
+						processor.WriteJson(new AlbumsResponse("Parameter 'limit' requires a valid integer duration", null, null));
+
 						return;
 					}
 
 					// Ensure positive duration
 					if (duration < 0)
 					{
-						string json = JsonConvert.SerializeObject(new AlbumsResponse("Parameter 'limit' requires a non-negative integer duration", null, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-						processor.WriteJson(json);
+						processor.WriteJson(new AlbumsResponse("Parameter 'limit' requires a non-negative integer duration", null, null));
+
 						return;
 					}
 				}
@@ -152,16 +147,8 @@ namespace WaveBox.ApiHandler.Handlers
 				albums = Injection.Kernel.Get<IAlbumRepository>().AllAlbums();
 			}
 
-			try
-			{
-				// Send it!
-				string json = JsonConvert.SerializeObject(new AlbumsResponse(null, albums, songs), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-				processor.WriteJson(json);
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
+			// Send it!
+			processor.WriteJson(new AlbumsResponse(null, albums, songs));
 		}
 	}
 }

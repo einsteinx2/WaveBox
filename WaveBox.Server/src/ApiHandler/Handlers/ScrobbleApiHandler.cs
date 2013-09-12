@@ -38,12 +38,12 @@ namespace WaveBox.ApiHandler.Handlers
 				// If not authenticated, pass back authorization URL
 				if (!lfm.SessionAuthenticated)
 				{
-					processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse(null, lfm.AuthUrl)));
+					processor.WriteJson(new ScrobbleResponse(null, lfm.AuthUrl));
 				}
 				else
 				{
 					// Else, already authenticated
-					processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMAlreadyAuthenticated")));
+					processor.WriteJson(new ScrobbleResponse("LFMAlreadyAuthenticated"));
 				}
 				return;
 			}
@@ -53,7 +53,7 @@ namespace WaveBox.ApiHandler.Handlers
 			{
 				logger.IfInfo("You must authenticate before you can scrobble.");
 
-				processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMNotAuthenticated", lfm.AuthUrl)));
+				processor.WriteJson(new ScrobbleResponse("LFMNotAuthenticated", lfm.AuthUrl));
 				return;
 			}
 
@@ -66,7 +66,7 @@ namespace WaveBox.ApiHandler.Handlers
 			// On invalid scrobble type, return error JSON
 			if (scrobbleType == LfmScrobbleType.INVALID)
 			{
-				processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMInvalidScrobbleType")));
+				processor.WriteJson(new ScrobbleResponse("LFMInvalidScrobbleType"));
 				return;
 			}
 			// On now playing scrobble type
@@ -76,7 +76,7 @@ namespace WaveBox.ApiHandler.Handlers
 				int id = Int32.MaxValue;
 				if (!uri.Parameters.ContainsKey("id"))
 				{
-					processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMNoIdSpecifiedForNowPlaying")));
+					processor.WriteJson(new ScrobbleResponse("LFMNoIdSpecifiedForNowPlaying"));
 					return;
 				}
 
@@ -99,7 +99,7 @@ namespace WaveBox.ApiHandler.Handlers
 				// On failure, return invalid ID error
 				if (!getIdSuccess)
 				{
-					processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMInvalidIdSpecifiedForNowPlaying")));
+					processor.WriteJson(new ScrobbleResponse("LFMInvalidIdSpecifiedForNowPlaying"));
 					return;
 				}
 
@@ -113,7 +113,7 @@ namespace WaveBox.ApiHandler.Handlers
 				// On null event, return error JSON
 				if (eve == null)
 				{
-					processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMNoEventSpecifiedForScrobble")));
+					processor.WriteJson(new ScrobbleResponse("LFMNoEventSpecifiedForScrobble"));
 					return;
 				}
 
@@ -121,7 +121,7 @@ namespace WaveBox.ApiHandler.Handlers
 				string[] input = eve.Split(',');
 				if ((input.Length % 2) != 0)
 				{
-					processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse("LFMInvalidInput")));
+					processor.WriteJson(new ScrobbleResponse("LFMInvalidInput"));
 					return;
 				}
 
@@ -159,27 +159,13 @@ namespace WaveBox.ApiHandler.Handlers
 			if ((resp.nowplaying != null) || (resp.scrobbles != null))
 			{
 				// Write blank scrobble response
-				try
-				{
-					processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse()));
-				}
-				catch (Exception e)
-				{
-					logger.Error(e);
-				}
+				processor.WriteJson(new ScrobbleResponse());
 				return;
 			}
 			// Write error JSON if it exists
 			else if (resp.error != null)
 			{
-				try
-				{
-					processor.WriteJson(JsonConvert.SerializeObject(new ScrobbleResponse(string.Format("LFM{0}: {1}", resp.error, resp.message))));
-				}
-				catch (Exception e)
-				{
-					logger.Error(e);
-				}
+				processor.WriteJson(new ScrobbleResponse(string.Format("LFM{0}: {1}", resp.error, resp.message)));
 				return;
 			}
 		}

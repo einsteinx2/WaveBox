@@ -5,7 +5,7 @@ using WaveBox.Core.Model;
 
 namespace WaveBox.Core.ApiResponse
 {
-	public class VideosResponse
+	public class VideosResponse : IApiResponse
 	{
 		[JsonProperty("error")]
 		public string Error { get; set; }
