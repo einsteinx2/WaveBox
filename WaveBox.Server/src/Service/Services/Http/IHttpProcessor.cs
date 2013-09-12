@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using WaveBox.Core.ApiResponse;
 using WaveBox.Transcoding;
 
 namespace WaveBox.Service.Services.Http
@@ -19,7 +20,7 @@ namespace WaveBox.Service.Services.Http
 
 		// Body writing methods
 		void WriteNotModifiedHeader();
-		void WriteJson(string json);
+		void WriteJson(IApiResponse api);
 		void WriteText(string text, string mimeType);
 
 		void WriteFile(Stream fs, int startOffset, long length, string mimeType, IDictionary<string, string> customHeaders, bool isSendContentLength, DateTime? lastModified, long? limitToBytes = null);

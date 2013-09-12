@@ -62,6 +62,7 @@
     <Compile Include="src\ApiResponse\ErrorResponse.cs" />
     <Compile Include="src\ApiResponse\FoldersResponse.cs" />
     <Compile Include="src\ApiResponse\GenresResponse.cs" />
+    <Compile Include="src\ApiResponse\Interfaces\IApiResponse.cs" />
     <Compile Include="src\ApiResponse\JukeboxResponse.cs" />
     <Compile Include="src\ApiResponse\JukeboxStatus.cs" />
     <Compile Include="src\ApiResponse\LoginResponse.cs" />

@@ -138,10 +138,9 @@ namespace WaveBox.ApiHandler.Handlers
 					}
 				}
 
-				string json = JsonConvert.SerializeObject(new StatusResponse(null, status), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-				processor.WriteJson(json);
+				processor.WriteJson(new StatusResponse(null, status));
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				logger.Error(e);
 			}

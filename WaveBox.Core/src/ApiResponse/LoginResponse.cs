@@ -1,9 +1,9 @@
 using System;
 using Newtonsoft.Json;
 
-namespace WaveBox.Core
+namespace WaveBox.Core.ApiResponse
 {
-	public class LoginResponse
+	public class LoginResponse : IApiResponse
 	{
 		[JsonProperty("error")]
 		public string Error { get; set; }
