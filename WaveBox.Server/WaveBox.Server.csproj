@@ -115,9 +115,6 @@
       <HintPath>lib\Ninject.dll</HintPath>
     </Reference>
     <Reference Include="System.Configuration.Install" />
-    <Reference Include="MusicBrainz">
-      <HintPath>lib\MusicBrainz.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -134,7 +131,6 @@
     <Compile Include="src\ApiHandler\Handlers\ArtistsApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\DatabaseApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\ErrorApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\ExternalArtApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\FavoritesApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\FoldersApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\GenresApiHandler.cs" />
