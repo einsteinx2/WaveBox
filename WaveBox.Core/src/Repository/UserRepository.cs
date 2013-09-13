@@ -80,7 +80,7 @@ namespace WaveBox.Core.Model.Repository
 			return user;
 		}
 
-		public User CreateUser(string userName, string password, int role, long? deleteTime)
+		public User CreateUser(string userName, string password, Role role, long? deleteTime)
 		{
 			int? itemId = itemRepository.GenerateItemId(ItemType.User);
 			if (itemId == null)
@@ -133,7 +133,7 @@ namespace WaveBox.Core.Model.Repository
 				durationSeconds = 60 * 60 * 24;
 			}
 
-			return CreateUser(Utility.RandomString(16), Utility.RandomString(16), User.ROLE_TEST, DateTime.Now.ToUniversalUnixTimestamp() + durationSeconds);
+			return CreateUser(Utility.RandomString(16), Utility.RandomString(16), Role.Test, DateTime.Now.ToUniversalUnixTimestamp() + durationSeconds);
 		}
 
 		public string UserNameForSessionid(string sessionId)

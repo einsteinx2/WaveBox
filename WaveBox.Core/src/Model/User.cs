@@ -18,12 +18,6 @@ namespace WaveBox.Core.Model
 		// PBKDF2 iterations
 		public const int HashIterations = 2500;
 
-		// User role constants
-		public const int ROLE_TEST = 1;
-		public const int ROLE_GUEST = 2;
-		public const int ROLE_USER = 4;
-		public const int ROLE_ADMIN = 8;
-
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		[JsonProperty("userId")]
@@ -37,7 +31,7 @@ namespace WaveBox.Core.Model
 		public string Password { get; set; }
 
 		[JsonProperty("role")]
-		public int Role { get; set; }
+		public Role Role { get; set; }
 
 		[JsonProperty("sessions"), IgnoreRead, IgnoreWrite]
 		public IList<Session> Sessions { get; set; }
@@ -65,7 +59,7 @@ namespace WaveBox.Core.Model
 		}
 
 		// Verifies that this user object has permission to view a section
-		public bool HasPermission(int role)
+		public bool HasPermission(Role role)
 		{
 			return this.Role >= role ? true : false;
 		}
