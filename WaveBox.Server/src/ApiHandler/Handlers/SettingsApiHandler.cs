@@ -23,42 +23,40 @@ namespace WaveBox.ApiHandler
 
 		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
-			if (uri.Parameters.ContainsKey("json"))
-			{
-				// Take in settings in the JSON format (same as it is stored on disk) and pass it on to the Settings class for processing=
-				string json = HttpUtility.UrlDecode(uri.Parameters["json"]);
-				logger.IfInfo("Received settings JSON: " + json);
-
-				// Attempt to write settings
-				bool success = false;
-				try
-				{
-					success = Injection.Kernel.Get<IServerSettings>().WriteSettings(json);
-					Injection.Kernel.Get<IServerSettings>().Reload();
-				}
-				catch (JsonException)
-				{
-					// Failure if invalid JSON provided
-					processor.WriteJson(new SettingsResponse("Invalid JSON", Injection.Kernel.Get<IServerSettings>().SettingsModel));
-					return;
-				}
-
-				// If settings wrote successfully, return success object
-				if (success)
-				{
-					processor.WriteJson(new SettingsResponse(null, Injection.Kernel.Get<IServerSettings>().SettingsModel));
-				}
-				else
-				{
-					// If no settings changed, report a 'harmless' error
-					processor.WriteJson(new SettingsResponse("No settings were changed", Injection.Kernel.Get<IServerSettings>().SettingsModel));
-				}
-			}
-			else
+			if (!uri.Parameters.ContainsKey("json"))
 			{
 				// If no parameter provided, return settings
 				processor.WriteJson(new SettingsResponse(null, Injection.Kernel.Get<IServerSettings>().SettingsModel));
 			}
+
+			// Take in settings in the JSON format (same as it is stored on disk),
+			// pass it on to the Settings class for processing
+			string json = HttpUtility.UrlDecode(uri.Parameters["json"]);
+
+			// Attempt to write settings
+			bool success = false;
+			try
+			{
+				success = Injection.Kernel.Get<IServerSettings>().WriteSettings(json);
+				Injection.Kernel.Get<IServerSettings>().Reload();
+			}
+			catch (JsonException)
+			{
+				// Failure if invalid JSON provided
+				processor.WriteJson(new SettingsResponse("Invalid JSON", null));
+				return;
+			}
+
+			// If settings fail to write, report error
+			if (!success)
+			{
+				processor.WriteJson(new SettingsResponse("Settings could not be changed", null));
+				return;
+			}
+
+			// If settings wrote successfully, return success
+			processor.WriteJson(new SettingsResponse(null, Injection.Kernel.Get<IServerSettings>().SettingsModel));
+			return;
 		}
 	}
 }
