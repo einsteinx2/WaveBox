@@ -105,7 +105,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 					logger.IfInfo("Range header: " + range + "  Resuming from " + start);
 					startOffset = Convert.ToInt32(start);
-					if (!ReferenceEquals(end, null))
+					if (!ReferenceEquals(end, null) && end != String.Empty)
 					{
 						limitToSize = (Convert.ToInt64(end) + 1) - startOffset;
 					}
