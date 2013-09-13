@@ -33,18 +33,11 @@ namespace WaveBox.ApiHandler.Handlers
 			Folder containingFolder = null;
 			bool recursive = false;
 
-			// Try to get the folder id
-			bool success = false;
-			int id = 0;
-			if (uri.Parameters.ContainsKey("id"))
-			{
-				success = Int32.TryParse(uri.Parameters["id"], out id);
-			}
-
-			if (success)
+			// If ID present, return that folder
+			if (uri.Id != null)
 			{
 				// Return the folder for this id
-				containingFolder = Injection.Kernel.Get<IFolderRepository>().FolderForId(id);
+				containingFolder = Injection.Kernel.Get<IFolderRepository>().FolderForId((int)uri.Id);
 				listOfFolders = containingFolder.ListOfSubFolders();
 
 				if (uri.Parameters.ContainsKey("recursiveMedia") && uri.Parameters["recursiveMedia"].IsTrue())
@@ -55,24 +48,27 @@ namespace WaveBox.ApiHandler.Handlers
 				// Get it, son.
 				listOfSongs = containingFolder.ListOfSongs(recursive);
 				listOfVideos = containingFolder.ListOfVideos(recursive);
+
+				// Return all results
+				processor.WriteJson(new FoldersResponse(null, containingFolder, listOfFolders, listOfSongs, listOfVideos));
+				return;
+			}
+
+			// No id parameter
+			if (uri.Parameters.ContainsKey("mediaFolders") && uri.Parameters["mediaFolders"].IsTrue())
+			{
+				// They asked for the media folders
+				listOfFolders = Injection.Kernel.Get<IFolderRepository>().MediaFolders();
 			}
 			else
 			{
-				// No id parameter
-				if (uri.Parameters.ContainsKey("mediaFolders") && uri.Parameters["mediaFolders"].IsTrue())
-				{
-					// They asked for the media folders
-					listOfFolders = Injection.Kernel.Get<IFolderRepository>().MediaFolders();
-				}
-				else
-				{
-					// They didn't ask for media folders, so send top level folders
-					listOfFolders = Injection.Kernel.Get<IFolderRepository>().TopLevelFolders();
-				}
+				// They didn't ask for media folders, so send top level folders
+				listOfFolders = Injection.Kernel.Get<IFolderRepository>().TopLevelFolders();
 			}
 
 			// Return all results
 			processor.WriteJson(new FoldersResponse(null, containingFolder, listOfFolders, listOfSongs, listOfVideos));
+			return;
 		}
 	}
 }
