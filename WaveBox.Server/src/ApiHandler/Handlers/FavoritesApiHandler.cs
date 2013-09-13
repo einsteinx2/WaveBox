@@ -21,69 +21,62 @@ namespace WaveBox.ApiHandler.Handlers
 		/// </summary>
 		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
+			// Shortcut to favorites repository
 			IFavoriteRepository favoriteRepository = Injection.Kernel.Get<IFavoriteRepository>();
 
-			// Try to get the action
-			string action = "list";
-			if (uri.Parameters.ContainsKey("action"))
-			{
-				action = uri.Parameters["action"];
-			}
-
-			// Try to get the id
-			bool success = false;
-			int id = 0;
-			if (uri.Parameters.ContainsKey("id"))
-			{
-				success = Int32.TryParse(uri.Parameters["id"], out id);
-			}
-
-			string error = null;
+			// Lists of favorites and items associated
 			IList<IItem> items = new List<IItem>();
 			IList<Favorite> favorites = new List<Favorite>();
 
-			switch (action)
+			// If no action specified, read favorites
+			if (uri.Action == null || uri.Action == "read")
 			{
-				case "list":
-					favorites = favoriteRepository.FavoritesForUserId((int)user.UserId);
-					items = favoriteRepository.ItemsForFavorites(favorites);
-					break;
-				case "add":
-					if (success)
-					{
-						favoriteRepository.AddFavorite((int)user.UserId, id, null);
-					}
-					else
-					{
-						error = "Missing id parameter";
-					}
-					break;
-				case "delete":
-					if (success)
-					{
-						// Make sure the user is deleting one of their favorites
-						Favorite fav = favoriteRepository.FavoriteForId(id);
-						if (fav.FavoriteUserId == user.UserId)
-						{
-							favoriteRepository.DeleteFavorite(id);
-						}
-						else
-						{
-							error = "Cannot delete another user's favorite";
-						}
-					}
-					else
-					{
-						error = "Favorite does not exist";
-					}
-					break;
-				default:
-					error = "Invalid action: " + action;
-					break;
+				// Get this users's favorites
+				favorites = favoriteRepository.FavoritesForUserId((int)user.UserId);
+
+				// Get the items associated with their favorites
+				items = favoriteRepository.ItemsForFavorites(favorites);
+
+				// Send response
+				processor.WriteJson(new FavoritesResponse(null, items, favorites));
+				return;
 			}
 
-			// Return all results
-			processor.WriteJson(new FavoritesResponse(error, items, favorites));
+			// Verify ID present for remaining actions
+			if (uri.Id == null)
+			{
+				processor.WriteJson(new FavoritesResponse("ID required for modifying favorites", null, null));
+				return;
+			}
+
+			// create - add favorites
+			if (uri.Action == "create")
+			{
+				favoriteRepository.AddFavorite((int)user.UserId, (int)uri.Id, null);
+				processor.WriteJson(new FavoritesResponse(null, items, favorites));
+				return;
+			}
+
+			// delete - remove favorites
+			if (uri.Action == "delete")
+			{
+				// Grab favorite to delete, verify its ownership
+				Favorite fav = favoriteRepository.FavoriteForId((int)uri.Id);
+				if (fav.FavoriteUserId != user.UserId)
+				{
+					processor.WriteJson(new FavoritesResponse("Cannot delete another user's favorite", null, null));
+					return;
+				}
+
+				// Remove favorite
+				favoriteRepository.DeleteFavorite((int)uri.Id);
+				processor.WriteJson(new FavoritesResponse(null, items, favorites));
+				return;
+			}
+
+			// Invalid action
+			processor.WriteJson(new FavoritesResponse("Invalid action specified: " + uri.Action, null, null));
+			return;
 		}
 	}
 }
