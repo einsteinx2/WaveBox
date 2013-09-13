@@ -38,37 +38,31 @@ namespace WaveBox.ApiHandler.Handlers
 			if (uri.Id != null)
 			{
 				// Add artist by ID to the list
-				AlbumArtist a = Injection.Kernel.Get<IAlbumArtistRepository>().AlbumArtistForId(uri.Id);
+				AlbumArtist a = Injection.Kernel.Get<IAlbumArtistRepository>().AlbumArtistForId((int)uri.Id);
 				albumArtists.Add(a);
 
 				// Add artist's albums to response
 				albums = a.ListOfAlbums();
 
 				// If requested, add artist's songs to response
-				if (uri.Parameters.ContainsKey("includeSongs"))
+				if (uri.Parameters.ContainsKey("includeSongs") && uri.Parameters["includeSongs"].IsTrue())
 				{
-					if (uri.Parameters["includeSongs"].IsTrue())
-					{
-						songs = a.ListOfSongs();
-					}
+					songs = a.ListOfSongs();
 				}
 
 				// If requested, add artist's Last.fm info to response
-				if (uri.Parameters.ContainsKey("lastfmInfo"))
+				if (uri.Parameters.ContainsKey("lastfmInfo") && uri.Parameters["lastfmInfo"].IsTrue())
 				{
-					if (uri.Parameters["lastfmInfo"].IsTrue())
+					logger.IfInfo("Querying Last.fm for artist: " + a.AlbumArtistName);
+					try
 					{
-						logger.IfInfo("Querying Last.fm for artist: " + a.AlbumArtistName);
-						try
-						{
-							lastfmInfo = Lastfm.GetAlbumArtistInfo(a);
-							logger.IfInfo("Last.fm query complete!");
-						}
-						catch (Exception e)
-						{
-							logger.Error("Last.fm query failed!");
-							logger.Error(e);
-						}
+						lastfmInfo = Lastfm.GetAlbumArtistInfo(a);
+						logger.IfInfo("Last.fm query complete!");
+					}
+					catch (Exception e)
+					{
+						logger.Error("Last.fm query failed!");
+						logger.Error(e);
 					}
 				}
 			}
