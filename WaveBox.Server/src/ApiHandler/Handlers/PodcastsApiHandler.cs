@@ -26,100 +26,78 @@ namespace WaveBox.ApiHandler.Handlers
 
 			if (uri.UriPart(2) == null)
 			{
-				if (uri.Parameters.ContainsKey("action"))
+				if (uri.Action != null)
 				{
-					string action = null;
-					uri.Parameters.TryGetValue("action", out action);
-
-					if (action == null)
+					if (uri.Action == "add")
 					{
-						processor.WriteJson(new PodcastContentResponse("Parameter 'action' contained an invalid value", null));
-					}
-					else
-					{
-						if (action == "add")
+						if ((uri.Parameters.ContainsKey("url")) && (uri.Parameters.ContainsKey("keepCap")))
 						{
-							if ((uri.Parameters.ContainsKey("url")) && (uri.Parameters.ContainsKey("keepCap")))
+							string url = null;
+							string keepCapTemp = null;
+							int keepCap = 0;
+							uri.Parameters.TryGetValue("url", out url);
+							uri.Parameters.TryGetValue("keepCap", out keepCapTemp);
+
+							if (url == null)
 							{
-								string url = null;
-								string keepCapTemp = null;
-								int keepCap = 0;
-								uri.Parameters.TryGetValue("url", out url);
-								uri.Parameters.TryGetValue("keepCap", out keepCapTemp);
+								processor.WriteJson(new PodcastContentResponse("Parameter 'url' contained an invalid value", null));
+							}
 
-								if (url == null)
-								{
-									processor.WriteJson(new PodcastContentResponse("Parameter 'url' contained an invalid value", null));
-								}
-
-								else if (keepCapTemp == null)
+							else if (keepCapTemp == null)
+							{
+								processor.WriteJson(new PodcastContentResponse("Parameter 'keepCap' contained an invalid value", null));
+							}
+							else
+							{
+								if (!Int32.TryParse(keepCapTemp, out keepCap))
 								{
 									processor.WriteJson(new PodcastContentResponse("Parameter 'keepCap' contained an invalid value", null));
 								}
-								else
-								{
-									if (!Int32.TryParse(keepCapTemp, out keepCap))
-									{
-										processor.WriteJson(new PodcastContentResponse("Parameter 'keepCap' contained an invalid value", null));
-									}
-									url = System.Web.HttpUtility.UrlDecode(url);
-									Podcast pod = new Podcast.Factory().CreatePodcast(url, keepCap);
+								url = System.Web.HttpUtility.UrlDecode(url);
+								Podcast pod = new Podcast.Factory().CreatePodcast(url, keepCap);
 
-									pod.DownloadNewEpisodes();
-									processor.WriteJson(new PodcastContentResponse(null, null));
-									return;
-								}
-							}
-							else
-							{
-								processor.WriteJson(new PodcastContentResponse("Missing parameter for action 'add'", null));
+								pod.DownloadNewEpisodes();
+								processor.WriteJson(new PodcastContentResponse(null, null));
+								return;
 							}
 						}
-						else if (action == "delete")
+						else
 						{
-							if (!(uri.Parameters.ContainsKey("id") || uri.Parameters.ContainsKey("episodeId")))
-							{
-								processor.WriteJson(new PodcastContentResponse("Missing parameter for action 'delete'", null));
-								return;
-							}
-							else if (uri.Parameters.ContainsKey("id") && uri.Parameters.ContainsKey("episodeId"))
-							{
-								processor.WriteJson(new PodcastContentResponse("Ambiguous parameters for action 'delete'.  'delete' accepts either a id or a episodeId, but not both.", null));
-								return;
-							}
-							else if (uri.Parameters.ContainsKey("id"))
-							{
-								int id = 0;
-								string idString = null;
+							processor.WriteJson(new PodcastContentResponse("Missing parameter for action 'add'", null));
+						}
+					}
+					else if (uri.Action == "delete")
+					{
+						if (!(uri.Id != null || uri.Parameters.ContainsKey("episodeId")))
+						{
+							processor.WriteJson(new PodcastContentResponse("Missing parameter for action 'delete'", null));
+							return;
+						}
+						else if (uri.Id != null && uri.Parameters.ContainsKey("episodeId"))
+						{
+							processor.WriteJson(new PodcastContentResponse("Ambiguous parameters for action 'delete'.  'delete' accepts either a id or a episodeId, but not both.", null));
+							return;
+						}
+						else if (uri.Id != null)
+						{
+							processor.WriteJson(new PodcastActionResponse(null, new Podcast.Factory().CreatePodcast((int)uri.Id).Delete()));
+							return;
+						}
+						else
+						{
+							int id = 0;
+							string idString = null;
 
-								uri.Parameters.TryGetValue("id", out idString);
-								if (Int32.TryParse(idString, out id))
-								{
-									processor.WriteJson(new PodcastActionResponse(null, new Podcast.Factory().CreatePodcast(id).Delete()));
-									return;
-								}
-								else
-								{
-									processor.WriteJson(new PodcastActionResponse("Parameter 'id' contained an invalid value", false));
-									return;
-								}
+							uri.Parameters.TryGetValue("episodeId", out idString);
+							if (Int32.TryParse(idString, out id))
+							{
+								processor.WriteJson(new PodcastActionResponse(null, new PodcastEpisode.Factory().CreatePodcastEpisode(id).Delete()));
+								return;
 							}
 							else
 							{
-								int id = 0;
-								string idString = null;
-
-								uri.Parameters.TryGetValue("episodeId", out idString);
-								if (Int32.TryParse(idString, out id))
-								{
-									processor.WriteJson(new PodcastActionResponse(null, new PodcastEpisode.Factory().CreatePodcastEpisode(id).Delete()));
-									return;
-								}
-								else
-								{
-									processor.WriteJson(new PodcastActionResponse("Parameter 'episodeId' contained an invalid value", false));
-									return;
-								}
+								processor.WriteJson(new PodcastActionResponse("Parameter 'episodeId' contained an invalid value", false));
+								return;
 							}
 						}
 					}
