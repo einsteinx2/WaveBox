@@ -34,18 +34,11 @@ namespace WaveBox.ApiHandler.Handlers
 			// Optional Last.fm info
 			string lastfmInfo = null;
 
-			// Fetch artist ID from parameters
-			int id = 0;
-			if (uri.Parameters.ContainsKey("id"))
+			// Check if an ID was passed
+			if (uri.Id != null)
 			{
-				if (!Int32.TryParse(uri.Parameters["id"], out id))
-				{
-					processor.WriteJson(new AlbumArtistsResponse("Parameter 'id' requires a valid integer", null, null, null));
-					return;
-				}
-
 				// Add artist by ID to the list
-				AlbumArtist a = Injection.Kernel.Get<IAlbumArtistRepository>().AlbumArtistForId(id);
+				AlbumArtist a = Injection.Kernel.Get<IAlbumArtistRepository>().AlbumArtistForId(uri.Id);
 				albumArtists.Add(a);
 
 				// Add artist's albums to response
@@ -105,7 +98,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 			// Check for a request to limit/paginate artists, like SQL
 			// Note: can be combined with range or all artists
-			if (uri.Parameters.ContainsKey("limit") && !uri.Parameters.ContainsKey("id"))
+			if (uri.Parameters.ContainsKey("limit") && uri.Id == null)
 			{
 				string[] limit = uri.Parameters["limit"].Split(',');
 
