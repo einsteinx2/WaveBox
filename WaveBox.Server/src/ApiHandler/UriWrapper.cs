@@ -16,11 +16,17 @@ namespace WaveBox.ApiHandler
 		public string FirstPart { get { return UriPart(0); } }
 		public string LastPart { get { return UriPart(UriParts.Count - 1); } }
 
+		// ID parsed from URL in REST form
+		public int? Id { get; set; }
+
+		// CRUD operation parsed in REST form
+		public string Action { get; set; }
+
 		// Determine if URI contains an API call
 		public bool IsApiCall { get { return FirstPart == "api"; } }
 
-		// Determines the action of an API call
-		public string Action
+		// Determines which API action will be called
+		public string ApiAction
 		{
 			get
 			{
@@ -49,6 +55,22 @@ namespace WaveBox.ApiHandler
 			// Store the parts of the URI in a List of strings
 			this.UriParts = RemoveEmptyElements(this.UriString.Split('/'));
 
+			// Set ID null unless a valid one is found
+			this.Id = null;
+
+			// Set action to read unless a valid one is found
+			this.Action = "read";
+			if (this.Parameters.ContainsKey("action"))
+			{
+				this.Action = this.Parameters["action"];
+			}
+
+			// Compatibility patch until web client is updated to pass URLs the REST way
+			if (this.Parameters.ContainsKey("id"))
+			{
+				this.Id = Convert.ToInt32(this.Parameters["id"]);
+			}
+
 			// Check for ID passed in REST form (e.g. /api/songs/6)
 			// NOTE: try/catch'd to avoid exceptions thrown on web UI loading
 			try
@@ -56,8 +78,8 @@ namespace WaveBox.ApiHandler
 				int id = 0;
 				if (Int32.TryParse(this.LastPart, out id))
 				{
-					// Add ID parameter if found
-					this.Parameters["id"] = id.ToString();
+					// Capture ID to be used in API handlers
+					this.Id = id;
 				}
 			}
 			catch
