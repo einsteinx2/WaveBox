@@ -29,17 +29,8 @@ namespace WaveBox.ApiHandler.Handlers
 		/// </summary>
 		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
-			logger.IfInfo("Starting HLS transcoding sequence");
-
-			// Try to get the media item id
-			bool success = false;
-			int id = 0;
-			if (uri.Parameters.ContainsKey("id"))
-			{
-				success = Int32.TryParse(uri.Parameters["id"], out id);
-			}
-
-			if (!success)
+			// Verify ID received
+			if (uri.Id == null)
 			{
 				processor.WriteJson(new TranscodeHlsResponse("Missing required parameter 'id'"));
 				return;
@@ -48,11 +39,11 @@ namespace WaveBox.ApiHandler.Handlers
 			try
 			{
 				// Get the media item associated with this id
-				ItemType itemType = Injection.Kernel.Get<IItemRepository>().ItemTypeForItemId(id);
+				ItemType itemType = Injection.Kernel.Get<IItemRepository>().ItemTypeForItemId((int)uri.Id);
 				IMediaItem item = null;
 				if (itemType == ItemType.Song)
 				{
-					item = Injection.Kernel.Get<ISongRepository>().SongForId(id);
+					item = Injection.Kernel.Get<ISongRepository>().SongForId((int)uri.Id);
 					logger.IfInfo("HLS transcoding for songs not currently supported");
 
 					// CURRENTLY DO NOT SUPPORT HLS STREAMING FOR SONGS
@@ -60,14 +51,14 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 				else if (itemType == ItemType.Video)
 				{
-					item = Injection.Kernel.Get<IVideoRepository>().VideoForId(id);
+					item = Injection.Kernel.Get<IVideoRepository>().VideoForId((int)uri.Id);
 					logger.IfInfo("Preparing video stream: " + item.FileName);
 				}
 
 				// Return an error if none exists
 				if ((item == null) || (!File.Exists(item.FilePath())))
 				{
-					processor.WriteJson(new TranscodeHlsResponse("No media item exists with ID: " + id));
+					processor.WriteJson(new TranscodeHlsResponse("No media item exists with ID: " + (int)uri.Id));
 					return;
 				}
 
