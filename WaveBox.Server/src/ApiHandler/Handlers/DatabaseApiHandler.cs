@@ -28,57 +28,55 @@ namespace WaveBox.ApiHandler.Handlers
 		/// </summary>
 		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
-			// Try to get the update time
-			string id = uri.Parameters.ContainsKey("id") ? uri.Parameters["id"] : null;
-
-			if ((object)id == null)
+			// If ID set, return all queries >= this id
+			if (uri.Id != null)
 			{
-				// No id parameter, so send down the whole backup database
-				long databaseLastQueryId = -1;
-				string databaseFileName = DatabaseBackup.Backup(out databaseLastQueryId);
-
-				if ((object)databaseFileName == null)
-				{
-					processor.WriteErrorHeader();
-				}
-				else
-				{
-					try
-					{
-						// Read in entire database file
-						Stream stream = new FileStream(ServerUtility.RootPath() + databaseFileName, FileMode.Open, FileAccess.Read);
-						long length = stream.Length;
-						int startOffset = 0;
-
-						// Handle the Range header to start from later in the file if connection interrupted
-						if (processor.HttpHeaders.ContainsKey("Range"))
-						{
-							string range = (string)processor.HttpHeaders["Range"];
-							string start = range.Split(new char[]{'-', '='})[1];
-							logger.IfInfo("Connection retried.  Resuming from " + start);
-							startOffset = Convert.ToInt32(start);
-						}
-
-						// We send the last query id as a custom header
-						IDictionary<string, string> customHeader = new Dictionary<string, string>();
-						customHeader["WaveBox-LastQueryId"] = databaseLastQueryId.ToString();
-
-						// Send the database file
-						processor.WriteFile(stream, startOffset, length, "application/octet-stream", customHeader, true, new FileInfo(ServerUtility.RootPath() + databaseFileName).LastWriteTimeUtc);
-                        stream.Close();
-					}
-					catch
-					{
-						// Send JSON on error
-						processor.WriteJson(new DatabaseResponse("Could not open backup database " + databaseFileName, null));
-					}
-				}
+				processor.WriteJson(new DatabaseResponse(null, Injection.Kernel.Get<IDatabase>().QueryLogsSinceId((int)uri.Id)));
+				return;
 			}
-			else
+
+			// No id parameter, so send down the whole backup database
+			long databaseLastQueryId = -1;
+			string databaseFileName = DatabaseBackup.Backup(out databaseLastQueryId);
+
+			// Verify database filename present
+			if ((object)databaseFileName == null)
 			{
-				// Return all queries >= this id
-				processor.WriteJson(new DatabaseResponse(null, Injection.Kernel.Get<IDatabase>().QueryLogsSinceId(Int32.Parse(id))));
+				processor.WriteErrorHeader();
+				return;
 			}
+
+			try
+			{
+				// Read in entire database file
+				Stream stream = new FileStream(ServerUtility.RootPath() + databaseFileName, FileMode.Open, FileAccess.Read);
+				long length = stream.Length;
+				int startOffset = 0;
+
+				// Handle the Range header to start from later in the file if connection interrupted
+				if (processor.HttpHeaders.ContainsKey("Range"))
+				{
+					string range = (string)processor.HttpHeaders["Range"];
+					string start = range.Split(new char[]{'-', '='})[1];
+					logger.IfInfo("Connection retried.  Resuming from " + start);
+					startOffset = Convert.ToInt32(start);
+				}
+
+				// We send the last query id as a custom header
+				IDictionary<string, string> customHeader = new Dictionary<string, string>();
+				customHeader["WaveBox-LastQueryId"] = databaseLastQueryId.ToString();
+
+				// Send the database file
+				processor.WriteFile(stream, startOffset, length, "application/octet-stream", customHeader, true, new FileInfo(ServerUtility.RootPath() + databaseFileName).LastWriteTimeUtc);
+				stream.Close();
+			}
+			catch
+			{
+				// Send JSON on error
+				processor.WriteJson(new DatabaseResponse("Could not open backup database " + databaseFileName, null));
+			}
+
+			return;
 		}
 	}
 }
