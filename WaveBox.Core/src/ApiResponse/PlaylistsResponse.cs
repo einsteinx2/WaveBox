@@ -3,9 +3,9 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 using WaveBox.Core.Model;
 
-namespace WaveBox.Core
+namespace WaveBox.Core.ApiResponse
 {
-	public class PlaylistsResponse
+	public class PlaylistsResponse : IApiResponse
 	{
 		[JsonProperty("error")]
 		public string Error { get; set; }

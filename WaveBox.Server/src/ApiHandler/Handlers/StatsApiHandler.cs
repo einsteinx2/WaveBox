@@ -27,7 +27,7 @@ namespace WaveBox.ApiHandler
 			// Ensure an event is present
 			if (!uri.Parameters.ContainsKey("event"))
 			{
-				processor.WriteJson(JsonConvert.SerializeObject(new StatsResponse("Please specify an event parameter with comma separated list of events"), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+				processor.WriteJson(new StatsResponse("Please specify an event parameter with comma separated list of events"));
 				return;
 			}
 
@@ -38,14 +38,14 @@ namespace WaveBox.ApiHandler
 			if (events.Length < 1)
 			{
 				// Report empty data list
-				processor.WriteJson(JsonConvert.SerializeObject(new StatsResponse("Event data list is empty"), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+				processor.WriteJson(new StatsResponse("Event data list is empty"));
 				return;
 			}
 
 			// Ensure events are in triples
 			if (events.Length % 3 != 0)
 			{
-				processor.WriteJson(JsonConvert.SerializeObject(new StatsResponse("Event data list must be in comma-separated triples of form itemId,statType,timestamp"), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+				processor.WriteJson(new StatsResponse("Event data list must be in comma-separated triples of form itemId,statType,timestamp"));
 				return;
 			}
 
@@ -110,7 +110,7 @@ namespace WaveBox.ApiHandler
 			}
 
 			// After all stat iterations, return a successful response
-			processor.WriteJson(JsonConvert.SerializeObject(new StatsResponse(null), Injection.Kernel.Get<IServerSettings>().JsonFormatting));
+			processor.WriteJson(new StatsResponse(null));
 		}
 	}
 }

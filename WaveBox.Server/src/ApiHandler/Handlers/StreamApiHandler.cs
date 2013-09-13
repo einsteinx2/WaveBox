@@ -49,8 +49,7 @@ namespace WaveBox.ApiHandler.Handlers
 			if (id == 0)
 			{
 				// For missing ID parameter, print JSON error
-				string json = JsonConvert.SerializeObject(new StreamResponse("Missing required parameter 'id'"), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-				processor.WriteJson(json);
+				processor.WriteJson(new StreamResponse("Missing required parameter 'id'"));
 				return;
 			}
 
@@ -73,8 +72,7 @@ namespace WaveBox.ApiHandler.Handlers
 				// Return an error if none exists
 				if ((item == null) || (!File.Exists(item.FilePath())))
 				{
-					string json = JsonConvert.SerializeObject(new StreamResponse("No media item exists with ID: " + id), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-					processor.WriteJson(json);
+					processor.WriteJson(new StreamResponse("No media item exists with ID: " + id));
 					return;
 				}
 

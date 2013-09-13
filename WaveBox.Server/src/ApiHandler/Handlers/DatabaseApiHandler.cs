@@ -70,24 +70,14 @@ namespace WaveBox.ApiHandler.Handlers
 					catch
 					{
 						// Send JSON on error
-						string json = JsonConvert.SerializeObject(new DatabaseResponse("Could not open backup database " + databaseFileName, null), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-						processor.WriteJson(json);
+						processor.WriteJson(new DatabaseResponse("Could not open backup database " + databaseFileName, null));
 					}
 				}
 			}
 			else
 			{
 				// Return all queries >= this id
-				try
-				{
-					// Send DatabaseResponse containing list of queries
-					string json = JsonConvert.SerializeObject(new DatabaseResponse(null, Injection.Kernel.Get<IDatabase>().QueryLogsSinceId(Int32.Parse(id))), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-					processor.WriteJson(json);
-				}
-				catch (Exception e)
-				{
-					logger.Error(e);
-				}
+				processor.WriteJson(new DatabaseResponse(null, Injection.Kernel.Get<IDatabase>().QueryLogsSinceId(Int32.Parse(id))));
 			}
 		}
 	}
