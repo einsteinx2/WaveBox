@@ -26,146 +26,14 @@ namespace WaveBox.ApiHandler.Handlers
 		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			// Generate return lists of playlists, media items in them
-			string error = null;
 			IList<Playlist> listOfPlaylists = new List<Playlist>();
 			IList<IMediaItem> listOfMediaItems = new List<IMediaItem>();
 
-			// Try to get the playlist id
-			bool success = false;
-			int id = 0;
-			if (uri.Parameters.ContainsKey("id"))
-			{
-				success = Int32.TryParse(uri.Parameters["id"], out id);
-			}
+			// The playlist to perform actions
+			Playlist playlist;
 
-			// Try to get the action
-			string action = "list";
-			if (uri.Parameters.ContainsKey("action"))
-			{
-				action = uri.Parameters["action"];
-			}
-
-			if (success)
-			{
-				// Return the playlist for this id
-				Playlist playlist = Injection.Kernel.Get<IPlaylistRepository>().PlaylistForId(id);
-				if (playlist.PlaylistId == null)
-				{
-					error = "Playlist does not exist";
-				}
-				else
-				{
-					switch (action)
-					{
-						case "add":
-							// Try to get the itemIds to add them to the playlist if necessary
-							IList<int> itemIds = this.ParseItemIds(uri);
-							if (itemIds.Count == 0)
-							{
-								error = "Missing item ids";
-							}
-							else
-							{
-								for (int i = 0; i < itemIds.Count; i++)
-								{
-									int itemId = itemIds[i];
-									IList<IMediaItem> songs = null;
-									switch (Injection.Kernel.Get<IItemRepository>().ItemTypeForItemId(itemId))
-									{
-										case ItemType.Folder:
-											// get all the media items underneath this folder and add them
-											// Use Select instead of ConvertAll: http://stackoverflow.com/questions/1571819/difference-between-select-and-convertall-in-c-sharp
-											songs = Injection.Kernel.Get<IFolderRepository>().FolderForId(itemId).ListOfSongs(true).Select(x => (IMediaItem)x).ToList();
-											playlist.AddMediaItems(songs);
-											break;
-										case ItemType.Artist:
-											songs = Injection.Kernel.Get<IArtistRepository>().ArtistForId(itemId).ListOfSongs().Select(x => (IMediaItem)x).ToList();
-											playlist.AddMediaItems(songs);
-											break;
-										case ItemType.Album:
-											songs = Injection.Kernel.Get<IAlbumRepository>().AlbumForId(itemId).ListOfSongs().Select(x => (IMediaItem)x).ToList();
-											playlist.AddMediaItems(songs);
-											break;
-										case ItemType.Song:
-											playlist.AddMediaItem(Injection.Kernel.Get<ISongRepository>().SongForId(itemId));
-											break;
-										case ItemType.Video:
-											playlist.AddMediaItem(Injection.Kernel.Get<IVideoRepository>().VideoForId(itemId));
-											break;
-										default:
-											error = "Invalid item type at index: " + i;
-											break;
-									}
-								}
-
-								// Grab everything just put in the playlist
-								listOfMediaItems = playlist.ListOfMediaItems();
-							}
-							break;
-						case "delete":
-							playlist.DeletePlaylist();
-							break;
-						case "insert":
-							IList<int> insertItemIds = this.ParseItemIds(uri);
-							IList<int> insertIndexes = this.ParseIndexes(uri);
-							if (insertItemIds.Count == 0 || insertItemIds.Count != insertIndexes.Count)
-							{
-								error = "Incorrect number of items and indexes supplied";
-							}
-							else
-							{
-								for (int i = 0; i < insertItemIds.Count; i++)
-								{
-									int itemId = insertItemIds[i];
-									int index = insertIndexes[i];
-									playlist.InsertMediaItem(itemId, index);
-								}
-								listOfMediaItems = playlist.ListOfMediaItems();
-							}
-							break;
-						case "list":
-							listOfMediaItems = playlist.ListOfMediaItems();
-							break;
-						case "move":
-							IList<int> moveIndexes = this.ParseIndexes(uri);
-							if (moveIndexes.Count == 0 || moveIndexes.Count % 2 != 0)
-							{
-								error = "Incorrect number of indexes supplied";
-							}
-							else
-							{
-								for (int i = 0; i < moveIndexes.Count; i += 2)
-								{
-									int fromIndex = moveIndexes[i];
-									int toIndex = moveIndexes[i+1];
-									logger.IfInfo("Calling move media item fromIndex: " + fromIndex + " toIndex: " + toIndex);
-									playlist.MoveMediaItem(fromIndex, toIndex);
-								}
-								listOfMediaItems = playlist.ListOfMediaItems();
-							}
-							break;
-						case "remove":
-							IList<int> removeIndexes = this.ParseIndexes(uri);
-							if (removeIndexes.Count == 0)
-							{
-								error = "No indexes supplied";
-							}
-							else
-							{
-								playlist.RemoveMediaItemAtIndexes(removeIndexes);
-								listOfMediaItems = playlist.ListOfMediaItems();
-							}
-							break;
-						default:
-							error = "Invalid action: " + action;
-							break;
-					}
-
-					// Return the playlist so the client can use the info
-					listOfPlaylists.Add(playlist);
-				}
-			}
-			else if (action.Equals("create"))
+			// Check for playlist creation
+			if (uri.Action == "create")
 			{
 				// Try to get the name
 				string name = null;
@@ -174,44 +42,206 @@ namespace WaveBox.ApiHandler.Handlers
 					name = HttpUtility.UrlDecode(uri.Parameters["name"]);
 				}
 
-				if (ReferenceEquals(name, null))
+				// Verify non-null name
+				if (name == null)
 				{
-					// No name provided, so error
-					error = "No name provided";
+					processor.WriteJson(new PlaylistsResponse("Parameter 'name' required for playlist creation", null, null));
+					return;
 				}
-				else
+
+				// Verify name not already in use
+				playlist = Injection.Kernel.Get<IPlaylistRepository>().PlaylistForName(name);
+				if (playlist.ItemId != null)
 				{
-					Playlist playlist = Injection.Kernel.Get<IPlaylistRepository>().PlaylistForName(name);
-
-					if (ReferenceEquals(playlist.ItemId, null))
-					{
-						// Looks like this name is unused, so create the playlist
-						playlist.CreatePlaylist();
-
-						// Try to get the itemIds to add them to the playlist if necessary
-						IList<int> itemIds = this.ParseItemIds(uri);
-						if (itemIds.Count > 0)
-						{
-							playlist.AddMediaItems(itemIds);
-						}
-
-						listOfMediaItems = playlist.ListOfMediaItems();
-						listOfPlaylists.Add(playlist);
-					}
-					else
-					{
-						error = "Name already in use";
-					}
+					processor.WriteJson(new PlaylistsResponse("Playlist name '" + name + "' already in use", null, null));
+					return;
 				}
+
+				// Looks like this name is unused, so create the playlist
+				playlist.CreatePlaylist();
+
+				// Try to get the itemIds to add them to the playlist if necessary
+				IList<int> itemIds = this.ParseItemIds(uri);
+				if (itemIds.Count > 0)
+				{
+					playlist.AddMediaItems(itemIds);
+				}
+
+				listOfMediaItems = playlist.ListOfMediaItems();
+				listOfPlaylists.Add(playlist);
+
+				// Return newly created playlist
+				processor.WriteJson(new PlaylistsResponse(null, listOfPlaylists, listOfMediaItems));
+				return;
 			}
-			else
+
+			// If not creating playlist, and no ID, return all playlists
+			if (uri.Id == null)
 			{
-				// No id parameter, so return all playlists
 				listOfPlaylists = Injection.Kernel.Get<IPlaylistRepository>().AllPlaylists();
+				processor.WriteJson(new PlaylistsResponse(null, listOfPlaylists, listOfMediaItems));
+				return;
 			}
 
-			// Return all results
-			processor.WriteJson(new PlaylistsResponse(error, listOfPlaylists, listOfMediaItems));
+			// If ID, return the playlist for this ID
+			playlist = Injection.Kernel.Get<IPlaylistRepository>().PlaylistForId((int)uri.Id);
+			if (playlist.PlaylistId == null)
+			{
+				processor.WriteJson(new PlaylistsResponse("Playlist does not exist", null, null));
+				return;
+			}
+
+			// add - add items to a playlist
+			if (uri.Action == "add")
+			{
+				// Try to get the itemIds to add them to the playlist if necessary
+				IList<int> itemIds = this.ParseItemIds(uri);
+				if (itemIds.Count == 0)
+				{
+					processor.WriteJson(new PlaylistsResponse("No item IDs found in URL", null, null));
+					return;
+				}
+
+				// Iterate item IDs
+				for (int i = 0; i < itemIds.Count; i++)
+				{
+					// Store ID
+					int itemId = itemIds[i];
+
+					// List of songs
+					IList<IMediaItem> songs = null;
+
+					// Iterate each item type in the list, adding items
+					switch (Injection.Kernel.Get<IItemRepository>().ItemTypeForItemId(itemId))
+					{
+						case ItemType.Folder:
+							// get all the media items underneath this folder and add them
+							// Use Select instead of ConvertAll: http://stackoverflow.com/questions/1571819/difference-between-select-and-convertall-in-c-sharp
+							songs = Injection.Kernel.Get<IFolderRepository>().FolderForId(itemId).ListOfSongs(true).Select(x => (IMediaItem)x).ToList();
+							playlist.AddMediaItems(songs);
+							break;
+						case ItemType.Artist:
+							songs = Injection.Kernel.Get<IArtistRepository>().ArtistForId(itemId).ListOfSongs().Select(x => (IMediaItem)x).ToList();
+							playlist.AddMediaItems(songs);
+							break;
+						case ItemType.Album:
+							songs = Injection.Kernel.Get<IAlbumRepository>().AlbumForId(itemId).ListOfSongs().Select(x => (IMediaItem)x).ToList();
+							playlist.AddMediaItems(songs);
+							break;
+						case ItemType.Song:
+							playlist.AddMediaItem(Injection.Kernel.Get<ISongRepository>().SongForId(itemId));
+							break;
+						case ItemType.Video:
+							playlist.AddMediaItem(Injection.Kernel.Get<IVideoRepository>().VideoForId(itemId));
+							break;
+						default:
+							processor.WriteJson(new PlaylistsResponse("Invalid item type at index: " + i, null, null));
+							return;
+					}
+				}
+
+				// Grab everything just put in the playlist
+				listOfPlaylists.Add(playlist);
+				listOfMediaItems = playlist.ListOfMediaItems();
+
+				processor.WriteJson(new PlaylistsResponse(null, listOfPlaylists, listOfMediaItems));
+				return;
+			}
+
+			// delete - delete a playlist
+			if (uri.Action == "delete")
+			{
+				playlist.DeletePlaylist();
+				listOfPlaylists.Add(playlist);
+
+				processor.WriteJson(new PlaylistsResponse(null, listOfPlaylists, listOfMediaItems));
+				return;
+			}
+
+			// insert - insert item in playlist at specified index
+			if (uri.Action == "insert")
+			{
+				IList<int> insertItemIds = this.ParseItemIds(uri);
+				IList<int> insertIndexes = this.ParseIndexes(uri);
+				if (insertItemIds.Count == 0 || insertItemIds.Count != insertIndexes.Count)
+				{
+					processor.WriteJson(new PlaylistsResponse("Incorrect number of items and indices supplied for action 'insert'", null, null));
+					return;
+				}
+
+				// Add media items and specified indices
+				for (int i = 0; i < insertItemIds.Count; i++)
+				{
+					int itemId = insertItemIds[i];
+					int index = insertIndexes[i];
+					playlist.InsertMediaItem(itemId, index);
+				}
+
+				// Return playlist with media items
+				listOfPlaylists.Add(playlist);
+				listOfMediaItems = playlist.ListOfMediaItems();
+
+				processor.WriteJson(new PlaylistsResponse(null, listOfPlaylists, listOfMediaItems));
+				return;
+			}
+
+			// list/read - list all of the items in a playlist ("list" keep for compatibility)
+			if (uri.Action == "list" || uri.Action == "read")
+			{
+				listOfPlaylists.Add(playlist);
+				listOfMediaItems = playlist.ListOfMediaItems();
+
+				processor.WriteJson(new PlaylistsResponse(null, listOfPlaylists, listOfMediaItems));
+				return;
+			}
+
+			// move - move an item in the playlist
+			if (uri.Action == "move")
+			{
+				IList<int> moveIndexes = this.ParseIndexes(uri);
+				if (moveIndexes.Count == 0 || moveIndexes.Count % 2 != 0)
+				{
+					processor.WriteJson(new PlaylistsResponse("Incorrect number of indices supplied for action 'move'", null, null));
+					return;
+				}
+
+				// Move media items in playlist
+				for (int i = 0; i < moveIndexes.Count; i += 2)
+				{
+					int fromIndex = moveIndexes[i];
+					int toIndex = moveIndexes[i+1];
+					playlist.MoveMediaItem(fromIndex, toIndex);
+				}
+
+				listOfPlaylists.Add(playlist);
+				listOfMediaItems = playlist.ListOfMediaItems();
+
+				processor.WriteJson(new PlaylistsResponse(null, listOfPlaylists, listOfMediaItems));
+				return;
+			}
+
+			// remove - remove items from playlist
+			if (uri.Action == "remove")
+			{
+				IList<int> removeIndexes = this.ParseIndexes(uri);
+				if (removeIndexes.Count == 0)
+				{
+					processor.WriteJson(new PlaylistsResponse("No indices supplied for action 'remove'", null, null));
+					return;
+				}
+
+				playlist.RemoveMediaItemAtIndexes(removeIndexes);
+
+				listOfPlaylists.Add(playlist);
+				listOfMediaItems = playlist.ListOfMediaItems();
+
+				processor.WriteJson(new PlaylistsResponse(null, listOfPlaylists, listOfMediaItems));
+				return;
+			}
+
+			// Finally, invalid action supplied
+			processor.WriteJson(new PlaylistsResponse("Invalid action: " + uri.Action, listOfPlaylists, listOfMediaItems));
+			return;
 		}
 
 		private IList<int> ParseItemIds(UriWrapper uri)

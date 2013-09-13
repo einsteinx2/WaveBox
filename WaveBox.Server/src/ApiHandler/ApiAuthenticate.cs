@@ -58,7 +58,7 @@ namespace WaveBox.ApiHandler
 			}
 
 			// If logging in, we are creating a new session
-			if (uri.Action == "login")
+			if (uri.ApiAction == "login")
 			{
 				// Must use username and password, and create a session
 				User user = Injection.Kernel.Get<IUserRepository>().UserForName(username);

@@ -32,7 +32,7 @@ namespace WaveBox.ApiHandler.Handlers
 		/// </summary>
 		public void Process(UriWrapper uri, IHttpProcessor processor, User user, string error)
 		{
-			logger.IfInfo(error);
+			logger.Error(error);
 
 			ErrorResponse response = new ErrorResponse(error);
 			processor.WriteJson(response);

@@ -182,7 +182,7 @@ namespace WaveBox.Service.Services.Http
 			}
 
 			// Check for valid API action ("web" and "error" are technically valid, but can't be used in this way)
-			if (uri.Action == null || uri.Action == "web" || uri.Action == "error")
+			if (uri.ApiAction == null || uri.ApiAction == "web" || uri.ApiAction == "error")
 			{
 				ErrorApiHandler errorApi = (ErrorApiHandler)Injection.Kernel.Get<IApiHandlerFactory>().CreateApiHandler("error");
 				errorApi.Process(uri, this, apiUser, "Invalid API call");
@@ -194,7 +194,7 @@ namespace WaveBox.Service.Services.Http
 
 			// Check for session cookie authentication, unless this is a login request
 			string sessionId = null;
-			if (uri.Action != "login")
+			if (uri.ApiAction != "login")
 			{
 				sessionId = this.GetSessionCookie();
 				apiUser = Injection.Kernel.Get<IApiAuthenticate>().AuthenticateSession(sessionId);
@@ -219,7 +219,7 @@ namespace WaveBox.Service.Services.Http
 			this.SetSessionCookie(apiUser.SessionId);
 
 			// Retrieve the requested API handler by its action
-			IApiHandler apiHandler = Injection.Kernel.Get<IApiHandlerFactory>().CreateApiHandler(uri.Action);
+			IApiHandler apiHandler = Injection.Kernel.Get<IApiHandlerFactory>().CreateApiHandler(uri.ApiAction);
 
 			// Check for valid API action
 			if (apiHandler == null)

@@ -27,18 +27,11 @@ namespace WaveBox.ApiHandler.Handlers
 			// Return list of videos
 			IList<Video> videos = new List<Video>();
 
-			// Fetch video ID from parameters
-			int id = 0;
-			if (uri.Parameters.ContainsKey("id"))
+			// Check if ID present
+			if (uri.Id != null)
 			{
-				if (!Int32.TryParse(uri.Parameters["id"], out id))
-				{
-					processor.WriteJson(new VideosResponse("Parameter 'id' requires a valid integer", null));
-					return;
-				}
-
 				// Add video by ID to the list
-				videos.Add(Injection.Kernel.Get<IVideoRepository>().VideoForId(id));
+				videos.Add(Injection.Kernel.Get<IVideoRepository>().VideoForId((int)uri.Id));
 			}
 			// Check for a request for range of videos
 			else if (uri.Parameters.ContainsKey("range"))
@@ -66,7 +59,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 			// Check for a request to limit/paginate videos, like SQL
 			// Note: can be combined with range or all videos
-			if (uri.Parameters.ContainsKey("limit") && !uri.Parameters.ContainsKey("id"))
+			if (uri.Parameters.ContainsKey("limit") && uri.Id == null)
 			{
 				string[] limit = uri.Parameters["limit"].Split(',');
 
@@ -139,6 +132,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 			// Send it!
 			processor.WriteJson(new VideosResponse(null, videos));
+			return;
 		}
 	}
 }

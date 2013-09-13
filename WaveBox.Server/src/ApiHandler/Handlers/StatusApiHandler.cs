@@ -138,12 +138,18 @@ namespace WaveBox.ApiHandler.Handlers
 					}
 				}
 
+				// Return all status
 				processor.WriteJson(new StatusResponse(null, status));
+				return;
 			}
 			catch (Exception e)
 			{
 				logger.Error(e);
 			}
+
+			// Return error
+			processor.WriteJson(new StatusResponse("Could not retrieve server status", null));
+			return;
 		}
 
 		// Borrowed from http://stackoverflow.com/questions/278071/how-to-get-the-cpu-usage-in-c

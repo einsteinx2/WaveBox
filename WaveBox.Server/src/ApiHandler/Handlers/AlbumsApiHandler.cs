@@ -30,18 +30,11 @@ namespace WaveBox.ApiHandler.Handlers
 			IList<Song> songs = new List<Song>();
 			IList<Album> albums = new List<Album>();
 
-			// Fetch album ID from parameters
-			int id = 0;
-			if (uri.Parameters.ContainsKey("id"))
+			// Check if an ID was passed
+			if (uri.Id != null)
 			{
-				if (!Int32.TryParse(uri.Parameters["id"], out id))
-				{
-					processor.WriteJson(new AlbumsResponse("Parameter 'id' requires a valid integer", null, null));
-					return;
-				}
-
 				// Add album by ID to the list
-				Album a = Injection.Kernel.Get<IAlbumRepository>().AlbumForId(id);
+				Album a = Injection.Kernel.Get<IAlbumRepository>().AlbumForId((int)uri.Id);
 				albums.Add(a);
 
 				// Add album's songs to response
@@ -73,7 +66,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 			// Check for a request to limit/paginate songs, like SQL
 			// Note: can be combined with range or all albums
-			if (uri.Parameters.ContainsKey("limit") && !uri.Parameters.ContainsKey("id"))
+			if (uri.Parameters.ContainsKey("limit") && uri.Id == null)
 			{
 				string[] limit = uri.Parameters["limit"].Split(',');
 

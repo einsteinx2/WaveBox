@@ -31,18 +31,7 @@ namespace WaveBox.ApiHandler.Handlers
 		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
 			// Check for the itemId
-			if (!uri.Parameters.ContainsKey("id"))
-			{
-				processor.WriteErrorHeader();
-				return;
-			}
-
-			// Convert to integer
-			int artId = 0;
-			Int32.TryParse(uri.Parameters["id"], out artId);
-
-			// If art ID was invalid, write error header
-			if (artId == 0)
+			if (uri.Id == null)
 			{
 				processor.WriteErrorHeader();
 				return;
@@ -55,15 +44,19 @@ namespace WaveBox.ApiHandler.Handlers
 				int blur = 0;
 				Int32.TryParse(uri.Parameters["blur"], out blur);
 				if (blur < 0)
+				{
 					blur = 0;
+				}
 				else if (blur > 100)
+				{
 					blur = 100;
+				}
 
 				blurSigma = (double)blur / 10.0;
 			}
 
 			// Grab art stream
-			Art art = Injection.Kernel.Get<IArtRepository>().ArtForId(artId);
+			Art art = Injection.Kernel.Get<IArtRepository>().ArtForId((int)uri.Id);
 			Stream stream = CreateStream(art);
 
 			// If the stream could not be produced, return error

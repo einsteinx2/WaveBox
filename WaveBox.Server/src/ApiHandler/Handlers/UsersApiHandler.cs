@@ -46,119 +46,17 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 
 				listOfUsers.Add(testUser);
+				processor.WriteJson(new UsersResponse(null, listOfUsers));
+				return;
 			}
-			// See if we need to manage users
-			else if (uri.Parameters.ContainsKey("action"))
+
+			// Check for no action, or read action
+			if (uri.Action == null || uri.Action == "read")
 			{
-				// killSession - remove a session by rowId
-				if (uri.Parameters["action"] == "killSession")
-				{
-					// Try to pull rowId from parameters for session management
-					int rowId = 0;
-					if (!uri.Parameters.ContainsKey("rowId"))
-					{
-						processor.WriteJson(new UsersResponse("Missing parameter 'rowId' for action 'killSession'", null));
-						return;
-					}
-
-					// Try to parse rowId integer
-					if (!Int32.TryParse(uri.Parameters["rowId"], out rowId))
-					{
-						processor.WriteJson(new UsersResponse("Invalid integer for 'rowId' for action 'killSession'", null));
-						return;
-					}
-
-					// After all checks pass, delete this session, return user associated with it
-					var session = Injection.Kernel.Get<ISessionRepository>().SessionForRowId(rowId);
-					if (session != null)
-					{
-						session.DeleteSession();
-						listOfUsers.Add(Injection.Kernel.Get<IUserRepository>().UserForId(Convert.ToInt32(session.UserId)));
-					}
-				}
-				// create - create a new user
-				else if (uri.Parameters["action"] == "create")
-				{
-					// Check for required username and password parameters
-					if (!uri.Parameters.ContainsKey("username") || !uri.Parameters.ContainsKey("password"))
-					{
-						processor.WriteJson(new UsersResponse("Parameters 'username' and 'password' required for action 'create'", null));
-						return;
-					}
-
-					string username = uri.Parameters["username"];
-					string password = uri.Parameters["password"];
-
-					// Attempt to create the user
-					User newUser = Injection.Kernel.Get<IUserRepository>().CreateUser(username, password, null);
-					if (newUser == null)
-					{
-						processor.WriteJson(new UsersResponse("Action 'create' failed to create new user", null));
-						return;
-					}
-
-					// Verify user didn't already exist
-					if (newUser.UserId == null)
-					{
-						processor.WriteJson(new UsersResponse("User '" + username + "' already exists!", null));
-						return;
-					}
-
-					// Return newly created user
-					logger.IfInfo(String.Format("Successfully created new user [id: {0}, username: {1}]", newUser.UserId, newUser.UserName));
-					listOfUsers.Add(newUser);
-				}
-				else if (uri.Parameters["action"] == "delete")
-				{
-					// Check for required ID parameter
-					if (!uri.Parameters.ContainsKey("id"))
-					{
-						processor.WriteJson(new UsersResponse("Parameter 'id' is required for action 'delete'", null));
-						return;
-					}
-
-					// Try to parse id integer
-					int id = 0;
-					if (!Int32.TryParse(uri.Parameters["id"], out id))
-					{
-						processor.WriteJson(new UsersResponse("Invalid integer for 'id' for action 'delete'", null));
-						return;
-					}
-
-					// Attempt to fetch and delete user
-					User deleteUser = Injection.Kernel.Get<IUserRepository>().UserForId(id);
-					if (deleteUser.UserName == null || !deleteUser.Delete())
-					{
-						processor.WriteJson(new UsersResponse("Action 'delete' failed to delete user", null));
-						return;
-					}
-
-					// Return deleted user
-					logger.IfInfo(String.Format("Successfully deleted user [id: {0}, username: {1}]", deleteUser.UserId, deleteUser.UserName));
-					listOfUsers.Add(deleteUser);
-				}
-				else
-				{
-					// Invalid action
-					processor.WriteJson(new UsersResponse("Invalid action '" + uri.Parameters["action"] + "'", null));
-					return;
-				}
-			}
-			// Else, list user information
-			else
-			{
-				// Try to get a user ID
-				bool success = false;
-				int id = 0;
-				if (uri.Parameters.ContainsKey("id"))
-				{
-					success = Int32.TryParse(uri.Parameters["id"], out id);
-				}
-
 				// On valid key, return a specific user, and their attributes
-				if (success)
+				if (uri.Id != null)
 				{
-					User oneUser = Injection.Kernel.Get<IUserRepository>().UserForId(id);
+					User oneUser = Injection.Kernel.Get<IUserRepository>().UserForId((int)uri.Id);
 					listOfUsers.Add(oneUser);
 				}
 				else
@@ -166,10 +64,103 @@ namespace WaveBox.ApiHandler.Handlers
 					// On invalid key, return all users
 					listOfUsers = Injection.Kernel.Get<IUserRepository>().AllUsers();
 				}
+
+				processor.WriteJson(new UsersResponse(null, listOfUsers));
+				return;
 			}
 
-			// Finally, output user information
-			processor.WriteJson(new UsersResponse(null, listOfUsers));
+			// Perform actions
+			// killSession - remove a session by rowId
+			if (uri.Action == "killSession")
+			{
+				// Try to pull rowId from parameters for session management
+				int rowId = 0;
+				if (!uri.Parameters.ContainsKey("rowId"))
+				{
+					processor.WriteJson(new UsersResponse("Missing parameter 'rowId' for action 'killSession'", null));
+					return;
+				}
+
+				// Try to parse rowId integer
+				if (!Int32.TryParse(uri.Parameters["rowId"], out rowId))
+				{
+					processor.WriteJson(new UsersResponse("Invalid integer for 'rowId' for action 'killSession'", null));
+					return;
+				}
+
+				// After all checks pass, delete this session, return user associated with it
+				var session = Injection.Kernel.Get<ISessionRepository>().SessionForRowId(rowId);
+				if (session != null)
+				{
+					session.DeleteSession();
+					listOfUsers.Add(Injection.Kernel.Get<IUserRepository>().UserForId(Convert.ToInt32(session.UserId)));
+				}
+
+				processor.WriteJson(new UsersResponse(null, listOfUsers));
+				return;
+			}
+
+			// create - create a new user
+			if (uri.Action == "create")
+			{
+				// Check for required username and password parameters
+				if (!uri.Parameters.ContainsKey("username") || !uri.Parameters.ContainsKey("password"))
+				{
+					processor.WriteJson(new UsersResponse("Parameters 'username' and 'password' required for action 'create'", null));
+					return;
+				}
+
+				string username = uri.Parameters["username"];
+				string password = uri.Parameters["password"];
+
+				// Attempt to create the user
+				User newUser = Injection.Kernel.Get<IUserRepository>().CreateUser(username, password, null);
+				if (newUser == null)
+				{
+					processor.WriteJson(new UsersResponse("Action 'create' failed to create new user", null));
+					return;
+				}
+
+				// Verify user didn't already exist
+				if (newUser.UserId == null)
+				{
+					processor.WriteJson(new UsersResponse("User '" + username + "' already exists!", null));
+					return;
+				}
+
+				// Return newly created user
+				logger.IfInfo(String.Format("Successfully created new user [id: {0}, username: {1}]", newUser.UserId, newUser.UserName));
+				listOfUsers.Add(newUser);
+
+				processor.WriteJson(new UsersResponse(null, listOfUsers));
+				return;
+			}
+
+			// Verify ID present
+			if (uri.Id == null)
+			{
+				processor.WriteJson(new UsersResponse("Missing parameter ID", null));
+				return;
+			}
+
+			// delete - remove a user
+			if (uri.Action == "delete")
+			{
+				// Attempt to fetch and delete user
+				User deleteUser = Injection.Kernel.Get<IUserRepository>().UserForId((int)uri.Id);
+				if (deleteUser.UserName == null || !deleteUser.Delete())
+				{
+					processor.WriteJson(new UsersResponse("Action 'delete' failed to delete user", null));
+					return;
+				}
+
+				// Return deleted user
+				logger.IfInfo(String.Format("Successfully deleted user [id: {0}, username: {1}]", deleteUser.UserId, deleteUser.UserName));
+				listOfUsers.Add(deleteUser);
+			}
+
+			// Invalid action
+			processor.WriteJson(new UsersResponse("Invalid action specified", null));
 			return;
 		}
 	}
