@@ -21,26 +21,16 @@ namespace WaveBox.ApiHandler.Handlers
 		/// <summary>
 		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
-			try
+			// Destroy session
+			if (user.DeleteSession(user.SessionId))
 			{
-				// Destroy session
-				string error = null;
-				if (user.DeleteSession(user.SessionId))
-				{
-					logger.IfInfo(String.Format("Logged out user, destroyed session: [user: {0}, key: {1}]", user.UserName, user.SessionId));
-				}
-				else
-				{
-					error = "Failed to log out user: " + user.UserName;
-					logger.Error(error);
-				}
+				logger.IfInfo(String.Format("Logged out user, destroyed session: [user: {0}, key: {1}]", user.UserName, user.SessionId));
+				processor.WriteJson(new LogoutResponse(null, user.SessionId));
+				return;
+			}
 
-				processor.WriteJson(new LogoutResponse(error, user.SessionId));
-			}
-			catch (Exception e)
-			{
-				logger.Error(e.ToString());
-			}
+			processor.WriteJson(new LogoutResponse("Failed to destroy user session", user.SessionId));
+			return;
 		}
 	}
 }
