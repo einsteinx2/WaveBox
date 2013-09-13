@@ -210,6 +210,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="src\FolderScanning\MusicBrainzScanOperation.cs" />
+    <Compile Include="src\FolderScanning\ArtistThumbnailDownloadOperation.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">

@@ -204,6 +204,9 @@ namespace WaveBox.Service.Services
 			// Queue the musicbrainz scan after the folder scan 
 			scanQueue.queueOperation(new MusicBrainzScanOperation(0));
 
+			// Queue the artist thumbnail downloader
+			scanQueue.queueOperation(new ArtistThumbnailDownloadOperation(0));
+
 			// Report if no media folders in configuration
 			if (mediaFolders.Count == 0)
 			{
