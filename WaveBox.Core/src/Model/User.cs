@@ -30,6 +30,9 @@ namespace WaveBox.Core.Model
 		[JsonProperty("password"), IgnoreRead, IgnoreWrite]
 		public string Password { get; set; }
 
+		[JsonProperty("role")]
+		public Role Role { get; set; }
+
 		[JsonProperty("sessions"), IgnoreRead, IgnoreWrite]
 		public IList<Session> Sessions { get; set; }
 
@@ -53,6 +56,12 @@ namespace WaveBox.Core.Model
 
 		public User()
 		{
+		}
+
+		// Verifies that this user object has permission to view a section
+		public bool HasPermission(Role role)
+		{
+			return this.Role >= role ? true : false;
 		}
 
 		// Return the user's current session, as it is the one most recently modified

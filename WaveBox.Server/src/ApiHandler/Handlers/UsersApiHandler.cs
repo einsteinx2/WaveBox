@@ -50,6 +50,13 @@ namespace WaveBox.ApiHandler.Handlers
 			// See if we need to manage users
 			else if (uri.Parameters.ContainsKey("action"))
 			{
+				// Check for admin permission
+				if (!user.HasPermission(Role.Admin))
+				{
+					processor.WriteJson(new UsersResponse("Permission denied", null));
+					return;
+				}
+
 				// killSession - remove a session by rowId
 				if (uri.Parameters["action"] == "killSession")
 				{
@@ -89,8 +96,19 @@ namespace WaveBox.ApiHandler.Handlers
 					string username = uri.Parameters["username"];
 					string password = uri.Parameters["password"];
 
+					// Parse role ID if available, or default to standard user
+					int roleId = Convert.ToInt32(Role.User);
+					if (uri.Parameters.ContainsKey("role"))
+					{
+						int tempRole = 0;
+						if (Int32.TryParse(uri.Parameters["role"], out tempRole))
+						{
+							roleId = tempRole;
+						}
+					}
+
 					// Attempt to create the user
-					User newUser = Injection.Kernel.Get<IUserRepository>().CreateUser(username, password, null);
+					User newUser = Injection.Kernel.Get<IUserRepository>().CreateUser(username, password, (Role)roleId, null);
 					if (newUser == null)
 					{
 						processor.WriteJson(new UsersResponse("Action 'create' failed to create new user", null));

@@ -134,6 +134,7 @@ CREATE TABLE "Stat" (
 CREATE TABLE "User" (
     "UserId" INTEGER UNIQUE NOT NULL,
     "UserName" TEXT UNIQUE NOT NULL,
+    "Role" INTEGER NOT NULL,
     "PasswordHash" TEXT NOT NULL,
     "PasswordSalt" TEXT NOT NULL,
     "LastfmSession" TEXT,
