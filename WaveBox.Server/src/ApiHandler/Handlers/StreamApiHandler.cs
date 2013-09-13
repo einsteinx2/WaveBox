@@ -31,48 +31,42 @@ namespace WaveBox.ApiHandler.Handlers
 		/// </summary>
 		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
-			logger.IfInfo("Starting file streaming sequence");
-
-			// Try to get the media item id
-			int id = 0;
-			if (uri.Parameters.ContainsKey("id"))
+			// Verify ID received
+			if (uri.Id == null)
 			{
-				Int32.TryParse(uri.Parameters["id"], out id);
+				processor.WriteJson(new StreamResponse("Missing required parameter 'id'"));
+				return;
 			}
 
+			logger.IfInfo("Starting file streaming sequence");
+
+			// Try to get seconds
 			float seconds = 0f;
 			if (uri.Parameters.ContainsKey("seconds"))
 			{
 				float.TryParse(uri.Parameters["seconds"], out seconds);
 			}
 
-			if (id == 0)
-			{
-				// For missing ID parameter, print JSON error
-				processor.WriteJson(new StreamResponse("Missing required parameter 'id'"));
-				return;
-			}
-
 			try
 			{
 				// Get the media item associated with this id
-				ItemType itemType = Injection.Kernel.Get<IItemRepository>().ItemTypeForItemId(id);
+				ItemType itemType = Injection.Kernel.Get<IItemRepository>().ItemTypeForItemId((int)uri.Id);
 				IMediaItem item = null;
 				if (itemType == ItemType.Song)
 				{
-					item = Injection.Kernel.Get<ISongRepository>().SongForId(id);
+					item = Injection.Kernel.Get<ISongRepository>().SongForId((int)uri.Id);
 					logger.IfInfo("Preparing audio stream: " + item.FileName);
 				}
 				else if (itemType == ItemType.Video)
 				{
-					item = Injection.Kernel.Get<IVideoRepository>().VideoForId(id);
+					item = Injection.Kernel.Get<IVideoRepository>().VideoForId((int)uri.Id);
 					logger.IfInfo("Preparing video stream: " + item.FileName);
 				}
 
 				// Return an error if none exists
 				if ((item == null) || (!File.Exists(item.FilePath())))
 				{
-					processor.WriteJson(new StreamResponse("No media item exists with ID: " + id));
+					processor.WriteJson(new StreamResponse("No media item exists with ID: " + (int)uri.Id));
 					return;
 				}
 
