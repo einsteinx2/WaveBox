@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace WaveBox.Core.ApiResponse
 {
-	public class FoldersResponse
+	public class FoldersResponse : IApiResponse
 	{
 		[JsonProperty("error")]
 		public string Error { get; set; }

@@ -74,15 +74,7 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 
 			// Return all results
-			try
-			{
-				string json = JsonConvert.SerializeObject(new GenresResponse(null, listOfGenres, listOfFolders, listOfArtists, listOfAlbums, listOfSongs), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-				processor.WriteJson(json);
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
+			processor.WriteJson(new GenresResponse(null, listOfGenres, listOfFolders, listOfArtists, listOfAlbums, listOfSongs));
 		}
 	}
 }

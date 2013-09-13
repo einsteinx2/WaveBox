@@ -5,6 +5,7 @@ using System.Web;
 using Newtonsoft.Json;
 using Ninject;
 using WaveBox.Core;
+using WaveBox.Core.ApiResponse;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
 using WaveBox.Core.Model.Repository;
@@ -210,15 +211,7 @@ namespace WaveBox.ApiHandler.Handlers
 			}
 
 			// Return all results
-			try
-			{
-				string json = JsonConvert.SerializeObject(new PlaylistsResponse(error, listOfPlaylists, listOfMediaItems), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-				processor.WriteJson(json);
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
+			processor.WriteJson(new PlaylistsResponse(error, listOfPlaylists, listOfMediaItems));
 		}
 
 		private IList<int> ParseItemIds(UriWrapper uri)

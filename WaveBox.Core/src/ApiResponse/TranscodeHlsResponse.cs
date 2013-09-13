@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace WaveBox.Core.ApiResponse
 {
-	public class TranscodeHlsResponse
+	public class TranscodeHlsResponse : IApiResponse
 	{
 		[JsonProperty("error")]
 		public string Error { get; set; }

@@ -2,6 +2,7 @@ using System;
 using Newtonsoft.Json;
 using Ninject;
 using WaveBox.Core;
+using WaveBox.Core.ApiResponse;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
 using WaveBox.Service.Services.Http;
@@ -34,8 +35,7 @@ namespace WaveBox.ApiHandler.Handlers
 					logger.Error(error);
 				}
 
-				string json = JsonConvert.SerializeObject(new LogoutResponse(error, user.SessionId), Injection.Kernel.Get<IServerSettings>().JsonFormatting);
-				processor.WriteJson(json);
+				processor.WriteJson(new LogoutResponse(error, user.SessionId));
 			}
 			catch (Exception e)
 			{
