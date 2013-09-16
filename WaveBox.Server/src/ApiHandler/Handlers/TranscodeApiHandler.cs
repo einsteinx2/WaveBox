@@ -45,28 +45,24 @@ namespace WaveBox.ApiHandler.Handlers
 			// Create transcoder
 			ITranscoder transcoder = null;
 
-			// Try to get the media item id
-			int id = 0;
-			if (uri.Parameters.ContainsKey("id"))
-			{
-				Int32.TryParse(uri.Parameters["id"], out id);
-			}
-
+			// Get seconds offset
 			float seconds = 0f;
 			if (uri.Parameters.ContainsKey("seconds"))
 			{
 				float.TryParse(uri.Parameters["seconds"], out seconds);
 			}
 
-			if (id == 0)
+			// Verify ID received
+			if (uri.Id == null)
 			{
 				processor.WriteJson(new TranscodeResponse("Missing required parameter 'id'"));
+				return;
 			}
 
 			try
 			{
 				// Set up default transcoding parameters
-				ItemType itemType = Injection.Kernel.Get<IItemRepository>().ItemTypeForItemId(id);
+				ItemType itemType = Injection.Kernel.Get<IItemRepository>().ItemTypeForItemId((int)uri.Id);
 				IMediaItem item = null;
 				TranscodeType transType = TranscodeType.MP3;
 				bool isDirect = false;
@@ -85,7 +81,7 @@ namespace WaveBox.ApiHandler.Handlers
 				// Get the media item associated with this id
 				if (itemType == ItemType.Song)
 				{
-					item = Injection.Kernel.Get<ISongRepository>().SongForId(id);
+					item = Injection.Kernel.Get<ISongRepository>().SongForId((int)uri.Id);
 					logger.IfInfo("Preparing audio transcode: " + item.FileName);
 
 					// Default to MP3 transcoding
@@ -93,7 +89,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 				else if (itemType == ItemType.Video)
 				{
-					item = Injection.Kernel.Get<IVideoRepository>().VideoForId(id);
+					item = Injection.Kernel.Get<IVideoRepository>().VideoForId((int)uri.Id);
 					logger.IfInfo("Preparing video transcode: " + item.FileName);
 
 					// Default to h.264 transcoding
@@ -103,7 +99,7 @@ namespace WaveBox.ApiHandler.Handlers
 				// Return an error if no item exists
 				if ((item == null) || (!File.Exists(item.FilePath())))
 				{
-					processor.WriteJson(new TranscodeResponse("No media item exists with ID: " + id));
+					processor.WriteJson(new TranscodeResponse("No media item exists with ID: " + (int)uri.Id));
 					return;
 				}
 

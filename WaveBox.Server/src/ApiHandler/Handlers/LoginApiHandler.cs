@@ -21,16 +21,10 @@ namespace WaveBox.ApiHandler.Handlers
 		/// <summary>
 		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
-			try
-			{
-				logger.IfInfo(String.Format("Authenticated user, generated new session: [user: {0}, key: {1}]", user.UserName, user.SessionId));
+			logger.IfInfo(String.Format("Authenticated user, generated new session: [user: {0}, key: {1}]", user.UserName, user.SessionId));
 
-				processor.WriteJson(new LoginResponse(null, user.SessionId));
-			}
-			catch (Exception e)
-			{
-				logger.Error(e.ToString());
-			}
+			processor.WriteJson(new LoginResponse(null, user.SessionId));
+			return;
 		}
 	}
 }

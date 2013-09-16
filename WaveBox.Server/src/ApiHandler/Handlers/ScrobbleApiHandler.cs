@@ -27,13 +27,10 @@ namespace WaveBox.ApiHandler.Handlers
 			Lastfm lfm = new Lastfm(user);
 
 			// Pull URL parameters for Last.fm integration
-			string action = null;
 			string eve = null;
-
-			uri.Parameters.TryGetValue("action", out action);
 			uri.Parameters.TryGetValue("event", out eve);
 
-			if (action == null || action == "auth")
+			if (uri.Action == null || uri.Action == "auth")
 			{
 				// If not authenticated, pass back authorization URL
 				if (!lfm.SessionAuthenticated)
@@ -61,7 +58,7 @@ namespace WaveBox.ApiHandler.Handlers
 			IList<LfmScrobbleData> scrobbles = new List<LfmScrobbleData>();
 
 			// Get Last.fm API enumerations
-			LfmScrobbleType scrobbleType = Lastfm.ScrobbleTypeForString(action);
+			LfmScrobbleType scrobbleType = Lastfm.ScrobbleTypeForString(uri.Action);
 
 			// On invalid scrobble type, return error JSON
 			if (scrobbleType == LfmScrobbleType.INVALID)
@@ -69,42 +66,20 @@ namespace WaveBox.ApiHandler.Handlers
 				processor.WriteJson(new ScrobbleResponse("LFMInvalidScrobbleType"));
 				return;
 			}
+
 			// On now playing scrobble type
-			else if (scrobbleType == LfmScrobbleType.NOWPLAYING)
+			if (scrobbleType == LfmScrobbleType.NOWPLAYING)
 			{
 				// Ensure ID specified for scrobble
 				int id = Int32.MaxValue;
-				if (!uri.Parameters.ContainsKey("id"))
+				if (uri.Id == null)
 				{
 					processor.WriteJson(new ScrobbleResponse("LFMNoIdSpecifiedForNowPlaying"));
 					return;
 				}
 
-				// Try to parse a valid ID
-				bool getIdSuccess = false;
-				string idTemp;
-				if (!uri.Parameters.TryGetValue("id", out idTemp))
-				{
-				   getIdSuccess = false;
-				}
-				else if (!Int32.TryParse(idTemp, out id))
-				{
-					getIdSuccess = false;
-				}
-				else
-				{
-					getIdSuccess = true;
-				}
-
-				// On failure, return invalid ID error
-				if (!getIdSuccess)
-				{
-					processor.WriteJson(new ScrobbleResponse("LFMInvalidIdSpecifiedForNowPlaying"));
-					return;
-				}
-
 				// Add successful scrobble to list, submit
-				scrobbles.Add(new LfmScrobbleData(id, null));
+				scrobbles.Add(new LfmScrobbleData((int)uri.Id, null));
 				lfm.Scrobble(scrobbles, scrobbleType);
 			}
 			// Else, unknown scrobble event
@@ -138,21 +113,21 @@ namespace WaveBox.ApiHandler.Handlers
 			string result = lfm.Scrobble(scrobbles, scrobbleType);
 			dynamic resp = null;
 
-			// If result is not null, store deserialize and store it
-			if (result != null)
+			// No response, service must be offline
+			if (result == null)
 			{
-				try
-				{
-					resp = JsonConvert.DeserializeObject(result);
-				}
-				catch (Exception e)
-				{
-					logger.Error(e);
-				}
-			}
-			else
-			{
+				processor.WriteJson(new ScrobbleResponse("LFMServiceOffline"));
 				return;
+			}
+
+			// If result is not null, store deserialize and store it
+			try
+			{
+				resp = JsonConvert.DeserializeObject(result);
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
 			}
 
 			// Check for nowplaying or scrobbles fields

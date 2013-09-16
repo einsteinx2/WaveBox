@@ -29,15 +29,8 @@ namespace WaveBox.ApiHandler.Handlers
 			IList<Album> listOfAlbums = new List<Album>();
 			IList<Song> listOfSongs = new List<Song>();
 
-			// Try to get the folder id
-			bool success = false;
-			int id = 0;
-			if (uri.Parameters.ContainsKey("id"))
-			{
-				success = Int32.TryParse(uri.Parameters["id"], out id);
-			}
-
-			if (success)
+			// ID specified
+			if (uri.Id != null)
 			{
 				// Default: artists
 				string type = "artists";
@@ -47,7 +40,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 
 				// Get single genre, add it for output
-				Genre genre = Injection.Kernel.Get<IGenreRepository>().GenreForId(id);
+				Genre genre = Injection.Kernel.Get<IGenreRepository>().GenreForId((int)uri.Id);
 				listOfGenres.Add(genre);
 
 				switch (type)
@@ -75,6 +68,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 			// Return all results
 			processor.WriteJson(new GenresResponse(null, listOfGenres, listOfFolders, listOfArtists, listOfAlbums, listOfSongs));
+			return;
 		}
 	}
 }

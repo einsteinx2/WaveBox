@@ -34,48 +34,35 @@ namespace WaveBox.ApiHandler.Handlers
 			// Optional Last.fm info
 			string lastfmInfo = null;
 
-			// Fetch artist ID from parameters
-			int id = 0;
-			if (uri.Parameters.ContainsKey("id"))
+			// Check if an ID was passed
+			if (uri.Id != null)
 			{
-				if (!Int32.TryParse(uri.Parameters["id"], out id))
-				{
-					processor.WriteJson(new AlbumArtistsResponse("Parameter 'id' requires a valid integer", null, null, null));
-					return;
-				}
-
 				// Add artist by ID to the list
-				AlbumArtist a = Injection.Kernel.Get<IAlbumArtistRepository>().AlbumArtistForId(id);
+				AlbumArtist a = Injection.Kernel.Get<IAlbumArtistRepository>().AlbumArtistForId((int)uri.Id);
 				albumArtists.Add(a);
 
 				// Add artist's albums to response
 				albums = a.ListOfAlbums();
 
 				// If requested, add artist's songs to response
-				if (uri.Parameters.ContainsKey("includeSongs"))
+				if (uri.Parameters.ContainsKey("includeSongs") && uri.Parameters["includeSongs"].IsTrue())
 				{
-					if (uri.Parameters["includeSongs"].IsTrue())
-					{
-						songs = a.ListOfSongs();
-					}
+					songs = a.ListOfSongs();
 				}
 
 				// If requested, add artist's Last.fm info to response
-				if (uri.Parameters.ContainsKey("lastfmInfo"))
+				if (uri.Parameters.ContainsKey("lastfmInfo") && uri.Parameters["lastfmInfo"].IsTrue())
 				{
-					if (uri.Parameters["lastfmInfo"].IsTrue())
+					logger.IfInfo("Querying Last.fm for artist: " + a.AlbumArtistName);
+					try
 					{
-						logger.IfInfo("Querying Last.fm for artist: " + a.AlbumArtistName);
-						try
-						{
-							lastfmInfo = Lastfm.GetAlbumArtistInfo(a);
-							logger.IfInfo("Last.fm query complete!");
-						}
-						catch (Exception e)
-						{
-							logger.Error("Last.fm query failed!");
-							logger.Error(e);
-						}
+						lastfmInfo = Lastfm.GetAlbumArtistInfo(a);
+						logger.IfInfo("Last.fm query complete!");
+					}
+					catch (Exception e)
+					{
+						logger.Error("Last.fm query failed!");
+						logger.Error(e);
 					}
 				}
 			}
@@ -105,7 +92,7 @@ namespace WaveBox.ApiHandler.Handlers
 
 			// Check for a request to limit/paginate artists, like SQL
 			// Note: can be combined with range or all artists
-			if (uri.Parameters.ContainsKey("limit") && !uri.Parameters.ContainsKey("id"))
+			if (uri.Parameters.ContainsKey("limit") && uri.Id == null)
 			{
 				string[] limit = uri.Parameters["limit"].Split(',');
 
