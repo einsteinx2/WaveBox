@@ -27,6 +27,8 @@ namespace WaveBox.Static
 		private static readonly object dbBackupLock = new object();
 		public object DbBackupLock { get { return dbBackupLock; } }
 
+		private bool isPoolingEnabled = true;
+
 		public int Version 
 		{ 
 			get 
@@ -120,22 +122,58 @@ namespace WaveBox.Static
 
 		public ISQLiteConnection GetSqliteConnection()
 		{
-			return mainPool.GetSqliteConnection();
+			if (isPoolingEnabled)
+			{
+				return mainPool.GetSqliteConnection();
+			}
+			else
+			{
+				ISQLiteConnection conn = new SQLite.SQLiteConnection(DatabasePath);
+				conn.Execute("PRAGMA synchronous = OFF");
+				// Five second busy timeout
+				conn.BusyTimeout = new TimeSpan(0, 0, 5); 
+				return conn;
+			}
 		}
 
 		public void CloseSqliteConnection(ISQLiteConnection conn)
 		{
-			mainPool.CloseSqliteConnection(conn);
+			if (isPoolingEnabled)
+			{
+				mainPool.CloseSqliteConnection(conn);
+			}
+			else
+			{
+				conn.Close();
+			}
 		}
 
 		public ISQLiteConnection GetQueryLogSqliteConnection()
 		{
-			return logPool.GetSqliteConnection();
+			if (isPoolingEnabled)
+			{
+				return logPool.GetSqliteConnection();
+			}
+			else
+			{
+				ISQLiteConnection conn = new SQLite.SQLiteConnection(QuerylogPath);
+				conn.Execute("PRAGMA synchronous = OFF");
+				// Five second busy timeout
+				conn.BusyTimeout = new TimeSpan(0, 0, 5);
+				return conn;
+			}
 		}
 
 		public void CloseQueryLogSqliteConnection(ISQLiteConnection conn)
 		{
-			logPool.CloseSqliteConnection(conn);
+			if (isPoolingEnabled)
+			{
+				logPool.CloseSqliteConnection(conn);
+			}
+			else
+			{
+				conn.Close();
+			}
 		}
 
 		public long LastQueryLogId
