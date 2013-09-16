@@ -112,6 +112,7 @@
     <Compile Include="src\Model\Podcast.cs" />
     <Compile Include="src\Model\PodcastEpisode.cs" />
     <Compile Include="src\Model\QueryLog.cs" />
+    <Compile Include="src\Model\Role.cs" />
     <Compile Include="src\Model\ServerSettingsData.cs" />
     <Compile Include="src\Model\Session.cs" />
     <Compile Include="src\Model\Song.cs" />
