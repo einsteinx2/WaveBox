@@ -90,8 +90,9 @@ namespace WaveBox
 				logger.Warn(e);
 			}
 
-			// Temporary: create test user
-			Injection.Kernel.Get<IUserRepository>().CreateUser("test", "test", null);
+			// Temporary: create test and admin user
+			Injection.Kernel.Get<IUserRepository>().CreateUser("test", "test", Role.User, null);
+			Injection.Kernel.Get<IUserRepository>().CreateUser("admin", "admin", Role.Admin, null);
 
 			return;
 		}
