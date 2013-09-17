@@ -189,9 +189,6 @@ namespace WaveBox.Service.Services.Http
 				return;
 			}
 
-			// Log API call
-			logger.IfInfo("API: " + this.HttpUrl);
-
 			// Check for session cookie authentication, unless this is a login request
 			string sessionId = null;
 			if (uri.ApiAction != "login")
@@ -226,6 +223,20 @@ namespace WaveBox.Service.Services.Http
 			{
 				ErrorApiHandler errorApi = (ErrorApiHandler)Injection.Kernel.Get<IApiHandlerFactory>().CreateApiHandler("error");
 				errorApi.Process(uri, this, apiUser, "Invalid API call");
+				return;
+			}
+
+			// Get client IP address
+			string ip = ((IPEndPoint)this.Socket.Client.RemoteEndPoint).Address.ToString();
+
+			// Log API call
+			logger.IfInfo(String.Format("[{0}@{1}] API: {2}, ", apiUser.UserName, ip, this.HttpUrl));
+
+			// Check if user has appropriate permissions for this action on this API handler
+			if (!apiHandler.CheckPermission(apiUser, uri.Action))
+			{
+				ErrorApiHandler errorApi = (ErrorApiHandler)Injection.Kernel.Get<IApiHandlerFactory>().CreateApiHandler("error");
+				errorApi.Process(uri, this, apiUser, "Permission denied");
 				return;
 			}
 
