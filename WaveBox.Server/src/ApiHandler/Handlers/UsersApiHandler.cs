@@ -158,7 +158,7 @@ namespace WaveBox.ApiHandler.Handlers
 				string password = uri.Parameters["password"];
 
 				// Attempt to create the user
-				User newUser = Injection.Kernel.Get<IUserRepository>().CreateUser(username, password, null);
+				User newUser = Injection.Kernel.Get<IUserRepository>().CreateUser(username, password, Role.User, null);
 				if (newUser == null)
 				{
 					processor.WriteJson(new UsersResponse("Action 'create' failed to create new user", null));

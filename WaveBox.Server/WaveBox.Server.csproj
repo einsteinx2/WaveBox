@@ -211,6 +211,7 @@
     </Compile>
     <Compile Include="src\FolderScanning\MusicBrainzScanOperation.cs" />
     <Compile Include="src\FolderScanning\ArtistThumbnailDownloadOperation.cs" />
+    <Compile Include="src\ApiHandler\Handlers\FanArtThumbnailApiHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
