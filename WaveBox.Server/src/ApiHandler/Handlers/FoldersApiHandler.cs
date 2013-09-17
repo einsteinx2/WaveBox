@@ -21,6 +21,12 @@ namespace WaveBox.ApiHandler.Handlers
 
 		public string Name { get { return "folders"; } }
 
+		// API handler is read-only, so no permissions checks needed
+		public bool CheckPermission(User user, string action)
+		{
+			return true;
+		}
+
 		/// <summary>
 		/// Process returns a JSON response list of folders
 		/// </summary>
