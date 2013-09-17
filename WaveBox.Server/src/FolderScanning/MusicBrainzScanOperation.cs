@@ -72,7 +72,7 @@ namespace WaveBox.FolderScanning
 					existingIds[albumArtist.AlbumArtistName] = albumArtist.MusicBrainzId;
 				}
 			}
-			
+
 			testArtistScanTime.Start();
 			ScanArtists();
 			testArtistScanTime.Stop();
@@ -94,14 +94,16 @@ namespace WaveBox.FolderScanning
 		private string MusicBrainzIdForArtistName(string artistName)
 		{
 			if (artistName == null)
+			{
 				return null;
+			}
 
 			try
 			{
 				using (WebClient client = new WebClient())
 				{
-					string address = "http://herpderp.me:5000/ws/2/artist?query=" + System.Web.HttpUtility.UrlEncode(artistName);
-					//string address = "http://musicbrainz.org/ws/2/artist?query=" + System.Web.HttpUtility.UrlEncode(artistName);
+					string address = "http://herpderp.me:5000/ws/2/artist?query=\"" + System.Web.HttpUtility.UrlEncode(artistName) + "\"";
+					//string address = "http://musicbrainz.org/ws/2/artist?query=\"" + System.Web.HttpUtility.UrlEncode(artistName) + "\"";
 					string responseXML = client.DownloadString(address);
 
 					try
