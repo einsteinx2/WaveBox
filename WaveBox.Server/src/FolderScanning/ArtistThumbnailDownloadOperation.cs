@@ -1,14 +1,15 @@
 using System;
-using System.Diagnostics;
 using System.Collections.Generic;
-using WaveBox.Core.Model;
+using System.Diagnostics;
+using System.IO;
+using System.Net;
+using Ninject;
+using WaveBox.Core;
+using WaveBox.Core.Derived;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Model.Repository;
-using WaveBox.Core;
-using System.IO;
+using WaveBox.Core.Model;
 using WaveBox.Core.OperationQueue;
-using Ninject;
-using System.Net;
 
 namespace WaveBox.FolderScanning
 {
@@ -20,10 +21,6 @@ namespace WaveBox.FolderScanning
 
 		private readonly string cachePath = ServerUtility.RootPath() + "artistThumbnails" + Path.DirectorySeparatorChar;
 
-		private ISet<string> musicBrainzIds = new HashSet<string>();
-
-		Stopwatch testTotalScanTime = new Stopwatch();
-
 		public ArtistThumbnailDownloadOperation(int delayMilliSeconds) : base(delayMilliSeconds)
 		{
 		}
@@ -31,12 +28,18 @@ namespace WaveBox.FolderScanning
 		public override void Start()
 		{
 			logger.IfInfo("------------- ARTIST ART SCAN -------------");
-			
+
+			Stopwatch testTotalScanTime = new Stopwatch();
 			testTotalScanTime.Start();
 
 			// Create the cache directory if it doesn't exist yet
 			if (!Directory.Exists(cachePath))
+			{
 				Directory.CreateDirectory(cachePath);
+			}
+
+			// Keep a set of all MusicBrainz IDs known to WaveBox
+			ISet<string> musicBrainzIds = new HashSet<string>();
 
 			// Find artists and album artists missing art
 			IArtistRepository artistRepository = Injection.Kernel.Get<IArtistRepository>();
@@ -46,7 +49,7 @@ namespace WaveBox.FolderScanning
 				string musicBrainzId = artist.MusicBrainzId;
 				if (musicBrainzId != null)
 				{
-					if (!File.Exists(ArtPathForMusicBrainzId(musicBrainzId)))
+					if (!File.Exists(this.ArtPathForMusicBrainzId(musicBrainzId)))
 					{
 						musicBrainzIds.Add(musicBrainzId);
 					}
@@ -60,40 +63,50 @@ namespace WaveBox.FolderScanning
 				string musicBrainzId = albumArtist.MusicBrainzId;
 				if (musicBrainzId != null)
 				{
-					if (!File.Exists(ArtPathForMusicBrainzId(musicBrainzId)))
+					if (!File.Exists(this.ArtPathForMusicBrainzId(musicBrainzId)))
 					{
 						musicBrainzIds.Add(musicBrainzId);
 					}
 				}
 			}
 
-			ScanIds();
+			// Scan all MusicBrainz IDs collected by WaveBox
+			int downloadCount = this.ScanIds(musicBrainzIds);
 
 			testTotalScanTime.Stop();
 
 			logger.IfInfo("------------- ARTIST ART SCAN -------------");
+			logger.IfInfo("items retrieved: " + downloadCount);
 			logger.IfInfo("total scan time: " + testTotalScanTime.ElapsedMilliseconds + "ms");
 			logger.IfInfo("-------------------------------------------");
 		}
 
+		// Return the local art path for a given MusicBrainz ID
 		private string ArtPathForMusicBrainzId(string musicBrainzId)
 		{
 			if (musicBrainzId == null)
+			{
 				return null;
+			}
 
 			return cachePath + Path.DirectorySeparatorChar + musicBrainzId + ".jpg";
 		}
 
-		private string ScanIds()
+		// Scan all MusicBrainz IDs in set, and attempt to download and cache art
+		private int ScanIds(ISet<string> musicBrainzIds)
 		{
+			// Track the number of items successfully downloaded
+			int downloadCount = 0;
+
 			foreach (string musicBrainzId in musicBrainzIds)
 			{
 				try
 				{
-					using (WebClient client = new WebClient())
+					// Allow WaveBox fan art proxy up to 15 seconds to respond for each ID in set
+					using (TimedWebClient client = new TimedWebClient(15000))
 					{
-						string address = "http://herpderp.me:8000?action=art&type=artist&preview=1&id=" + musicBrainzId;
-						string path = ArtPathForMusicBrainzId(musicBrainzId);
+						string address = "http://localhost:8000?action=art&type=artist&preview=1&id=" + musicBrainzId;
+						string path = this.ArtPathForMusicBrainzId(musicBrainzId);
 						client.DownloadFile(address, path);
 
 						// Make sure the file has contents, otherwise delete it
@@ -105,8 +118,14 @@ namespace WaveBox.FolderScanning
 						else
 						{
 							logger.IfInfo("Downloaded art for " + musicBrainzId);
+							downloadCount++;
 						}
 					}
+				}
+				// On timeout, report an error, but continue looping
+				catch (WebException e)
+				{
+					logger.Error("Request timed out for " + musicBrainzId);
 				}
 				catch (Exception e)
 				{
@@ -114,8 +133,8 @@ namespace WaveBox.FolderScanning
 				}
 			}
 
-			return null;
+			// Return number of successful downloads
+			return downloadCount;
 		}
 	}
 }
-
