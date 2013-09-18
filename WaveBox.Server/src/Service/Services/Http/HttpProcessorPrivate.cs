@@ -230,7 +230,7 @@ namespace WaveBox.Service.Services.Http
 			string ip = ((IPEndPoint)this.Socket.Client.RemoteEndPoint).Address.ToString();
 
 			// Log API call
-			logger.IfInfo(String.Format("[{0}@{1}] API: {2}, ", apiUser.UserName, ip, this.HttpUrl));
+			logger.IfInfo(String.Format("[{0}/{1}@{2}] API: {3}", apiUser.UserName, apiUser.CurrentSession().ClientName ?? "wavebox", ip, this.HttpUrl));
 
 			// Check if user has appropriate permissions for this action on this API handler
 			if (!apiHandler.CheckPermission(apiUser, uri.Action))
@@ -259,7 +259,6 @@ namespace WaveBox.Service.Services.Http
 					if (cookies[i] == "wavebox_session")
 					{
 						string cookie = cookies[i + 1];
-						logger.IfInfo("wavebox_session: " + cookie);
 						return cookie;
 					}
 				}
