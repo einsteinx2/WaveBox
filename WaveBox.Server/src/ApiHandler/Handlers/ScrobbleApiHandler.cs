@@ -18,6 +18,12 @@ namespace WaveBox.ApiHandler.Handlers
 
 		public string Name { get { return "scrobble"; } }
 
+		// Standard users may scrobble
+		public bool CheckPermission(User user, string action)
+		{
+			return user.HasPermission(Role.User);
+		}
+
 		/// <summary>
 		/// Process a Last.fm API request
 		/// </summary>

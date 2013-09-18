@@ -19,6 +19,12 @@ namespace WaveBox.ApiHandler.Handlers
 	{
 		public string Name { get { return "nowplaying"; } set { } }
 
+		// API handler is read-only, so no permissions checks needed
+		public bool CheckPermission(User user, string action)
+		{
+			return true;
+		}
+
 		/// <summary>
 		/// Process returns a readonly list of now playing media items, filtered by optional parameters
 		/// </summary>

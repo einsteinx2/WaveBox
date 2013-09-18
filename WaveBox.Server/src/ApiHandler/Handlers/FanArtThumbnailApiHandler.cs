@@ -14,6 +14,12 @@ namespace WaveBox.ApiHandler.Handlers
 
 		public string Name { get { return "fanartthumb"; } }
 
+		// API handler is read-only, so no permissions checks needed
+		public bool CheckPermission(User user, string action)
+		{
+			return true;
+		}
+
 		private readonly string cachePath = ServerUtility.RootPath() + "artistThumbnails" + Path.DirectorySeparatorChar;
 
 		/// <summary>
@@ -35,13 +41,17 @@ namespace WaveBox.ApiHandler.Handlers
 			{
 				Artist artist = Injection.Kernel.Get<IArtistRepository>().ArtistForId(uri.Id);
 				if (artist != null)
+				{
 					musicBrainzId = artist.MusicBrainzId;
+				}
 			}
 			else if (type == ItemType.Artist)
 			{
 				AlbumArtist albumArtist = Injection.Kernel.Get<IAlbumArtistRepository>().AlbumArtistForId(uri.Id);
 				if (albumArtist != null)
+				{
 					musicBrainzId = albumArtist.MusicBrainzId;
+				}
 			}
 
 			if (musicBrainzId != null)
@@ -66,7 +76,9 @@ namespace WaveBox.ApiHandler.Handlers
 		private string ArtPathForMusicBrainzId(string musicBrainzId)
 		{
 			if (musicBrainzId == null)
+			{
 				return null;
+			}
 
 			return cachePath + Path.DirectorySeparatorChar + musicBrainzId + ".jpg";
 		}

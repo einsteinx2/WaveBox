@@ -22,6 +22,12 @@ namespace WaveBox.ApiHandler.Handlers
 
 		public string Name { get { return "database"; } }
 
+		// API handler is read-only, so no permissions checks needed
+		public bool CheckPermission(User user, string action)
+		{
+			return true;
+		}
+
 		/// <summary>
 		/// Process returns a copy of the media database, and can be used to return SQL deltas to update
 		/// the local copy of the media database

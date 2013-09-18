@@ -16,6 +16,24 @@ namespace WaveBox.ApiHandler.Handlers
 
 		public string Name { get { return "favorites"; } }
 
+		// Standard permissions
+		public bool CheckPermission(User user, string action)
+		{
+			switch (action)
+			{
+				// Write
+				case "create":
+				case "delete":
+					return user.HasPermission(Role.User);
+				// Read
+				case "read":
+				default:
+					return user.HasPermission(Role.Test);
+			}
+
+			return false;
+		}
+
 		/// <summary>
 		/// Process returns a JSON response list of folders
 		/// </summary>

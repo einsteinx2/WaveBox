@@ -16,6 +16,12 @@ namespace WaveBox.ApiHandler.Handlers
 
 		public string Name { get { return "logout"; } }
 
+		// API handler is read-only, so no permissions checks needed
+		public bool CheckPermission(User user, string action)
+		{
+			return true;
+		}
+
 		/// <summary>
 		/// Process logs this user out and destroys their current session
 		/// <summary>

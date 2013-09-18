@@ -19,6 +19,12 @@ namespace WaveBox.ApiHandler
 	{
 		public string Name { get { return "stats"; } }
 
+		// Only standard user and up may report stats
+		public bool CheckPermission(User user, string action)
+		{
+			return user.HasPermission(Role.User);
+		}
+
 		/// <summary>
 		/// Process records play stats for artists, albums, songs
 		/// </summary>

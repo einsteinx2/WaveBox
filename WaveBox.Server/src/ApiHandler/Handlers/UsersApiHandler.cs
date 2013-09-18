@@ -19,6 +19,25 @@ namespace WaveBox.ApiHandler.Handlers
 
 		public string Name { get { return "users"; } }
 
+		// Standard permissions
+		public bool CheckPermission(User user, string action)
+		{
+			switch (action)
+			{
+				// Admin
+				case "create":
+				case "delete":
+				case "killSession":
+					return user.HasPermission(Role.Admin);
+				// Read
+				case "read":
+				default:
+					return user.HasPermission(Role.Test);
+			}
+
+			return false;
+		}
+
 		/// <summary>
 		/// Process allows the modification of users and their properties
 		/// </summary>
@@ -53,13 +72,6 @@ namespace WaveBox.ApiHandler.Handlers
 			// Check for no action, or read action
 			if (uri.Action == null || uri.Action == "read")
 			{
-				// Check for admin permission
-				if (!user.HasPermission(Role.Admin))
-				{
-					processor.WriteJson(new UsersResponse("Permission denied", null));
-					return;
-				}
-
 				// On valid key, return a specific user, and their attributes
 				if (uri.Id != null)
 				{
@@ -68,45 +80,8 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 				else
 				{
-					// Check for required username and password parameters
-					if (!uri.Parameters.ContainsKey("username") || !uri.Parameters.ContainsKey("password"))
-					{
-						processor.WriteJson(new UsersResponse("Parameters 'username' and 'password' required for action 'create'", null));
-						return;
-					}
-
-					string username = uri.Parameters["username"];
-					string password = uri.Parameters["password"];
-
-					// Parse role ID if available, or default to standard user
-					int roleId = Convert.ToInt32(Role.User);
-					if (uri.Parameters.ContainsKey("role"))
-					{
-						int tempRole = 0;
-						if (Int32.TryParse(uri.Parameters["role"], out tempRole))
-						{
-							roleId = tempRole;
-						}
-					}
-
-					// Attempt to create the user
-					User newUser = Injection.Kernel.Get<IUserRepository>().CreateUser(username, password, (Role)roleId, null);
-					if (newUser == null)
-					{
-						processor.WriteJson(new UsersResponse("Action 'create' failed to create new user", null));
-						return;
-					}
-
-					// Verify user didn't already exist
-					if (newUser.UserId == null)
-					{
-						processor.WriteJson(new UsersResponse("User '" + username + "' already exists!", null));
-						return;
-					}
-
-					// Return newly created user
-					logger.IfInfo(String.Format("Successfully created new user [id: {0}, username: {1}]", newUser.UserId, newUser.UserName));
-					listOfUsers.Add(newUser);
+					// Else, return all users
+					listOfUsers = Injection.Kernel.Get<IUserRepository>().AllUsers();
 				}
 
 				processor.WriteJson(new UsersResponse(null, listOfUsers));
@@ -201,6 +176,9 @@ namespace WaveBox.ApiHandler.Handlers
 				// Return deleted user
 				logger.IfInfo(String.Format("Successfully deleted user [id: {0}, username: {1}]", deleteUser.UserId, deleteUser.UserName));
 				listOfUsers.Add(deleteUser);
+
+				processor.WriteJson(new UsersResponse(null, listOfUsers));
+				return;
 			}
 
 			// Invalid action

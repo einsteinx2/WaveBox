@@ -20,6 +20,28 @@ namespace WaveBox.ApiHandler.Handlers
 
 		public string Name { get { return "playlists"; } }
 
+		// Standard permissions
+		public bool CheckPermission(User user, string action)
+		{
+			switch (action)
+			{
+				// Write
+				case "add":
+				case "create":
+				case "delete":
+				case "insert":
+				case "move":
+				case "remove":
+					return user.HasPermission(Role.User);
+				// Read
+				case "read":
+				default:
+					return user.HasPermission(Role.Test);
+			}
+
+			return false;
+		}
+
 		/// <summary>
 		/// Process returns a JSON response list of playlists
 		/// </summary>
@@ -75,8 +97,8 @@ namespace WaveBox.ApiHandler.Handlers
 				return;
 			}
 
-			// If not creating playlist, and no ID, return all playlists
-			if (uri.Id == null)
+			// If not creating playlist, and no ID, or reading, return all playlists
+			if (uri.Id == null || uri.Action == "read")
 			{
 				listOfPlaylists = Injection.Kernel.Get<IPlaylistRepository>().AllPlaylists();
 				processor.WriteJson(new PlaylistsResponse(null, listOfPlaylists, listOfMediaItems));

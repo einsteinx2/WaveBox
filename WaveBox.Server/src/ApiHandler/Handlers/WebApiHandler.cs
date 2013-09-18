@@ -16,6 +16,12 @@ namespace WaveBox.ApiHandler.Handlers
 
 		public string Name { get { return "web"; } }
 
+		// API handler is read-only, so no permissions checks needed
+		public bool CheckPermission(User user, string action)
+		{
+			return true;
+		}
+
 		// Define root project directory containing web interfaces, or "themes"
 		private static string webRoot = ServerUtility.ExecutablePath() + "themes" + Path.DirectorySeparatorChar;
 
