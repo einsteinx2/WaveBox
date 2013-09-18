@@ -65,12 +65,6 @@ namespace WaveBox.ApiHandler
 				this.Action = this.Parameters["action"];
 			}
 
-			// Compatibility patch until web client is updated to pass URLs the REST way
-			if (this.Parameters.ContainsKey("id"))
-			{
-				this.Id = Convert.ToInt32(this.Parameters["id"]);
-			}
-
 			// Check for ID passed in REST form (e.g. /api/songs/6)
 			// NOTE: try/catch'd to avoid exceptions thrown on web UI loading
 			try
