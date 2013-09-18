@@ -36,6 +36,12 @@ namespace WaveBox.ApiHandler.Handlers
 
 		public string Name { get { return "status"; } }
 
+		// API handler is read-only, so no permissions checks needed
+		public bool CheckPermission(User user, string action)
+		{
+			return true;
+		}
+
 		// Status API cache
 		private static StatusApiCache statusCache = new StatusApiCache();
 		public static StatusApiCache StatusCache { get { return statusCache; } }

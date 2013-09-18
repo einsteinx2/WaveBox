@@ -16,6 +16,12 @@ namespace WaveBox.ApiHandler.Handlers
 
 		public string Name { get { return "login"; } }
 
+		// API handler is read-only, so no permissions checks needed
+		public bool CheckPermission(User user, string action)
+		{
+			return true;
+		}
+
 		/// <summary>
 		/// Process returns a new session key for this user upon successful login
 		/// <summary>

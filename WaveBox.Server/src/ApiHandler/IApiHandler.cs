@@ -12,6 +12,9 @@ namespace WaveBox.ApiHandler
 		// API handler's name
 		string Name { get; }
 
+		// API handler's permission check function
+		bool CheckPermission(User user, string action);
+
 		// API handler's action
 		void Process(UriWrapper uri, IHttpProcessor processor, User user);
 	}

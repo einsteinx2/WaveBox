@@ -17,6 +17,24 @@ namespace WaveBox.ApiHandler.Handlers
 	{
 		public string Name { get { return "podcasts"; } }
 
+		// Standard permissions
+		public bool CheckPermission(User user, string action)
+		{
+			switch (action)
+			{
+				// Write
+				case "add":
+				case "delete":
+					return user.HasPermission(Role.User);
+				// Read
+				case "read":
+				default:
+					return user.HasPermission(Role.Test);
+			}
+
+			return false;
+		}
+
 		/// <summary>
 		/// Process handles all functions needed for the Podcast API
 		/// </summary>

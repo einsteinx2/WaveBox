@@ -25,6 +25,12 @@ namespace WaveBox.ApiHandler.Handlers
 
 		public string Name { get { return "art"; } }
 
+		// API handler is read-only, so no permissions checks needed
+		public bool CheckPermission(User user, string action)
+		{
+			return true;
+		}
+
 		/// <summary>
 		/// Process returns a file stream containing album art
 		/// </summary>

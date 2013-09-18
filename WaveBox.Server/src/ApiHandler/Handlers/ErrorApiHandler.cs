@@ -19,6 +19,12 @@ namespace WaveBox.ApiHandler.Handlers
 
 		public string Name { get { return "error"; } }
 
+		// API handler is read-only, so no permissions checks needed
+		public bool CheckPermission(User user, string action)
+		{
+			return true;
+		}
+
 		/// <summary>
 		/// Overload for IApiHandler interface
 		/// </summary>

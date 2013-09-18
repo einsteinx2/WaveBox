@@ -22,6 +22,12 @@ namespace WaveBox.ApiHandler.Handlers
 
 		public string Name { get { return "jukebox"; } }
 
+		// Allow standard users to control jukebox
+		public bool CheckPermission(User user, string action)
+		{
+			return user.HasPermission(Role.User);
+		}
+
 		/// <summary>
 		/// Process returns whether a specific call the Jukebox API was successful or not
 		/// </summary>
