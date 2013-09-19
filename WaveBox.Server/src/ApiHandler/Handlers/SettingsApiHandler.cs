@@ -34,8 +34,6 @@ namespace WaveBox.ApiHandler
 				default:
 					return user.HasPermission(Role.Test);
 			}
-
-			return false;
 		}
 
 		public void Process(UriWrapper uri, IHttpProcessor processor, User user)

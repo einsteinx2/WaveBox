@@ -31,8 +31,6 @@ namespace WaveBox.ApiHandler.Handlers
 				default:
 					return user.HasPermission(Role.Test);
 			}
-
-			return false;
 		}
 
 		/// <summary>

@@ -77,7 +77,6 @@ namespace WaveBox.ApiHandler.Handlers
 			if (scrobbleType == LfmScrobbleType.NOWPLAYING)
 			{
 				// Ensure ID specified for scrobble
-				int id = Int32.MaxValue;
 				if (uri.Id == null)
 				{
 					processor.WriteJson(new ScrobbleResponse("LFMNoIdSpecifiedForNowPlaying"));
