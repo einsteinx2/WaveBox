@@ -150,6 +150,31 @@ namespace WaveBox.Core.Model.Repository
 			return null;
 		}
 
+		public IList<Favorite> FavoritesForArtistId(int? artistId, int? userId)
+		{
+			if (artistId == null)
+				throw new ArgumentNullException("artistId");
+			else if (userId == null)
+				throw new ArgumentNullException("userId");
+
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = database.GetSqliteConnection();
+				return conn.Query<Favorite>("SELECT * FROM Favorite LEFT JOIN Song ON Song.ItemId = Favorite.FavoriteItemId WHERE Song.ArtistId = ? AND Favorite.FavoriteUserId = ?", artistId, userId);
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				database.CloseSqliteConnection(conn);
+			}
+
+			return null;
+		}
+
 		public IList<IItem> ItemsForFavorites(IList<Favorite> favorites)
 		{
 			if (favorites != null)
