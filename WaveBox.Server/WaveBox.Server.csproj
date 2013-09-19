@@ -131,6 +131,7 @@
     <Compile Include="src\ApiHandler\Handlers\ArtistsApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\DatabaseApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\ErrorApiHandler.cs" />
+    <Compile Include="src\ApiHandler\Handlers\FanArtThumbnailApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\FavoritesApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\FoldersApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\GenresApiHandler.cs" />
@@ -211,7 +212,6 @@
     </Compile>
     <Compile Include="src\FolderScanning\MusicBrainzScanOperation.cs" />
     <Compile Include="src\FolderScanning\ArtistThumbnailDownloadOperation.cs" />
-    <Compile Include="src\ApiHandler\Handlers\FanArtThumbnailApiHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
