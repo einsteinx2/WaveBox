@@ -54,7 +54,7 @@ namespace WaveBox.Service.Services
 			// Capture username, user's current client name from session
 			string userName = user.UserName;
 			nowPlaying.UserName = userName;
-			string clientName = user.CurrentSession().ClientName;
+			string clientName = user.CurrentSession.ClientName;
 
 			// If no client name, use default
 			clientName = clientName ?? "wavebox";

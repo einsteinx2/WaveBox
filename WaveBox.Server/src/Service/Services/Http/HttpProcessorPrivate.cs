@@ -15,6 +15,7 @@ using WaveBox.ApiHandler.Handlers;
 using WaveBox.Core;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
+using WaveBox.Core.Model.Repository;
 using WaveBox.Core.Static;
 using WaveBox.Server;
 using WaveBox.Static;
@@ -215,6 +216,9 @@ namespace WaveBox.Service.Services.Http
 			apiUser.SessionId  = apiUser.SessionId ?? sessionId;
 			this.SetSessionCookie(apiUser.SessionId);
 
+			// Store user's current session object
+			apiUser.CurrentSession = Injection.Kernel.Get<ISessionRepository>().SessionForSessionId(apiUser.SessionId);
+
 			// Retrieve the requested API handler by its action
 			IApiHandler apiHandler = Injection.Kernel.Get<IApiHandlerFactory>().CreateApiHandler(uri.ApiAction);
 
@@ -230,7 +234,7 @@ namespace WaveBox.Service.Services.Http
 			string ip = ((IPEndPoint)this.Socket.Client.RemoteEndPoint).Address.ToString();
 
 			// Log API call
-			logger.IfInfo(String.Format("[{0}/{1}@{2}] API: {3}", apiUser.UserName, apiUser.CurrentSession().ClientName ?? "wavebox", ip, this.HttpUrl));
+			logger.IfInfo(String.Format("[{0}/{1}@{2}] API: {3}", apiUser.UserName, apiUser.CurrentSession.ClientName ?? "wavebox", ip, this.HttpUrl));
 
 			// Check if user has appropriate permissions for this action on this API handler
 			if (!apiHandler.CheckPermission(apiUser, uri.Action))
