@@ -164,12 +164,12 @@ namespace WaveBox.Core.Model.Repository
 				if (exact)
 				{
 					// Search for exact match
-					return conn.Query<Video>("SELECT * FROM Video WHERE " + field + " = ? ORDER BY FileName", query);
+					return conn.Query<Video>("SELECT * FROM Video WHERE " + field + " = ? ORDER BY FileName COLLATE NOCASE", query);
 				}
 				else
 				{
 					// Search for fuzzy match (containing query)
-					return conn.Query<Video>("SELECT * FROM Video WHERE " + field + " LIKE ? ORDER BY FileName", "%" + query + "%");
+					return conn.Query<Video>("SELECT * FROM Video WHERE " + field + " LIKE ? ORDER BY FileName COLLATE NOCASE", "%" + query + "%");
 				}
 			}
 			catch (Exception e)

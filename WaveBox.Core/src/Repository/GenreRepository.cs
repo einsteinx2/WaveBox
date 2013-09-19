@@ -108,7 +108,7 @@ namespace WaveBox.Core.Model.Repository
 			try
 			{
 				conn = database.GetSqliteConnection();
-				return conn.Query<Genre>("SELECT * FROM Genre ORDER BY GenreName");
+				return conn.Query<Genre>("SELECT * FROM Genre ORDER BY GenreName COLLATE NOCASE");
 			}
 			catch (Exception e)
 			{

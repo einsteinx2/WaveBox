@@ -162,7 +162,7 @@ namespace WaveBox.Core.Model.Repository
 			try
 			{
 				conn = database.GetSqliteConnection();
-				List<User> users = conn.Query<User>("SELECT * FROM User ORDER BY UserName");
+				List<User> users = conn.Query<User>("SELECT * FROM User ORDER BY UserName COLLATE NOCASE");
 
 				foreach (User u in users)
 				{
@@ -189,7 +189,7 @@ namespace WaveBox.Core.Model.Repository
 			try
 			{
 				conn = database.GetSqliteConnection();
-				return conn.Query<User>("SELECT * FROM User WHERE DeleteTime <= ? ORDER BY UserName", DateTime.Now.ToUniversalUnixTimestamp());
+				return conn.Query<User>("SELECT * FROM User WHERE DeleteTime <= ? ORDER BY UserName COLLATE NOCASE", DateTime.Now.ToUniversalUnixTimestamp());
 			}
 			catch (Exception e)
 			{

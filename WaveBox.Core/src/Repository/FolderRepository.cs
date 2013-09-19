@@ -249,7 +249,7 @@ namespace WaveBox.Core.Model.Repository
 				                         "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
 				                         "LEFT JOIN AlbumArtist ON AlbumArtist.AlbumArtistId = Album.AlbumArtistId " +
 				                         "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
-				                         "WHERE Song.FolderId = ? GROUP BY Album.AlbumId ORDER BY Album.AlbumName", folderId);
+				                         "WHERE Song.FolderId = ? GROUP BY Album.AlbumId ORDER BY Album.AlbumName COLLATE NOCASE", folderId);
 			}
 			catch (Exception e)
 			{

@@ -158,7 +158,7 @@ namespace WaveBox.Core.Model.Repository
 				return conn.Query<Album>("SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Album " +
 				                         "LEFT JOIN AlbumArtist ON Album.AlbumArtistId = AlbumArtist.AlbumArtistId " +
 				                         "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
-				                         "ORDER BY AlbumName");
+				                         "ORDER BY AlbumName COLLATE NOCASE");
 			}
 			catch (Exception e)
 			{
@@ -222,7 +222,7 @@ namespace WaveBox.Core.Model.Repository
 					return conn.Query<Album>("SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Album " +
 					                         "LEFT JOIN AlbumArtist ON AlbumArtist.AlbumArtistId = Album.AlbumArtistId " +
 					                         "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
-					                         "WHERE Album." + field + " = ? ORDER BY AlbumName", query);
+					                         "WHERE Album." + field + " = ? ORDER BY AlbumName COLLATE NOCASE", query);
 				}
 				else
 				{
@@ -230,7 +230,7 @@ namespace WaveBox.Core.Model.Repository
 					return conn.Query<Album>("SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Album " +
 					                         "LEFT JOIN AlbumArtist ON AlbumArtist.AlbumArtistId = Album.AlbumArtistId " +
 					                         "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
-					                         "WHERE Album." + field + " LIKE ? ORDER BY AlbumName", "%" + query + "%");
+					                         "WHERE Album." + field + " LIKE ? ORDER BY AlbumName COLLATE NOCASE", "%" + query + "%");
 				}
 			}
 			catch (Exception e)
