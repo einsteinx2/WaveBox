@@ -19,15 +19,19 @@ namespace WaveBox.Core.ApiResponse
 		[JsonProperty("songs")]
 		public IList<Song> Songs { get; set; }
 
+		[JsonProperty("counts")]
+		public Dictionary<string, int> Counts { get; set; }
+
 		[JsonProperty("lastfmInfo")]
 		public string LastfmInfo { get; set; }
 
-		public AlbumArtistsResponse(string error, IList<AlbumArtist> albumArtists, IList<Album> albums, IList<Song> songs, string lastfmInfo = null)
+		public AlbumArtistsResponse(string error, IList<AlbumArtist> albumArtists, IList<Album> albums, IList<Song> songs, Dictionary<string, int> counts, string lastfmInfo = null)
 		{
 			Error = error;
 			AlbumArtists = albumArtists;
 			Songs = songs;
 			Albums = albums;
+			Counts = counts;
 			LastfmInfo = lastfmInfo;
 		}
 	}

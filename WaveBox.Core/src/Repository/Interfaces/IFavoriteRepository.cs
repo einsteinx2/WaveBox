@@ -10,6 +10,7 @@ namespace WaveBox.Core.Model.Repository
 		void DeleteFavorite(int favoriteId);
 		IList<Favorite> FavoritesForUserId(int userId);
 		IList<Favorite> FavoritesForArtistId(int? artistId, int? userId);
+		IList<Favorite> FavoritesForAlbumArtistId(int? albumArtistId, int? userId);
 		IList<IItem> ItemsForFavorites(IList<Favorite> favorites);
 		IList<IItem> ItemsForUserId(int userId);
 	}
