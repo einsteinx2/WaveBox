@@ -12,7 +12,7 @@ using WaveBox.Core.Model.Repository;
 
 namespace WaveBox.Core.Model
 {
-	public class Folder : IItem
+	public class Folder : IItem, IGroupingItem
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -42,6 +42,9 @@ namespace WaveBox.Core.Model
 
 		[JsonProperty("artId"), IgnoreRead, IgnoreWrite]
 		public int? ArtId { get { return Injection.Kernel.Get<IArtRepository>().ArtIdForItemId(FolderId); } }
+
+		[JsonIgnore, IgnoreRead, IgnoreWrite]
+		public string GroupingName { get { return FolderName; } }
 
 		/// <summary>
 		/// Constructors

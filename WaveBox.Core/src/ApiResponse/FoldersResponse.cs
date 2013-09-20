@@ -22,13 +22,17 @@ namespace WaveBox.Core.ApiResponse
 		[JsonProperty("videos")]
 		public IList<Video> Videos { get; set; }
 
-		public FoldersResponse(string error, Folder containingFolder, IList<Folder> folders, IList<Song> songs, IList<Video>videos)
+		[JsonProperty("sectionPositions")]
+		public PairList<string, int> SectionPositions { get; set; }
+
+		public FoldersResponse(string error, Folder containingFolder, IList<Folder> folders, IList<Song> songs, IList<Video>videos, PairList<string, int> sectionPositions)
 		{
 			Error = error;
 			ContainingFolder = containingFolder;
 			Folders = folders;
 			Songs = songs;
 			Videos = videos;
+			SectionPositions = sectionPositions;
 		}
 	}
 }

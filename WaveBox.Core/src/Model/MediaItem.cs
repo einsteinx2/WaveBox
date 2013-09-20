@@ -13,7 +13,7 @@ using Ninject;
 
 namespace WaveBox.Core.Model
 {
-	public class MediaItem : IMediaItem
+	public class MediaItem : IMediaItem, IGroupingItem
 	{
 		[JsonIgnore, IgnoreRead, IgnoreWrite]
 		public virtual ItemType ItemType { get { return ItemType.Unknown; } }
@@ -53,6 +53,9 @@ namespace WaveBox.Core.Model
 
 		[JsonProperty("artId"), IgnoreWrite]
 		public int? ArtId { get; set; }
+
+		[JsonIgnore, IgnoreRead, IgnoreWrite]
+		public virtual string GroupingName { get { return FileName; } }
 
 		/// <summary>
 		/// Public methods

@@ -10,7 +10,7 @@ using WaveBox.Core.Model.Repository;
 
 namespace WaveBox.Core.Model
 {
-	public class Album : IItem
+	public class Album : IItem, IGroupingItem
 	{
 		[JsonIgnore, IgnoreRead, IgnoreWrite]
 		public int? ItemId { get { return AlbumId; } set { AlbumId = ItemId; } }
@@ -41,6 +41,9 @@ namespace WaveBox.Core.Model
 
 		[JsonProperty("artId"), IgnoreWrite]
 		public int? ArtId { get; set; }
+
+		[JsonIgnore, IgnoreRead, IgnoreWrite]
+		public string GroupingName { get { return AlbumName; } }
 
 		public Album()
 		{

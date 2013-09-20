@@ -25,7 +25,10 @@ namespace WaveBox.Core.ApiResponse
 		[JsonProperty("songs")]
 		public IList<Song> Songs { get; set; }
 
-		public GenresResponse(string error, IList<Genre> genres, IList<Folder> folders, IList<Artist> artists, IList<Album> albums, IList<Song> songs)
+		[JsonProperty("sectionPositions")]
+		public PairList<string, int> SectionPositions { get; set; }
+
+		public GenresResponse(string error, IList<Genre> genres, IList<Folder> folders, IList<Artist> artists, IList<Album> albums, IList<Song> songs, PairList<string, int> sectionPositions)
 		{
 			Error = error;
 			Genres = genres;
@@ -33,6 +36,7 @@ namespace WaveBox.Core.ApiResponse
 			Artists = artists;
 			Albums = albums;
 			Songs = songs;
+			SectionPositions = sectionPositions;
 		}
 	}
 }

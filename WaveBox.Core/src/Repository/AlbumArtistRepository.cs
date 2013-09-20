@@ -177,7 +177,7 @@ namespace WaveBox.Core.Model.Repository
 			try
 			{
 				conn = database.GetSqliteConnection();
-				return conn.Query<AlbumArtist>("SELECT * FROM AlbumArtist ORDER BY AlbumArtistName");
+				return conn.Query<AlbumArtist>("SELECT * FROM AlbumArtist ORDER BY AlbumArtistName COLLATE NOCASE");
 			}
 			catch (Exception e)
 			{
@@ -238,12 +238,12 @@ namespace WaveBox.Core.Model.Repository
 				if (exact)
 				{
 					// Search for exact match
-					return conn.Query<AlbumArtist>("SELECT * FROM AlbumArtist WHERE " + field + " = ? ORDER BY AlbumArtistName", query);
+					return conn.Query<AlbumArtist>("SELECT * FROM AlbumArtist WHERE " + field + " = ? ORDER BY AlbumArtistName COLLATE NOCASE", query);
 				}
 				else
 				{
 					// Search for fuzzy match (containing query)
-					return conn.Query<AlbumArtist>("SELECT * FROM AlbumArtist WHERE " + field + " LIKE ? ORDER BY AlbumArtistName", "%" + query + "%");
+					return conn.Query<AlbumArtist>("SELECT * FROM AlbumArtist WHERE " + field + " LIKE ? ORDER BY AlbumArtistName COLLATE NOCASE", "%" + query + "%");
 				}
 			}
 			catch (Exception e)

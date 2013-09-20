@@ -16,11 +16,15 @@ namespace WaveBox.Core.ApiResponse
 		[JsonProperty("mediaItems")]
 		public IList<IMediaItem> MediaItems { get; set; }
 
-		public PlaylistsResponse(string error, IList<Playlist> playlists, IList<IMediaItem> mediaItems)
+		[JsonProperty("sectionPositions")]
+		public PairList<string, int> SectionPositions { get; set; }
+
+		public PlaylistsResponse(string error, IList<Playlist> playlists, IList<IMediaItem> mediaItems, PairList<string, int> sectionPositions)
 		{
 			Error = error;
 			Playlists = playlists;
 			MediaItems = mediaItems;
+			SectionPositions = sectionPositions;
 		}
 	}
 }

@@ -13,7 +13,7 @@ using WaveBox.Core.Model.Repository;
 
 namespace WaveBox.Core.Model
 {
-	public class User
+	public class User : IGroupingItem
 	{
 		// PBKDF2 iterations
 		public const int HashIterations = 2500;
@@ -56,6 +56,9 @@ namespace WaveBox.Core.Model
 
 		[JsonProperty("deleteTime")]
 		public long? DeleteTime { get; set; }
+
+		[JsonIgnore, IgnoreRead, IgnoreWrite]
+		public string GroupingName { get { return UserName; } }
 
 		public User()
 		{

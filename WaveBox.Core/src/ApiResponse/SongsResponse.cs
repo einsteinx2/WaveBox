@@ -13,10 +13,14 @@ namespace WaveBox.Core.ApiResponse
 		[JsonProperty("songs")]
 		public IList<Song> Songs { get; set; }
 
-		public SongsResponse(string error, IList<Song> songs)
+		[JsonProperty("sectionPositions")]
+		public PairList<string, int> SectionPositions { get; set; }
+
+		public SongsResponse(string error, IList<Song> songs, PairList<string, int> sectionPositions)
 		{
 			Error = error;
 			Songs = songs;
+			SectionPositions = sectionPositions;
 		}
 	}
 }

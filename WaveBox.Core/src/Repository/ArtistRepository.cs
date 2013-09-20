@@ -173,7 +173,7 @@ namespace WaveBox.Core.Model.Repository
 			try
 			{
 				conn = database.GetSqliteConnection();
-				return conn.Query<Artist>("SELECT * FROM Artist ORDER BY ArtistName");
+				return conn.Query<Artist>("SELECT * FROM Artist ORDER BY ArtistName COLLATE NOCASE");
 			}
 			catch (Exception e)
 			{
@@ -234,12 +234,12 @@ namespace WaveBox.Core.Model.Repository
 				if (exact)
 				{
 					// Search for exact match
-					return conn.Query<Artist>("SELECT * FROM Artist WHERE " + field + " = ? ORDER BY ArtistName", query);
+					return conn.Query<Artist>("SELECT * FROM Artist WHERE " + field + " = ? ORDER BY ArtistName COLLATE NOCASE", query);
 				}
 				else
 				{
 					// Search for fuzzy match (containing query)
-					return conn.Query<Artist>("SELECT * FROM Artist WHERE " + field + " LIKE ? ORDER BY ArtistName", "%" + query + "%");
+					return conn.Query<Artist>("SELECT * FROM Artist WHERE " + field + " LIKE ? ORDER BY ArtistName COLLATE NOCASE", "%" + query + "%");
 				}
 			}
 			catch (Exception e)
@@ -343,7 +343,7 @@ namespace WaveBox.Core.Model.Repository
 					                     "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
 				                         "LEFT JOIN AlbumArtist ON AlbumArtist.AlbumArtistId = Album.AlbumArtistId " +
 				                         "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
-				                         "WHERE Song.ArtistId = ? GROUP BY Album.AlbumId ORDER BY Album.AlbumName", artistId);
+				                         "WHERE Song.ArtistId = ? GROUP BY Album.AlbumId ORDER BY Album.AlbumName COLLATE NOCASE", artistId);
 			}
 			catch (Exception e)
 			{

@@ -13,7 +13,7 @@ using WaveBox.Core.Model.Repository;
 
 namespace WaveBox.Core.Model
 {
-	public class Playlist : IItem
+	public class Playlist : IItem, IGroupingItem
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -47,6 +47,9 @@ namespace WaveBox.Core.Model
 		// Currently unused, only to satisfy IItem interface requirements
 		[JsonProperty("artId"), IgnoreRead, IgnoreWrite]
 		public int? ArtId { get; set; }
+
+		[JsonIgnore, IgnoreRead, IgnoreWrite]
+		public string GroupingName { get { return PlaylistName; } }
 
 		public Playlist()
 		{
