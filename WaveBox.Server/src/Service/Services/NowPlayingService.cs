@@ -51,14 +51,8 @@ namespace WaveBox.Service.Services
 			// Begin building object
 			NowPlaying nowPlaying = new NowPlaying();
 
-			// Capture username, user's current client name from session
-			string userName = user.UserName;
-			nowPlaying.UserName = userName;
-			string clientName = user.CurrentSession().ClientName;
-
-			// If no client name, use default
-			clientName = clientName ?? "wavebox";
-			nowPlaying.ClientName = clientName;
+			// Store user object
+			nowPlaying.User = user;
 
 			// Check if client sent a timestamp (if not, use current time)
 			if (timestamp == null)
@@ -72,11 +66,14 @@ namespace WaveBox.Service.Services
 
 			// Start a timer, set to elapse and unregister this song exactly when it should finish playback
 			nowPlaying.Timer = new Timer(Convert.ToInt32(m.Duration) * 1000);
-			nowPlaying.Timer.Elapsed += delegate { this.Unregister(userName, clientName); };
+			nowPlaying.Timer.Elapsed += delegate { this.Unregister(user.UserName, user.CurrentSession.ClientName); };
 			nowPlaying.Timer.Start();
 
 			// Capture media item's type
 			Type mediaType = m.GetType();
+
+			// Unregister any items with matching user and client
+			this.Unregister(user.UserName, user.CurrentSession.ClientName);
 
 			// Handling for Song items
 			if (mediaType.IsAssignableFrom(typeof(Song)))
@@ -85,14 +82,11 @@ namespace WaveBox.Service.Services
 				Song s = (Song)m;
 				nowPlaying.MediaItem = s;
 
-				// Unregister any items with matching user and client
-				this.Unregister(userName, clientName);
-
 				// Report now playing
 				playing.Add(nowPlaying);
 				logger.IfInfo(String.Format("{0}@{1} Now Playing: {2} - {3} - {4} [{5}]",
-					userName,
-					clientName,
+					user.UserName,
+					user.CurrentSession.ClientName,
 					s.ArtistName,
 					s.AlbumName,
 					s.SongName,
@@ -106,14 +100,11 @@ namespace WaveBox.Service.Services
 				Video v = (Video)m;
 				nowPlaying.MediaItem = v;
 
-				// Unregister any items with matching user and client
-				this.Unregister(userName, clientName);
-
 				// Report now playing
 				playing.Add(nowPlaying);
 				logger.IfInfo(String.Format("{0}@{1} Now Watching: {2} [{3}]",
-					userName,
-					clientName,
+					user.UserName,
+					user.CurrentSession.ClientName,
 					v.FileName,
 					Convert.ToInt32(v.Duration).ToTimeString()
 				));
@@ -130,13 +121,13 @@ namespace WaveBox.Service.Services
 		public bool Unregister(string userName, string clientName)
 		{
 			// Check for existence
-			if (!this.Playing.Any(x => x.UserName == userName && x.ClientName == clientName))
+			if (!this.Playing.Any(x => x.User.UserName == userName && x.User.CurrentSession.ClientName == clientName))
 			{
 				return false;
 			}
 
 			// Grab instance
-			NowPlaying nowPlaying = this.playing.Single(x => x.UserName == userName && x.ClientName == clientName);
+			NowPlaying nowPlaying = this.playing.Single(x => x.User.UserName == userName && x.User.CurrentSession.ClientName == clientName);
 
 			// Disable timer
 			nowPlaying.Timer.Stop();
