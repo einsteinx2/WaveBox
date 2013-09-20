@@ -37,6 +37,7 @@ namespace WaveBox.ApiHandler.Handlers
 			IList<Album> albums = new List<Album>();
 			IList<Song> songs = new List<Song>();
 			Dictionary<string, int> counts = new Dictionary<string, int>();
+			PairList<string, int> sectionPositions = new PairList<string, int>();
 
 			// Optional Last.fm info
 			string lastfmInfo = null;
@@ -91,7 +92,7 @@ namespace WaveBox.ApiHandler.Handlers
 				// Ensure valid range was parsed
 				if (range.Length != 2)
 				{
-					processor.WriteJson(new AlbumArtistsResponse("Parameter 'range' requires a valid, comma-separated character tuple", null, null, null, null));
+					processor.WriteJson(new AlbumArtistsResponse("Parameter 'range' requires a valid, comma-separated character tuple", null, null, null, null, null, null));
 					return;
 				}
 
@@ -99,7 +100,7 @@ namespace WaveBox.ApiHandler.Handlers
 				char start, end;
 				if (!Char.TryParse(range[0], out start) || !Char.TryParse(range[1], out end))
 				{
-					processor.WriteJson(new AlbumArtistsResponse("Parameter 'range' requires characters which are single alphanumeric values", null, null, null, null));
+					processor.WriteJson(new AlbumArtistsResponse("Parameter 'range' requires characters which are single alphanumeric values", null, null, null, null, null, null));
 					return;
 				}
 
@@ -116,7 +117,7 @@ namespace WaveBox.ApiHandler.Handlers
 				// Ensure valid limit was parsed
 				if (limit.Length < 1 || limit.Length > 2 )
 				{
-					processor.WriteJson(new AlbumArtistsResponse("Parameter 'limit' requires a single integer, or a valid, comma-separated integer tuple", null, null, null, null));
+					processor.WriteJson(new AlbumArtistsResponse("Parameter 'limit' requires a single integer, or a valid, comma-separated integer tuple", null, null, null, null, null, null));
 					return;
 				}
 
@@ -125,14 +126,14 @@ namespace WaveBox.ApiHandler.Handlers
 				int duration = Int32.MinValue;
 				if (!Int32.TryParse(limit[0], out index))
 				{
-					processor.WriteJson(new AlbumArtistsResponse("Parameter 'limit' requires a valid integer start index", null, null, null, null));
+					processor.WriteJson(new AlbumArtistsResponse("Parameter 'limit' requires a valid integer start index", null, null, null, null, null, null));
 					return;
 				}
 
 				// Ensure positive index
 				if (index < 0)
 				{
-					processor.WriteJson(new AlbumArtistsResponse("Parameter 'limit' requires a non-negative integer start index", null, null, null, null));
+					processor.WriteJson(new AlbumArtistsResponse("Parameter 'limit' requires a non-negative integer start index", null, null, null, null, null, null));
 					return;
 				}
 
@@ -141,14 +142,14 @@ namespace WaveBox.ApiHandler.Handlers
 				{
 					if (!Int32.TryParse(limit[1], out duration))
 					{
-						processor.WriteJson(new AlbumArtistsResponse("Parameter 'limit' requires a valid integer duration", null, null, null, null));
+						processor.WriteJson(new AlbumArtistsResponse("Parameter 'limit' requires a valid integer duration", null, null, null, null, null, null));
 						return;
 					}
 
 					// Ensure positive duration
 					if (duration < 0)
 					{
-						processor.WriteJson(new AlbumArtistsResponse("Parameter 'limit' requires a non-negative integer duration", null, null, null, null));
+						processor.WriteJson(new AlbumArtistsResponse("Parameter 'limit' requires a non-negative integer duration", null, null, null, null, null, null));
 						return;
 					}
 				}
@@ -178,10 +179,11 @@ namespace WaveBox.ApiHandler.Handlers
 			if (albumArtists.Count == 0)
 			{
 				albumArtists = Injection.Kernel.Get<IAlbumArtistRepository>().AllAlbumArtists();
+				sectionPositions = Utility.SectionPositionsFromSortedList(new List<IGroupingItem>(albumArtists.Select(c => (IGroupingItem)c)));
 			}
 
 			// Send it!
-			processor.WriteJson(new AlbumArtistsResponse(null, albumArtists, albums, songs, counts, lastfmInfo));
+			processor.WriteJson(new AlbumArtistsResponse(null, albumArtists, albums, songs, counts, lastfmInfo, sectionPositions));
 			return;
 		}
 	}

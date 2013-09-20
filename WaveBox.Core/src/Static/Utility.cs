@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web;
+using WaveBox.Core.Model;
 
 namespace WaveBox.Core.Static
 {
@@ -24,6 +25,33 @@ namespace WaveBox.Core.Static
 				buffer[i] = chars[rng.Next(chars.Length)];
 			}
 			return new string(buffer);
+		}
+
+		public static PairList<string, int> SectionPositionsFromSortedList(IList<IGroupingItem> sortedList)
+		{
+			if (sortedList == null || sortedList.Count == 1)
+				return new PairList<string, int>();
+
+			PairList<string, int> positions = new PairList<string, int>();
+
+			string lastGroupingLetter = null;
+			int lastIndex = 0;
+			for (int i = 0; i < sortedList.Count; i++)
+			{
+				string groupingName = sortedList[i].GroupingName;
+				if (groupingName == null || groupingName.Length == 0)
+					continue;
+
+				char firstLetter = Char.ToUpper(groupingName[0]);
+				if (lastGroupingLetter == null || firstLetter != lastGroupingLetter[0])
+				{
+					lastGroupingLetter = firstLetter.ToString();
+					lastIndex = i;
+					positions.Add(lastGroupingLetter, lastIndex);
+				}
+			}
+
+			return positions;
 		}
 	}
 }

@@ -38,6 +38,7 @@ namespace WaveBox.ApiHandler.Handlers
 			IList<Video> listOfVideos = new List<Video>();
 			Folder containingFolder = null;
 			bool recursive = false;
+			PairList<string, int> sectionPositions = new PairList<string, int>();
 
 			// If ID present, return that folder
 			if (uri.Id != null)
@@ -56,7 +57,7 @@ namespace WaveBox.ApiHandler.Handlers
 				listOfVideos = containingFolder.ListOfVideos(recursive);
 
 				// Return all results
-				processor.WriteJson(new FoldersResponse(null, containingFolder, listOfFolders, listOfSongs, listOfVideos));
+				processor.WriteJson(new FoldersResponse(null, containingFolder, listOfFolders, listOfSongs, listOfVideos, sectionPositions));
 				return;
 			}
 
@@ -70,10 +71,11 @@ namespace WaveBox.ApiHandler.Handlers
 			{
 				// They didn't ask for media folders, so send top level folders
 				listOfFolders = Injection.Kernel.Get<IFolderRepository>().TopLevelFolders();
+				sectionPositions = Utility.SectionPositionsFromSortedList(new List<IGroupingItem>(listOfFolders.Select(c => (IGroupingItem)c)));
 			}
 
 			// Return all results
-			processor.WriteJson(new FoldersResponse(null, containingFolder, listOfFolders, listOfSongs, listOfVideos));
+			processor.WriteJson(new FoldersResponse(null, containingFolder, listOfFolders, listOfSongs, listOfVideos, sectionPositions));
 			return;
 		}
 	}

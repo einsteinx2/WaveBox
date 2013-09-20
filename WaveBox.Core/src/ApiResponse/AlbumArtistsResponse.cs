@@ -25,7 +25,10 @@ namespace WaveBox.Core.ApiResponse
 		[JsonProperty("lastfmInfo")]
 		public string LastfmInfo { get; set; }
 
-		public AlbumArtistsResponse(string error, IList<AlbumArtist> albumArtists, IList<Album> albums, IList<Song> songs, Dictionary<string, int> counts, string lastfmInfo = null)
+		[JsonProperty("sectionPositions")]
+		public PairList<string, int> SectionPositions { get; set; }
+
+		public AlbumArtistsResponse(string error, IList<AlbumArtist> albumArtists, IList<Album> albums, IList<Song> songs, Dictionary<string, int> counts, string lastfmInfo, PairList<string, int> sectionPositions)
 		{
 			Error = error;
 			AlbumArtists = albumArtists;
@@ -33,6 +36,7 @@ namespace WaveBox.Core.ApiResponse
 			Albums = albums;
 			Counts = counts;
 			LastfmInfo = lastfmInfo;
+			SectionPositions = sectionPositions;
 		}
 	}
 }

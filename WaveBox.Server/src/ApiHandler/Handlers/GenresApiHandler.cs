@@ -8,6 +8,8 @@ using WaveBox.Static;
 using WaveBox.Core.Model.Repository;
 using WaveBox.Core.ApiResponse;
 using WaveBox.Core;
+using WaveBox.Core.Static;
+using System.Linq;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -34,6 +36,7 @@ namespace WaveBox.ApiHandler.Handlers
 			IList<Artist> listOfArtists = new List<Artist>();
 			IList<Album> listOfAlbums = new List<Album>();
 			IList<Song> listOfSongs = new List<Song>();
+			PairList<string, int> sectionPositions = new PairList<string, int>();
 
 			// ID specified
 			if (uri.Id != null)
@@ -70,10 +73,11 @@ namespace WaveBox.ApiHandler.Handlers
 			{
 				// No id parameter
 				listOfGenres = Injection.Kernel.Get<IGenreRepository>().AllGenres();
+				sectionPositions = Utility.SectionPositionsFromSortedList(new List<IGroupingItem>(listOfGenres.Select(c => (IGroupingItem)c)));
 			}
 
 			// Return all results
-			processor.WriteJson(new GenresResponse(null, listOfGenres, listOfFolders, listOfArtists, listOfAlbums, listOfSongs));
+			processor.WriteJson(new GenresResponse(null, listOfGenres, listOfFolders, listOfArtists, listOfAlbums, listOfSongs, sectionPositions));
 			return;
 		}
 	}

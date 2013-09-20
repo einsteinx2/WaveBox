@@ -166,6 +166,8 @@
     <Compile Include="src\Model\MusicBrainzCheckDate.cs" />
     <Compile Include="src\Repository\Interfaces\IMusicBrainzCheckDateRepository.cs" />
     <Compile Include="src\Repository\MusicBrainzCheckDateRepository.cs" />
+    <Compile Include="src\Model\Interfaces\IGroupableItem.cs" />
+    <Compile Include="src\Model\PairList.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

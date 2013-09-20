@@ -11,6 +11,7 @@ using WaveBox.Core.Model;
 using WaveBox.Core.Model.Repository;
 using WaveBox.Service.Services.Http;
 using WaveBox.Static;
+using WaveBox.Core.Static;
 
 namespace WaveBox.ApiHandler.Handlers
 {
@@ -50,6 +51,7 @@ namespace WaveBox.ApiHandler.Handlers
 			// Generate return lists of playlists, media items in them
 			IList<Playlist> listOfPlaylists = new List<Playlist>();
 			IList<IMediaItem> listOfMediaItems = new List<IMediaItem>();
+			PairList<string, int> sectionPositions = new PairList<string, int>();
 
 			// The playlist to perform actions
 			Playlist playlist;
@@ -67,7 +69,7 @@ namespace WaveBox.ApiHandler.Handlers
 				// Verify non-null name
 				if (name == null)
 				{
-					processor.WriteJson(new PlaylistsResponse("Parameter 'name' required for playlist creation", null, null));
+					processor.WriteJson(new PlaylistsResponse("Parameter 'name' required for playlist creation", null, null, null));
 					return;
 				}
 
@@ -75,7 +77,7 @@ namespace WaveBox.ApiHandler.Handlers
 				playlist = Injection.Kernel.Get<IPlaylistRepository>().PlaylistForName(name);
 				if (playlist.ItemId != null)
 				{
-					processor.WriteJson(new PlaylistsResponse("Playlist name '" + name + "' already in use", null, null));
+					processor.WriteJson(new PlaylistsResponse("Playlist name '" + name + "' already in use", null, null, null));
 					return;
 				}
 
@@ -93,7 +95,7 @@ namespace WaveBox.ApiHandler.Handlers
 				listOfPlaylists.Add(playlist);
 
 				// Return newly created playlist
-				processor.WriteJson(new PlaylistsResponse(null, listOfPlaylists, listOfMediaItems));
+				processor.WriteJson(new PlaylistsResponse(null, listOfPlaylists, listOfMediaItems, sectionPositions));
 				return;
 			}
 
@@ -101,7 +103,8 @@ namespace WaveBox.ApiHandler.Handlers
 			if (uri.Id == null || uri.Action == "read")
 			{
 				listOfPlaylists = Injection.Kernel.Get<IPlaylistRepository>().AllPlaylists();
-				processor.WriteJson(new PlaylistsResponse(null, listOfPlaylists, listOfMediaItems));
+				sectionPositions = Utility.SectionPositionsFromSortedList(new List<IGroupingItem>(listOfPlaylists.Select(c => (IGroupingItem)c)));
+				processor.WriteJson(new PlaylistsResponse(null, listOfPlaylists, listOfMediaItems, sectionPositions));
 				return;
 			}
 
@@ -109,7 +112,7 @@ namespace WaveBox.ApiHandler.Handlers
 			playlist = Injection.Kernel.Get<IPlaylistRepository>().PlaylistForId((int)uri.Id);
 			if (playlist.PlaylistId == null)
 			{
-				processor.WriteJson(new PlaylistsResponse("Playlist does not exist", null, null));
+				processor.WriteJson(new PlaylistsResponse("Playlist does not exist", null, null, null));
 				return;
 			}
 
@@ -120,7 +123,7 @@ namespace WaveBox.ApiHandler.Handlers
 				IList<int> itemIds = this.ParseItemIds(uri);
 				if (itemIds.Count == 0)
 				{
-					processor.WriteJson(new PlaylistsResponse("No item IDs found in URL", null, null));
+					processor.WriteJson(new PlaylistsResponse("No item IDs found in URL", null, null, null));
 					return;
 				}
 
@@ -157,7 +160,7 @@ namespace WaveBox.ApiHandler.Handlers
 							playlist.AddMediaItem(Injection.Kernel.Get<IVideoRepository>().VideoForId(itemId));
 							break;
 						default:
-							processor.WriteJson(new PlaylistsResponse("Invalid item type at index: " + i, null, null));
+							processor.WriteJson(new PlaylistsResponse("Invalid item type at index: " + i, null, null, null));
 							return;
 					}
 				}
@@ -166,7 +169,7 @@ namespace WaveBox.ApiHandler.Handlers
 				listOfPlaylists.Add(playlist);
 				listOfMediaItems = playlist.ListOfMediaItems();
 
-				processor.WriteJson(new PlaylistsResponse(null, listOfPlaylists, listOfMediaItems));
+				processor.WriteJson(new PlaylistsResponse(null, listOfPlaylists, listOfMediaItems, sectionPositions));
 				return;
 			}
 
@@ -176,7 +179,7 @@ namespace WaveBox.ApiHandler.Handlers
 				playlist.DeletePlaylist();
 				listOfPlaylists.Add(playlist);
 
-				processor.WriteJson(new PlaylistsResponse(null, listOfPlaylists, listOfMediaItems));
+				processor.WriteJson(new PlaylistsResponse(null, listOfPlaylists, listOfMediaItems, sectionPositions));
 				return;
 			}
 
@@ -187,7 +190,7 @@ namespace WaveBox.ApiHandler.Handlers
 				IList<int> insertIndexes = this.ParseIndexes(uri);
 				if (insertItemIds.Count == 0 || insertItemIds.Count != insertIndexes.Count)
 				{
-					processor.WriteJson(new PlaylistsResponse("Incorrect number of items and indices supplied for action 'insert'", null, null));
+					processor.WriteJson(new PlaylistsResponse("Incorrect number of items and indices supplied for action 'insert'", null, null, null));
 					return;
 				}
 
@@ -203,7 +206,7 @@ namespace WaveBox.ApiHandler.Handlers
 				listOfPlaylists.Add(playlist);
 				listOfMediaItems = playlist.ListOfMediaItems();
 
-				processor.WriteJson(new PlaylistsResponse(null, listOfPlaylists, listOfMediaItems));
+				processor.WriteJson(new PlaylistsResponse(null, listOfPlaylists, listOfMediaItems, sectionPositions));
 				return;
 			}
 
@@ -213,7 +216,7 @@ namespace WaveBox.ApiHandler.Handlers
 				listOfPlaylists.Add(playlist);
 				listOfMediaItems = playlist.ListOfMediaItems();
 
-				processor.WriteJson(new PlaylistsResponse(null, listOfPlaylists, listOfMediaItems));
+				processor.WriteJson(new PlaylistsResponse(null, listOfPlaylists, listOfMediaItems, sectionPositions));
 				return;
 			}
 
@@ -223,7 +226,7 @@ namespace WaveBox.ApiHandler.Handlers
 				IList<int> moveIndexes = this.ParseIndexes(uri);
 				if (moveIndexes.Count == 0 || moveIndexes.Count % 2 != 0)
 				{
-					processor.WriteJson(new PlaylistsResponse("Incorrect number of indices supplied for action 'move'", null, null));
+					processor.WriteJson(new PlaylistsResponse("Incorrect number of indices supplied for action 'move'", null, null, null));
 					return;
 				}
 
@@ -238,7 +241,7 @@ namespace WaveBox.ApiHandler.Handlers
 				listOfPlaylists.Add(playlist);
 				listOfMediaItems = playlist.ListOfMediaItems();
 
-				processor.WriteJson(new PlaylistsResponse(null, listOfPlaylists, listOfMediaItems));
+				processor.WriteJson(new PlaylistsResponse(null, listOfPlaylists, listOfMediaItems, sectionPositions));
 				return;
 			}
 
@@ -248,7 +251,7 @@ namespace WaveBox.ApiHandler.Handlers
 				IList<int> removeIndexes = this.ParseIndexes(uri);
 				if (removeIndexes.Count == 0)
 				{
-					processor.WriteJson(new PlaylistsResponse("No indices supplied for action 'remove'", null, null));
+					processor.WriteJson(new PlaylistsResponse("No indices supplied for action 'remove'", null, null, null));
 					return;
 				}
 
@@ -257,12 +260,12 @@ namespace WaveBox.ApiHandler.Handlers
 				listOfPlaylists.Add(playlist);
 				listOfMediaItems = playlist.ListOfMediaItems();
 
-				processor.WriteJson(new PlaylistsResponse(null, listOfPlaylists, listOfMediaItems));
+				processor.WriteJson(new PlaylistsResponse(null, listOfPlaylists, listOfMediaItems, sectionPositions));
 				return;
 			}
 
 			// Finally, invalid action supplied
-			processor.WriteJson(new PlaylistsResponse("Invalid action: " + uri.Action, listOfPlaylists, listOfMediaItems));
+			processor.WriteJson(new PlaylistsResponse("Invalid action: " + uri.Action, listOfPlaylists, listOfMediaItems, sectionPositions));
 			return;
 		}
 
