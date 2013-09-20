@@ -80,6 +80,13 @@ namespace WaveBox.Core.Model.Repository
 				var session = new Session();
 				session.SessionId = Utility.RandomString(100).SHA1();
 				session.UserId = userId;
+
+				// Set a default client name if not provided
+				if (clientName == null)
+				{
+					clientName = "wavebox";
+				}
+
 				session.ClientName = clientName;
 				long unixTime = DateTime.Now.ToUniversalUnixTimestamp();
 				session.CreateTime = unixTime;

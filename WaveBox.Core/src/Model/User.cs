@@ -33,6 +33,9 @@ namespace WaveBox.Core.Model
 		[JsonProperty("role")]
 		public Role Role { get; set; }
 
+		[JsonProperty("currentSession"), IgnoreRead, IgnoreWrite]
+		public Session CurrentSession { get; set; }
+
 		[JsonProperty("sessions"), IgnoreRead, IgnoreWrite]
 		public IList<Session> Sessions { get; set; }
 
@@ -65,14 +68,6 @@ namespace WaveBox.Core.Model
 		public bool HasPermission(Role role)
 		{
 			return this.Role >= role ? true : false;
-		}
-
-		// Return the user's current session, as it is the one most recently modified
-		public Session CurrentSession()
-		{
-			// Get user's session which was last modified
-			long maxTime = this.Sessions.Max(x => Convert.ToInt64(x.UpdateTime));
-			return this.Sessions.Single(x => x.UpdateTime == maxTime);
 		}
 
 		public bool UpdateSession(string sessionId)
