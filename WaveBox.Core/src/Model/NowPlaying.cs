@@ -13,17 +13,14 @@ namespace WaveBox.Core.Model
 {
 	public class NowPlaying
 	{
-		[JsonProperty("userName")]
-		public string UserName { get; set; }
-
-		[JsonProperty("clientName")]
-		public string ClientName { get; set; }
-
 		[JsonProperty("startTime")]
 		public long? StartTime { get; set; }
 
 		[JsonProperty("endTime")]
 		public long? EndTime { get; set; }
+
+		[JsonProperty("user")]
+		public User User { get; set; }
 
 		[JsonProperty("mediaItem")]
 		public IMediaItem MediaItem { get; set; }
@@ -37,7 +34,7 @@ namespace WaveBox.Core.Model
 
 		public override string ToString()
 		{
-			return String.Format("[NowPlaying: UserName={0}, ClientName={1}, StartTime={2}]", this.UserName, this.ClientName, this.StartTime);
+			return String.Format("[NowPlaying: StartTime={0}, EndTime={1}, User={2}]", this.StartTime, this.EndTime, this.User.UserName);
 		}
 	}
 }
