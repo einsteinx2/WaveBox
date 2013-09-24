@@ -209,7 +209,7 @@ namespace WaveBox.Core.Model
 			try
 			{
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				return conn.Query<Podcast>("SELECT * FROM Podcast ORDER BY Title DESC COLLATE NOCASE");
+				return conn.Query<Podcast>("SELECT * FROM Podcast ORDER BY Title COLLATE NOCASE DESC");
 			}
 			catch (Exception e)
 			{
