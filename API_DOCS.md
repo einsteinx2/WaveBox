@@ -213,7 +213,7 @@ deflate if requested, in order to compress large responses.
 
 **URL:** /api/jukebox
 
-**Example:** http://localhost:6500/api/jukebox?action=add&id=125
+**Example:** http://localhost:6500/api/jukebox/125?action=add
 
 **Parameters**
 
@@ -357,7 +357,7 @@ deflate if requested, in order to compress large responses.
 
 **URL:** /api/stats
 
-**Example:** http://localhost:6500/api/stats?event=10,213214621231&s=SESSIONID
+**Example:** http://localhost:6500/api/stats?event=10,0,213214621231
 
 **Parameters**
 
@@ -448,7 +448,7 @@ deflate if requested, in order to compress large responses.
 
 **URL:** /api/transcodehls
 
-**Example:** http://localhost:6500/api/transcode/125
+**Example:** http://localhost:6500/api/transcodehls/125
 
 **Parameters**
 
