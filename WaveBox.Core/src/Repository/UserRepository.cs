@@ -6,6 +6,13 @@ using WaveBox.Core.Static;
 
 namespace WaveBox.Core.Model.Repository
 {
+	public class UserCache
+	{
+		public IDictionary<int, User> UserForIdCache;
+		public IDictionary<string, User> UserForNameCache;
+		public IDictionary<string, string> UserNameForSessionIdCache;
+	}
+
 	public class UserRepository : IUserRepository
 	{
 		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -13,15 +20,26 @@ namespace WaveBox.Core.Model.Repository
 		private readonly IDatabase database;
 		private readonly IItemRepository itemRepository;
 
+		private UserCache userCache;
+
 		public UserRepository(IDatabase database, IItemRepository itemRepository)
 		{
 			if (database == null)
+			{
 				throw new ArgumentNullException("database");
+			}
 			if (itemRepository == null)
+			{
 				throw new ArgumentNullException("itemRepository");
+			}
 
 			this.database = database;
 			this.itemRepository = itemRepository;
+
+			this.userCache = new UserCache();
+			this.userCache.UserForIdCache = new Dictionary<int, User>();
+			this.userCache.UserForNameCache = new Dictionary<string, User>();
+			this.userCache.UserNameForSessionIdCache = new Dictionary<string, string>();
 		}
 
 		public User UserForId(int userId)
@@ -29,12 +47,22 @@ namespace WaveBox.Core.Model.Repository
 			ISQLiteConnection conn = null;
 			try
 			{
+				// Return cached result if available
+				if (this.userCache.UserForIdCache.ContainsKey(userId))
+				{
+					return this.userCache.UserForIdCache[userId];
+				}
+
 				conn = database.GetSqliteConnection();
 				var result = conn.DeferredQuery<User>("SELECT * FROM User WHERE UserId = ?", userId);
 
 				foreach (var u in result)
 				{
 					u.Sessions = u.ListOfSessions();
+
+					// Store User in ID cache
+					this.userCache.UserForIdCache[userId] = u;
+
 					return u;
 				}
 			}
@@ -57,12 +85,22 @@ namespace WaveBox.Core.Model.Repository
 			ISQLiteConnection conn = null;
 			try
 			{
+				// Return cached result if available
+				if (this.userCache.UserForNameCache.ContainsKey(userName))
+				{
+					return this.userCache.UserForNameCache[userName];
+				}
+
 				conn = database.GetSqliteConnection();
 				var result = conn.DeferredQuery<User>("SELECT * FROM User WHERE UserName = ?", userName);
 
 				foreach (var u in result)
 				{
 					u.Sessions = u.ListOfSessions();
+
+					// Store User in name cache
+					this.userCache.UserForNameCache[userName] = u;
+
 					return u;
 				}
 			}
@@ -136,13 +174,24 @@ namespace WaveBox.Core.Model.Repository
 			return CreateUser(Utility.RandomString(16), Utility.RandomString(16), Role.Test, DateTime.Now.ToUniversalUnixTimestamp() + durationSeconds);
 		}
 
-		public string UserNameForSessionid(string sessionId)
+		public string UserNameForSessionId(string sessionId)
 		{
 			ISQLiteConnection conn = null;
 			try
 			{
+				// Return cached result if available
+				if (this.userCache.UserNameForSessionIdCache.ContainsKey(sessionId))
+				{
+					return this.userCache.UserNameForSessionIdCache[sessionId];
+				}
+
 				conn = database.GetSqliteConnection();
-				return conn.ExecuteScalar<string>("SELECT User.UserName FROM Session JOIN User USING (UserId) WHERE SessionId = ?", sessionId);
+				string userName = conn.ExecuteScalar<string>("SELECT User.UserName FROM Session JOIN User USING (UserId) WHERE SessionId = ?", sessionId);
+
+				// Store username in name for session ID cache
+				this.userCache.UserNameForSessionIdCache[sessionId] = userName;
+
+				return userName;
 			}
 			catch (Exception e)
 			{
