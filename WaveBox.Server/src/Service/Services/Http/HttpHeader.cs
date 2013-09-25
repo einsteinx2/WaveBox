@@ -40,10 +40,12 @@ namespace WaveBox.Service.Services.Http
 			CSS = 9,
 			JAVASCRIPT = 10,
 			PLAINTEXT = 11, 
-			UNKNOWN = 12
+			JPEG = 12,
+			PNG = 13,
+			UNKNOWN = int.MaxValue
 		}
 
-		private static string[] HttpContentTypeStrings = { "audio/mpeg", "audio/mp4", "audio/ogg", "audio/webm", "audio/wav", "video/webm", "video/mp4", "video/ogg", "text/html", "text/css", "text/javascript", "text/plain", "octet-stream" };
+		private static string[] HttpContentTypeStrings = { "audio/mpeg", "audio/mp4", "audio/ogg", "audio/webm", "audio/wav", "video/webm", "video/mp4", "video/ogg", "text/html", "text/css", "text/javascript", "text/plain", "image/jpeg", "image/png", "octet-stream" };
 
 		public static HttpContentType ContentTypeForExtension(string extension)
 		{
@@ -79,6 +81,12 @@ namespace WaveBox.Service.Services.Http
 					return HttpContentType.JAVASCRIPT;
 				case ".txt":
 					return HttpContentType.PLAINTEXT;
+				case ".jpeg":
+					return HttpContentType.JPEG;
+				case ".jpg":
+					return HttpContentType.JPEG;
+				case ".png":
+					return HttpContentType.PNG;
 				default:
 					return HttpContentType.UNKNOWN;
 			}
