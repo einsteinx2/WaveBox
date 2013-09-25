@@ -182,11 +182,15 @@ namespace WaveBox.Service.Services.Http
 				return;
 			}
 
+			// Get client IP address
+			string ip = ((IPEndPoint)this.Socket.Client.RemoteEndPoint).Address.ToString();
+
 			// Check for valid API action ("web" and "error" are technically valid, but can't be used in this way)
 			if (uri.ApiAction == null || uri.ApiAction == "web" || uri.ApiAction == "error")
 			{
 				ErrorApiHandler errorApi = (ErrorApiHandler)Injection.Kernel.Get<IApiHandlerFactory>().CreateApiHandler("error");
 				errorApi.Process(uri, this, apiUser, "Invalid API call");
+				logger.IfInfo(String.Format("[{0}] API: {1}", ip, this.HttpUrl));
 				return;
 			}
 
@@ -208,6 +212,7 @@ namespace WaveBox.Service.Services.Http
 				{
 					ErrorApiHandler errorApi = (ErrorApiHandler)Injection.Kernel.Get<IApiHandlerFactory>().CreateApiHandler("error");
 					errorApi.Process(uri, this, apiUser, "Authentication failed");
+					logger.IfInfo(String.Format("[{0}] API: {1}", ip, this.HttpUrl));
 					return;
 				}
 			}
@@ -227,11 +232,9 @@ namespace WaveBox.Service.Services.Http
 			{
 				ErrorApiHandler errorApi = (ErrorApiHandler)Injection.Kernel.Get<IApiHandlerFactory>().CreateApiHandler("error");
 				errorApi.Process(uri, this, apiUser, "Invalid API call");
+				logger.IfInfo(String.Format("[{0}] API: {1}", ip, this.HttpUrl));
 				return;
 			}
-
-			// Get client IP address
-			string ip = ((IPEndPoint)this.Socket.Client.RemoteEndPoint).Address.ToString();
 
 			// Log API call
 			logger.IfInfo(String.Format("[{0}/{1}@{2}] API: {3}", apiUser.UserName, apiUser.CurrentSession.ClientName, ip, this.HttpUrl));
