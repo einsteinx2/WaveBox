@@ -10,7 +10,6 @@ namespace WaveBox.Core.Model.Repository
 		User UserForName(string userName);
 		User CreateUser(string userName, string password, Role role, long? deleteTime);
 		User CreateTestUser(long? durationSeconds);
-		string UserNameForSessionid(string sessionId);
 		IList<User> AllUsers();
 		IList<User> ExpiredUsers();
 	}

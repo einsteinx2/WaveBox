@@ -3,6 +3,7 @@ using Cirrious.MvvmCross.Plugins.Sqlite;
 using System.Collections.Generic;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Static;
+using System.Linq;
 
 namespace WaveBox.Core.Model.Repository
 {
@@ -12,12 +13,40 @@ namespace WaveBox.Core.Model.Repository
 
 		private readonly IDatabase database;
 
+		private IList<Session> Sessions { get; set; }
+
 		public SessionRepository(IDatabase database)
 		{
 			if (database == null)
 				throw new ArgumentNullException("database");
 
 			this.database = database;
+
+			Sessions = new List<Session>();
+			ReloadSessions();
+		}
+
+		private void ReloadSessions()
+		{
+			lock (Sessions)
+			{
+				Sessions.Clear();
+
+				ISQLiteConnection conn = null;
+				try
+				{
+					conn = database.GetSqliteConnection();
+					Sessions.AddRange(conn.DeferredQuery<Session>("SELECT * FROM Session"));
+				}
+				catch (Exception e)
+				{
+					logger.Error(e);
+				}
+				finally
+				{
+					database.CloseSqliteConnection(conn);
+				}
+			}
 		}
 
 		public Session SessionForRowId(int rowId)
@@ -47,27 +76,14 @@ namespace WaveBox.Core.Model.Repository
 
 		public Session SessionForSessionId(string sessionId)
 		{
-			ISQLiteConnection conn = null;
-			try
+			lock (Sessions)
 			{
-				conn = database.GetSqliteConnection();
-				var result = conn.DeferredQuery<Session>("SELECT RowId AS RowId, * FROM Session WHERE SessionId = ?", sessionId);
+				Session session = Sessions.SingleOrDefault(s => s.SessionId == sessionId);
+				if (session == null)
+					session = new Session();
 
-				foreach (var session in result)
-				{
-					return session;
-				}
+				return session;
 			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return new Session();
 		}
 
 		public Session CreateSession(int userId, string clientName)
@@ -96,6 +112,11 @@ namespace WaveBox.Core.Model.Repository
 
 				if (affected > 0)
 				{
+					lock (Sessions)
+					{
+						Sessions.Add(session);
+					}
+
 					return session;
 				}
 			}
@@ -113,42 +134,18 @@ namespace WaveBox.Core.Model.Repository
 
 		public IList<Session> AllSessions()
 		{
-			ISQLiteConnection conn = null;
-			try
+			lock (Sessions)
 			{
-				conn = database.GetSqliteConnection();
-				return conn.Query<Session>("SELECT RowId AS RowId, * FROM Session");
+				return new List<Session>(Sessions);
 			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return new List<Session>();
 		}
 
 		public int CountSessions()
 		{
-			ISQLiteConnection conn = null;
-			try
+			lock (Sessions)
 			{
-				conn = database.GetSqliteConnection();
-				return conn.ExecuteScalar<int>("SELECT COUNT(RowId) FROM Session");
+				return Sessions.Count;
 			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return 0;
 		}
 
 		public bool DeleteSessionsForUserId(int userId)
@@ -161,6 +158,11 @@ namespace WaveBox.Core.Model.Repository
 				int affected = conn.ExecuteLogged("DELETE FROM Session WHERE UserId = ?", userId);
 
 				success = affected > 0;
+
+				if (success)
+				{
+					ReloadSessions();
+				}
 			}
 			catch (Exception e)
 			{
@@ -172,6 +174,20 @@ namespace WaveBox.Core.Model.Repository
 			}
 
 			return success;
+		}
+
+		public int? UserIdForSessionid(string sessionId)
+		{
+			lock (Sessions)
+			{
+				Session session = Sessions.SingleOrDefault(s => s.SessionId == sessionId);
+				if (session != null)
+				{
+					return session.UserId;
+				}
+
+				return null;
+			}
 		}
 	}
 }

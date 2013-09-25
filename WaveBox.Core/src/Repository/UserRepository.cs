@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Static;
+using System.Linq;
 
 namespace WaveBox.Core.Model.Repository
 {
@@ -13,6 +14,8 @@ namespace WaveBox.Core.Model.Repository
 		private readonly IDatabase database;
 		private readonly IItemRepository itemRepository;
 
+		private IList<User> Users { get; set; }
+
 		public UserRepository(IDatabase database, IItemRepository itemRepository)
 		{
 			if (database == null)
@@ -22,62 +25,57 @@ namespace WaveBox.Core.Model.Repository
 
 			this.database = database;
 			this.itemRepository = itemRepository;
+
+			// Load users from the DB into memory for quicker checking
+			Users = new List<User>();
+			ReloadUsers();
+		}
+
+		private void ReloadUsers()
+		{
+			lock (Users)
+			{
+				Users.Clear();
+
+				ISQLiteConnection conn = null;
+				try
+				{
+					conn = database.GetSqliteConnection();
+					Users.AddRange(conn.DeferredQuery<User>("SELECT * FROM User"));
+				}
+				catch (Exception e)
+				{
+					logger.Error(e);
+				}
+				finally
+				{
+					database.CloseSqliteConnection(conn);
+				}
+			}
 		}
 
 		public User UserForId(int userId)
 		{
-			ISQLiteConnection conn = null;
-			try
+			lock (Users)
 			{
-				conn = database.GetSqliteConnection();
-				var result = conn.DeferredQuery<User>("SELECT * FROM User WHERE UserId = ?", userId);
+				User user = Users.SingleOrDefault(u => u.UserId == userId);
+				if (user == null)
+					user = new User() { UserId = userId };
 
-				foreach (var u in result)
-				{
-					u.Sessions = u.ListOfSessions();
-					return u;
-				}
+				return user;
 			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			var user = new User();
-			user.UserId = userId;
-			return user;
 		}
 
 		public User UserForName(string userName)
 		{
-			ISQLiteConnection conn = null;
-			try
+			lock (Users)
 			{
-				conn = database.GetSqliteConnection();
-				var result = conn.DeferredQuery<User>("SELECT * FROM User WHERE UserName = ?", userName);
+				User user = Users.SingleOrDefault(u => u.UserName == userName);
+				if (user == null)
+					user = new User() { UserName = userName };
 
-				foreach (var u in result)
-				{
-					u.Sessions = u.ListOfSessions();
-					return u;
-				}
+				return user;
 			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			var user = new User();
-			user.UserName = userName;
-			return user;
 		}
 
 		public User CreateUser(string userName, string password, Role role, long? deleteTime)
@@ -105,6 +103,12 @@ namespace WaveBox.Core.Model.Repository
 				u.CreateTime = DateTime.Now.ToUniversalUnixTimestamp();
 				u.DeleteTime = deleteTime;
 				conn.Insert(u);
+
+				// Add to the memory cache
+				lock (Users)
+				{
+					Users.Add(u);
+				}
 
 				return u;
 			}
@@ -136,51 +140,17 @@ namespace WaveBox.Core.Model.Repository
 			return CreateUser(Utility.RandomString(16), Utility.RandomString(16), Role.Test, DateTime.Now.ToUniversalUnixTimestamp() + durationSeconds);
 		}
 
-		public string UserNameForSessionid(string sessionId)
-		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				return conn.ExecuteScalar<string>("SELECT User.UserName FROM Session JOIN User USING (UserId) WHERE SessionId = ?", sessionId);
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return null;
-		}
-
 		public IList<User> AllUsers()
 		{
-			ISQLiteConnection conn = null;
-			try
+			lock (Users)
 			{
-				conn = database.GetSqliteConnection();
-				List<User> users = conn.Query<User>("SELECT * FROM User ORDER BY UserName COLLATE NOCASE");
-
-				foreach (User u in users)
+				IList<User> tempUsers =  new List<User>(Users);
+				foreach (User u in tempUsers)
 				{
 					u.Sessions = u.ListOfSessions();
 				}
-
-				return users;
+				return tempUsers;
 			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return new List<User>();
 		}
 
 		public IList<User> ExpiredUsers()

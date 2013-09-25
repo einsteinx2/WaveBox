@@ -11,6 +11,7 @@ namespace WaveBox.Core.Model.Repository
 		IList<Session> AllSessions();
 		int CountSessions();
 		bool DeleteSessionsForUserId(int userId);
+		int? UserIdForSessionid(string sessionId);
 	}
 }
 

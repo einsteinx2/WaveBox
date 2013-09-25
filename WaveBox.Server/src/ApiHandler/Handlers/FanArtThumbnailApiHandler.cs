@@ -27,50 +27,32 @@ namespace WaveBox.ApiHandler.Handlers
 		/// </summary>
 		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
 		{
-			// Check for the itemId
-			if (uri.Id == null)
+			// Check for the MusicBrainz ID
+			string musicBrainzId = null;
+			uri.Parameters.TryGetValue("musicBrainzId", out musicBrainzId);
+			if (musicBrainzId == null)
 			{
 				processor.WriteErrorHeader();
 				return;
 			}
 
 			// Find the music brainz id
-			string musicBrainzId = null;
-			ItemType type = Injection.Kernel.Get<IItemRepository>().ItemTypeForItemId ((int)uri.Id);
-			if (type == ItemType.Artist)
+			string path = ArtPathForMusicBrainzId(musicBrainzId);
+			FileInfo info = new FileInfo(path);
+			if (info.Exists)
 			{
-				Artist artist = Injection.Kernel.Get<IArtistRepository>().ArtistForId(uri.Id);
-				if (artist != null)
-				{
-					musicBrainzId = artist.MusicBrainzId;
-				}
+				DateTime? lastModified = info.LastWriteTimeUtc;
+				FileStream stream = new FileStream(path, FileMode.Open);
+				processor.WriteFile(stream, 0, stream.Length, HttpHeader.MimeTypeForExtension(".jpg"), null, true, lastModified);
+
+				// Close the file so we don't get sharing violations on future accesses
+				stream.Close();
 			}
-			else if (type == ItemType.Artist)
+			else
 			{
-				AlbumArtist albumArtist = Injection.Kernel.Get<IAlbumArtistRepository>().AlbumArtistForId(uri.Id);
-				if (albumArtist != null)
-				{
-					musicBrainzId = albumArtist.MusicBrainzId;
-				}
+				// If all else fails, error
+				processor.WriteErrorHeader();
 			}
-
-			if (musicBrainzId != null)
-			{
-				string path = ArtPathForMusicBrainzId(musicBrainzId);
-				FileInfo info = new FileInfo(path);
-				if (info.Exists)
-				{
-					DateTime? lastModified = info.LastWriteTimeUtc;
-					FileStream stream = new FileStream(path, FileMode.Open);
-					processor.WriteFile(stream, 0, stream.Length, HttpHeader.MimeTypeForExtension(".jpg"), null, true, lastModified);
-
-					// Close the file so we don't get sharing violations on future accesses
-					stream.Close();
-				}
-			}
-
-			// If all else fails, error
-			processor.WriteErrorHeader();
 		}
 
 		private string ArtPathForMusicBrainzId(string musicBrainzId)

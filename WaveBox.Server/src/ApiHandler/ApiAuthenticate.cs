@@ -19,10 +19,10 @@ namespace WaveBox.ApiHandler
 		/// </summary>
 		public User AuthenticateSession(string session)
 		{
-			string username = Injection.Kernel.Get<IUserRepository>().UserNameForSessionid(session);
-			if (username != null)
+			int? userId = Injection.Kernel.Get<ISessionRepository>().UserIdForSessionid(session);
+			if (userId != null)
 			{
-				User user = Injection.Kernel.Get<IUserRepository>().UserForName(username);
+				User user = Injection.Kernel.Get<IUserRepository>().UserForId((int)userId);
 				if (user != null)
 				{
 					// Update this user's session and return
