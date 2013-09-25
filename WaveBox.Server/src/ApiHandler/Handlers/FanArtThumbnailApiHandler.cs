@@ -62,7 +62,7 @@ namespace WaveBox.ApiHandler.Handlers
 				return null;
 			}
 
-			return cachePath + Path.DirectorySeparatorChar + musicBrainzId + ".jpg";
+			return cachePath + musicBrainzId + ".jpg";
 		}
 	}
 }
