@@ -10,7 +10,7 @@ namespace WaveBox.Core.ApiResponse
 		[JsonProperty("error")]
 		public string Error { get; set; }
 
-		[JsonProperty("artists")]
+		[JsonProperty("albumArtists")]
 		public IList<AlbumArtist> AlbumArtists { get; set; }
 
 		[JsonProperty("albums")]

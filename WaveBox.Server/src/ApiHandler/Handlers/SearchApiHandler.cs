@@ -31,6 +31,7 @@ namespace WaveBox.ApiHandler.Handlers
 		{
 			// Lists to return as results
 			IList<Artist> artists = new List<Artist>();
+			IList<AlbumArtist> albumArtists = new List<AlbumArtist>();
 			IList<Album> albums = new List<Album>();
 			IList<Song> songs = new List<Song>();
 			IList<Video> videos = new List<Video>();
@@ -38,7 +39,7 @@ namespace WaveBox.ApiHandler.Handlers
 			// If no query is provided, error
 			if (!uri.Parameters.ContainsKey("query"))
 			{
-				processor.WriteJson(new SearchResponse("No search query provided", artists, albums, songs, videos));
+				processor.WriteJson(new SearchResponse("No search query provided", artists, albumArtists, albums, songs, videos));
 				return;
 			}
 
@@ -48,7 +49,7 @@ namespace WaveBox.ApiHandler.Handlers
 			// Ensure query is not blank
 			if (query.Length < 1)
 			{
-				processor.WriteJson(new SearchResponse("Query cannot be empty", artists, albums, songs, videos));
+				processor.WriteJson(new SearchResponse("Query cannot be empty", artists, albumArtists, albums, songs, videos));
 				return;
 			}
 
@@ -79,6 +80,9 @@ namespace WaveBox.ApiHandler.Handlers
 						case "artists":
 							artists = Injection.Kernel.Get<IArtistRepository>().SearchArtists(field, query, exact);
 							break;
+						case "albumartists":
+							albumArtists = Injection.Kernel.Get<IAlbumArtistRepository>().SearchAlbumArtists(field, query, exact);
+							break;
 						case "albums":
 							albums = Injection.Kernel.Get<IAlbumRepository>().SearchAlbums(field, query, exact);
 							break;
@@ -98,18 +102,19 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 
 				// Return all results
-				processor.WriteJson(new SearchResponse(null, artists, albums, songs, videos));
+				processor.WriteJson(new SearchResponse(null, artists, albumArtists, albums, songs, videos));
 				return;
 			}
 
 			// For no type, provide all types of data
 			artists = Injection.Kernel.Get<IArtistRepository>().SearchArtists(field, query, exact);
+			albumArtists = Injection.Kernel.Get<IAlbumArtistRepository>().SearchAlbumArtists(field, query, exact);
 			albums = Injection.Kernel.Get<IAlbumRepository>().SearchAlbums(field, query, exact);
 			songs = Injection.Kernel.Get<ISongRepository>().SearchSongs(field, query, exact);
 			videos = Injection.Kernel.Get<IVideoRepository>().SearchVideos(field, query, exact);
 
 			// Return all results
-			processor.WriteJson(new SearchResponse(null, artists, albums, songs, videos));
+			processor.WriteJson(new SearchResponse(null, artists, albumArtists, albums, songs, videos));
 			return;
 		}
 	}
