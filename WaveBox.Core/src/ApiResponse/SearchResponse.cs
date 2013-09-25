@@ -13,6 +13,9 @@ namespace WaveBox.Core.ApiResponse
 		[JsonProperty("artists")]
 		public IList<Artist> Artists { get; set; }
 
+		[JsonProperty("albumArtists")]
+		public IList<AlbumArtist> AlbumArtists { get; set; }
+
 		[JsonProperty("albums")]
 		public IList<Album> Albums { get; set; }
 
@@ -22,10 +25,11 @@ namespace WaveBox.Core.ApiResponse
 		[JsonProperty("videos")]
 		public IList<Video> Videos { get; set; }
 
-		public SearchResponse(string error, IList<Artist> artists, IList<Album> albums, IList<Song> songs, IList<Video> videos)
+		public SearchResponse(string error, IList<Artist> artists, IList<AlbumArtist> albumArtists, IList<Album> albums, IList<Song> songs, IList<Video> videos)
 		{
 			Error = error;
 			Artists = artists;
+			AlbumArtists = albumArtists;
 			Albums = albums;
 			Songs = songs;
 			Videos = videos;
