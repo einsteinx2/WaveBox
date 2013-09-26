@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Web;
 using Newtonsoft.Json;
 using Ninject;
@@ -100,18 +101,82 @@ namespace WaveBox.ApiHandler.Handlers
 							break;
 					}
 				}
-
-				// Return all results
-				processor.WriteJson(new SearchResponse(null, artists, albumArtists, albums, songs, videos));
-				return;
+			}
+			else
+			{
+				// For no type, provide all types of data
+				artists = Injection.Kernel.Get<IArtistRepository>().SearchArtists(field, query, exact);
+				albumArtists = Injection.Kernel.Get<IAlbumArtistRepository>().SearchAlbumArtists(field, query, exact);
+				albums = Injection.Kernel.Get<IAlbumRepository>().SearchAlbums(field, query, exact);
+				songs = Injection.Kernel.Get<ISongRepository>().SearchSongs(field, query, exact);
+				videos = Injection.Kernel.Get<IVideoRepository>().SearchVideos(field, query, exact);
 			}
 
-			// For no type, provide all types of data
-			artists = Injection.Kernel.Get<IArtistRepository>().SearchArtists(field, query, exact);
-			albumArtists = Injection.Kernel.Get<IAlbumArtistRepository>().SearchAlbumArtists(field, query, exact);
-			albums = Injection.Kernel.Get<IAlbumRepository>().SearchAlbums(field, query, exact);
-			songs = Injection.Kernel.Get<ISongRepository>().SearchSongs(field, query, exact);
-			videos = Injection.Kernel.Get<IVideoRepository>().SearchVideos(field, query, exact);
+			// Check for a request to limit/paginate artists, like SQL
+			// Note: can be combined with range or all artists
+			if (uri.Parameters.ContainsKey("limit"))
+			{
+				string[] limit = uri.Parameters["limit"].Split(',');
+
+				// Ensure valid limit was parsed
+				if (limit.Length < 1 || limit.Length > 2)
+				{
+					processor.WriteJson(new SearchResponse("Parameter 'limit' requires a single integer, or a valid, comma-separated integer tuple", null, null, null, null, null));
+					return;
+				}
+
+				// Validate as integers
+				int index = 0;
+				int duration = Int32.MinValue;
+				if (!Int32.TryParse(limit[0], out index))
+				{
+					processor.WriteJson(new SearchResponse("Parameter 'limit' requires a valid integer start index", null, null, null, null, null));
+					return;
+				}
+
+				// Ensure positive index
+				if (index < 0)
+				{
+					processor.WriteJson(new SearchResponse("Parameter 'limit' requires a non-negative integer start index", null, null, null, null, null));
+					return;
+				}
+
+				// Check for duration
+				if (limit.Length == 2)
+				{
+					if (!Int32.TryParse(limit[1], out duration))
+					{
+						processor.WriteJson(new SearchResponse("Parameter 'limit' requires a valid integer duration", null, null, null, null, null));
+						return;
+					}
+
+					// Ensure positive duration
+					if (duration < 0)
+					{
+						processor.WriteJson(new SearchResponse("Parameter 'limit' requires a non-negative integer duration", null, null, null, null, null));
+						return;
+					}
+				}
+
+				// No duration?  Return just specified number of each item
+				if (duration == Int32.MinValue)
+				{
+					artists = artists.Skip(0).Take(index).ToList();
+					albumArtists = albumArtists.Skip(0).Take(index).ToList();
+					albums = albums.Skip(0).Take(index).ToList();
+					songs = songs.Skip(0).Take(index).ToList();
+					videos = videos.Skip(0).Take(index).ToList();
+				}
+				else
+				{
+					// Else return items starting at index, and taking duration
+					artists = artists.Skip(index).Take(duration).ToList();
+					albumArtists = albumArtists.Skip(index).Take(duration).ToList();
+					albums = albums.Skip(index).Take(duration).ToList();
+					songs = songs.Skip(index).Take(duration).ToList();
+					videos = videos.Skip(index).Take(duration).ToList();
+				}
+			}
 
 			// Return all results
 			processor.WriteJson(new SearchResponse(null, artists, albumArtists, albums, songs, videos));
