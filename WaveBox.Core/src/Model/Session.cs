@@ -10,6 +10,7 @@ using Ninject;
 using WaveBox;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
+using WaveBox.Core.Model.Repository;
 using WaveBox.Core.Static;
 
 namespace WaveBox.Core.Model
@@ -72,27 +73,10 @@ namespace WaveBox.Core.Model
 			return success;
 		}
 
+		// Remove this session by its row ID
 		public bool DeleteSession()
 		{
-			ISQLiteConnection conn = null;
-			bool success = false;
-			try
-			{
-				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				int affected = conn.ExecuteLogged("DELETE FROM Session WHERE RowId = ?", RowId);
-
-				success = affected > 0;
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-			}
-
-			return success;
+			return Injection.Kernel.Get<ISessionRepository>().DeleteSessionForRowId(this.RowId);
 		}
 
 		public override string ToString()
