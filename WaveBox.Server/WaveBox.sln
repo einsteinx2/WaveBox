@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaveBox.Server", "WaveBox.Server.csproj", "{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaveBox.Core.Model", "..\WaveBox.Core.Model\WaveBox.Core.Model.csproj", "{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaveBox.Core", "..\WaveBox.Core\WaveBox.Core.csproj", "{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
