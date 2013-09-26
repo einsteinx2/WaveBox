@@ -18,25 +18,27 @@ namespace WaveBox.Core.Model.Repository
 		public SessionRepository(IDatabase database)
 		{
 			if (database == null)
+			{
 				throw new ArgumentNullException("database");
+			}
 
 			this.database = database;
 
-			Sessions = new List<Session>();
-			ReloadSessions();
+			this.Sessions = new List<Session>();
+			this.ReloadSessions();
 		}
 
 		private void ReloadSessions()
 		{
-			lock (Sessions)
+			lock (this.Sessions)
 			{
-				Sessions.Clear();
+				this.Sessions.Clear();
 
 				ISQLiteConnection conn = null;
 				try
 				{
 					conn = database.GetSqliteConnection();
-					Sessions.AddRange(conn.DeferredQuery<Session>("SELECT * FROM Session"));
+					this.Sessions.AddRange(conn.DeferredQuery<Session>("SELECT RowId AS RowId,* FROM Session"));
 				}
 				catch (Exception e)
 				{
@@ -55,7 +57,7 @@ namespace WaveBox.Core.Model.Repository
 			try
 			{
 				conn = database.GetSqliteConnection();
-				var result = conn.DeferredQuery<Session>("SELECT RowId AS RowId, * FROM Session WHERE RowId = ?", rowId);
+				var result = conn.DeferredQuery<Session>("SELECT RowId AS RowId,* FROM Session WHERE RowId = ?", rowId);
 
 				foreach (var session in result)
 				{
@@ -76,11 +78,13 @@ namespace WaveBox.Core.Model.Repository
 
 		public Session SessionForSessionId(string sessionId)
 		{
-			lock (Sessions)
+			lock (this.Sessions)
 			{
 				Session session = Sessions.SingleOrDefault(s => s.SessionId == sessionId);
 				if (session == null)
+				{
 					session = new Session();
+				}
 
 				return session;
 			}
@@ -134,17 +138,17 @@ namespace WaveBox.Core.Model.Repository
 
 		public IList<Session> AllSessions()
 		{
-			lock (Sessions)
+			lock (this.Sessions)
 			{
-				return new List<Session>(Sessions);
+				return new List<Session>(this.Sessions);
 			}
 		}
 
 		public int CountSessions()
 		{
-			lock (Sessions)
+			lock (this.Sessions)
 			{
-				return Sessions.Count;
+				return this.Sessions.Count;
 			}
 		}
 
@@ -161,7 +165,7 @@ namespace WaveBox.Core.Model.Repository
 
 				if (success)
 				{
-					ReloadSessions();
+					this.ReloadSessions();
 				}
 			}
 			catch (Exception e)
@@ -178,7 +182,7 @@ namespace WaveBox.Core.Model.Repository
 
 		public int? UserIdForSessionid(string sessionId)
 		{
-			lock (Sessions)
+			lock (this.Sessions)
 			{
 				Session session = Sessions.SingleOrDefault(s => s.SessionId == sessionId);
 				if (session != null)
