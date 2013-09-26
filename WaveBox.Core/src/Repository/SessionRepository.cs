@@ -114,6 +114,9 @@ namespace WaveBox.Core.Model.Repository
 
 				int affected = conn.InsertLogged(session);
 
+				// Fetch the row ID just created
+				session.RowId = conn.ExecuteScalar<int>("SELECT RowId AS RowId FROM Session WHERE SessionId = ?", session.SessionId);
+
 				if (affected > 0)
 				{
 					lock (Sessions)
@@ -150,6 +153,36 @@ namespace WaveBox.Core.Model.Repository
 			{
 				return this.Sessions.Count;
 			}
+		}
+
+		// Remove a session by row ID, reload the cached sessions list
+		public bool DeleteSessionForRowId(int rowId)
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = database.GetSqliteConnection();
+				Console.WriteLine("ROWID: " + rowId);
+				int affected = conn.ExecuteLogged("DELETE FROM Session WHERE RowId = ?", rowId);
+				Console.WriteLine("AFFECTED: " + affected);
+
+				if (affected > 0)
+				{
+					this.ReloadSessions();
+
+					return true;
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				database.CloseSqliteConnection(conn);
+			}
+
+			return false;
 		}
 
 		public bool DeleteSessionsForUserId(int userId)
