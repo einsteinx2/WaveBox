@@ -31,17 +31,19 @@ namespace WaveBox.Core.Model.Repository
 			ReloadUsers();
 		}
 
-		private void ReloadUsers()
+		public bool ReloadUsers()
 		{
-			lock (Users)
+			lock (this.Users)
 			{
-				Users.Clear();
+				this.Users.Clear();
 
 				ISQLiteConnection conn = null;
 				try
 				{
 					conn = database.GetSqliteConnection();
-					Users.AddRange(conn.DeferredQuery<User>("SELECT * FROM User"));
+					this.Users.AddRange(conn.DeferredQuery<User>("SELECT * FROM User"));
+
+					return true;
 				}
 				catch (Exception e)
 				{
@@ -52,6 +54,8 @@ namespace WaveBox.Core.Model.Repository
 					database.CloseSqliteConnection(conn);
 				}
 			}
+
+			return false;
 		}
 
 		public User UserForId(int userId)

@@ -8,8 +8,8 @@ using Newtonsoft.Json;
 using Ninject;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
-using WaveBox.Core.Static;
 using WaveBox.Core.Model.Repository;
+using WaveBox.Core.Static;
 
 namespace WaveBox.Core.Model
 {
@@ -60,10 +60,6 @@ namespace WaveBox.Core.Model
 		[JsonIgnore, IgnoreRead, IgnoreWrite]
 		public string GroupingName { get { return UserName; } }
 
-		public User()
-		{
-		}
-
 		// Verifies that this user object has permission to view a section
 		public bool HasPermission(Role role)
 		{
@@ -103,7 +99,7 @@ namespace WaveBox.Core.Model
 			try
 			{
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				return conn.Query<Session>("SELECT RowId AS RowId, * FROM Session WHERE UserId = ?", UserId);
+				return conn.Query<Session>("SELECT RowId AS RowId, * FROM Session WHERE UserId = ?", this.UserId);
 			}
 			catch (Exception e)
 			{
@@ -117,42 +113,7 @@ namespace WaveBox.Core.Model
 			return new List<Session>();
 		}
 
-		public static int CompareUsersByName(User x, User y)
-		{
-			return StringComparer.OrdinalIgnoreCase.Compare(x.UserName, y.UserName);
-		}
-
-		// Compute password hash using PBKDF2
-		public static string ComputePasswordHash(string password, string salt, int iterations = HashIterations)
-		{
-			// Convert salt to byte array
-			byte[] saltBytes = Encoding.UTF8.GetBytes(salt);
-
-			// Hash using PBKDF2 with salt and predefined iterations
-			using (Rfc2898DeriveBytes pbkdf2 = new Rfc2898DeriveBytes(password, saltBytes, iterations))
-			{
-				var key = pbkdf2.GetBytes(64);
-				return Convert.ToBase64String(key);
-			}
-		}
-
-		// Use RNG crypto service to generate random bytes for salt
-		public static string GeneratePasswordSalt()
-		{
-			// Create byte array to store salt
-			byte[] salt = new byte[32];
-
-			// Fill array using RNG
-			using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
-			{
-				rng.GetBytes(salt);
-			}
-
-			// Return string representation
-			return Convert.ToBase64String(salt);
-		}
-
-		public void UpdatePassword(string password)
+		public bool UpdatePassword(string password)
 		{
 			string salt = GeneratePasswordSalt();
 			string hash = ComputePasswordHash(password, salt);
@@ -161,12 +122,14 @@ namespace WaveBox.Core.Model
 			try
 			{
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				int affected = conn.Execute("UPDATE User SET PasswordHash = ?, PasswordSalt = ? WHERE UserName = ?", hash, salt, UserName);
+				int affected = conn.Execute("UPDATE User SET PasswordHash = ?, PasswordSalt = ? WHERE UserId = ?", hash, salt, this.UserId);
 
 				if (affected > 0)
 				{
-					PasswordHash = hash;
-					PasswordSalt = salt;
+					this.PasswordHash = hash;
+					this.PasswordSalt = salt;
+
+					return Injection.Kernel.Get<IUserRepository>().ReloadUsers();
 				}
 			}
 			catch (Exception e)
@@ -177,9 +140,11 @@ namespace WaveBox.Core.Model
 			{
 				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
+
+			return false;
 		}
 
-		public void UpdateLastfmSession(string sessionKey)
+		public bool UpdateLastfmSession(string sessionKey)
 		{
 			ISQLiteConnection conn = null;
 			try
@@ -189,7 +154,9 @@ namespace WaveBox.Core.Model
 
 				if (affected > 0)
 				{
-					LastfmSession = sessionKey;
+					this.LastfmSession = sessionKey;
+
+					return Injection.Kernel.Get<IUserRepository>().ReloadUsers();
 				}
 			}
 			catch (Exception e)
@@ -200,6 +167,64 @@ namespace WaveBox.Core.Model
 			{
 				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
+
+			return false;
+		}
+
+		// Update a user's username
+		public bool UpdateUsername(string username)
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+				int affected = conn.Execute("UPDATE User SET UserName = ? WHERE UserId = ?", username, this.UserId);
+
+				if (affected > 0)
+				{
+					this.UserName = username;
+
+					return Injection.Kernel.Get<IUserRepository>().ReloadUsers();
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+			}
+
+			return false;
+		}
+
+		// Update a user's role
+		public bool UpdateRole(Role role)
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+				int affected = conn.Execute("UPDATE User SET Role = ? WHERE UserId = ?", role, this.UserId);
+
+				if (affected > 0)
+				{
+					this.Role = role;
+
+					return Injection.Kernel.Get<IUserRepository>().ReloadUsers();
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+			}
+
+			return false;
 		}
 
 		// Verify password, using timing attack resistant approach
@@ -207,10 +232,10 @@ namespace WaveBox.Core.Model
 		public bool Authenticate(string password)
 		{
 			// Compute hash
-			string hash = ComputePasswordHash(password, PasswordSalt);
+			string hash = ComputePasswordHash(password, this.PasswordSalt);
 
 			// Ensure hashes are same length
-			if (hash.Length != PasswordHash.Length)
+			if (hash.Length != this.PasswordHash.Length)
 			{
 				return false;
 			}
@@ -219,7 +244,7 @@ namespace WaveBox.Core.Model
 			int status = 0;
 			for (int i = 0; i < hash.Length; i++)
 			{
-				status |= ((int)hash[i] ^ (int)PasswordHash[i]);
+				status |= ((int)hash[i] ^ (int)this.PasswordHash[i]);
 			}
 
 			return status == 0;
@@ -228,7 +253,7 @@ namespace WaveBox.Core.Model
 		public bool CreateSession(string password, string clientName)
 		{
 			// On successful authentication, create session!
-			if (Authenticate(password))
+			if (this.Authenticate(password))
 			{
 				Session s = Injection.Kernel.Get<ISessionRepository>().CreateSession(Convert.ToInt32(UserId), clientName);
 				if (s != null)
@@ -278,6 +303,41 @@ namespace WaveBox.Core.Model
 		public override string ToString()
 		{
 			return String.Format("[User: UserId={0}, UserName={1}]", this.UserId, this.UserName);
+		}
+
+		public static int CompareUsersByName(User x, User y)
+		{
+			return StringComparer.OrdinalIgnoreCase.Compare(x.UserName, y.UserName);
+		}
+
+		// Compute password hash using PBKDF2
+		public static string ComputePasswordHash(string password, string salt, int iterations = HashIterations)
+		{
+			// Convert salt to byte array
+			byte[] saltBytes = Encoding.UTF8.GetBytes(salt);
+
+			// Hash using PBKDF2 with salt and predefined iterations
+			using (Rfc2898DeriveBytes pbkdf2 = new Rfc2898DeriveBytes(password, saltBytes, iterations))
+			{
+				var key = pbkdf2.GetBytes(64);
+				return Convert.ToBase64String(key);
+			}
+		}
+
+		// Use RNG crypto service to generate random bytes for salt
+		public static string GeneratePasswordSalt()
+		{
+			// Create byte array to store salt
+			byte[] salt = new byte[32];
+
+			// Fill array using RNG
+			using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider())
+			{
+				rng.GetBytes(salt);
+			}
+
+			// Return string representation
+			return Convert.ToBase64String(salt);
 		}
 	}
 }

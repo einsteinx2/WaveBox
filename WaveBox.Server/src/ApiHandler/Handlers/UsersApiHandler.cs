@@ -28,6 +28,7 @@ namespace WaveBox.ApiHandler.Handlers
 				case "create":
 				case "delete":
 				case "killSession":
+				case "update":
 					return user.HasPermission(Role.Admin);
 				// Read
 				case "read":
@@ -43,6 +44,33 @@ namespace WaveBox.ApiHandler.Handlers
 		{
 			// Return list of users to be passed as JSON
 			IList<User> listOfUsers = new List<User>();
+
+			// Parse common parameters
+			// Username
+			string username = null;
+			if (uri.Parameters.ContainsKey("username"))
+			{
+				username = uri.Parameters["username"];
+			}
+
+			// Password
+			string password = null;
+			if (uri.Parameters.ContainsKey("password"))
+			{
+				password = uri.Parameters["password"];
+			}
+
+			// Role
+			Role role = Role.User;
+			int roleInt = 0;
+			if (uri.Parameters.ContainsKey("role") && Int32.TryParse(uri.Parameters["role"], out roleInt))
+			{
+				// Validate role
+				if (Enum.IsDefined(typeof(Role), roleInt))
+				{
+					role = (Role)roleInt;
+				}
+			}
 
 			// See if we need to make a test user
 			if (uri.Parameters.ContainsKey("testUser") && uri.Parameters["testUser"].IsTrue())
@@ -121,17 +149,14 @@ namespace WaveBox.ApiHandler.Handlers
 			if (uri.Action == "create")
 			{
 				// Check for required username and password parameters
-				if (!uri.Parameters.ContainsKey("username") || !uri.Parameters.ContainsKey("password"))
+				if (username == null || password == null)
 				{
 					processor.WriteJson(new UsersResponse("Parameters 'username' and 'password' required for action 'create'", null));
 					return;
 				}
 
-				string username = uri.Parameters["username"];
-				string password = uri.Parameters["password"];
-
 				// Attempt to create the user
-				User newUser = Injection.Kernel.Get<IUserRepository>().CreateUser(username, password, Role.User, null);
+				User newUser = Injection.Kernel.Get<IUserRepository>().CreateUser(username, password, role, null);
 				if (newUser == null)
 				{
 					processor.WriteJson(new UsersResponse("Action 'create' failed to create new user", null));
@@ -174,6 +199,55 @@ namespace WaveBox.ApiHandler.Handlers
 				// Return deleted user
 				logger.IfInfo(String.Format("Successfully deleted user [id: {0}, username: {1}]", deleteUser.UserId, deleteUser.UserName));
 				listOfUsers.Add(deleteUser);
+
+				processor.WriteJson(new UsersResponse(null, listOfUsers));
+				return;
+			}
+
+			// update - update a user's username, password, or role
+			if (uri.Action == "update")
+			{
+				// Attempt to get user
+				User updateUser = Injection.Kernel.Get<IUserRepository>().UserForId((int)uri.Id);
+				if (updateUser.UserName == null)
+				{
+					processor.WriteJson(new UsersResponse("Invalid user ID for action 'update'", null));
+					return;
+				}
+
+				// Change username
+				if (username != null)
+				{
+					if (!updateUser.UpdateUsername(username))
+					{
+						processor.WriteJson(new UsersResponse("Action 'update' failed to change username", null));
+						return;
+					}
+				}
+
+				// Change password
+				if (username != null)
+				{
+					if (!updateUser.UpdatePassword(password))
+					{
+						processor.WriteJson(new UsersResponse("Action 'update' failed to change password", null));
+						return;
+					}
+				}
+
+				// Change role
+				if (uri.Parameters.ContainsKey("role") && (role != updateUser.Role))
+				{
+					if (!updateUser.UpdateRole(role))
+					{
+						processor.WriteJson(new UsersResponse("Action 'update' failed to change role", null));
+						return;
+					}
+				}
+
+				// Return updated user
+				logger.IfInfo(String.Format("Successfully updated user [id: {0}, username: {1}]", updateUser.UserId, updateUser.UserName));
+				listOfUsers.Add(updateUser);
 
 				processor.WriteJson(new UsersResponse(null, listOfUsers));
 				return;
