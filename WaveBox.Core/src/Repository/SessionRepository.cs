@@ -159,11 +159,11 @@ namespace WaveBox.Core.Model.Repository
 			}
 		}
 
-		public bool UpdateSessionCache(string sessionId, Session session)
+		public bool UpdateSessionCache(Session session)
 		{
 			lock (this.Sessions)
 			{
-				this.Sessions[sessionId] = session;
+				this.Sessions[session.SessionId] = session;
 			}
 
 			return true;

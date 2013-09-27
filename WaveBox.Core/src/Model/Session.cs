@@ -37,10 +37,6 @@ namespace WaveBox.Core.Model
 		[JsonProperty("updateTime")]
 		public long? UpdateTime { get; set; }
 
-		public Session()
-		{
-		}
-
 		public bool Update()
 		{
 			// Get current UNIX time
@@ -57,7 +53,7 @@ namespace WaveBox.Core.Model
 				{
 					this.UpdateTime = unixTime;
 
-					return Injection.Kernel.Get<ISessionRepository>().UpdateSessionCache(this.SessionId, this);
+					return Injection.Kernel.Get<ISessionRepository>().UpdateSessionCache(this);
 				}
 			}
 			catch (Exception e)
