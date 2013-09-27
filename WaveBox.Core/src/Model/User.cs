@@ -8,8 +8,8 @@ using Newtonsoft.Json;
 using Ninject;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
-using WaveBox.Core.Static;
 using WaveBox.Core.Model.Repository;
+using WaveBox.Core.Static;
 
 namespace WaveBox.Core.Model
 {
@@ -60,10 +60,6 @@ namespace WaveBox.Core.Model
 		[JsonIgnore, IgnoreRead, IgnoreWrite]
 		public string GroupingName { get { return UserName; } }
 
-		public User()
-		{
-		}
-
 		// Verifies that this user object has permission to view a section
 		public bool HasPermission(Role role)
 		{
@@ -77,7 +73,7 @@ namespace WaveBox.Core.Model
 
 			if (s != null)
 			{
-				return s.UpdateSession();
+				return s.Update();
 			}
 
 			return false;
@@ -91,7 +87,7 @@ namespace WaveBox.Core.Model
 			// Ensure session actually belongs to this user
 			if (s != null && s.UserId == this.UserId)
 			{
-				return s.DeleteSession();
+				return s.Delete();
 			}
 
 			return false;
@@ -103,7 +99,7 @@ namespace WaveBox.Core.Model
 			try
 			{
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				return conn.Query<Session>("SELECT RowId AS RowId, * FROM Session WHERE UserId = ?", UserId);
+				return conn.Query<Session>("SELECT RowId AS RowId, * FROM Session WHERE UserId = ?", this.UserId);
 			}
 			catch (Exception e)
 			{
@@ -115,6 +111,200 @@ namespace WaveBox.Core.Model
 			}
 
 			return new List<Session>();
+		}
+
+		public bool UpdatePassword(string password)
+		{
+			string salt = GeneratePasswordSalt();
+			string hash = ComputePasswordHash(password, salt);
+
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+				int affected = conn.Execute("UPDATE User SET PasswordHash = ?, PasswordSalt = ? WHERE UserId = ?", hash, salt, this.UserId);
+
+				if (affected > 0)
+				{
+					this.PasswordHash = hash;
+					this.PasswordSalt = salt;
+
+					return Injection.Kernel.Get<IUserRepository>().UpdateUserCache(this);
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+			}
+
+			return false;
+		}
+
+		public bool UpdateLastfmSession(string sessionKey)
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+				int affected = conn.Execute("UPDATE User SET LastfmSession = ? WHERE UserName = ?", sessionKey, UserName);
+
+				if (affected > 0)
+				{
+					this.LastfmSession = sessionKey;
+
+					return Injection.Kernel.Get<IUserRepository>().UpdateUserCache(this);
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+			}
+
+			return false;
+		}
+
+		// Update a user's username
+		public bool UpdateUsername(string username)
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+				int affected = conn.Execute("UPDATE User SET UserName = ? WHERE UserId = ?", username, this.UserId);
+
+				if (affected > 0)
+				{
+					this.UserName = username;
+
+					return Injection.Kernel.Get<IUserRepository>().UpdateUserCache(this);
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+			}
+
+			return false;
+		}
+
+		// Update a user's role
+		public bool UpdateRole(Role role)
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+				int affected = conn.Execute("UPDATE User SET Role = ? WHERE UserId = ?", role, this.UserId);
+
+				if (affected > 0)
+				{
+					this.Role = role;
+
+					return Injection.Kernel.Get<IUserRepository>().UpdateUserCache(this);
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+			}
+
+			return false;
+		}
+
+		// Verify password, using timing attack resistant approach
+		// Credit to PHP5.5 Password API for this method
+		public bool Authenticate(string password)
+		{
+			// Compute hash
+			string hash = ComputePasswordHash(password, this.PasswordSalt);
+
+			// Ensure hashes are same length
+			if (hash.Length != this.PasswordHash.Length)
+			{
+				return false;
+			}
+
+			// Compare ASCII value of each character, bitwise OR any diff
+			int status = 0;
+			for (int i = 0; i < hash.Length; i++)
+			{
+				status |= ((int)hash[i] ^ (int)this.PasswordHash[i]);
+			}
+
+			return status == 0;
+		}
+
+		public bool CreateSession(string password, string clientName)
+		{
+			// On successful authentication, create session!
+			if (this.Authenticate(password))
+			{
+				Session s = Injection.Kernel.Get<ISessionRepository>().CreateSession(Convert.ToInt32(UserId), clientName);
+				if (s != null)
+				{
+					SessionId = s.SessionId;
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		public bool Delete()
+		{
+			if (ReferenceEquals(UserId, null))
+			{
+				return true;
+			}
+
+			// Delete the user
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+				int affected = conn.Execute("DELETE FROM User WHERE UserId = ?", UserId);
+
+				if (affected > 0)
+				{
+					// Delete associated sessions
+					Injection.Kernel.Get<ISessionRepository>().DeleteSessionsForUserId((int)UserId);
+
+					return Injection.Kernel.Get<IUserRepository>().DeleteFromUserCache(this);
+				}
+
+				return true;
+			}
+			catch (Exception e)
+			{
+				logger.Error(e);
+			}
+			finally
+			{
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+			}
+
+			return false;
+		}
+
+		public override string ToString()
+		{
+			return String.Format("[User: UserId={0}, UserName={1}]", this.UserId, this.UserName);
 		}
 
 		public static int CompareUsersByName(User x, User y)
@@ -150,134 +340,6 @@ namespace WaveBox.Core.Model
 
 			// Return string representation
 			return Convert.ToBase64String(salt);
-		}
-
-		public void UpdatePassword(string password)
-		{
-			string salt = GeneratePasswordSalt();
-			string hash = ComputePasswordHash(password, salt);
-
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				int affected = conn.Execute("UPDATE User SET PasswordHash = ?, PasswordSalt = ? WHERE UserName = ?", hash, salt, UserName);
-
-				if (affected > 0)
-				{
-					PasswordHash = hash;
-					PasswordSalt = salt;
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-			}
-		}
-
-		public void UpdateLastfmSession(string sessionKey)
-		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				int affected = conn.Execute("UPDATE User SET LastfmSession = ? WHERE UserName = ?", sessionKey, UserName);
-
-				if (affected > 0)
-				{
-					LastfmSession = sessionKey;
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-			}
-		}
-
-		// Verify password, using timing attack resistant approach
-		// Credit to PHP5.5 Password API for this method
-		public bool Authenticate(string password)
-		{
-			// Compute hash
-			string hash = ComputePasswordHash(password, PasswordSalt);
-
-			// Ensure hashes are same length
-			if (hash.Length != PasswordHash.Length)
-			{
-				return false;
-			}
-
-			// Compare ASCII value of each character, bitwise OR any diff
-			int status = 0;
-			for (int i = 0; i < hash.Length; i++)
-			{
-				status |= ((int)hash[i] ^ (int)PasswordHash[i]);
-			}
-
-			return status == 0;
-		}
-
-		public bool CreateSession(string password, string clientName)
-		{
-			// On successful authentication, create session!
-			if (Authenticate(password))
-			{
-				Session s = Injection.Kernel.Get<ISessionRepository>().CreateSession(Convert.ToInt32(UserId), clientName);
-				if (s != null)
-				{
-					SessionId = s.SessionId;
-					return true;
-				}
-			}
-
-			return false;
-		}
-
-		public bool Delete()
-		{
-			if (ReferenceEquals(UserId, null))
-			{
-				return true;
-			}
-
-			// Delete the user
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				int affected = conn.Execute("DELETE FROM User WHERE UserId = ?", UserId);
-
-				if (affected > 0)
-				{
-					// Delete associated sessions
-					Injection.Kernel.Get<ISessionRepository>().DeleteSessionsForUserId((int)UserId);
-				}
-
-				return true;
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-			}
-
-			return false;
-		}
-
-		public override string ToString()
-		{
-			return String.Format("[User: UserId={0}, UserName={1}]", this.UserId, this.UserName);
 		}
 	}
 }
