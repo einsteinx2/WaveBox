@@ -14,24 +14,28 @@ namespace WaveBox.Core.Model.Repository
 		private readonly IDatabase database;
 		private readonly IItemRepository itemRepository;
 
-		private IList<User> Users { get; set; }
+		private IDictionary<int, User> Users { get; set; }
 
 		public UserRepository(IDatabase database, IItemRepository itemRepository)
 		{
 			if (database == null)
+			{
 				throw new ArgumentNullException("database");
+			}
 			if (itemRepository == null)
+			{
 				throw new ArgumentNullException("itemRepository");
+			}
 
 			this.database = database;
 			this.itemRepository = itemRepository;
 
 			// Load users from the DB into memory for quicker checking
-			Users = new List<User>();
-			ReloadUsers();
+			this.Users = new Dictionary<int, User>();
+			this.ReloadUsers();
 		}
 
-		public bool ReloadUsers()
+		private bool ReloadUsers()
 		{
 			lock (this.Users)
 			{
@@ -41,7 +45,14 @@ namespace WaveBox.Core.Model.Repository
 				try
 				{
 					conn = database.GetSqliteConnection();
-					this.Users.AddRange(conn.DeferredQuery<User>("SELECT * FROM User"));
+
+					foreach (User u in conn.DeferredQuery<User>("SELECT * FROM User"))
+					{
+						// Don't cache passwords
+						u.Password = null;
+
+						this.Users[(int)u.UserId] = u;
+					}
 
 					return true;
 				}
@@ -60,23 +71,26 @@ namespace WaveBox.Core.Model.Repository
 
 		public User UserForId(int userId)
 		{
-			lock (Users)
+			lock (this.Users)
 			{
-				User user = Users.SingleOrDefault(u => u.UserId == userId);
-				if (user == null)
-					user = new User() { UserId = userId };
+				if (this.Users.ContainsKey(userId))
+				{
+					return this.Users[userId];
+				}
 
-				return user;
+				return new User() { UserId = userId };
 			}
 		}
 
 		public User UserForName(string userName)
 		{
-			lock (Users)
+			lock (this.Users)
 			{
-				User user = Users.SingleOrDefault(u => u.UserName == userName);
+				User user = this.Users.Values.SingleOrDefault(u => u.UserName == userName);
 				if (user == null)
+				{
 					user = new User() { UserName = userName };
+				}
 
 				return user;
 			}
@@ -90,6 +104,12 @@ namespace WaveBox.Core.Model.Repository
 				return null;
 			}
 
+			// Verify user doesn't exist in cache
+			if (this.Users.Values.Any(x => x.UserName == userName))
+			{
+				return new User();
+			}
+
 			string salt = User.GeneratePasswordSalt();
 			string hash = User.ComputePasswordHash(password, salt);
 
@@ -101,18 +121,14 @@ namespace WaveBox.Core.Model.Repository
 				u.UserId = itemId;
 				u.UserName = userName;
 				u.Role = role;
-				u.PasswordHash = hash;
 				u.Password = password;
+				u.PasswordHash = hash;
 				u.PasswordSalt = salt;
 				u.CreateTime = DateTime.Now.ToUniversalUnixTimestamp();
 				u.DeleteTime = deleteTime;
 				conn.Insert(u);
 
-				// Add to the memory cache
-				lock (Users)
-				{
-					Users.Add(u);
-				}
+				this.ReloadUsers();
 
 				return u;
 			}
@@ -141,20 +157,42 @@ namespace WaveBox.Core.Model.Repository
 				durationSeconds = 60 * 60 * 24;
 			}
 
-			return CreateUser(Utility.RandomString(16), Utility.RandomString(16), Role.Test, DateTime.Now.ToUniversalUnixTimestamp() + durationSeconds);
+			return this.CreateUser(Utility.RandomString(16), Utility.RandomString(16), Role.Test, DateTime.Now.ToUniversalUnixTimestamp() + durationSeconds);
 		}
 
 		public IList<User> AllUsers()
 		{
-			lock (Users)
+			lock (this.Users)
 			{
-				IList<User> tempUsers =  new List<User>(Users);
+				IList<User> tempUsers = new List<User>(this.Users.Values.ToList());
+
 				foreach (User u in tempUsers)
 				{
 					u.Sessions = u.ListOfSessions();
 				}
+
 				return tempUsers;
 			}
+		}
+
+		public bool DeleteFromUserCache(User user)
+		{
+			lock (this.Users)
+			{
+				this.Users.Remove((int)user.UserId);
+			}
+
+			return true;
+		}
+
+		public bool UpdateUserCache(User user)
+		{
+			lock (this.Users)
+			{
+				this.Users[(int)user.UserId] = user;
+			}
+
+			return true;
 		}
 
 		public IList<User> ExpiredUsers()
@@ -178,4 +216,3 @@ namespace WaveBox.Core.Model.Repository
 		}
 	}
 }
-

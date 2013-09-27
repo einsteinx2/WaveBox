@@ -129,7 +129,7 @@ namespace WaveBox.Core.Model
 					this.PasswordHash = hash;
 					this.PasswordSalt = salt;
 
-					return Injection.Kernel.Get<IUserRepository>().ReloadUsers();
+					return Injection.Kernel.Get<IUserRepository>().UpdateUserCache(this);
 				}
 			}
 			catch (Exception e)
@@ -156,7 +156,7 @@ namespace WaveBox.Core.Model
 				{
 					this.LastfmSession = sessionKey;
 
-					return Injection.Kernel.Get<IUserRepository>().ReloadUsers();
+					return Injection.Kernel.Get<IUserRepository>().UpdateUserCache(this);
 				}
 			}
 			catch (Exception e)
@@ -184,7 +184,7 @@ namespace WaveBox.Core.Model
 				{
 					this.UserName = username;
 
-					return Injection.Kernel.Get<IUserRepository>().ReloadUsers();
+					return Injection.Kernel.Get<IUserRepository>().UpdateUserCache(this);
 				}
 			}
 			catch (Exception e)
@@ -212,7 +212,7 @@ namespace WaveBox.Core.Model
 				{
 					this.Role = role;
 
-					return Injection.Kernel.Get<IUserRepository>().ReloadUsers();
+					return Injection.Kernel.Get<IUserRepository>().UpdateUserCache(this);
 				}
 			}
 			catch (Exception e)
@@ -284,6 +284,8 @@ namespace WaveBox.Core.Model
 				{
 					// Delete associated sessions
 					Injection.Kernel.Get<ISessionRepository>().DeleteSessionsForUserId((int)UserId);
+
+					return Injection.Kernel.Get<IUserRepository>().DeleteFromUserCache(this);
 				}
 
 				return true;
