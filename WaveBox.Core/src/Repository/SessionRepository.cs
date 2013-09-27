@@ -159,6 +159,16 @@ namespace WaveBox.Core.Model.Repository
 			}
 		}
 
+		public bool UpdateSessionCache(string sessionId, Session session)
+		{
+			lock (this.Sessions)
+			{
+				this.Sessions[sessionId] = session;
+			}
+
+			return true;
+		}
+
 		// Remove a session by row ID, reload the cached sessions list
 		public bool DeleteSessionForRowId(int rowId)
 		{

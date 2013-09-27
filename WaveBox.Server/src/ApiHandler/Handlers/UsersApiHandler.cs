@@ -137,7 +137,7 @@ namespace WaveBox.ApiHandler.Handlers
 				var session = Injection.Kernel.Get<ISessionRepository>().SessionForRowId(rowId);
 				if (session != null)
 				{
-					session.DeleteSession();
+					session.Delete();
 					listOfUsers.Add(Injection.Kernel.Get<IUserRepository>().UserForId(Convert.ToInt32(session.UserId)));
 				}
 

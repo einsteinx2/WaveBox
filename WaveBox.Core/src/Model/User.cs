@@ -73,7 +73,7 @@ namespace WaveBox.Core.Model
 
 			if (s != null)
 			{
-				return s.UpdateSession();
+				return s.Update();
 			}
 
 			return false;
@@ -87,7 +87,7 @@ namespace WaveBox.Core.Model
 			// Ensure session actually belongs to this user
 			if (s != null && s.UserId == this.UserId)
 			{
-				return s.DeleteSession();
+				return s.Delete();
 			}
 
 			return false;

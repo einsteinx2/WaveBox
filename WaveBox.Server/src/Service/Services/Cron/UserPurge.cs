@@ -53,7 +53,7 @@ namespace WaveBox.Service.Services.Cron
 				// Check current time and last update, purge if the diff is higher than SessionTimeout minutes
 				if ((unixTime - Convert.ToInt32(s.UpdateTime)) >= (Injection.Kernel.Get<IServerSettings>().SessionTimeout * 60))
 				{
-					if (s.DeleteSession())
+					if (s.Delete())
 					{
 						logger.IfInfo(String.Format("Purged session: [id: {0}, user: {1}]", s.RowId, s.UserId));
 					}

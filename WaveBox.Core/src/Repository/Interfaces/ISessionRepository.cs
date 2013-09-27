@@ -10,6 +10,7 @@ namespace WaveBox.Core.Model.Repository
 		Session CreateSession(int userId, string clientName);
 		IList<Session> AllSessions();
 		int CountSessions();
+		bool UpdateSessionCache(string sessionId, Session session);
 		bool DeleteSessionForRowId(int rowId);
 		bool DeleteSessionsForUserId(int userId);
 		int? UserIdForSessionid(string sessionId);

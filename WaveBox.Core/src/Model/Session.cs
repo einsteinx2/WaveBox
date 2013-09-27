@@ -41,10 +41,8 @@ namespace WaveBox.Core.Model
 		{
 		}
 
-		public bool UpdateSession()
+		public bool Update()
 		{
-			bool success = false;
-
 			// Get current UNIX time
 			long unixTime = DateTime.Now.ToUniversalUnixTimestamp();
 
@@ -53,12 +51,13 @@ namespace WaveBox.Core.Model
 			{
 				// Not logged, because sessions aren't needed in the backup database anyway
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				int affected = conn.Execute("UPDATE Session SET UpdateTime = ? WHERE SessionId = ?", unixTime, SessionId);
+				int affected = conn.Execute("UPDATE Session SET UpdateTime = ? WHERE SessionId = ?", unixTime, this.SessionId);
 
 				if (affected > 0)
 				{
-					UpdateTime = unixTime;
-					success = true;
+					this.UpdateTime = unixTime;
+
+					return Injection.Kernel.Get<ISessionRepository>().UpdateSessionCache(this.SessionId, this);
 				}
 			}
 			catch (Exception e)
@@ -70,11 +69,11 @@ namespace WaveBox.Core.Model
 				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
 			}
 
-			return success;
+			return false;
 		}
 
 		// Remove this session by its row ID
-		public bool DeleteSession()
+		public bool Delete()
 		{
 			return Injection.Kernel.Get<ISessionRepository>().DeleteSessionForRowId(this.RowId);
 		}
