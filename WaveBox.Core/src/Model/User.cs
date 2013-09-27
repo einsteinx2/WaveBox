@@ -228,7 +228,7 @@ namespace WaveBox.Core.Model
 		public bool CreateSession(string password, string clientName)
 		{
 			// On successful authentication, create session!
-			if (Authenticate(password))
+			if (this.Authenticate(password))
 			{
 				Session s = Injection.Kernel.Get<ISessionRepository>().CreateSession(Convert.ToInt32(UserId), clientName);
 				if (s != null)
