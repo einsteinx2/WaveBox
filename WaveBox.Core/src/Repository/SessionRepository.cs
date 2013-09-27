@@ -216,6 +216,11 @@ namespace WaveBox.Core.Model.Repository
 
 		public int? UserIdForSessionid(string sessionId)
 		{
+			if (sessionId == null)
+			{
+				return null;
+			}
+
 			lock (this.Sessions)
 			{
 				if (this.Sessions.ContainsKey(sessionId))

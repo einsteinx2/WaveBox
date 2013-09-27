@@ -226,7 +226,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 
 				// Change password
-				if (username != null)
+				if (password != null)
 				{
 					if (!updateUser.UpdatePassword(password))
 					{

@@ -283,7 +283,7 @@ namespace WaveBox.Service.Services.Http
 				DateTime expire = DateTime.Now.ToUniversalTime().AddMinutes(Injection.Kernel.Get<IServerSettings>().SessionTimeout);
 
 				// Add a delayed header so cookie will be reset on each API call (to prevent timeout)
-				this.DelayedHeaders["Set-Cookie"] = String.Format("wavebox_session={0}; Expires={1};", sessionId, expire.ToRFC1123());
+				this.DelayedHeaders["Set-Cookie"] = String.Format("wavebox_session={0}; Path=/api; Expires={1};", sessionId, expire.ToRFC1123());
 			}
 		}
 
