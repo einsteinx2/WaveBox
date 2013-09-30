@@ -37,37 +37,43 @@ namespace WaveBox.FolderScanning
 			logger.IfInfo("---------------- ORPHAN SCAN ----------------");
 			logger.IfInfo("Folders:");
 			sw.Start();
-			CheckFolders();
+			this.CheckFolders();
 			sw.Stop();
 			logger.IfInfo("Done, elapsed: " + sw.ElapsedMilliseconds + "ms");
 
 			logger.IfInfo("Songs:");
 			sw.Restart();
-			CheckSongs();
+			this.CheckSongs();
 			sw.Stop();
 			logger.IfInfo("Done, elapsed: " + sw.ElapsedMilliseconds + "ms");
 
 			logger.IfInfo("Artists:");
 			sw.Restart();
-			CheckArtists();
+			this.CheckArtists();
+			sw.Stop();
+			logger.IfInfo("Done, elapsed: " + sw.ElapsedMilliseconds + "ms");
+
+			logger.IfInfo("AlbumArtists:");
+			sw.Restart();
+			this.CheckAlbumArtists();
 			sw.Stop();
 			logger.IfInfo("Done, elapsed: " + sw.ElapsedMilliseconds + "ms");
 
 			logger.IfInfo("Albums:");
 			sw.Restart();
-			CheckAlbums();
+			this.CheckAlbums();
 			sw.Stop();
 			logger.IfInfo("Done, elapsed: " + sw.ElapsedMilliseconds + "ms");
 
 			logger.IfInfo("Genres:");
 			sw.Restart();
-			CheckGenres();
+			this.CheckGenres();
 			sw.Stop();
 			logger.IfInfo("Done, elapsed: " + sw.ElapsedMilliseconds + "ms");
 
 			logger.IfInfo("Videos:");
 			sw.Restart();
-			CheckVideos();
+			this.CheckVideos();
 			sw.Stop();
 			logger.IfInfo("Done, elapsed: " + sw.ElapsedMilliseconds + "ms");
 
@@ -77,7 +83,7 @@ namespace WaveBox.FolderScanning
 
 		private void CheckFolders()
 		{
-			if (isRestart) 
+			if (isRestart)
 			{
 				return;
 			}
@@ -91,7 +97,7 @@ namespace WaveBox.FolderScanning
 			}
 
 			ISQLiteConnection conn = null;
-			try 
+			try
 			{
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 
@@ -101,7 +107,7 @@ namespace WaveBox.FolderScanning
 				{
 					if (folder.MediaFolderId != null)
 					{
-						if (!mediaFolderIds.Contains(folder.MediaFolderId) || !Directory.Exists(folder.FolderPath)) 
+						if (!mediaFolderIds.Contains(folder.MediaFolderId) || !Directory.Exists(folder.FolderPath))
 						{
 							logger.IfInfo(folder.FolderId + " is orphaned");
 							orphanFolderIds.Add(folder.FolderId);
@@ -130,14 +136,14 @@ namespace WaveBox.FolderScanning
 				}
 
 				// Remove them
-				foreach (int folderId in orphanFolderIds) 
+				foreach (int folderId in orphanFolderIds)
 				{
-					try 
+					try
 					{
 						conn.ExecuteLogged("DELETE FROM Folder WHERE FolderId = ?", folderId);
 						logger.IfInfo("  - Folder " + folderId + " deleted");
-					} 
-					catch (Exception e) 
+					}
+					catch (Exception e)
 					{
 						logger.Error("Failed to delete orphan " + folderId + " : " + e);
 					}
@@ -145,8 +151,8 @@ namespace WaveBox.FolderScanning
 					try
 					{
 						conn.ExecuteLogged("DELETE FROM Song WHERE FolderId = ?", folderId);
-					} 
-					catch (Exception e) 
+					}
+					catch (Exception e)
 					{
 						logger.Error("Failed to delete songs for orphan " + folderId + " : " + e);
 					}
@@ -231,7 +237,7 @@ namespace WaveBox.FolderScanning
 				// Find the orphaned artists
 				var result = conn.DeferredQuery<Artist>("SELECT Artist.ArtistId FROM Artist " +
 														"LEFT JOIN Song ON Artist.ArtistId = Song.ArtistId " +
-														"WHERE Song.ArtistId IS NULL"); 
+														"WHERE Song.ArtistId IS NULL");
 				foreach (Artist artist in result)
 				{
 					orphanArtistIds.Add(artist.ArtistId);
@@ -261,6 +267,53 @@ namespace WaveBox.FolderScanning
 			}
 		}
 
+		private void CheckAlbumArtists()
+		{
+			if (isRestart)
+			{
+				return;
+			}
+
+			ArrayList orphanAlbumArtistIds = new ArrayList();
+
+			ISQLiteConnection conn = null;
+			try
+			{
+				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+
+				// Find the orphaned album artists
+				var result = conn.DeferredQuery<AlbumArtist>("SELECT AlbumArtist.AlbumArtistId FROM AlbumArtist " +
+														"LEFT JOIN Song ON AlbumArtist.AlbumArtistId = Song.AlbumArtistId " +
+														"WHERE Song.AlbumArtistId IS NULL");
+				foreach (AlbumArtist albumArtist in result)
+				{
+					orphanAlbumArtistIds.Add(albumArtist.AlbumArtistId);
+				}
+
+				// Remove them
+				foreach (int albumArtistId in orphanAlbumArtistIds)
+				{
+					try
+					{
+						conn.ExecuteLogged("DELETE FROM AlbumArtist WHERE AlbumArtistId = ?", albumArtistId);
+						logger.IfInfo("AlbumArtist " + albumArtistId + " deleted");
+					}
+					catch (Exception e)
+					{
+						logger.Error("Failed deleting orphan album artists" + e);
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				logger.Error("Failed checking for orphan album artists : " + e);
+			}
+			finally
+			{
+				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+			}
+		}
+
 		private void CheckAlbums()
 		{
 			if (isRestart)
@@ -276,7 +329,7 @@ namespace WaveBox.FolderScanning
 				// Find the orphaned albums
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				var result = conn.DeferredQuery<Album>("SELECT Album.AlbumId FROM Album " +
-														"LEFT JOIN Song ON Album.AlbumId = Song.AlbumId " + 
+														"LEFT JOIN Song ON Album.AlbumId = Song.AlbumId " +
 														"WHERE Song.AlbumId IS NULL");
 				foreach (Album album in result)
 				{
@@ -322,7 +375,7 @@ namespace WaveBox.FolderScanning
 				// Find orphaned genres
 				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
 				var result = conn.DeferredQuery<Genre>("SELECT Genre.GenreId FROM Genre " +
-														"LEFT JOIN Song ON Genre.GenreId = Song.GenreId " + 
+														"LEFT JOIN Song ON Genre.GenreId = Song.GenreId " +
 														"WHERE Song.GenreId IS NULL");
 				foreach (Genre genre in result)
 				{
@@ -371,7 +424,7 @@ namespace WaveBox.FolderScanning
 														"LEFT JOIN Folder ON Video.FolderId = Folder.FolderId " +
 														"WHERE Folder.FolderPath IS NULL");
 
-				foreach (Video video in result) 
+				foreach (Video video in result)
 				{
 					orphanVideoIds.Add(video.ItemId);
 				}
