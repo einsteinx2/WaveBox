@@ -13,7 +13,7 @@ namespace WaveBox.Core.Model.Repository
 
 		private readonly IDatabase database;
 
-		private IList<Session> Sessions { get; set; }
+		private IDictionary<string, Session> Sessions { get; set; }
 
 		public SessionRepository(IDatabase database)
 		{
@@ -24,7 +24,7 @@ namespace WaveBox.Core.Model.Repository
 
 			this.database = database;
 
-			this.Sessions = new List<Session>();
+			this.Sessions = new Dictionary<string, Session>();
 			this.ReloadSessions();
 		}
 
@@ -38,7 +38,11 @@ namespace WaveBox.Core.Model.Repository
 				try
 				{
 					conn = database.GetSqliteConnection();
-					this.Sessions.AddRange(conn.DeferredQuery<Session>("SELECT RowId AS RowId,* FROM Session"));
+
+					foreach (Session s in conn.DeferredQuery<Session>("SELECT RowId AS RowId,* FROM Session"))
+					{
+						this.Sessions[s.SessionId] = s;
+					}
 				}
 				catch (Exception e)
 				{
@@ -80,13 +84,13 @@ namespace WaveBox.Core.Model.Repository
 		{
 			lock (this.Sessions)
 			{
-				Session session = Sessions.SingleOrDefault(s => s.SessionId == sessionId);
-				if (session == null)
+				Session session = null;
+				if (this.Sessions.ContainsKey(sessionId))
 				{
-					session = new Session();
+					return this.Sessions[sessionId];
 				}
 
-				return session;
+				return null;
 			}
 		}
 
@@ -119,9 +123,9 @@ namespace WaveBox.Core.Model.Repository
 
 				if (affected > 0)
 				{
-					lock (Sessions)
+					lock (this.Sessions)
 					{
-						Sessions.Add(session);
+						this.Sessions[session.SessionId] = session;
 					}
 
 					return session;
@@ -143,7 +147,7 @@ namespace WaveBox.Core.Model.Repository
 		{
 			lock (this.Sessions)
 			{
-				return new List<Session>(this.Sessions);
+				return new List<Session>(this.Sessions.Select(x => x.Value).ToList());
 			}
 		}
 
@@ -155,6 +159,16 @@ namespace WaveBox.Core.Model.Repository
 			}
 		}
 
+		public bool UpdateSessionCache(Session session)
+		{
+			lock (this.Sessions)
+			{
+				this.Sessions[session.SessionId] = session;
+			}
+
+			return true;
+		}
+
 		// Remove a session by row ID, reload the cached sessions list
 		public bool DeleteSessionForRowId(int rowId)
 		{
@@ -162,9 +176,7 @@ namespace WaveBox.Core.Model.Repository
 			try
 			{
 				conn = database.GetSqliteConnection();
-				Console.WriteLine("ROWID: " + rowId);
 				int affected = conn.ExecuteLogged("DELETE FROM Session WHERE RowId = ?", rowId);
-				Console.WriteLine("AFFECTED: " + affected);
 
 				if (affected > 0)
 				{
@@ -187,18 +199,17 @@ namespace WaveBox.Core.Model.Repository
 
 		public bool DeleteSessionsForUserId(int userId)
 		{
-			bool success = false;
 			ISQLiteConnection conn = null;
 			try
 			{
 				conn = database.GetSqliteConnection();
 				int affected = conn.ExecuteLogged("DELETE FROM Session WHERE UserId = ?", userId);
 
-				success = affected > 0;
-
-				if (success)
+				if (affected > 0)
 				{
 					this.ReloadSessions();
+
+					return true;
 				}
 			}
 			catch (Exception e)
@@ -210,17 +221,21 @@ namespace WaveBox.Core.Model.Repository
 				database.CloseSqliteConnection(conn);
 			}
 
-			return success;
+			return false;
 		}
 
 		public int? UserIdForSessionid(string sessionId)
 		{
+			if (sessionId == null)
+			{
+				return null;
+			}
+
 			lock (this.Sessions)
 			{
-				Session session = Sessions.SingleOrDefault(s => s.SessionId == sessionId);
-				if (session != null)
+				if (this.Sessions.ContainsKey(sessionId))
 				{
-					return session.UserId;
+					return this.Sessions[sessionId].UserId;
 				}
 
 				return null;
@@ -228,4 +243,3 @@ namespace WaveBox.Core.Model.Repository
 		}
 	}
 }
-
