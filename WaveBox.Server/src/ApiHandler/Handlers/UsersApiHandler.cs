@@ -28,8 +28,11 @@ namespace WaveBox.ApiHandler.Handlers
 				case "create":
 				case "delete":
 				case "killSession":
-				case "update":
 					return user.HasPermission(Role.Admin);
+				// Write
+				// update - so user can update their own username/password, but not role
+				case "update":
+					return user.HasPermission(Role.User);
 				// Read
 				case "read":
 				default:
@@ -215,6 +218,13 @@ namespace WaveBox.ApiHandler.Handlers
 					return;
 				}
 
+				// If user isn't an admin, verify that they are attempting to update themselves
+				if (!user.HasPermission(Role.Admin) && user.UserId != updateUser.UserId)
+				{
+					processor.WriteJson(new UsersResponse("Permission denied", null));
+					return;
+				}
+
 				// Change username
 				if (username != null)
 				{
@@ -235,8 +245,8 @@ namespace WaveBox.ApiHandler.Handlers
 					}
 				}
 
-				// Change role
-				if (uri.Parameters.ContainsKey("role") && (role != updateUser.Role))
+				// If user is admin, a role parameter is set, and the role is not their current one, change role
+				if (user.HasPermission(Role.Admin) && uri.Parameters.ContainsKey("role") && (role != updateUser.Role))
 				{
 					if (!updateUser.UpdateRole(role))
 					{
