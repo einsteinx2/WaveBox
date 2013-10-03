@@ -34,23 +34,11 @@ namespace WaveBox.Core.Model.Repository
 			{
 				this.Sessions.Clear();
 
-				ISQLiteConnection conn = null;
-				try
+				// Reload all sessions into cache
+				var reload = this.database.GetList<Session>("SELECT RowId AS RowId,* FROM Session");
+				foreach (Session s in reload)
 				{
-					conn = database.GetSqliteConnection();
-
-					foreach (Session s in conn.DeferredQuery<Session>("SELECT RowId AS RowId,* FROM Session"))
-					{
-						this.Sessions[s.SessionId] = s;
-					}
-				}
-				catch (Exception e)
-				{
-					logger.Error(e);
-				}
-				finally
-				{
-					database.CloseSqliteConnection(conn);
+					this.Sessions[s.SessionId] = s;
 				}
 			}
 		}
