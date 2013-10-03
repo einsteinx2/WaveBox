@@ -17,7 +17,9 @@ namespace WaveBox.Core.Model.Repository
 		public SongRepository(IDatabase database)
 		{
 			if (database == null)
+			{
 				throw new ArgumentNullException("database");
+			}
 
 			this.database = database;
 		}
@@ -74,76 +76,30 @@ namespace WaveBox.Core.Model.Repository
 
 		public int CountSongs()
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				return conn.ExecuteScalar<int>("SELECT COUNT(ItemId) FROM Song");
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			// We had an exception somehow, so return 0
-			return 0;
+			return this.database.GetScalar<int>("SELECT COUNT(ItemId) FROM Song");
 		}
 
 		public long TotalSongSize()
 		{
-			ISQLiteConnection conn = null;
-			try
+			// Check if at least 1 song exists, to prevent exception if summing null
+			int exists = this.database.GetScalar<int>("SELECT * FROM Song LIMIT 1");
+			if (exists > 0)
 			{
-				conn = database.GetSqliteConnection();
-
-				// Check if at least 1 song exists, to prevent exception if summing null
-				int exists = conn.ExecuteScalar<int>("SELECT * FROM Song LIMIT 1");
-				if (exists > 0)
-				{
-					return conn.ExecuteScalar<long>("SELECT SUM(FileSize) FROM Song");
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
+				return this.database.GetScalar<long>("SELECT SUM(FileSize) FROM Song");
 			}
 
-			// We had an exception somehow, so return 0
 			return 0;
 		}
 
 		public long TotalSongDuration()
 		{
-			ISQLiteConnection conn = null;
-			try
+			// Check if at least 1 song exists, to prevent exception if summing null
+			int exists = this.database.GetScalar<int>("SELECT * FROM Song LIMIT 1");
+			if (exists > 0)
 			{
-				conn = database.GetSqliteConnection();
-
-				// Check if at least 1 song exists, to prevent exception if summing null
-				int exists = conn.ExecuteScalar<int>("SELECT * FROM Song LIMIT 1");
-				if (exists > 0)
-				{
-					return conn.ExecuteScalar<long>("SELECT SUM(Duration) FROM Song");
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
+				return this.database.GetScalar<long>("SELECT SUM(Duration) FROM Song");
 			}
 
-			// We had an exception somehow, so return 0
 			return 0;
 		}
 
