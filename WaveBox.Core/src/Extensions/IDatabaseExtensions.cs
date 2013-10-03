@@ -66,5 +66,29 @@ namespace WaveBox.Core.Extensions
 			// If no result, return blank instance
 			return new List<T>();
 		}
+
+		// Retrieve a scalar value of type T using query string and prepared arguments
+		public static T GetScalar<T>(this IDatabase database, string query, params object[] args) where T : new()
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				// Get database connection, use query to fetch scalar value of type T
+				conn = database.GetSqliteConnection();
+				return conn.ExecuteScalar<T>(query, args);
+			}
+			catch (Exception e)
+			{
+				logger.Error("query: " + query);
+				logger.Error(e);
+			}
+			finally
+			{
+				database.CloseSqliteConnection(conn);
+			}
+
+			// Return default value for scalar (reference: null, value: 0)
+			return default(T);
+		}
 	}
 }

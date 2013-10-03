@@ -17,9 +17,13 @@ namespace WaveBox.Core.Model.Repository
 		public ArtistRepository(IDatabase database, IItemRepository itemRepository)
 		{
 			if (database == null)
+			{
 				throw new ArgumentNullException("database");
+			}
 			if (itemRepository == null)
+			{
 				throw new ArgumentNullException("itemRepository");
+			}
 
 			this.database = database;
 			this.itemRepository = itemRepository;
@@ -122,22 +126,7 @@ namespace WaveBox.Core.Model.Repository
 
 		public int CountArtists()
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				return conn.ExecuteScalar<int>("SELECT COUNT(ArtistId) FROM Artist");
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return 0;
+			return this.database.GetScalar<int>("SELECT COUNT(ArtistId) FROM Artist");
 		}
 
 		public IList<Artist> SearchArtists(string field, string query, bool exact = true)
@@ -222,4 +211,3 @@ namespace WaveBox.Core.Model.Repository
 		}
 	}
 }
-

@@ -11,11 +11,17 @@ namespace WaveBox.Core.Model.Repository
 		public MediaItemRepository(IItemRepository itemRepository, ISongRepository songRepository, IVideoRepository videoRepository)
 		{
 			if (itemRepository == null)
+			{
 				throw new ArgumentNullException("itemRepository");
+			}
 			if (songRepository == null)
+			{
 				throw new ArgumentNullException("songRepository");
+			}
 			if (videoRepository == null)
+			{
 				throw new ArgumentNullException("videoRepository");
+			}
 
 			this.itemRepository = itemRepository;
 			this.songRepository = songRepository;
@@ -40,4 +46,3 @@ namespace WaveBox.Core.Model.Repository
 		}
 	}
 }
-

@@ -13,7 +13,9 @@ namespace WaveBox.Core.Model.Repository
 		public ArtRepository(IDatabase database)
 		{
 			if (database == null)
+			{
 				throw new ArgumentNullException("database");
+			}
 
 			this.database = database;
 		}
@@ -30,23 +32,8 @@ namespace WaveBox.Core.Model.Repository
 				return null;
 			}
 
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				int itemId = conn.ExecuteScalar<int>("SELECT ItemId FROM ArtItem WHERE ArtId = ?", artId);
-				return itemId == 0 ? (int?)null : itemId;
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return null;
+			int itemId = this.database.GetScalar<int>("SELECT ItemId FROM ArtItem WHERE ArtId = ?", artId);
+			return itemId == 0 ? (int?)null : itemId;
 		}
 
 		public int? ArtIdForItemId(int? itemId)
@@ -56,23 +43,8 @@ namespace WaveBox.Core.Model.Repository
 				return null;
 			}
 
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				int artId = conn.ExecuteScalar<int>("SELECT ArtId FROM ArtItem WHERE ItemId = ?", itemId);
-				return artId == 0 ? (int?)null : artId;
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return null;
+			int artId = this.database.GetScalar<int>("SELECT ArtId FROM ArtItem WHERE ItemId = ?", itemId);
+			return artId == 0 ? (int?)null : artId;
 		}
 
 		public int? ArtIdForMd5(string hash)
@@ -82,23 +54,8 @@ namespace WaveBox.Core.Model.Repository
 				return null;
 			}
 
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				int artId = conn.ExecuteScalar<int>("SELECT ArtId FROM Art WHERE Md5Hash = ?", hash);
-				return artId == 0 ? (int?)null : artId;
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return null;
+			int artId = this.database.GetScalar<int>("SELECT ArtId FROM Art WHERE Md5Hash = ?", hash);
+			return artId == 0 ? (int?)null : artId;
 		}
 
 		public bool UpdateArtItemRelationship(int? artId, int? itemId, bool replace)
@@ -188,4 +145,3 @@ namespace WaveBox.Core.Model.Repository
 		}
 	}
 }
-
