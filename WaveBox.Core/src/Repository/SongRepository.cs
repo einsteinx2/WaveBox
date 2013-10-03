@@ -37,68 +37,39 @@ namespace WaveBox.Core.Model.Repository
 
 		public IList<Song> SongsForIds(IList<int> songIds)
 		{
-			ISQLiteConnection conn = null;
-			try
+			StringBuilder sb = new StringBuilder(
+				"SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName, ArtItem.ArtId FROM Song " +
+				"LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+				"LEFT JOIN AlbumArtist ON Song.AlbumArtistId = AlbumArtist.AlbumArtistId " +
+				"LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
+				"LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
+				"LEFT JOIN ArtItem ON Song.ItemId = ArtItem.ItemId " +
+				"WHERE"
+			);
+
+			for (int i = 0; i < songIds.Count; i++)
 			{
-				conn = database.GetSqliteConnection();
-
-				StringBuilder sb = new StringBuilder("SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName, ArtItem.ArtId FROM Song " +
-				                                     "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
-				                                     "LEFT JOIN AlbumArtist ON Song.AlbumArtistId = AlbumArtist.AlbumArtistId " +
-				                                     "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
-				                                     "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
-				                                     "LEFT JOIN ArtItem ON Song.ItemId = ArtItem.ItemId " +
-				                                     "WHERE");
-
-				for (int i = 0; i < songIds.Count; i++)
+				if (i > 0)
 				{
-					if (i > 0)
-					{
-						sb.Append(" OR");
-					}
-					sb.Append(" Song.ItemId = ");
-					sb.Append(songIds[i]);
+					sb.Append(" OR");
 				}
-
-				return conn.Query<Song>(sb.ToString());
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
+				sb.Append(" Song.ItemId = ");
+				sb.Append(songIds[i]);
 			}
 
-			// We had an exception somehow, so return an empty list
-			return new List<Song>();
+			return this.database.GetList<Song>(sb.ToString());
 		}
 
 		public IList<Song> AllSongs()
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				return conn.Query<Song>("SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName, ArtItem.ArtId FROM Song " +
-				                        "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
-				                        "LEFT JOIN AlbumArtist ON Song.AlbumArtistId = AlbumArtist.AlbumArtistId " +
-				                        "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
-				                        "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
-				                        "LEFT JOIN ArtItem ON Song.ItemId = ArtItem.ItemId");
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			// We had an exception somehow, so return an empty list
-			return new List<Song>();
+			return this.database.GetList<Song>(
+				"SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName, ArtItem.ArtId FROM Song " +
+				"LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+				"LEFT JOIN AlbumArtist ON Song.AlbumArtistId = AlbumArtist.AlbumArtistId " +
+				"LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
+				"LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
+				"LEFT JOIN ArtItem ON Song.ItemId = ArtItem.ItemId"
+			);
 		}
 
 		public int CountSongs()
@@ -199,48 +170,37 @@ namespace WaveBox.Core.Model.Repository
 				return new List<Song>();
 			}
 
-			ISQLiteConnection conn = null;
-			try
+			IList<Song> songs;
+			if (exact)
 			{
-				conn = database.GetSqliteConnection();
-
-				List<Song> songs;
-				if (exact)
-				{
-					// Search for exact match
-					songs = conn.Query<Song>("SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName, ArtItem.ArtId FROM Song " +
-					                         "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
-					                         "LEFT JOIN AlbumArtist ON Song.AlbumArtistId = AlbumArtist.AlbumArtistId " +
-					                         "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
-					                         "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
-					                         "LEFT JOIN ArtItem ON Song.ItemId = ArtItem.ItemId " +
-					                         "WHERE Song." + field + " = ?", query);
-				}
-				else
-				{
-					// Search for fuzzy match (containing query)
-					songs = conn.Query<Song>("SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName, ArtItem.ArtId FROM Song " +
-					                         "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
-					                         "LEFT JOIN AlbumArtist ON Song.AlbumArtistId = AlbumArtist.AlbumArtistId " +
-					                         "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
-					                         "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
-					                         "LEFT JOIN ArtItem ON Song.ItemId = ArtItem.ItemId " +
-					                         "WHERE Song." + field + " LIKE ?", "%" + query + "%");
-				}
-				songs.Sort(Song.CompareSongsByDiscAndTrack);
-				return songs;
+				// Search for exact match
+				songs = this.database.GetList<Song>(
+					"SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName, ArtItem.ArtId FROM Song " +
+					"LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+					"LEFT JOIN AlbumArtist ON Song.AlbumArtistId = AlbumArtist.AlbumArtistId " +
+					"LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
+					"LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
+					"LEFT JOIN ArtItem ON Song.ItemId = ArtItem.ItemId " +
+					"WHERE Song." + field + " = ?",
+				query);
 			}
-			catch (Exception e)
+			else
 			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
+				// Search for fuzzy match (containing query)
+				songs = this.database.GetList<Song>(
+					"SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName, ArtItem.ArtId FROM Song " +
+					"LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+					"LEFT JOIN AlbumArtist ON Song.AlbumArtistId = AlbumArtist.AlbumArtistId " +
+					"LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
+					"LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
+					"LEFT JOIN ArtItem ON Song.ItemId = ArtItem.ItemId " +
+					"WHERE Song." + field + " LIKE ?",
+				"%" + query + "%");
 			}
 
-			// We had an exception somehow, so return an empty list
-			return new List<Song>();
+			List<Song> sortedSongs = songs.ToList();
+			sortedSongs.Sort(Song.CompareSongsByDiscAndTrack);
+			return sortedSongs;
 		}
 
 		// Return a list of songs titled between a range of (a-z, A-Z, 0-9 characters)
@@ -256,78 +216,48 @@ namespace WaveBox.Core.Model.Repository
 			// Add 1 to character to make end inclusive
 			string en = Convert.ToChar((int)end + 1).ToString();
 
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
+			IList<Song> songs;
+			songs = this.database.GetList<Song>(
+				"SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName, ArtItem.ArtId FROM Song " +
+				"LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+				"LEFT JOIN AlbumArtist ON Song.AlbumArtistId = AlbumArtist.AlbumArtistId " +
+				"LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
+				"LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
+				"LEFT JOIN ArtItem ON Song.ItemId = ArtItem.ItemId " +
+				"WHERE Song.SongName BETWEEN LOWER(?) AND LOWER(?) " +
+				"OR Song.SongName BETWEEN UPPER(?) AND UPPER(?)",
+			s, en, s, en);
 
-				List<Song> songs;
-				songs = conn.Query<Song>("SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName, ArtItem.ArtId FROM Song " +
-				                         "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
-				                         "LEFT JOIN AlbumArtist ON Song.AlbumArtistId = AlbumArtist.AlbumArtistId " +
-				                         "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
-				                         "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
-				                         "LEFT JOIN ArtItem ON Song.ItemId = ArtItem.ItemId " +
-				                         "WHERE Song.SongName BETWEEN LOWER(?) AND LOWER(?) " +
-				                         "OR Song.SongName BETWEEN UPPER(?) AND UPPER(?)", s, en, s, en);
-
-				songs.Sort(Song.CompareSongsByDiscAndTrack);
-				return songs;
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			// We had an exception somehow, so return an empty list
-			return new List<Song>();
+			List<Song> sortedSongs = songs.ToList();
+			sortedSongs.Sort(Song.CompareSongsByDiscAndTrack);
+			return sortedSongs;
 		}
 
 		// Return a list of songs using SQL LIMIT x,y where X is starting index and Y is duration
 		public IList<Song> LimitSongs(int index, int duration = Int32.MinValue)
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
+			// Begin building query
+			IList<Song> songs;
+			string query = "SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName, ArtItem.ArtId FROM Song " +
+				"LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+				"LEFT JOIN AlbumArtist ON Song.AlbumArtistId = AlbumArtist.AlbumArtistId " +
+				"LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
+				"LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
+				"LEFT JOIN ArtItem ON Song.ItemId = ArtItem.ItemId " +
+				"LIMIT ? ";
 
-				// Begin building query
-				List<Song> songs;
-				string query = "SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName, ArtItem.ArtId FROM Song " +
-							   "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
-							   "LEFT JOIN AlbumArtist ON Song.AlbumArtistId = AlbumArtist.AlbumArtistId " +
-							   "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
-							   "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
-							   "LEFT JOIN ArtItem ON Song.ItemId = ArtItem.ItemId " +
-							   "LIMIT ? ";
-
-				// Add duration to LIMIT if needed
-				if (duration != Int32.MinValue && duration > 0)
-				{
-					query += ", ?";
-				}
-
-				// Run query, sort, send it back
-				songs = conn.Query<Song>(query, index, duration);
-				songs.Sort(Song.CompareSongsByDiscAndTrack);
-				return songs;
-			}
-			catch (Exception e)
+			// Add duration to LIMIT if needed
+			if (duration != Int32.MinValue && duration > 0)
 			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
+				query += ", ?";
 			}
 
-			// We had an exception somehow, so return an empty list
-			return new List<Song>();
+			// Run query, sort, send it back
+			songs = this.database.GetList<Song>(query, index, duration);
+
+			List<Song> sortedSongs = songs.ToList();
+			sortedSongs.Sort(Song.CompareSongsByDiscAndTrack);
+			return sortedSongs;
 		}
 	}
 }
-
