@@ -19,7 +19,9 @@ namespace WaveBox.Core.Model.Repository
 		public ItemRepository(IDatabase database)
 		{
 			if (database == null)
+			{
 				throw new ArgumentNullException("database");
+			}
 
 			this.database = database;
 		}
