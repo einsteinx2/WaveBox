@@ -22,42 +22,12 @@ namespace WaveBox.Core.Model.Repository
 
 		public IList<MusicBrainzCheckDate> AllCheckDates()
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				return conn.Query<MusicBrainzCheckDate>("SELECT * FROM MusicBrainzCheckDate");
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return new List<MusicBrainzCheckDate>();
+			return this.database.GetList<MusicBrainzCheckDate>("SELECT * FROM MusicBrainzCheckDate");
 		}
 
 		public IList<MusicBrainzCheckDate> AllCheckDatesOlderThan(long timestamp)
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				return conn.Query<MusicBrainzCheckDate>("SELECT * FROM MusicBrainzCheckDate WHERE Timestamp < ?", timestamp);
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return new List<MusicBrainzCheckDate>();
+			return this.database.GetList<MusicBrainzCheckDate>("SELECT * FROM MusicBrainzCheckDate WHERE Timestamp < ?", timestamp);
 		}
 
 		public void InsertMusicBrainzCheckDate(MusicBrainzCheckDate checkDate, bool replace = false)
@@ -79,4 +49,3 @@ namespace WaveBox.Core.Model.Repository
 		}
 	}
 }
-
