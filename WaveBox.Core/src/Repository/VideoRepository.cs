@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using System.Linq;
+using WaveBox.Core.Extensions;
 
 namespace WaveBox.Core.Model.Repository
 {
@@ -21,27 +22,7 @@ namespace WaveBox.Core.Model.Repository
 
 		public Video VideoForId(int videoId)
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				var result = conn.DeferredQuery<Video>("SELECT * FROM Video WHERE ItemId = ?", videoId);
-
-				foreach (Video v in result)
-				{
-					return v;
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return new Video();
+			return this.database.GetSingle<Video>("SELECT * FROM Video WHERE ItemId = ?", videoId);
 		}
 
 		public IList<Video> AllVideos()
