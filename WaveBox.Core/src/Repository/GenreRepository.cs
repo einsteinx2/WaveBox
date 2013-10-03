@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Cirrious.MvvmCross.Plugins.Sqlite;
+using WaveBox.Core.Extensions;
 using WaveBox.Core.Static;
 using System.Linq;
 
@@ -22,34 +23,7 @@ namespace WaveBox.Core.Model.Repository
 
 		public Genre GenreForId(int? genreId)
 		{
-			if ((object)genreId == null)
-			{
-				return new Genre();
-			}
-
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				var result = conn.DeferredQuery<Genre>("SELECT * FROM Genre WHERE GenreId = ?", genreId);
-
-				foreach (Genre g in result)
-				{
-					return g;
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			Genre genre = new Genre();
-			genre.GenreId = genreId;
-			return genre;
+			return this.database.GetSingle<Genre>("SELECT * FROM Genre WHERE GenreId = ?", genreId);
 		}
 
 		private static List<Genre> memCachedGenres = new List<Genre>();
@@ -72,25 +46,10 @@ namespace WaveBox.Core.Model.Repository
 				}
 				else
 				{
-					// Retreive the genre id if it exists
-					ISQLiteConnection conn = null;
-					try
+					Genre g = this.database.GetSingle<Genre>("SELECT * FROM Genre WHERE GenreName = ?", genreName);
+					if (g != null)
 					{
-						conn = database.GetSqliteConnection();
-						var result = conn.DeferredQuery<Genre>("SELECT * FROM Genre WHERE GenreName = ?", genreName);
-
-						foreach (Genre g in result)
-						{
-							return g;
-						}
-					}
-					catch (Exception e)
-					{
-						logger.Error(e);
-					}
-					finally
-					{
-						database.CloseSqliteConnection(conn);
+						return g;
 					}
 
 					// If this genre didn't exist, generate an id and insert it
@@ -129,7 +88,7 @@ namespace WaveBox.Core.Model.Repository
 			{
 				conn = database.GetSqliteConnection();
 				return conn.Query<Artist>("SELECT Artist.* " +
-				                          "FROM Genre " + 
+				                          "FROM Genre " +
 				                          "LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
 				                          "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
 				                          "WHERE Genre.GenreId = ? GROUP BY Artist.ArtistId", genreId);
@@ -153,7 +112,7 @@ namespace WaveBox.Core.Model.Repository
 			{
 				conn = database.GetSqliteConnection();
 				return conn.Query<Album>("SELECT Album.*, ArtItem.ArtId " +
-				                         "FROM Genre " + 
+				                         "FROM Genre " +
 				                         "LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
 				                         "LEFT JOIN Album ON Song.AlbumId = Album.ItemId " +
 				                         "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
@@ -178,7 +137,7 @@ namespace WaveBox.Core.Model.Repository
 			{
 				conn = database.GetSqliteConnection();
 				return conn.Query<Song>("SELECT Song.*, Genre.GenreName " +
-				                        "FROM Genre " + 
+				                        "FROM Genre " +
 				                        "LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
 				                        "WHERE Genre.GenreId = ? GROUP BY Song.ItemId", genreId);
 			}
@@ -201,7 +160,7 @@ namespace WaveBox.Core.Model.Repository
 			{
 				conn = database.GetSqliteConnection();
 				return conn.Query<Folder>("SELECT Folder.* " +
-				                          "FROM Genre " + 
+				                          "FROM Genre " +
 				                          "LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
 				                          "LEFT JOIN Folder ON Song.FolderId = Folder.FolderId " +
 				                          "WHERE Genre.GenreId = ? GROUP BY Folder.FolderId", genreId);
