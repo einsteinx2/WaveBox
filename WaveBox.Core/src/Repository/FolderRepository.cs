@@ -93,22 +93,7 @@ namespace WaveBox.Core.Model.Repository
 
 		public IList<Folder> MediaFolders()
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				return conn.Query<Folder>("SELECT * FROM Folder WHERE ParentFolderId IS NULL");
-			}
-			catch (Exception e)
-			{
-				logger.IfInfo ("Failed reading list of media folders : " + e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return new List<Folder>();
+			return this.database.GetList<Folder>("SELECT * FROM Folder WHERE ParentFolderId IS NULL");
 		}
 
 		public IList<Folder> TopLevelFolders()
@@ -162,24 +147,7 @@ namespace WaveBox.Core.Model.Repository
 
 		public IList<Folder> ListOfSubFolders(int folderId)
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				List<Folder> folders = conn.Query<Folder>("SELECT * FROM Folder WHERE ParentFolderId = ?", folderId);
-				folders.Sort(Folder.CompareFolderByName);
-				return folders;
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return new List<Folder>();
+			return this.database.GetList<Folder>("SELECT * FROM Folder WHERE ParentFolderId = ? ORDER BY FolderName COLLATE NOCASE", folderId);
 		}
 
 		public int? GetParentFolderId(string path)
@@ -196,7 +164,7 @@ namespace WaveBox.Core.Model.Repository
 
 				if (id == 0)
 				{
-					logger.IfInfo("No db result for parent folder.  Constructing parent folder object.");
+					logger.IfInfo("No db result for parent folder.	Constructing parent folder object.");
 					Folder f = FolderForPath(parentFolderPath);
 					f.InsertFolder(false);
 					pFolderId = f.FolderId;
@@ -220,31 +188,14 @@ namespace WaveBox.Core.Model.Repository
 
 		public IList<Album> AlbumsForFolderId(int folderId)
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-
-				// Search for exact match
-				return conn.Query<Album>("SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Song " +
-				                         "LEFT JOIN Folder ON Song.FolderId = Folder.FolderId " +
-				                         "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
-				                         "LEFT JOIN AlbumArtist ON AlbumArtist.AlbumArtistId = Album.AlbumArtistId " +
-				                         "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
-				                         "WHERE Song.FolderId = ? GROUP BY Album.AlbumId ORDER BY Album.AlbumName COLLATE NOCASE", folderId);
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			// We had an exception somehow, so return an empty list
-			return new List<Album>();
+			return this.database.GetList<Album>(
+				"SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Song " +
+				"LEFT JOIN Folder ON Song.FolderId = Folder.FolderId " +
+				"LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
+				"LEFT JOIN AlbumArtist ON AlbumArtist.AlbumArtistId = Album.AlbumArtistId " +
+				"LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
+				"WHERE Song.FolderId = ? GROUP BY Album.AlbumId ORDER BY Album.AlbumName COLLATE NOCASE",
+			folderId);
 		}
 	}
 }
-
