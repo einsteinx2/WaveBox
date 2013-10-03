@@ -2,6 +2,7 @@ using System;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using Ninject;
 using System.Collections.Generic;
+using WaveBox.Core.Extensions;
 
 namespace WaveBox.Core.Model.Repository
 {
@@ -21,54 +22,12 @@ namespace WaveBox.Core.Model.Repository
 
 		public Playlist PlaylistForId(int playlistId)
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				var result = conn.DeferredQuery<Playlist>("SELECT * FROM Playlist WHERE PlaylistId = ?", playlistId);
-
-				foreach (Playlist p in result)
-				{
-					return p;
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return new Playlist();
+			return this.database.GetSingle<Playlist>("SELECT * FROM Playlist WHERE PlaylistId = ?", playlistId);
 		}
 
 		public Playlist PlaylistForName(string playlistName)
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				var result = conn.DeferredQuery<Playlist>("SELECT * FROM Playlist WHERE PlaylistName = ?", playlistName);
-
-				foreach (Playlist p in result)
-				{
-					return p;
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			Playlist playlist = new Playlist();
-			playlist.PlaylistName = playlistName;
-			return playlist;
+			return this.database.GetSingle<Playlist>("SELECT * FROM Playlist WHERE PlaylistName = ?", playlistName);
 		}
 
 		public IList<Playlist> AllPlaylists()
