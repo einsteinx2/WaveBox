@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using System.Linq;
+using WaveBox.Core.Extensions;
 using WaveBox.Core.Static;
 
 namespace WaveBox.Core.Model.Repository
@@ -26,65 +27,12 @@ namespace WaveBox.Core.Model.Repository
 
 		public Artist ArtistForId(int? artistId)
 		{
-			if (artistId == null)
-			{
-				return new Artist();
-			}
-
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-
-				var result = conn.DeferredQuery<Artist>("SELECT * FROM Artist WHERE ArtistId = ?", artistId);
-
-				foreach (Artist a in result)
-				{
-					return a;
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return new Artist();
+			return this.database.GetSingle<Artist>("SELECT * FROM Artist WHERE ArtistId = ?", artistId);
 		}
 
 		public Artist ArtistForName(string artistName)
 		{
-			if (artistName == null || artistName == "")
-			{
-				return new Artist();
-			}
-
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				var result = conn.DeferredQuery<Artist>("SELECT * FROM Artist WHERE ArtistName = ?", artistName);
-
-				foreach (Artist a in result)
-				{
-					return a;
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			Artist artist = new Artist();
-			artist.ArtistName = artistName;
-			return artist;
+			return this.database.GetSingle<Artist>("SELECT * FROM Artist WHERE ArtistName = ?", artistName);
 		}
 
 		public bool InsertArtist(string artistName, bool replace = false)
@@ -155,7 +103,7 @@ namespace WaveBox.Core.Model.Repository
 				{
 					anArtist = ArtistForNameOrCreate(artistName);
 				}
-				else 
+				else
 				{
 					// The insert failed because this album was inserted by another
 					// thread, so grab the artist id, it will exist this time
