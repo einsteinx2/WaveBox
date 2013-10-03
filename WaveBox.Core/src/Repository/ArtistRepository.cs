@@ -117,22 +117,7 @@ namespace WaveBox.Core.Model.Repository
 
 		public IList<Artist> AllArtists()
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				return conn.Query<Artist>("SELECT * FROM Artist ORDER BY ArtistName COLLATE NOCASE");
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return new List<Artist>();
+			return this.database.GetList<Artist>("SELECT * FROM Artist ORDER BY ArtistName COLLATE NOCASE");
 		}
 
 		public int CountArtists()
@@ -174,32 +159,14 @@ namespace WaveBox.Core.Model.Repository
 				return new List<Artist>();
 			}
 
-			ISQLiteConnection conn = null;
-			try
+			if (exact)
 			{
-				conn = database.GetSqliteConnection();
-
-				if (exact)
-				{
-					// Search for exact match
-					return conn.Query<Artist>("SELECT * FROM Artist WHERE " + field + " = ? ORDER BY ArtistName COLLATE NOCASE", query);
-				}
-				else
-				{
-					// Search for fuzzy match (containing query)
-					return conn.Query<Artist>("SELECT * FROM Artist WHERE " + field + " LIKE ? ORDER BY ArtistName COLLATE NOCASE", "%" + query + "%");
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
+				// Search for exact match
+				return this.database.GetList<Artist>("SELECT * FROM Artist WHERE " + field + " = ? ORDER BY ArtistName COLLATE NOCASE", query);
 			}
 
-			return new List<Artist>();
+			// Search for fuzzy match (containing query)
+			return this.database.GetList<Artist>("SELECT * FROM Artist WHERE " + field + " LIKE ? ORDER BY ArtistName COLLATE NOCASE", "%" + query + "%");
 		}
 
 		// Return a list of artists titled between a range of (a-z, A-Z, 0-9 characters)
@@ -215,116 +182,43 @@ namespace WaveBox.Core.Model.Repository
 			// Add 1 to character to make end inclusive
 			string en = Convert.ToChar((int)end + 1).ToString();
 
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-
-				List<Artist> artists;
-				artists = conn.Query<Artist>("SELECT * FROM Artist " +
-				                             "WHERE Artist.ArtistName BETWEEN LOWER(?) AND LOWER(?) " +
-				                             "OR Artist.ArtistName BETWEEN UPPER(?) AND UPPER(?)", s, en, s, en);
-
-				artists.Sort(Artist.CompareArtistsByName);
-				return artists;
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			// We had an exception somehow, so return an empty list
-			return new List<Artist>();
+			return this.database.GetList<Artist>(
+				"SELECT * FROM Artist " +
+				"WHERE Artist.ArtistName BETWEEN LOWER(?) AND LOWER(?) " +
+				"OR Artist.ArtistName BETWEEN UPPER(?) AND UPPER(?)" +
+				"ORDER BY ArtistName COLLATE NOCASE",
+			s, en, s, en);
 		}
 
 		// Return a list of artists using SQL LIMIT x,y where X is starting index and Y is duration
 		public IList<Artist> LimitArtists(int index, int duration = Int32.MinValue)
 		{
-			ISQLiteConnection conn = null;
-			try
+			string query = "SELECT * FROM Artist ORDER BY AristName COLLATE NOCASE LIMIT ? ";
+
+			// Add duration to LIMIT if needed
+			if (duration != Int32.MinValue && duration > 0)
 			{
-				conn = database.GetSqliteConnection();
-
-				// Begin building query
-				List<Artist> artists;
-
-				string query = "SELECT * FROM Artist LIMIT ? ";
-
-				// Add duration to LIMIT if needed
-				if (duration != Int32.MinValue && duration > 0)
-				{
-					query += ", ?";
-				}
-
-				// Run query, sort, send it back
-				artists = conn.Query<Artist>(query, index, duration);
-				artists.Sort(Artist.CompareArtistsByName);
-				return artists;
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
+				query += ", ?";
 			}
 
-			// We had an exception somehow, so return an empty list
-			return new List<Artist>();
+			return this.database.GetList<Artist>(query, index, duration);
 		}
 
 		public IList<Album> AlbumsForArtistId(int artistId)
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-
-				// Search for exact match
-				return conn.Query<Album>("SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Song " +
-				                         "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
-					                     "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
-				                         "LEFT JOIN AlbumArtist ON AlbumArtist.AlbumArtistId = Album.AlbumArtistId " +
-				                         "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
-				                         "WHERE Song.ArtistId = ? GROUP BY Album.AlbumId ORDER BY Album.AlbumName COLLATE NOCASE", artistId);
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			// We had an exception somehow, so return an empty list
-			return new List<Album>();
+			return this.database.GetList<Album>(
+				"SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Song " +
+				"LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+				"LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
+				"LEFT JOIN AlbumArtist ON AlbumArtist.AlbumArtistId = Album.AlbumArtistId " +
+				"LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
+				"WHERE Song.ArtistId = ? GROUP BY Album.AlbumId ORDER BY Album.AlbumName COLLATE NOCASE",
+			artistId);
 		}
 
 		public IList<Artist> AllWithNoMusicBrainzId()
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				return conn.Query<Artist>("SELECT * FROM Artist WHERE MusicBrainzId IS NULL");
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			// We had an exception somehow, so return an empty list
-			return new List<Artist>();
+			return this.database.GetList<Artist>("SELECT * FROM Artist WHERE MusicBrainzId IS NULL");
 		}
 	}
 }
