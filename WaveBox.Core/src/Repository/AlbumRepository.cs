@@ -109,25 +109,17 @@ namespace WaveBox.Core.Model.Repository
 
 		public IList<Album> AllAlbums()
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				return conn.Query<Album>("SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Album " +
-										 "LEFT JOIN AlbumArtist ON Album.AlbumArtistId = AlbumArtist.AlbumArtistId " +
-										 "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
-										 "ORDER BY AlbumName COLLATE NOCASE");
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
+			return this.database.GetList<Album>(
+				"SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Album " +
+				"LEFT JOIN AlbumArtist ON Album.AlbumArtistId = AlbumArtist.AlbumArtistId " +
+				"LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
+				"ORDER BY AlbumName COLLATE NOCASE"
+			);
+		}
 
-			return new List<Album>();
+		public IList<Album> AllWithNoMusicBrainzId()
+		{
+			return this.database.GetList<Album>("SELECT * FROM Album WHERE MusicBrainzId IS NULL");
 		}
 
 		public int CountAlbums()
@@ -169,61 +161,34 @@ namespace WaveBox.Core.Model.Repository
 				return new List<Album>();
 			}
 
-			ISQLiteConnection conn = null;
-			try
+			if (exact)
 			{
-				conn = database.GetSqliteConnection();
-
-				if (exact)
-				{
-					// Search for exact match
-					return conn.Query<Album>("SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Album " +
-											 "LEFT JOIN AlbumArtist ON AlbumArtist.AlbumArtistId = Album.AlbumArtistId " +
-											 "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
-											 "WHERE Album." + field + " = ? ORDER BY AlbumName COLLATE NOCASE", query);
-				}
-				else
-				{
-					// Search for fuzzy match (containing query)
-					return conn.Query<Album>("SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Album " +
-											 "LEFT JOIN AlbumArtist ON AlbumArtist.AlbumArtistId = Album.AlbumArtistId " +
-											 "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
-											 "WHERE Album." + field + " LIKE ? ORDER BY AlbumName COLLATE NOCASE", "%" + query + "%");
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
+				// Search for exact match
+				return this.database.GetList<Album>(
+					"SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Album " +
+					"LEFT JOIN AlbumArtist ON AlbumArtist.AlbumArtistId = Album.AlbumArtistId " +
+					"LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
+					"WHERE Album." + field + " = ? ORDER BY AlbumName COLLATE NOCASE",
+				query);
 			}
 
-			return new List<Album>();
+			// Search for fuzzy match (containing query)
+			return this.database.GetList<Album>(
+				"SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Album " +
+				"LEFT JOIN AlbumArtist ON AlbumArtist.AlbumArtistId = Album.AlbumArtistId " +
+				"LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
+				"WHERE Album." + field + " LIKE ? ORDER BY AlbumName COLLATE NOCASE",
+			"%" + query + "%");
 		}
 
 		public IList<Album> RandomAlbums(int limit = 10)
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				return conn.Query<Album>("SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Album " +
-										 "LEFT JOIN AlbumArtist ON Album.AlbumArtistId = AlbumArtist.AlbumArtistId " +
-										 "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
-										 "ORDER BY RANDOM() LIMIT " + limit);
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return new List<Album>();
+			return this.database.GetList<Album>(
+				"SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Album " +
+				"LEFT JOIN AlbumArtist ON Album.AlbumArtistId = AlbumArtist.AlbumArtistId " +
+				"LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
+				"ORDER BY RANDOM() LIMIT " + limit
+			);
 		}
 
 		// Return a list of albums titled between a range of (a-z, A-Z, 0-9 characters)
@@ -239,94 +204,32 @@ namespace WaveBox.Core.Model.Repository
 			// Add 1 to character to make end inclusive
 			string en = Convert.ToChar((int)end + 1).ToString();
 
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-
-				List<Album> albums;
-				albums = conn.Query<Album>("SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Album " +
-										   "LEFT JOIN AlbumArtist ON AlbumArtist.AlbumArtistId = Album.AlbumArtistId " +
-										   "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
-										   "WHERE Album.AlbumName BETWEEN LOWER(?) AND LOWER(?) " +
-										   "OR Album.AlbumName BETWEEN UPPER(?) AND UPPER(?)", s, en, s, en);
-
-				albums.Sort(Album.CompareAlbumsByName);
-				return albums;
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			// We had an exception somehow, so return an empty list
-			return new List<Album>();
+			return this.database.GetList<Album>(
+				"SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Album " +
+				"LEFT JOIN AlbumArtist ON AlbumArtist.AlbumArtistId = Album.AlbumArtistId " +
+				"LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
+				"WHERE Album.AlbumName BETWEEN LOWER(?) AND LOWER(?) " +
+				"OR Album.AlbumName BETWEEN UPPER(?) AND UPPER(?) " +
+				"ORDER BY Album.AlbumName",
+			s, en, s, en);
 		}
 
 		// Return a list of albums using SQL LIMIT x,y where X is starting index and Y is duration
 		public IList<Album> LimitAlbums(int index, int duration = Int32.MinValue)
 		{
-			ISQLiteConnection conn = null;
-			try
+			string query = "SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Album " +
+						   "LEFT JOIN AlbumArtist ON Album.AlbumArtistId = AlbumArtist.AlbumArtistId " +
+						   "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
+						   "ORDER BY Album.AlbumName " +
+						   "LIMIT ? ";
+
+			// Add duration to LIMIT if needed
+			if (duration != Int32.MinValue && duration > 0)
 			{
-				conn = database.GetSqliteConnection();
-
-				// Begin building query
-				List<Album> albums;
-
-				string query = "SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Album " +
-							   "LEFT JOIN AlbumArtist ON Album.AlbumArtistId = AlbumArtist.AlbumArtistId " +
-							   "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
-							   "LIMIT ? ";
-
-				// Add duration to LIMIT if needed
-				if (duration != Int32.MinValue && duration > 0)
-				{
-					query += ", ?";
-				}
-
-				// Run query, sort, send it back
-				albums = conn.Query<Album>(query, index, duration);
-				albums.Sort(Album.CompareAlbumsByName);
-				return albums;
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
+				query += ", ?";
 			}
 
-			// We had an exception somehow, so return an empty list
-			return new List<Album>();
-		}
-
-		public IList<Album> AllWithNoMusicBrainzId()
-		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				return conn.Query<Album>("SELECT * FROM Album WHERE MusicBrainzId IS NULL");
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			// We had an exception somehow, so return an empty list
-			return new List<Album>();
+			return this.database.GetList<Album>(query, index, duration);
 		}
 	}
 }
-
