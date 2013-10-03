@@ -86,6 +86,7 @@
     <Compile Include="src\Extensions\ByteExtensions.cs" />
     <Compile Include="src\Extensions\DateTimeExtensions.cs" />
     <Compile Include="src\Extensions\FileTypeExtensions.cs" />
+    <Compile Include="src\Extensions\IDatabaseExtensions.cs" />
     <Compile Include="src\Extensions\IListExtensions.cs" />
     <Compile Include="src\Extensions\IntExtensions.cs" />
     <Compile Include="src\Extensions\Log4NetExtensions.cs" />
