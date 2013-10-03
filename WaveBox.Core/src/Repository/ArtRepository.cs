@@ -1,5 +1,6 @@
 using System;
 using Cirrious.MvvmCross.Plugins.Sqlite;
+using WaveBox.Core.Extensions;
 
 namespace WaveBox.Core.Model.Repository
 {
@@ -19,27 +20,7 @@ namespace WaveBox.Core.Model.Repository
 
 		public Art ArtForId(int artId)
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				var result = conn.DeferredQuery<Art>("SELECT * FROM Art WHERE ArtId = ?", artId);
-
-				foreach (Art a in result)
-				{
-					return a;
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return new Art();
+			return this.database.GetSingle<Art>("SELECT * FROM Art WHERE ArtId = ?", artId);
 		}
 
 		public int? ItemIdForArtId(int? artId)
