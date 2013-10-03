@@ -15,7 +15,9 @@ namespace WaveBox.Core.Model.Repository
 		public MusicBrainzCheckDateRepository(IDatabase database)
 		{
 			if (database == null)
+			{
 				throw new ArgumentNullException("database");
+			}
 
 			this.database = database;
 		}

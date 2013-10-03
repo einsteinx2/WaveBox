@@ -19,13 +19,21 @@ namespace WaveBox.Core.Model.Repository
 		public FolderRepository(IDatabase database, IServerSettings serverSettings, ISongRepository songRepository, IVideoRepository videoRepository)
 		{
 			if (database == null)
+			{
 				throw new ArgumentNullException("database");
+			}
 			if (serverSettings == null)
+			{
 				throw new ArgumentNullException("serverSettings");
+			}
 			if (songRepository == null)
+			{
 				throw new ArgumentNullException("songRepository");
+			}
 			if (videoRepository == null)
+			{
 				throw new ArgumentNullException("videoRepository");
+			}
 
 			this.database = database;
 			this.serverSettings = serverSettings;
@@ -62,30 +70,17 @@ namespace WaveBox.Core.Model.Repository
 				}
 			}
 
-			ISQLiteConnection conn = null;
-			try
+			if (folder.IsMediaFolder() || serverSettings.MediaFolders == null)
 			{
-				conn = database.GetSqliteConnection();
-				if (folder.IsMediaFolder() || serverSettings.MediaFolders == null)
-				{
-					int folderId = conn.ExecuteScalar<int>("SELECT FolderId FROM Folder WHERE FolderName = ? AND ParentFolderId IS NULL", folder.FolderName);
-					folder.FolderId = folderId == 0 ? (int?)null : folderId;
-				}
-				else
-				{
-					folder.ParentFolderId = GetParentFolderId(folder.FolderPath);
+				int folderId = this.database.GetScalar<int>("SELECT FolderId FROM Folder WHERE FolderName = ? AND ParentFolderId IS NULL", folder.FolderName);
+				folder.FolderId = folderId == 0 ? (int?)null : folderId;
+			}
+			else
+			{
+				folder.ParentFolderId = GetParentFolderId(folder.FolderPath);
 
-					int folderId = conn.ExecuteScalar<int>("SELECT FolderId FROM Folder WHERE FolderName = ? AND ParentFolderId = ?", folder.FolderName, folder.ParentFolderId);
-					folder.FolderId = folderId == 0 ? (int?)null : folderId;
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
+				int folderId = this.database.GetScalar<int>("SELECT FolderId FROM Folder WHERE FolderName = ? AND ParentFolderId = ?", folder.FolderName, folder.ParentFolderId);
+				folder.FolderId = folderId == 0 ? (int?)null : folderId;
 			}
 
 			return folder;
@@ -156,31 +151,18 @@ namespace WaveBox.Core.Model.Repository
 
 			int? pFolderId = null;
 
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				int id = conn.ExecuteScalar<int>("SELECT FolderId FROM Folder WHERE FolderPath = ?", parentFolderPath);
+			int id = this.database.GetScalar<int>("SELECT FolderId FROM Folder WHERE FolderPath = ?", parentFolderPath);
 
-				if (id == 0)
-				{
-					logger.IfInfo("No db result for parent folder.	Constructing parent folder object.");
-					Folder f = FolderForPath(parentFolderPath);
-					f.InsertFolder(false);
-					pFolderId = f.FolderId;
-				}
-				else
-				{
-					pFolderId = id;
-				}
-			}
-			catch (Exception e)
+			if (id == 0)
 			{
-				logger.Error(e);
+				logger.IfInfo("No db result for parent folder.	Constructing parent folder object.");
+				Folder f = FolderForPath(parentFolderPath);
+				f.InsertFolder(false);
+				pFolderId = f.FolderId;
 			}
-			finally
+			else
 			{
-				database.CloseSqliteConnection(conn);
+				pFolderId = id;
 			}
 
 			return pFolderId;

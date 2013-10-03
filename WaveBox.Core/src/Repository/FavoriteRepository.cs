@@ -23,25 +23,45 @@ namespace WaveBox.Core.Model.Repository
 		public FavoriteRepository(IDatabase database, IAlbumArtistRepository albumArtistRepository, IAlbumRepository albumRepository, IArtistRepository artistRepository, IFolderRepository folderRepository, IGenreRepository genreRepository, IPlaylistRepository playlistRepository, ISongRepository songRepository, IVideoRepository videoRepository, IItemRepository itemRepository)
 		{
 			if (database == null)
+			{
 				throw new ArgumentNullException("database");
+			}
 			if (albumRepository == null)
+			{
 				throw new ArgumentNullException("albumRepository");
+			}
 			if (albumArtistRepository == null)
+			{
 				throw new ArgumentNullException("albumArtistRepository");
+			}
 			if (artistRepository == null)
+			{
 				throw new ArgumentNullException("artistRepository");
+			}
 			if (folderRepository == null)
+			{
 				throw new ArgumentNullException("folderRepository");
+			}
 			if (genreRepository == null)
+			{
 				throw new ArgumentNullException("genreRepository");
+			}
 			if (playlistRepository == null)
+			{
 				throw new ArgumentNullException("playlistRepository");
+			}
 			if (songRepository == null)
+			{
 				throw new ArgumentNullException("songRepository");
+			}
 			if (videoRepository == null)
+			{
 				throw new ArgumentNullException("videoRepository");
+			}
 			if (itemRepository == null)
+			{
 				throw new ArgumentNullException("itemRepository");
+			}
 
 			this.database = database;
 			this.albumArtistRepository = albumArtistRepository;
@@ -120,9 +140,13 @@ namespace WaveBox.Core.Model.Repository
 		public IList<Favorite> FavoritesForArtistId(int? artistId, int? userId)
 		{
 			if (artistId == null)
+			{
 				throw new ArgumentNullException("artistId");
+			}
 			else if (userId == null)
+			{
 				throw new ArgumentNullException("userId");
+			}
 
 			return this.database.GetList<Favorite>("SELECT * FROM Favorite LEFT JOIN Song ON Song.ItemId = Favorite.FavoriteItemId WHERE Song.ArtistId = ? AND Favorite.FavoriteUserId = ?", artistId, userId);
 		}
@@ -130,9 +154,13 @@ namespace WaveBox.Core.Model.Repository
 		public IList<Favorite> FavoritesForAlbumArtistId(int? albumArtistId, int? userId)
 		{
 			if (albumArtistId == null)
+			{
 				throw new ArgumentNullException("artistId");
+			}
 			else if (userId == null)
+			{
 				throw new ArgumentNullException("userId");
+			}
 
 			return this.database.GetList<Favorite>("SELECT * FROM Favorite LEFT JOIN Song ON Song.ItemId = Favorite.FavoriteItemId WHERE Song.AlbumArtistId = ? AND Favorite.FavoriteUserId = ?", albumArtistId, userId);
 		}
@@ -186,4 +214,3 @@ namespace WaveBox.Core.Model.Repository
 		}
 	}
 }
-

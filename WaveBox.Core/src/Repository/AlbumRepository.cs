@@ -18,9 +18,13 @@ namespace WaveBox.Core.Model.Repository
 		public AlbumRepository(IDatabase database, IItemRepository itemRepository)
 		{
 			if (database == null)
+			{
 				throw new ArgumentNullException("database");
+			}
 			if (itemRepository == null)
+			{
 				throw new ArgumentNullException("itemRepository");
+			}
 
 			this.database = database;
 			this.itemRepository = itemRepository;
@@ -124,22 +128,7 @@ namespace WaveBox.Core.Model.Repository
 
 		public int CountAlbums()
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				return conn.ExecuteScalar<int>("SELECT COUNT(AlbumId) FROM Album");
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return 0;
+			return this.database.GetScalar<int>("SELECT COUNT(AlbumId) FROM Album");
 		}
 
 		public IList<Album> SearchAlbums(string field, string query, bool exact = true)
@@ -218,10 +207,10 @@ namespace WaveBox.Core.Model.Repository
 		public IList<Album> LimitAlbums(int index, int duration = Int32.MinValue)
 		{
 			string query = "SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Album " +
-						   "LEFT JOIN AlbumArtist ON Album.AlbumArtistId = AlbumArtist.AlbumArtistId " +
-						   "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
-						   "ORDER BY Album.AlbumName " +
-						   "LIMIT ? ";
+				"LEFT JOIN AlbumArtist ON Album.AlbumArtistId = AlbumArtist.AlbumArtistId " +
+				"LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
+				"ORDER BY Album.AlbumName " +
+				"LIMIT ? ";
 
 			// Add duration to LIMIT if needed
 			if (duration != Int32.MinValue && duration > 0)
