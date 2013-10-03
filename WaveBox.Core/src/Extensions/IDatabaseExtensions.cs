@@ -51,7 +51,6 @@ namespace WaveBox.Core.Extensions
 				conn = database.GetSqliteConnection();
 
 				// If result found, return it
-				logger.IfInfo("Q: " + query);
 				return conn.Query<T>(query, args);
 			}
 			catch (Exception e)
