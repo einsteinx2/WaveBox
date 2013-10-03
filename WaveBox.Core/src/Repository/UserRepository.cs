@@ -41,32 +41,17 @@ namespace WaveBox.Core.Model.Repository
 			{
 				this.Users.Clear();
 
-				ISQLiteConnection conn = null;
-				try
+				var users = this.database.GetList<User>("SELECT * FROM User");
+				foreach (User u in users)
 				{
-					conn = database.GetSqliteConnection();
+					// Don't cache passwords
+					u.Password = null;
 
-					foreach (User u in conn.DeferredQuery<User>("SELECT * FROM User"))
-					{
-						// Don't cache passwords
-						u.Password = null;
+					this.Users[(int)u.UserId] = u;
+				}
 
-						this.Users[(int)u.UserId] = u;
-					}
-
-					return true;
-				}
-				catch (Exception e)
-				{
-					logger.Error(e);
-				}
-				finally
-				{
-					database.CloseSqliteConnection(conn);
-				}
+				return true;
 			}
-
-			return false;
 		}
 
 		public User UserForId(int userId)
@@ -197,22 +182,7 @@ namespace WaveBox.Core.Model.Repository
 
 		public IList<User> ExpiredUsers()
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				return conn.Query<User>("SELECT * FROM User WHERE DeleteTime <= ? ORDER BY UserName COLLATE NOCASE", DateTime.Now.ToUniversalUnixTimestamp());
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return new List<User>();
+			return this.database.GetList<User>("SELECT * FROM User WHERE DeleteTime <= ? ORDER BY UserName COLLATE NOCASE", DateTime.Now.ToUniversalUnixTimestamp());
 		}
 	}
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using System.Linq;
+using WaveBox.Core.Extensions;
 
 namespace WaveBox.Core.Model.Repository
 {
@@ -21,47 +22,12 @@ namespace WaveBox.Core.Model.Repository
 
 		public Video VideoForId(int videoId)
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				var result = conn.DeferredQuery<Video>("SELECT * FROM Video WHERE ItemId = ?", videoId);
-
-				foreach (Video v in result)
-				{
-					return v;
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return new Video();
+			return this.database.GetSingle<Video>("SELECT * FROM Video WHERE ItemId = ?", videoId);
 		}
 
 		public IList<Video> AllVideos()
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				return conn.Query<Video>("SELECT * FROM Video");
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return new List<Video>();
+			return this.database.GetList<Video>("SELECT * FROM Video");
 		}
 
 		public int CountVideos()
@@ -157,31 +123,14 @@ namespace WaveBox.Core.Model.Repository
 				return new List<Video>();
 			}
 
-			ISQLiteConnection conn = null;
-			try
+			if (exact)
 			{
-				conn = database.GetSqliteConnection();
-				if (exact)
-				{
-					// Search for exact match
-					return conn.Query<Video>("SELECT * FROM Video WHERE " + field + " = ? ORDER BY FileName COLLATE NOCASE", query);
-				}
-				else
-				{
-					// Search for fuzzy match (containing query)
-					return conn.Query<Video>("SELECT * FROM Video WHERE " + field + " LIKE ? ORDER BY FileName COLLATE NOCASE", "%" + query + "%");
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
+				// Search for exact match
+				return this.database.GetList<Video>("SELECT * FROM Video WHERE " + field + " = ? ORDER BY FileName COLLATE NOCASE", query);
 			}
 
-			return new List<Video>();
+			// Search for fuzzy match (containing query)
+			return this.database.GetList<Video>("SELECT * FROM Video WHERE " + field + " LIKE ? ORDER BY FileName COLLATE NOCASE", "%" + query + "%");
 		}
 
 		// Return a list of videos titled between a range of (a-z, A-Z, 0-9 characters)
@@ -197,68 +146,26 @@ namespace WaveBox.Core.Model.Repository
 			// Add 1 to character to make end inclusive
 			string en = Convert.ToChar((int)end + 1).ToString();
 
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-
-				List<Video> videos;
-				videos = conn.Query<Video>("SELECT * FROM Video " +
-				                           "WHERE Video.FileName BETWEEN LOWER(?) AND LOWER(?) " +
-				                           "OR Video.FileName BETWEEN UPPER(?) AND UPPER(?)", s, en, s, en);
-
-				videos.Sort(Video.CompareVideosByFileName);
-				return videos;
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			// We had an exception somehow, so return an empty list
-			return new List<Video>();
+			return this.database.GetList<Video>(
+				"SELECT * FROM Video " +
+				"WHERE Video.FileName BETWEEN LOWER(?) AND LOWER(?) " +
+				"OR Video.FileName BETWEEN UPPER(?) AND UPPER(?) " +
+				"ORDER BY Video.FileName",
+			s, en, s, en);
 		}
 
 		// Return a list of videos using SQL LIMIT x,y where X is starting index and Y is duration
 		public IList<Video> LimitVideos(int index, int duration = Int32.MinValue)
 		{
-			ISQLiteConnection conn = null;
-			try
+			string query = "SELECT * FROM Video ORDER BY FileName LIMIT ? ";
+
+			// Add duration to LIMIT if needed
+			if (duration != Int32.MinValue && duration > 0)
 			{
-				conn = database.GetSqliteConnection();
-
-				// Begin building query
-				List<Video> videos;
-
-				string query = "SELECT * FROM Video LIMIT ? ";
-
-				// Add duration to LIMIT if needed
-				if (duration != Int32.MinValue && duration > 0)
-				{
-					query += ", ?";
-				}
-
-				// Run query, sort, send it back
-				videos = conn.Query<Video>(query, index, duration);
-				videos.Sort(Video.CompareVideosByFileName);
-				return videos;
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
+				query += ", ?";
 			}
 
-			// We had an exception somehow, so return an empty list
-			return new List<Video>();
+			return this.database.GetList<Video>(query, index, duration);
 		}
 	}
 }
-
