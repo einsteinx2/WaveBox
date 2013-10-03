@@ -121,6 +121,8 @@ namespace WaveBox.ApiHandler.Handlers
 
 							// Get count of artists
 							statusCache.Cache["artistCount"] = Injection.Kernel.Get<IArtistRepository>().CountArtists();
+							// Get count of album artists
+							statusCache.Cache["albumArtistCount"] = Injection.Kernel.Get<IAlbumArtistRepository>().CountAlbumArtists();
 							// Get count of albums
 							statusCache.Cache["albumCount"] = Injection.Kernel.Get<IAlbumRepository>().CountAlbums();
 							// Get count of songs
