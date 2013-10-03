@@ -38,7 +38,7 @@ namespace WaveBox.Core.Extensions
 			}
 
 			// If no result, return blank instance
-			return default (T);
+			return new T();
 		}
 	}
 }
