@@ -35,29 +35,11 @@ namespace WaveBox.Core.Model.Repository
 
 		public Folder FolderForId(int folderId)
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-
-				List<Folder> folder = conn.Query<Folder>("SELECT Folder.*, ArtItem.ArtId FROM Folder " + 
-				                                         "LEFT JOIN ArtItem ON Folder.FolderId = ArtItem.ItemId " + 
-				                                         "WHERE FolderId = ? LIMIT 1", folderId);
-				if (folder.Count > 0)
-				{
-					return folder[0];
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return null;
+			return this.database.GetSingle<Folder>(
+				"SELECT Folder.*, ArtItem.ArtId FROM Folder " +
+				"LEFT JOIN ArtItem ON Folder.FolderId = ArtItem.ItemId " +
+				"WHERE FolderId = ? LIMIT 1",
+			folderId);
 		}
 
 		public Folder FolderForPath(string path)
