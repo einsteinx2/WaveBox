@@ -63,119 +63,51 @@ namespace WaveBox.Core.Model.Repository
 
 		public IList<Genre> AllGenres()
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				return conn.Query<Genre>("SELECT * FROM Genre ORDER BY GenreName COLLATE NOCASE");
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return new List<Genre>();
+			return this.database.GetList<Genre>("SELECT * FROM Genre ORDER BY GenreName COLLATE NOCASE");
 		}
 
 		public IList<Artist> ListOfArtists(int genreId)
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				return conn.Query<Artist>("SELECT Artist.* " +
-				                          "FROM Genre " +
-				                          "LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
-				                          "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
-				                          "WHERE Genre.GenreId = ? GROUP BY Artist.ArtistId", genreId);
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return new List<Artist>();
+			return this.database.GetList<Artist>(
+				"SELECT Artist.* " +
+				"FROM Genre " +
+				"LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
+				 "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+				"WHERE Genre.GenreId = ? GROUP BY Artist.ArtistId",
+			genreId);
 		}
 
 		public IList<Album> ListOfAlbums(int genreId)
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				return conn.Query<Album>("SELECT Album.*, ArtItem.ArtId " +
-				                         "FROM Genre " +
-				                         "LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
-				                         "LEFT JOIN Album ON Song.AlbumId = Album.ItemId " +
-				                         "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
-				                         "WHERE Genre.GenreId = ? GROUP BY Album.ItemId", genreId);
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return new List<Album>();
+			return this.database.GetList<Album>(
+				"SELECT Album.*, ArtItem.ArtId " +
+				"FROM Genre " +
+				"LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
+				"LEFT JOIN Album ON Song.AlbumId = Album.ItemId " +
+				"LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
+				"WHERE Genre.GenreId = ? GROUP BY Album.ItemId",
+			genreId);
 		}
 
 		public IList<Song> ListOfSongs(int genreId)
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				return conn.Query<Song>("SELECT Song.*, Genre.GenreName " +
-				                        "FROM Genre " +
-				                        "LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
-				                        "WHERE Genre.GenreId = ? GROUP BY Song.ItemId", genreId);
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return new List<Song>();
+			return this.database.GetList<Song>(
+				"SELECT Song.*, Genre.GenreName " +
+				"FROM Genre " +
+				"LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
+				"WHERE Genre.GenreId = ? GROUP BY Song.ItemId",
+			genreId);
 		}
 
 		public IList<Folder> ListOfFolders(int genreId)
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				return conn.Query<Folder>("SELECT Folder.* " +
-				                          "FROM Genre " +
-				                          "LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
-				                          "LEFT JOIN Folder ON Song.FolderId = Folder.FolderId " +
-				                          "WHERE Genre.GenreId = ? GROUP BY Folder.FolderId", genreId);
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return new List<Folder>();
+			return this.database.GetList<Folder>(
+				"SELECT Folder.* " +
+				"FROM Genre " +
+				"LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
+				"LEFT JOIN Folder ON Song.FolderId = Folder.FolderId " +
+				"WHERE Genre.GenreId = ? GROUP BY Folder.FolderId",
+			genreId);
 		}
 	}
 }
-
