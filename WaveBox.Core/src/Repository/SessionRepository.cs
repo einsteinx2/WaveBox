@@ -57,27 +57,7 @@ namespace WaveBox.Core.Model.Repository
 
 		public Session SessionForRowId(int rowId)
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				var result = conn.DeferredQuery<Session>("SELECT RowId AS RowId,* FROM Session WHERE RowId = ?", rowId);
-
-				foreach (var session in result)
-				{
-					return session;
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return new Session();
+			return this.database.GetSingle<Session>("SELECT RowId AS RowId,* FROM Session WHERE RowId = ?", rowId);
 		}
 
 		public Session SessionForSessionId(string sessionId)
