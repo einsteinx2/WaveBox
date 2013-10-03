@@ -40,5 +40,32 @@ namespace WaveBox.Core.Extensions
 			// If no result, return blank instance
 			return new T();
 		}
+
+		// Retrieve a list of objects of type T using query string and prepared arguments
+		public static IList<T> GetList<T>(this IDatabase database, string query, params object[] args) where T : new()
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				// Get database connection, use query to generate object of type T
+				conn = database.GetSqliteConnection();
+
+				// If result found, return it
+				logger.IfInfo("Q: " + query);
+				return conn.Query<T>(query, args);
+			}
+			catch (Exception e)
+			{
+				logger.Error("query: " + query);
+				logger.Error(e);
+			}
+			finally
+			{
+				database.CloseSqliteConnection(conn);
+			}
+
+			// If no result, return blank instance
+			return new List<T>();
+		}
 	}
 }
