@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
-using Cirrious.MvvmCross.Plugins.Sqlite;
 using System.Linq;
+using Cirrious.MvvmCross.Plugins.Sqlite;
+using WaveBox.Core.Extensions;
 using WaveBox.Core.Static;
 
 namespace WaveBox.Core.Model.Repository
@@ -30,65 +31,12 @@ namespace WaveBox.Core.Model.Repository
 
 		public AlbumArtist AlbumArtistForId(int? albumArtistId)
 		{
-			if (albumArtistId == null)
-			{
-				return new AlbumArtist();
-			}
-
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-
-				var result = conn.DeferredQuery<AlbumArtist>("SELECT * FROM AlbumArtist WHERE AlbumArtistId = ?", albumArtistId);
-
-				foreach (AlbumArtist a in result)
-				{
-					return a;
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return new AlbumArtist();
+			return this.database.GetSingle<AlbumArtist>("SELECT * FROM AlbumArtist WHERE AlbumArtistId = ?", albumArtistId);
 		}
 
 		public AlbumArtist AlbumArtistForName(string albumArtistName)
 		{
-			if (albumArtistName == null || albumArtistName == "")
-			{
-				return new AlbumArtist();
-			}
-
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				var result = conn.DeferredQuery<AlbumArtist>("SELECT * FROM AlbumArtist WHERE AlbumArtistName = ?", albumArtistName);
-
-				foreach (AlbumArtist a in result)
-				{
-					return a;
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			AlbumArtist artist = new AlbumArtist();
-			artist.AlbumArtistName = albumArtistName;
-			return artist;
+			return this.database.GetSingle<AlbumArtist>("SELECT * FROM AlbumArtist WHERE AlbumArtistName = ?", albumArtistName);
 		}
 
 		public bool InsertAlbumArtist(string albumArtistName, bool replace = false)
@@ -159,7 +107,7 @@ namespace WaveBox.Core.Model.Repository
 				{
 					anAlbumArtist = AlbumArtistForNameOrCreate(albumArtistName);
 				}
-				else 
+				else
 				{
 					// The insert failed because this album was inserted by another
 					// thread, so grab the artist id, it will exist this time
