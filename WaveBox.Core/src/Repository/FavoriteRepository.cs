@@ -57,25 +57,7 @@ namespace WaveBox.Core.Model.Repository
 
 		public Favorite FavoriteForId(int favoriteId)
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				foreach (Favorite fav in conn.DeferredQuery<Favorite>("SELECT * FROM Favorite WHERE FavoriteId = ?", favoriteId))
-				{
-					return fav;
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return new Favorite();
+			return this.database.GetSingle<Favorite>("SELECT * FROM Favorite WHERE FavoriteId = ?", favoriteId);
 		}
 
 		public int? AddFavorite(int favoriteUserId, int favoriteItemId, ItemType? favoriteItemType)
