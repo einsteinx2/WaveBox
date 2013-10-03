@@ -1,8 +1,9 @@
 using System;
-using WaveBox.Core.Model;
-using Cirrious.MvvmCross.Plugins.Sqlite;
 using System.Collections.Generic;
 using System.Linq;
+using Cirrious.MvvmCross.Plugins.Sqlite;
+using WaveBox.Core.Extensions;
+using WaveBox.Core.Model;
 using WaveBox.Core.Static;
 
 namespace WaveBox.Core.Model.Repository
@@ -27,65 +28,22 @@ namespace WaveBox.Core.Model.Repository
 
 		public Album AlbumForId(int albumId)
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				var result = conn.DeferredQuery<Album>("SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Album " +
-													   "LEFT JOIN AlbumArtist ON Album.AlbumArtistId = AlbumArtist.AlbumArtistId " +
-				                                       "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
-													   "WHERE Album.AlbumId = ?", albumId);
-
-				foreach (Album a in result)
-				{
-					return a;
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return new Album();
+			return this.database.GetSingle<Album>(
+				"SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Album " +
+				"LEFT JOIN AlbumArtist ON Album.AlbumArtistId = AlbumArtist.AlbumArtistId " +
+				"LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
+				"WHERE Album.AlbumId = ?",
+			albumId);
 		}
 
 		public Album AlbumForName(string albumName, int? albumArtistId)
 		{
-			if (albumName == null || albumName == "" || albumArtistId == null)
-			{
-				return new Album();
-			}
-
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				IEnumerable<Album> result = conn.DeferredQuery<Album>("SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Album " +
-				                                                      "LEFT JOIN AlbumArtist ON AlbumArtist.AlbumArtistId = Album.AlbumArtistId " +
-				                                                      "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
-				                                                      "WHERE Album.AlbumName = ? AND Album.AlbumArtistId = ?", albumName, albumArtistId);
-				foreach (Album a in result)
-				{
-					return a;
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			Album album = new Album();
-			album.AlbumName = albumName;
-			album.AlbumArtistId = albumArtistId;
-			return album;
+			return this.database.GetSingle<Album>(
+				"SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Album " +
+				"LEFT JOIN AlbumArtist ON AlbumArtist.AlbumArtistId = Album.AlbumArtistId " +
+				"LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
+				"WHERE Album.AlbumName = ? AND Album.AlbumArtistId = ?",
+			albumName, albumArtistId);
 		}
 
 		public bool InsertAlbum(string albumName, int? albumArtistId, int? releaseYear)
@@ -156,9 +114,9 @@ namespace WaveBox.Core.Model.Repository
 			{
 				conn = database.GetSqliteConnection();
 				return conn.Query<Album>("SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Album " +
-				                         "LEFT JOIN AlbumArtist ON Album.AlbumArtistId = AlbumArtist.AlbumArtistId " +
-				                         "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
-				                         "ORDER BY AlbumName COLLATE NOCASE");
+										 "LEFT JOIN AlbumArtist ON Album.AlbumArtistId = AlbumArtist.AlbumArtistId " +
+										 "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
+										 "ORDER BY AlbumName COLLATE NOCASE");
 			}
 			catch (Exception e)
 			{
@@ -220,17 +178,17 @@ namespace WaveBox.Core.Model.Repository
 				{
 					// Search for exact match
 					return conn.Query<Album>("SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Album " +
-					                         "LEFT JOIN AlbumArtist ON AlbumArtist.AlbumArtistId = Album.AlbumArtistId " +
-					                         "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
-					                         "WHERE Album." + field + " = ? ORDER BY AlbumName COLLATE NOCASE", query);
+											 "LEFT JOIN AlbumArtist ON AlbumArtist.AlbumArtistId = Album.AlbumArtistId " +
+											 "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
+											 "WHERE Album." + field + " = ? ORDER BY AlbumName COLLATE NOCASE", query);
 				}
 				else
 				{
 					// Search for fuzzy match (containing query)
 					return conn.Query<Album>("SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Album " +
-					                         "LEFT JOIN AlbumArtist ON AlbumArtist.AlbumArtistId = Album.AlbumArtistId " +
-					                         "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
-					                         "WHERE Album." + field + " LIKE ? ORDER BY AlbumName COLLATE NOCASE", "%" + query + "%");
+											 "LEFT JOIN AlbumArtist ON AlbumArtist.AlbumArtistId = Album.AlbumArtistId " +
+											 "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
+											 "WHERE Album." + field + " LIKE ? ORDER BY AlbumName COLLATE NOCASE", "%" + query + "%");
 				}
 			}
 			catch (Exception e)
@@ -252,9 +210,9 @@ namespace WaveBox.Core.Model.Repository
 			{
 				conn = database.GetSqliteConnection();
 				return conn.Query<Album>("SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Album " +
-				                         "LEFT JOIN AlbumArtist ON Album.AlbumArtistId = AlbumArtist.AlbumArtistId " +
-				                         "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
-				                         "ORDER BY RANDOM() LIMIT " + limit);
+										 "LEFT JOIN AlbumArtist ON Album.AlbumArtistId = AlbumArtist.AlbumArtistId " +
+										 "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
+										 "ORDER BY RANDOM() LIMIT " + limit);
 			}
 			catch (Exception e)
 			{
@@ -288,10 +246,10 @@ namespace WaveBox.Core.Model.Repository
 
 				List<Album> albums;
 				albums = conn.Query<Album>("SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Album " +
-				                           "LEFT JOIN AlbumArtist ON AlbumArtist.AlbumArtistId = Album.AlbumArtistId " +
-				                           "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
-				                           "WHERE Album.AlbumName BETWEEN LOWER(?) AND LOWER(?) " +
-				                           "OR Album.AlbumName BETWEEN UPPER(?) AND UPPER(?)", s, en, s, en);
+										   "LEFT JOIN AlbumArtist ON AlbumArtist.AlbumArtistId = Album.AlbumArtistId " +
+										   "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
+										   "WHERE Album.AlbumName BETWEEN LOWER(?) AND LOWER(?) " +
+										   "OR Album.AlbumName BETWEEN UPPER(?) AND UPPER(?)", s, en, s, en);
 
 				albums.Sort(Album.CompareAlbumsByName);
 				return albums;
