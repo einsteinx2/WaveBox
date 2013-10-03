@@ -32,45 +32,16 @@ namespace WaveBox.Core.Model.Repository
 
 		public int CountVideos()
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				return conn.ExecuteScalar<int>("SELECT COUNT(ItemId) FROM Video");
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return 0;
+			return this.database.GetScalar<int>("SELECT COUNT(ItemId) FROM Video");
 		}
 
 		public long TotalVideoSize()
 		{
-			ISQLiteConnection conn = null;
-			try
+			// Check if at least 1 video exists, to prevent exception if summing null
+			int exists = this.database.GetScalar<int>("SELECT * FROM Video LIMIT 1");
+			if (exists > 0)
 			{
-				conn = database.GetSqliteConnection();
-
-				// Check if at least 1 video exists, to prevent exception if summing null
-				int exists = conn.ExecuteScalar<int>("SELECT * FROM Video LIMIT 1");
-				if (exists > 0)
-				{
-					return conn.ExecuteScalar<long>("SELECT SUM(FileSize) FROM Video");
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
+				return this.database.GetScalar<long>("SELECT SUM(FileSize) FROM Video");
 			}
 
 			return 0;
@@ -78,25 +49,11 @@ namespace WaveBox.Core.Model.Repository
 
 		public long TotalVideoDuration()
 		{
-			ISQLiteConnection conn = null;
-			try
+			// Check if at least 1 video exists, to prevent exception if summing null
+			int exists = this.database.GetScalar<int>("SELECT * FROM Video LIMIT 1");
+			if (exists > 0)
 			{
-				conn = database.GetSqliteConnection();
-
-				// Check if at least 1 video exists, to prevent exception if summing null
-				int exists = conn.ExecuteScalar<int>("SELECT * FROM Video LIMIT 1");
-				if (exists > 0)
-				{
-					return conn.ExecuteScalar<long>("SELECT SUM(Duration) FROM Video");
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
+				return this.database.GetScalar<long>("SELECT SUM(Duration) FROM Video");
 			}
 
 			return 0;
