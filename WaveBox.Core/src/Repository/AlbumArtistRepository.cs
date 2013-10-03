@@ -39,6 +39,16 @@ namespace WaveBox.Core.Model.Repository
 			return this.database.GetSingle<AlbumArtist>("SELECT * FROM AlbumArtist WHERE AlbumArtistName = ?", albumArtistName);
 		}
 
+		public IList<AlbumArtist> AllAlbumArtists()
+		{
+			return this.database.GetList<AlbumArtist>("SELECT * FROM AlbumArtist ORDER BY AlbumArtistName COLLATE NOCASE");
+		}
+
+		public IList<AlbumArtist> AllWithNoMusicBrainzId()
+		{
+			return this.database.GetList<AlbumArtist>("SELECT * FROM AlbumArtist WHERE MusicBrainzId IS NULL");
+		}
+
 		public bool InsertAlbumArtist(string albumArtistName, bool replace = false)
 		{
 			int? itemId = itemRepository.GenerateItemId(ItemType.AlbumArtist);
@@ -119,26 +129,6 @@ namespace WaveBox.Core.Model.Repository
 			return anAlbumArtist;
 		}
 
-		public IList<AlbumArtist> AllAlbumArtists()
-		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				return conn.Query<AlbumArtist>("SELECT * FROM AlbumArtist ORDER BY AlbumArtistName COLLATE NOCASE");
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return new List<AlbumArtist>();
-		}
-
 		public int CountAlbumArtists()
 		{
 			ISQLiteConnection conn = null;
@@ -178,32 +168,14 @@ namespace WaveBox.Core.Model.Repository
 				return new List<AlbumArtist>();
 			}
 
-			ISQLiteConnection conn = null;
-			try
+			if (exact)
 			{
-				conn = database.GetSqliteConnection();
-
-				if (exact)
-				{
-					// Search for exact match
-					return conn.Query<AlbumArtist>("SELECT * FROM AlbumArtist WHERE " + field + " = ? ORDER BY AlbumArtistName COLLATE NOCASE", query);
-				}
-				else
-				{
-					// Search for fuzzy match (containing query)
-					return conn.Query<AlbumArtist>("SELECT * FROM AlbumArtist WHERE " + field + " LIKE ? ORDER BY AlbumArtistName COLLATE NOCASE", "%" + query + "%");
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
+				// Search for exact match
+				return this.database.GetList<AlbumArtist>("SELECT * FROM AlbumArtist WHERE " + field + " = ? ORDER BY AlbumArtistName COLLATE NOCASE", query);
 			}
 
-			return new List<AlbumArtist>();
+			// Search for fuzzy match (containing query)
+			return this.database.GetList<AlbumArtist>("SELECT * FROM AlbumArtist WHERE " + field + " LIKE ? ORDER BY AlbumArtistName COLLATE NOCASE", "%" + query + "%");
 		}
 
 		// Return a list of album artists titled between a range of (a-z, A-Z, 0-9 characters)
@@ -219,67 +191,27 @@ namespace WaveBox.Core.Model.Repository
 			// Add 1 to character to make end inclusive
 			string en = Convert.ToChar((int)end + 1).ToString();
 
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-
-				List<AlbumArtist> albumArtists;
-				albumArtists = conn.Query<AlbumArtist>("SELECT * FROM AlbumArtist " +
-				                             "WHERE AlbumArtist.AlbumArtistName BETWEEN LOWER(?) AND LOWER(?) " +
-				                             "OR AlbumArtist.AlbumArtistName BETWEEN UPPER(?) AND UPPER(?)", s, en, s, en);
-
-				albumArtists.Sort(AlbumArtist.CompareAlbumArtistsByName);
-				return albumArtists;
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			// We had an exception somehow, so return an empty list
-			return new List<AlbumArtist>();
+			// Return the list
+			return this.database.GetList<AlbumArtist>(
+				"SELECT * FROM AlbumArtist " +
+				"WHERE AlbumArtistName BETWEEN LOWER(?) AND LOWER(?) " +
+				"OR AlbumArtistName BETWEEN UPPER(?) AND UPPER(?) " +
+				"ORDER BY AlbumArtistName",
+			s, en, s, en);
 		}
 
 		// Return a list of album artists using SQL LIMIT x,y where X is starting index and Y is duration
 		public IList<AlbumArtist> LimitAlbumArtists(int index, int duration = Int32.MinValue)
 		{
-			ISQLiteConnection conn = null;
-			try
+			string query = "SELECT * FROM AlbumArtist ORDER BY AlbumArtistName LIMIT ? ";
+
+			// Add duration to LIMIT if needed
+			if (duration != Int32.MinValue && duration > 0)
 			{
-				conn = database.GetSqliteConnection();
-
-				// Begin building query
-				List<AlbumArtist> albumArtists;
-
-				string query = "SELECT * FROM AlbumArtist LIMIT ? ";
-
-				// Add duration to LIMIT if needed
-				if (duration != Int32.MinValue && duration > 0)
-				{
-					query += ", ?";
-				}
-
-				// Run query, sort, send it back
-				albumArtists = conn.Query<AlbumArtist>(query, index, duration);
-				albumArtists.Sort(AlbumArtist.CompareAlbumArtistsByName);
-				return albumArtists;
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
+				query += ", ?";
 			}
 
-			// We had an exception somehow, so return an empty list
-			return new List<AlbumArtist>();
+			return this.database.GetList<AlbumArtist>(query, index, duration);
 		}
 
 		// TODO: Rewrite this to be more efficient
@@ -318,27 +250,6 @@ namespace WaveBox.Core.Model.Repository
 
 			// We had an exception somehow, so return an empty list
 			return new List<Song>();
-		}
-
-		public IList<AlbumArtist> AllWithNoMusicBrainzId()
-		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				return conn.Query<AlbumArtist>("SELECT * FROM AlbumArtist WHERE MusicBrainzId IS NULL");
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			// We had an exception somehow, so return an empty list
-			return new List<AlbumArtist>();
 		}
 	}
 }
