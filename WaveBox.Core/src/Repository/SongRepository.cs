@@ -4,6 +4,7 @@ using Cirrious.MvvmCross.Plugins.Sqlite;
 using System.Text;
 using System.Linq;
 using System.Collections;
+using WaveBox.Core.Extensions;
 
 namespace WaveBox.Core.Model.Repository
 {
@@ -23,35 +24,15 @@ namespace WaveBox.Core.Model.Repository
 
 		public Song SongForId(int songId)
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				var result = conn.DeferredQuery<Song>("SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName, ArtItem.ArtId FROM Song " +
-													  "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
-													  "LEFT JOIN AlbumArtist ON Song.AlbumArtistId = AlbumArtist.AlbumArtistId " +
-													  "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
-													  "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
-				                                      "LEFT JOIN ArtItem ON Song.ItemId = ArtItem.ItemId " +
-													  "WHERE Song.ItemId = ? LIMIT 1", songId);
-
-				foreach (Song song in result)
-				{
-					// Record exists, so return it
-					return song;
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			// No record found, so return an empty Song object
-			return new Song();
+			return this.database.GetSingle<Song>(
+				"SELECT Song.*, Artist.ArtistName, AlbumArtist.AlbumArtistName, Album.AlbumName, Genre.GenreName, ArtItem.ArtId FROM Song " +
+				"LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+				"LEFT JOIN AlbumArtist ON Song.AlbumArtistId = AlbumArtist.AlbumArtistId " +
+				"LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
+				"LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
+				"LEFT JOIN ArtItem ON Song.ItemId = ArtItem.ItemId " +
+				"WHERE Song.ItemId = ? LIMIT 1",
+			songId);
 		}
 
 		public IList<Song> SongsForIds(IList<int> songIds)
@@ -104,7 +85,7 @@ namespace WaveBox.Core.Model.Repository
 				                        "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
 				                        "LEFT JOIN AlbumArtist ON Song.AlbumArtistId = AlbumArtist.AlbumArtistId " +
 				                        "LEFT JOIN Album ON Song.AlbumId = Album.AlbumId " +
-				                        "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " + 
+				                        "LEFT JOIN Genre ON Song.GenreId = Genre.GenreId " +
 				                        "LEFT JOIN ArtItem ON Song.ItemId = ArtItem.ItemId");
 			}
 			catch (Exception e)
