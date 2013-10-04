@@ -126,26 +126,13 @@ namespace WaveBox.Core.Model.Repository
 		// Remove a session by row ID, reload the cached sessions list
 		public bool DeleteSessionForRowId(int rowId)
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				int affected = conn.ExecuteLogged("DELETE FROM Session WHERE RowId = ?", rowId);
+			int affected = this.database.ExecuteQuery("DELETE FROM Session WHERE RowId = ?", rowId);
 
-				if (affected > 0)
-				{
-					this.ReloadSessions();
+			if (affected > 0)
+			{
+				this.ReloadSessions();
 
-					return true;
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
+				return true;
 			}
 
 			return false;
@@ -153,26 +140,13 @@ namespace WaveBox.Core.Model.Repository
 
 		public bool DeleteSessionsForUserId(int userId)
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				int affected = conn.ExecuteLogged("DELETE FROM Session WHERE UserId = ?", userId);
+			int affected = this.database.ExecuteQuery("DELETE FROM Session WHERE UserId = ?", userId);
 
-				if (affected > 0)
-				{
-					this.ReloadSessions();
+			if (affected > 0)
+			{
+				this.ReloadSessions();
 
-					return true;
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
+				return true;
 			}
 
 			return false;
