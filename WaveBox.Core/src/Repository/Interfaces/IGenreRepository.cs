@@ -12,6 +12,6 @@ namespace WaveBox.Core.Model.Repository
 		IList<Album> ListOfAlbums(int genreId);
 		IList<Song> ListOfSongs(int genreId);
 		IList<Folder> ListOfFolders(int genreId);
+		bool InsertGenre(Genre genre, bool replace);
 	}
 }
-
