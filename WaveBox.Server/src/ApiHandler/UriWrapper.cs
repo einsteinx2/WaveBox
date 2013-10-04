@@ -44,7 +44,7 @@ namespace WaveBox.ApiHandler
 		/// <summary>
 		/// Constructor for UriWrapper, takes in a URI string and enables methods to parse its pieces
 		/// </summary>
-		public UriWrapper(string uriString)
+		public UriWrapper(string uriString, string httpMethod = null)
 		{
 			// Store the original URI in a string
 			this.UriString = uriString;
@@ -63,6 +63,21 @@ namespace WaveBox.ApiHandler
 			if (this.Parameters.ContainsKey("action"))
 			{
 				this.Action = this.Parameters["action"];
+			}
+
+			// Check for RESTful HTTP method, and set action accordingly, overriding parameter action
+			if (httpMethod != null)
+			{
+				// DELETE - destroy a resource
+				if (httpMethod == "DELETE")
+				{
+					this.Action = "delete";
+				}
+				// PUT - update a resource
+				if (httpMethod == "PUT")
+				{
+					this.Action = "update";
+				}
 			}
 
 			// Check for ID passed in REST form (e.g. /api/songs/6)
