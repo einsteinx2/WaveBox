@@ -35,47 +35,6 @@ namespace WaveBox.Core.Model
 		[JsonIgnore, IgnoreRead, IgnoreWrite]
 		public string GroupingName { get { return GenreName; } }
 
-		public Genre()
-		{
-		}
-
-		public void InsertGenre()
-		{
-			if (GenreName == null)
-			{
-				// Can't insert a genre with no name
-				return;
-			}
-
-			int? itemId = Injection.Kernel.Get<IItemRepository>().GenerateItemId(ItemType.Genre);
-			if (itemId == null)
-			{
-				return;
-			}
-
-			ISQLiteConnection conn = null;
-			try
-			{
-				// insert the genre into the database
-				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				GenreId = itemId;
-				int affected = conn.InsertLogged(this);
-
-				if (affected == 0)
-				{
-					GenreId = null;
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-			}
-		}
-
 		public IList<Artist> ListOfArtists()
 		{
 			if (GenreId == null)
