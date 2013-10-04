@@ -98,39 +98,21 @@ namespace WaveBox.Core.Model.Repository
 			string salt = User.GeneratePasswordSalt();
 			string hash = User.ComputePasswordHash(password, salt);
 
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				var u = new User();
-				u.UserId = itemId;
-				u.UserName = userName;
-				u.Role = role;
-				u.Password = password;
-				u.PasswordHash = hash;
-				u.PasswordSalt = salt;
-				u.CreateTime = DateTime.Now.ToUniversalUnixTimestamp();
-				u.DeleteTime = deleteTime;
-				conn.Insert(u);
+			var u = new User();
+			u.UserId = itemId;
+			u.UserName = userName;
+			u.Role = role;
+			u.Password = password;
+			u.PasswordHash = hash;
+			u.PasswordSalt = salt;
+			u.CreateTime = DateTime.Now.ToUniversalUnixTimestamp();
+			u.DeleteTime = deleteTime;
 
-				this.ReloadUsers();
+			this.database.InsertObject<User>(u);
 
-				return u;
-			}
-			catch (NullReferenceException)
-			{
-				logger.IfInfo("User '" + userName + "' already exists, skipping...");
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
+			this.ReloadUsers();
 
-			return new User();
+			return u;
 		}
 
 		public User CreateTestUser(long? durationSeconds)

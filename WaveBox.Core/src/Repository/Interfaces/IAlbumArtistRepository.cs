@@ -8,7 +8,7 @@ namespace WaveBox.Core.Model.Repository
 		AlbumArtist AlbumArtistForId(int? albumArtistId);
 		AlbumArtist AlbumArtistForName(string albumArtistName);
 		bool InsertAlbumArtist(string albumArtistName, bool replace = false);
-		void InsertAlbumArtist(AlbumArtist albumArtist, bool replace = false);
+		bool InsertAlbumArtist(AlbumArtist albumArtist, bool replace = false);
 		AlbumArtist AlbumArtistForNameOrCreate(string albumArtistName);
 		IList<AlbumArtist> AllAlbumArtists();
 		int CountAlbumArtists();

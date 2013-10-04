@@ -47,46 +47,17 @@ namespace WaveBox.Core.Model.Repository
 				return false;
 			}
 
-			bool success = false;
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				Artist artist = new Artist();
-				artist.ArtistId = itemId;
-				artist.ArtistName = artistName;
-				int affected = conn.InsertLogged(artist, replace ? InsertType.Replace : InsertType.InsertOrIgnore);
+			Artist artist = new Artist();
+			artist.ArtistId = itemId;
+			artist.ArtistName = artistName;
+			int affected = this.database.InsertObject<Artist>(artist, replace ? InsertType.Replace : InsertType.InsertOrIgnore);
 
-				success = affected > 0;
-			}
-			catch (Exception e)
-			{
-				logger.Error("Error inserting artist " + artistName, e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return success;
+			return affected > 0;
 		}
 
-		public void InsertArtist(Artist artist, bool replace = false)
+		public bool InsertArtist(Artist artist, bool replace = false)
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				conn.InsertLogged(artist, replace ? InsertType.Replace : InsertType.InsertOrIgnore);
-			}
-			catch (Exception e)
-			{
-				logger.Error("Error inserting artist " + artist, e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
+			return this.database.InsertObject<Artist>(artist, replace ? InsertType.Replace : InsertType.InsertOrIgnore) > 0;
 		}
 
 		public Artist ArtistForNameOrCreate(string artistName)
@@ -97,21 +68,21 @@ namespace WaveBox.Core.Model.Repository
 			}
 
 			// check to see if the artist exists
-			Artist anArtist = ArtistForName(artistName);
+			Artist anArtist = this.ArtistForName(artistName);
 
 			// if not, create it.
 			if (anArtist.ArtistId == null)
 			{
 				anArtist = null;
-				if (InsertArtist(artistName))
+				if (this.InsertArtist(artistName))
 				{
-					anArtist = ArtistForNameOrCreate(artistName);
+					anArtist = this.ArtistForNameOrCreate(artistName);
 				}
 				else
 				{
 					// The insert failed because this album was inserted by another
 					// thread, so grab the artist id, it will exist this time
-					anArtist = ArtistForName(artistName);
+					anArtist = this.ArtistForName(artistName);
 				}
 			}
 
