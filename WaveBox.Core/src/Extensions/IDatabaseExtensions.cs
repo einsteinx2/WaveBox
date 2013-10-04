@@ -90,5 +90,29 @@ namespace WaveBox.Core.Extensions
 			// Return default value for scalar (reference: null, value: 0)
 			return default(T);
 		}
+
+		// Insert or replace an object of type T using ORM, while logging to query log
+		public static int InsertObject<T>(this IDatabase database, T obj, InsertType insertType = InsertType.Insert)
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				// Get database connection, insert object and log query
+				conn = database.GetSqliteConnection();
+				return conn.InsertLogged(obj, insertType);
+			}
+			catch (Exception e)
+			{
+				logger.Error("insert failed: " + obj);
+				logger.Error(e);
+			}
+			finally
+			{
+				database.CloseSqliteConnection(conn);
+			}
+
+			// Return 0 on exception, no rows affected
+			return 0;
+		}
 	}
 }
