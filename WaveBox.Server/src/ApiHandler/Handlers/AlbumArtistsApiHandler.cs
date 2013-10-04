@@ -80,9 +80,16 @@ namespace WaveBox.ApiHandler.Handlers
 					}
 				}
 
-				// Get favorites count
-				int favoriteCount = Injection.Kernel.Get<IFavoriteRepository>().FavoritesForAlbumArtistId(a.AlbumArtistId, user.UserId).Count;
-				counts.Add("favorites", favoriteCount);
+				// Get favorites count if available
+				if (a.AlbumArtistId != null)
+				{
+					int favoriteCount = Injection.Kernel.Get<IFavoriteRepository>().FavoritesForAlbumArtistId(a.AlbumArtistId, user.UserId).Count;
+					counts.Add("favorites", favoriteCount);
+				}
+				else
+				{
+					counts.Add("favorites", 0);
+				}
 			}
 			// Check for a request for range of artists
 			else if (uri.Parameters.ContainsKey("range"))
