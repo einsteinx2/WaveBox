@@ -20,7 +20,7 @@ namespace WaveBox.Service.Services.Http
 
 		public enum HttpStatusCode
 		{
-			OK = 0, 
+			OK = 0,
 			NOTFOUND = 1,
 			PARTIALCONTENT = 2,
 			NOTMODIFIED = 3
@@ -39,13 +39,14 @@ namespace WaveBox.Service.Services.Http
 			HTML = 8,
 			CSS = 9,
 			JAVASCRIPT = 10,
-			PLAINTEXT = 11, 
+			PLAINTEXT = 11,
 			JPEG = 12,
 			PNG = 13,
+			ICO = 14,
 			UNKNOWN = int.MaxValue
 		}
 
-		private static string[] HttpContentTypeStrings = { "audio/mpeg", "audio/mp4", "audio/ogg", "audio/webm", "audio/wav", "video/webm", "video/mp4", "video/ogg", "text/html", "text/css", "text/javascript", "text/plain", "image/jpeg", "image/png", "octet-stream" };
+		private static string[] HttpContentTypeStrings = { "audio/mpeg", "audio/mp4", "audio/ogg", "audio/webm", "audio/wav", "video/webm", "video/mp4", "video/ogg", "text/html", "text/css", "text/javascript", "text/plain", "image/jpeg", "image/png", "image/x-icon", "octet-stream" };
 
 		public static HttpContentType ContentTypeForExtension(string extension)
 		{
@@ -87,6 +88,8 @@ namespace WaveBox.Service.Services.Http
 					return HttpContentType.JPEG;
 				case ".png":
 					return HttpContentType.PNG;
+				case ".ico":
+					return HttpContentType.ICO;
 				default:
 					return HttpContentType.UNKNOWN;
 			}
@@ -144,8 +147,8 @@ namespace WaveBox.Service.Services.Http
 
 		public static bool ContentTypeIsBinary(HttpHeader.HttpContentType theType)
 		{
-			HttpHeader.HttpContentType[] binaryTypes = new HttpHeader.HttpContentType[] 
-			{ 
+			HttpHeader.HttpContentType[] binaryTypes = new HttpHeader.HttpContentType[]
+			{
 				HttpHeader.HttpContentType.AUDIOMP3,
 				HttpHeader.HttpContentType.AUDIOMP4,
 				HttpHeader.HttpContentType.AUDIOOGG,
