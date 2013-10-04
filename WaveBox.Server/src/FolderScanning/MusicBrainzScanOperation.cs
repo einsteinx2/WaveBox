@@ -1,16 +1,17 @@
 using System;
-using WaveBox.Core.Extensions;
-using WaveBox.Core.Model;
 using System.Collections.Generic;
-using WaveBox.Core.OperationQueue;
-using WaveBox.Core;
-using WaveBox.Core.Model.Repository;
 using System.Diagnostics;
 using System.Linq;
-using Ninject;
 using System.Net;
-using System.Xml.Linq;
 using System.Text;
+using System.Threading;
+using System.Xml.Linq;
+using Ninject;
+using WaveBox.Core;
+using WaveBox.Core.Extensions;
+using WaveBox.Core.Model;
+using WaveBox.Core.Model.Repository;
+using WaveBox.Core.OperationQueue;
 
 namespace WaveBox.FolderScanning
 {
@@ -74,11 +75,11 @@ namespace WaveBox.FolderScanning
 			}
 
 			testArtistScanTime.Start();
-			ScanArtists();
+			this.ScanArtists();
 			testArtistScanTime.Stop();
 
 			testAlbumArtistScanTime.Start();
-			ScanAlbumArtists();
+			this.ScanAlbumArtists();
 			testAlbumArtistScanTime.Stop();
 
 			testTotalScanTime.Stop();
@@ -135,7 +136,16 @@ namespace WaveBox.FolderScanning
 			}
 			catch (Exception e)
 			{
-				logger.Error("Exception contacting musicbrainz server for " + artistName + ", " + e);
+				// Catch inner thread abort exception, which is caused when WaveBox is stopped during scan
+				if (e.InnerException is ThreadAbortException)
+				{
+					logger.IfInfo("WaveBox is shutting down, canceling MusicBrainz Scan operation...");
+				}
+				else
+				{
+					// All other exceptions
+					logger.Error("Exception contacting musicbrainz server for " + artistName + ", " + e);
+				}
 			}
 
 			return null;
