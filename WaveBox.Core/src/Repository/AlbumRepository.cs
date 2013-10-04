@@ -58,30 +58,13 @@ namespace WaveBox.Core.Model.Repository
 				return false;
 			}
 
-			bool success = false;
+			Album album = new Album();
+			album.AlbumId = itemId;
+			album.AlbumName = albumName;
+			album.AlbumArtistId = albumArtistId;
+			album.ReleaseYear = releaseYear;
 
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				Album album = new Album();
-				album.AlbumId = itemId;
-				album.AlbumName = albumName;
-				album.AlbumArtistId = albumArtistId;
-				album.ReleaseYear = releaseYear;
-				success = conn.InsertLogged(album, InsertType.InsertOrIgnore) > 0;
-			}
-			catch (Exception e)
-			{
-				logger.Error("Error inserting album " + albumName, e);
-				success = false;
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return success;
+			return this.database.InsertObject<Album>(album, InsertType.InsertOrIgnore) > 0;
 		}
 
 		public Album AlbumForName(string albumName, int? albumArtistId, int? releaseYear = null)
@@ -91,20 +74,20 @@ namespace WaveBox.Core.Model.Repository
 				return new Album();
 			}
 
-			Album a = AlbumForName(albumName, albumArtistId);
+			Album a = this.AlbumForName(albumName, albumArtistId);
 
 			if (a.AlbumId == null)
 			{
 				a = null;
-				if (InsertAlbum(albumName, albumArtistId, releaseYear))
+				if (this.InsertAlbum(albumName, albumArtistId, releaseYear))
 				{
-					a = AlbumForName(albumName, albumArtistId, releaseYear);
+					a = this.AlbumForName(albumName, albumArtistId, releaseYear);
 				}
 				else
 				{
 					// The insert failed because this album was inserted by another
 					// thread, so grab the album id, it will exist this time
-					a = AlbumForName(albumName, albumArtistId);
+					a = this.AlbumForName(albumName, albumArtistId);
 				}
 			}
 
