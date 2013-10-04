@@ -74,7 +74,7 @@ namespace WaveBox.Core.Model.Repository
 				"SELECT Artist.* " +
 				"FROM Genre " +
 				"LEFT JOIN Song ON Song.GenreId = Genre.GenreId " +
-				 "LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
+				"LEFT JOIN Artist ON Song.ArtistId = Artist.ArtistId " +
 				"WHERE Genre.GenreId = ? GROUP BY Artist.ArtistId",
 			genreId);
 		}
