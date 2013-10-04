@@ -8,7 +8,6 @@ namespace WaveBox.Core.Model.Repository
 	{
 		IList<MusicBrainzCheckDate> AllCheckDates();
 		IList<MusicBrainzCheckDate> AllCheckDatesOlderThan(long timestamp);
-		void InsertMusicBrainzCheckDate(MusicBrainzCheckDate checkDate, bool replace = false);
+		bool InsertMusicBrainzCheckDate(MusicBrainzCheckDate checkDate, bool replace = false);
 	}
 }
-

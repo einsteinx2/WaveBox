@@ -64,48 +64,34 @@ namespace WaveBox.Core.Model.Repository
 
 		public Session CreateSession(int userId, string clientName)
 		{
-			ISQLiteConnection conn = null;
+			var session = new Session();
+			session.SessionId = Utility.RandomString(100).SHA1();
+			session.UserId = userId;
 
-			try
+			// Set a default client name if not provided
+			if (clientName == null)
 			{
-				conn = database.GetSqliteConnection();
-				var session = new Session();
-				session.SessionId = Utility.RandomString(100).SHA1();
-				session.UserId = userId;
+				clientName = "wavebox";
+			}
 
-				// Set a default client name if not provided
-				if (clientName == null)
+			session.ClientName = clientName;
+			long unixTime = DateTime.Now.ToUniversalUnixTimestamp();
+			session.CreateTime = unixTime;
+			session.UpdateTime = unixTime;
+
+			int affected = this.database.InsertObject<Session>(session);
+
+			// Fetch the row ID just created
+			session.RowId = this.database.GetScalar<int>("SELECT RowId AS RowId FROM Session WHERE SessionId = ?", session.SessionId);
+
+			if (affected > 0)
+			{
+				lock (this.Sessions)
 				{
-					clientName = "wavebox";
+					this.Sessions[session.SessionId] = session;
 				}
 
-				session.ClientName = clientName;
-				long unixTime = DateTime.Now.ToUniversalUnixTimestamp();
-				session.CreateTime = unixTime;
-				session.UpdateTime = unixTime;
-
-				int affected = conn.InsertLogged(session);
-
-				// Fetch the row ID just created
-				session.RowId = conn.ExecuteScalar<int>("SELECT RowId AS RowId FROM Session WHERE SessionId = ?", session.SessionId);
-
-				if (affected > 0)
-				{
-					lock (this.Sessions)
-					{
-						this.Sessions[session.SessionId] = session;
-					}
-
-					return session;
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
+				return session;
 			}
 
 			return new Session();

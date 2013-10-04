@@ -96,20 +96,7 @@ namespace WaveBox.Core.Model.Repository
 			Favorite fav = new Favorite() { FavoriteId = itemId, FavoriteUserId = favoriteUserId, FavoriteItemId = favoriteItemId, FavoriteItemTypeId = (int)favoriteItemType };
 			fav.TimeStamp = DateTime.UtcNow.ToUniversalUnixTimestamp();
 
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				conn.InsertLogged(fav);
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
+			this.database.InsertObject<Favorite>(fav);
 
 			return itemId;
 		}
@@ -209,8 +196,7 @@ namespace WaveBox.Core.Model.Repository
 
 		public IList<IItem> ItemsForUserId(int userId)
 		{
-			IList<Favorite> favorites = FavoritesForUserId(userId);
-			return ItemsForFavorites(favorites);
+			return this.ItemsForFavorites(this.FavoritesForUserId(userId));
 		}
 	}
 }

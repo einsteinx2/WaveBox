@@ -1,5 +1,6 @@
 using System;
 using Cirrious.MvvmCross.Plugins.Sqlite;
+using WaveBox.Core.Extensions;
 
 namespace WaveBox.Core.Model.Repository
 {
@@ -12,7 +13,9 @@ namespace WaveBox.Core.Model.Repository
 		public StatRepository(IDatabase database)
 		{
 			if (database == null)
+			{
 				throw new ArgumentNullException("database");
+			}
 
 			this.database = database;
 		}
@@ -20,30 +23,12 @@ namespace WaveBox.Core.Model.Repository
 		// Timestamp is UTC unixtime
 		public bool RecordStat(int itemId, StatType statType, long timestamp)
 		{
-			ISQLiteConnection conn = null;
-			bool success = false;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				var stat = new Stat();
-				stat.StatType = statType;
-				stat.ItemId = itemId;
-				stat.Timestamp = timestamp;
-				int affected = conn.Insert(stat);
+			var stat = new Stat();
+			stat.StatType = statType;
+			stat.ItemId = itemId;
+			stat.Timestamp = timestamp;
 
-				success = affected > 0;
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return success;
+			return this.database.InsertObject<Stat>(stat) > 0;
 		}
 	}
 }
-
