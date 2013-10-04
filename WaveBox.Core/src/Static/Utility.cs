@@ -29,7 +29,7 @@ namespace WaveBox.Core.Static
 
 		public static PairList<string, int> SectionPositionsFromSortedList(IList<IGroupingItem> sortedList)
 		{
-			if (sortedList == null || sortedList.Count == 1)
+			if (sortedList == null)
 				return new PairList<string, int>();
 
 			PairList<string, int> positions = new PairList<string, int>();
