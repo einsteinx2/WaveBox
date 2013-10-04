@@ -101,22 +101,9 @@ namespace WaveBox.Core.Model.Repository
 			return itemId;
 		}
 
-		public void DeleteFavorite(int favoriteId)
+		public bool DeleteFavorite(int favoriteId)
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				conn.Execute("DELETE FROM Favorite WHERE FavoriteId = ?", favoriteId);
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
+			return this.database.ExecuteQuery("DELETE FROM Favorite WHERE FavoriteId = ?", favoriteId) > 0;
 		}
 
 		public IList<Favorite> FavoritesForUserId(int userId)
@@ -154,44 +141,44 @@ namespace WaveBox.Core.Model.Repository
 
 		public IList<IItem> ItemsForFavorites(IList<Favorite> favorites)
 		{
-			if (favorites != null)
+			if (favorites == null)
 			{
-				IList<IItem> items = new List<IItem>();
-				foreach (Favorite fav in favorites)
-				{
-					switch (fav.FavoriteItemType)
-					{
-						case ItemType.AlbumArtist:
-							items.Add(albumArtistRepository.AlbumArtistForId(fav.FavoriteItemId));
-							break;
-						case ItemType.Album:
-							items.Add(albumRepository.AlbumForId((int)fav.FavoriteItemId));
-							break;
-						case ItemType.Artist:
-							items.Add(artistRepository.ArtistForId(fav.FavoriteItemId));
-							break;
-						case ItemType.Folder:
-							items.Add(folderRepository.FolderForId((int)fav.FavoriteItemId));
-							break;
-						case ItemType.Genre:
-							items.Add(genreRepository.GenreForId((int)fav.FavoriteItemId));
-							break;
-						case ItemType.Playlist:
-							items.Add(playlistRepository.PlaylistForId((int)fav.FavoriteItemId));
-							break;
-						case ItemType.Song:
-							items.Add(songRepository.SongForId((int)fav.FavoriteItemId));
-							break;
-						case ItemType.Video:
-							items.Add(videoRepository.VideoForId((int)fav.FavoriteItemId));
-							break;
-					}
-				}
-
-				return items;
+				return null;
 			}
 
-			return null;
+			IList<IItem> items = new List<IItem>();
+			foreach (Favorite fav in favorites)
+			{
+				switch (fav.FavoriteItemType)
+				{
+					case ItemType.AlbumArtist:
+						items.Add(albumArtistRepository.AlbumArtistForId(fav.FavoriteItemId));
+						break;
+					case ItemType.Album:
+						items.Add(albumRepository.AlbumForId((int)fav.FavoriteItemId));
+						break;
+					case ItemType.Artist:
+						items.Add(artistRepository.ArtistForId(fav.FavoriteItemId));
+						break;
+					case ItemType.Folder:
+						items.Add(folderRepository.FolderForId((int)fav.FavoriteItemId));
+						break;
+					case ItemType.Genre:
+						items.Add(genreRepository.GenreForId((int)fav.FavoriteItemId));
+						break;
+					case ItemType.Playlist:
+						items.Add(playlistRepository.PlaylistForId((int)fav.FavoriteItemId));
+						break;
+					case ItemType.Song:
+						items.Add(songRepository.SongForId((int)fav.FavoriteItemId));
+						break;
+					case ItemType.Video:
+						items.Add(videoRepository.VideoForId((int)fav.FavoriteItemId));
+						break;
+				}
+			}
+
+			return items;
 		}
 
 		public IList<IItem> ItemsForUserId(int userId)

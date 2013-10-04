@@ -65,27 +65,8 @@ namespace WaveBox.Core.Model.Repository
 				return false;
 			}
 
-			bool success = false;
-			ISQLiteConnection conn = null;
-			try
-			{
-				// insert the song into the database
-				conn = database.GetSqliteConnection();
-				string type = replace ? "REPLACE" : "INSERT OR IGNORE";
-				int affected = conn.ExecuteLogged(type + " INTO ArtItem (ArtId, ItemId) VALUES (?, ?)", artId, itemId);
-
-				success = affected > 0;
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return success;
+			string type = replace ? "REPLACE" : "INSERT OR IGNORE";
+			return this.database.ExecuteQuery(type + " INTO ArtItem (ArtId, ItemId) VALUES (?, ?)", artId, itemId) > 0;
 		}
 
 		public bool RemoveArtRelationshipForItemId(int? itemId)
@@ -95,25 +76,7 @@ namespace WaveBox.Core.Model.Repository
 				return false;
 			}
 
-			bool success = false;
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				int affected = conn.ExecuteLogged("DELETE FROM ArtItem WHERE ItemId = ?", itemId);
-
-				success = affected > 0;
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return success;
+			return this.database.ExecuteQuery("DELETE FROM ArtItem WHERE ItemId = ?", itemId) > 0;
 		}
 
 		public bool UpdateItemsToNewArtId(int? oldArtId, int? newArtId)
@@ -123,25 +86,7 @@ namespace WaveBox.Core.Model.Repository
 				return false;
 			}
 
-			bool success = false;
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				int affected = conn.ExecuteLogged("UPDATE ArtItem SET ArtId = ? WHERE ArtId = ?", newArtId, oldArtId);
-
-				success = affected > 0;
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
-
-			return success;
+			return this.database.ExecuteQuery("UPDATE ArtItem SET ArtId = ? WHERE ArtId = ?", newArtId, oldArtId) > 0;
 		}
 	}
 }
