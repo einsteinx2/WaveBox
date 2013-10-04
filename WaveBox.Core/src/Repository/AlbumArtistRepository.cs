@@ -63,46 +63,20 @@ namespace WaveBox.Core.Model.Repository
 				return false;
 			}
 
-			bool success = false;
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				AlbumArtist artist = new AlbumArtist();
-				artist.AlbumArtistId = itemId;
-				artist.AlbumArtistName = albumArtistName;
-				int affected = conn.InsertLogged(artist, replace ? InsertType.Replace : InsertType.InsertOrIgnore);
+			AlbumArtist artist = new AlbumArtist();
+			artist.AlbumArtistId = itemId;
+			artist.AlbumArtistName = albumArtistName;
 
-				success = affected > 0;
-			}
-			catch (Exception e)
-			{
-				logger.Error("Error inserting albumArtist " + albumArtistName, e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
+			int affected = this.database.InsertObject<AlbumArtist>(artist, replace ? InsertType.Replace : InsertType.InsertOrIgnore);
 
-			return success;
+			return affected > 0;
 		}
 
-		public void InsertAlbumArtist(AlbumArtist albumArtist, bool replace = false)
+		public bool InsertAlbumArtist(AlbumArtist albumArtist, bool replace = false)
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				conn.InsertLogged(albumArtist, replace ? InsertType.Replace : InsertType.InsertOrIgnore);
-			}
-			catch (Exception e)
-			{
-				logger.Error("Error inserting albumArtist " + albumArtist, e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
+			int affected = this.database.InsertObject<AlbumArtist>(albumArtist, replace ? InsertType.Replace : InsertType.InsertOrIgnore);
+
+			return affected > 0;
 		}
 
 		public AlbumArtist AlbumArtistForNameOrCreate(string albumArtistName)
@@ -113,21 +87,21 @@ namespace WaveBox.Core.Model.Repository
 			}
 
 			// check to see if the artist exists
-			AlbumArtist anAlbumArtist = AlbumArtistForName(albumArtistName);
+			AlbumArtist anAlbumArtist = this.AlbumArtistForName(albumArtistName);
 
 			// if not, create it.
 			if (anAlbumArtist.AlbumArtistId == null)
 			{
 				anAlbumArtist = null;
-				if (InsertAlbumArtist(albumArtistName))
+				if (this.InsertAlbumArtist(albumArtistName))
 				{
-					anAlbumArtist = AlbumArtistForNameOrCreate(albumArtistName);
+					anAlbumArtist = this.AlbumArtistForNameOrCreate(albumArtistName);
 				}
 				else
 				{
 					// The insert failed because this album was inserted by another
 					// thread, so grab the artist id, it will exist this time
-					anAlbumArtist = AlbumArtistForName(albumArtistName);
+					anAlbumArtist = this.AlbumArtistForName(albumArtistName);
 				}
 			}
 
@@ -244,4 +218,3 @@ namespace WaveBox.Core.Model.Repository
 		}
 	}
 }
-
