@@ -114,5 +114,28 @@ namespace WaveBox.Core.Extensions
 			// Return 0 on exception, no rows affected
 			return 0;
 		}
+
+		public static int ExecuteQuery(this IDatabase database, string query, params object[] args)
+		{
+			ISQLiteConnection conn = null;
+			try
+			{
+				// Get database connection, execute and log query
+				conn = database.GetSqliteConnection();
+				return conn.ExecuteLogged(query, args);
+			}
+			catch (Exception e)
+			{
+				logger.Error("execute failed: " + query);
+				logger.Error(e);
+			}
+			finally
+			{
+				database.CloseSqliteConnection(conn);
+			}
+
+			// Return 0 on exception, no rows affected
+			return 0;
+		}
 	}
 }

@@ -28,59 +28,24 @@ namespace WaveBox.Core.Model.Repository
 
 		public int? GenerateItemId(ItemType itemType)
 		{
-			int? itemId = null;
-			ISQLiteConnection conn = null;
-			try
+			int affected = this.database.ExecuteQuery("INSERT INTO Item (ItemType, Timestamp) VALUES (?, ?)", itemType, DateTime.UtcNow.ToUniversalUnixTimestamp());
+
+			if (affected > 0)
 			{
-				conn = database.GetSqliteConnection();
-				int affected = conn.ExecuteLogged("INSERT INTO Item (ItemType, Timestamp) VALUES (?, ?)", itemType, DateTime.UtcNow.ToUniversalUnixTimestamp());
+				int rowId = this.database.GetScalar<int>("SELECT last_insert_rowid()");
 
-				if (affected >= 1)
+				if (rowId != 0)
 				{
-					try
-					{
-						int rowId = conn.ExecuteScalar<int>("SELECT last_insert_rowid()");
-
-						if (rowId != 0)
-						{
-							itemId = rowId;
-						}
-					}
-					catch(Exception e)
-					{
-						logger.Error(e);
-					}
+					return rowId;
 				}
 			}
-			catch (Exception e)
-			{
-				logger.Error("GenerateItemId ERROR: ", e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
 
-			return itemId;
+			return null;
 		}
 
 		public ItemType ItemTypeForItemId(int itemId)
 		{
-			int itemTypeId = 0;
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = database.GetSqliteConnection();
-				itemTypeId = conn.ExecuteScalar<int>("SELECT ItemType FROM Item WHERE ItemId = ?", itemId);
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				database.CloseSqliteConnection(conn);
-			}
+			int itemTypeId = this.database.GetScalar<int>("SELECT ItemType FROM Item WHERE ItemId = ?", itemId);
 
 			return ItemTypeExtensions.ItemTypeForId(itemTypeId);
 		}
