@@ -58,6 +58,11 @@ namespace WaveBox.Core.Model.Repository
 			return artId == 0 ? (int?)null : artId;
 		}
 
+		public bool InsertArt(Art art, bool replace = false)
+		{
+			return this.database.InsertObject<Art>(art, replace ? InsertType.Replace : InsertType.InsertOrIgnore) > 0;
+		}
+
 		public bool UpdateArtItemRelationship(int? artId, int? itemId, bool replace)
 		{
 			if (artId == null || itemId == null)

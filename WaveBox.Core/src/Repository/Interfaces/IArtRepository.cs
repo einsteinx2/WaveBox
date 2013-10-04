@@ -8,9 +8,9 @@ namespace WaveBox.Core.Model.Repository
 		int? ItemIdForArtId(int? artId);
 		int? ArtIdForItemId(int? itemId);
 		int? ArtIdForMd5(string hash);
+		bool InsertArt(Art art, bool replace = false);
 		bool UpdateArtItemRelationship(int? artId, int? itemId, bool replace);
 		bool RemoveArtRelationshipForItemId(int? itemId);
 		bool UpdateItemsToNewArtId(int? oldArtId, int? newArtId);
 	}
 }
-
