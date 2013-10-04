@@ -28,16 +28,36 @@ namespace WaveBox.Core.Model.Repository
 
 		public int? GenerateItemId(ItemType itemType)
 		{
-			int affected = this.database.ExecuteQuery("INSERT INTO Item (ItemType, Timestamp) VALUES (?, ?)", itemType, DateTime.UtcNow.ToUniversalUnixTimestamp());
-
-			if (affected > 0)
+			ISQLiteConnection conn = null;
+			try
 			{
-				int rowId = this.database.GetScalar<int>("SELECT last_insert_rowid()");
+				conn = database.GetSqliteConnection();
+				int affected = conn.ExecuteLogged("INSERT INTO Item (ItemType, Timestamp) VALUES (?, ?)", itemType, DateTime.UtcNow.ToUniversalUnixTimestamp());
 
-				if (rowId != 0)
+				if (affected >= 1)
 				{
-					return rowId;
+					try
+					{
+						int rowId = conn.ExecuteScalar<int>("SELECT last_insert_rowid()");
+
+						if (rowId != 0)
+						{
+							return rowId;
+						}
+					}
+					catch (Exception e)
+					{
+						logger.Error(e);
+					}
 				}
+			}
+			catch (Exception e)
+			{
+				logger.Error("GenerateItemId ERROR: ", e);
+			}
+			finally
+			{
+				database.CloseSqliteConnection(conn);
 			}
 
 			return null;
