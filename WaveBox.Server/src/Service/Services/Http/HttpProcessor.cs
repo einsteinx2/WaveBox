@@ -59,12 +59,12 @@ namespace WaveBox.Service.Services.Http
 		{
 			// we can't use a StreamReader for input, because it buffers up extra data on us inside it's
 			// "processed" view of the world, and we want the data raw after the headers
-			InputStream = Socket.GetStream();
+			this.InputStream = this.Socket.GetStream();
 
 			// we probably shouldn't be using a streamwriter for all output from handlers either
 			try
 			{
-				InputStream.ReadTimeout = 30000;
+				this.InputStream.ReadTimeout = 30000;
 
 				// Read in first line of request, get tokens for HTTP method, URL, version
 				this.ParseRequest();
@@ -73,12 +73,12 @@ namespace WaveBox.Service.Services.Http
 				this.ReadHeaders();
 
 				// GET, DELETE, PUT - parameters passed in query string
-				if (HttpMethod == "GET" || HttpMethod == "DELETE" || HttpMethod == "PUT")
+				if (this.HttpMethod == "GET" || this.HttpMethod == "DELETE" || this.HttpMethod == "PUT")
 				{
 					this.HandleGETRequest();
 				}
 				// POST - parameters passed in HTTP headers
-				else if (HttpMethod == "POST")
+				else if (this.HttpMethod == "POST")
 				{
 					this.HandlePOSTRequest();
 				}
@@ -92,21 +92,21 @@ namespace WaveBox.Service.Services.Http
 			{
 				logger.Error("Exception occurred during HTTP processing");
 				logger.Error(e);
-				this.WriteErrorHeader();
+				this.WriteInternalServerErrorHeader();
 			}
 			finally
 			{
 				// Ensure all streams and sockets are closed
-				InputStream = null;
-				Socket.GetStream().Close();
-				Socket.Client.Close();
-				Socket.Close();
+				this.InputStream = null;
+				this.Socket.GetStream().Close();
+				this.Socket.Client.Close();
+				this.Socket.Close();
 			}
 		}
 
 		public void WriteNotModifiedHeader()
 		{
-			StreamWriter outStream = new StreamWriter(new BufferedStream(Socket.GetStream()));
+			StreamWriter outStream = new StreamWriter(new BufferedStream(this.Socket.GetStream()));
 			outStream.WriteLine("HTTP/1.1 304 Not Modified");
 			outStream.WriteLine("Connection: close");
 			outStream.WriteLine("");
@@ -115,7 +115,7 @@ namespace WaveBox.Service.Services.Http
 
 		public void WriteErrorHeader()
 		{
-			StreamWriter outStream = new StreamWriter(new BufferedStream(Socket.GetStream()));
+			StreamWriter outStream = new StreamWriter(new BufferedStream(this.Socket.GetStream()));
 			outStream.WriteLine("HTTP/1.1 404 Not Found");
 			outStream.WriteLine("Connection: close");
 			outStream.WriteLine("");
@@ -124,7 +124,7 @@ namespace WaveBox.Service.Services.Http
 
 		public void WriteMethodNotAllowedHeader()
 		{
-			StreamWriter outStream = new StreamWriter(new BufferedStream(Socket.GetStream()));
+			StreamWriter outStream = new StreamWriter(new BufferedStream(this.Socket.GetStream()));
 			outStream.WriteLine("HTTP/1.1 405 Method Not Allowed");
 			outStream.WriteLine("Allow: GET, POST");
 			outStream.WriteLine("Connection: close");
@@ -132,9 +132,18 @@ namespace WaveBox.Service.Services.Http
 			outStream.Flush();
 		}
 
+		public void WriteInternalServerErrorHeader()
+		{
+			StreamWriter outStream = new StreamWriter(new BufferedStream(this.Socket.GetStream()));
+			outStream.WriteLine("HTTP/1.1 500 Internal Server Error");
+			outStream.WriteLine("Connection: close");
+			outStream.WriteLine("");
+			outStream.Flush();
+		}
+
 		public void WriteSuccessHeader(long contentLength, string mimeType, IDictionary<string, string> customHeaders, DateTime lastModified, bool isPartial = false, string encoding = null)
 		{
-			StreamWriter outStream = new StreamWriter(new BufferedStream(Socket.GetStream()));
+			StreamWriter outStream = new StreamWriter(new BufferedStream(this.Socket.GetStream()));
 			string status = isPartial ? "HTTP/1.1 206 Partial Content" : "HTTP/1.1 200 OK";
 			outStream.WriteLine(status);
 			outStream.WriteLine("Date: " + DateTime.UtcNow.ToRFC1123());
@@ -166,7 +175,7 @@ namespace WaveBox.Service.Services.Http
 			}
 
 			// Inject delayed headers
-			foreach (string key in DelayedHeaders.Keys)
+			foreach (string key in this.DelayedHeaders.Keys)
 			{
 				outStream.WriteLine(key + ": " + DelayedHeaders[key]);
 			}
@@ -225,10 +234,10 @@ namespace WaveBox.Service.Services.Http
 				}
 
 				// Compression okay, write success header
-				WriteSuccessHeader(output.Length, mimeType + ";charset=utf-8", null, DateTime.UtcNow, false, encoding);
+				this.WriteSuccessHeader(output.Length, mimeType + ";charset=utf-8", null, DateTime.UtcNow, false, encoding);
 
 				// Write the stream
-				var binStream = new BinaryWriter(new BufferedStream(Socket.GetStream()), Encoding.UTF8);
+				var binStream = new BinaryWriter(new BufferedStream(this.Socket.GetStream()), Encoding.UTF8);
 				binStream.Write(output);
 				binStream.Flush();
 			}
@@ -248,10 +257,10 @@ namespace WaveBox.Service.Services.Http
 		public void WriteText(string text, string mimeType)
 		{
 			// If compression requested, attempt to send compressed
-			if (HttpHeaders.ContainsKey("Accept-Encoding"))
+			if (this.HttpHeaders.ContainsKey("Accept-Encoding"))
 			{
 				// Check which encoding
-				string accepted = HttpHeaders["Accept-Encoding"].ToString();
+				string accepted = this.HttpHeaders["Accept-Encoding"].ToString();
 				string encoding = null;
 				if (accepted.Contains("gzip"))
 				{
@@ -267,7 +276,7 @@ namespace WaveBox.Service.Services.Http
 				{
 					// Send compressed stream if valid encoding
 					byte[] input = Encoding.UTF8.GetBytes(text);
-					WriteCompressedText(input, mimeType, encoding);
+					this.WriteCompressedText(input, mimeType, encoding);
 					return;
 				}
 			}
@@ -275,11 +284,11 @@ namespace WaveBox.Service.Services.Http
 			// Makes no sense at all, but for whatever reason, all ajax calls fail with a cross site
 			// scripting error if Content-Type is set, but the player needs it for files for seeking,
 			// so pass -1 for no Content-Length header for all text requests
-			WriteSuccessHeader(Encoding.UTF8.GetByteCount(text) + 3, mimeType + ";charset=utf-8", null, DateTime.UtcNow);
+			this.WriteSuccessHeader(Encoding.UTF8.GetByteCount(text) + 3, mimeType + ";charset=utf-8", null, DateTime.UtcNow);
 
 			try
 			{
-				StreamWriter outStream = new StreamWriter(new BufferedStream(Socket.GetStream()), Encoding.UTF8);
+				StreamWriter outStream = new StreamWriter(new BufferedStream(this.Socket.GetStream()), Encoding.UTF8);
 				outStream.Write(text);
 				outStream.Flush();
 			}
@@ -317,21 +326,15 @@ namespace WaveBox.Service.Services.Http
 			DateTime lastMod = CleanLastModified(lastModified);
 
 			// If it exists, check to see if the headers contains an If-Modified-Since or If-None-Match entry
-			if (HttpHeaders.ContainsKey("If-Modified-Since"))
+			if (this.HttpHeaders.ContainsKey("If-Modified-Since") && this.HttpHeaders["If-Modified-Since"].Equals(lastMod.ToRFC1123()))
 			{
-				if (HttpHeaders["If-Modified-Since"].Equals(lastMod.ToRFC1123()))
-				{
-					WriteNotModifiedHeader();
-					return;
-				}
+				this.WriteNotModifiedHeader();
+				return;
 			}
-			if (HttpHeaders.ContainsKey("If-None-Match"))
+			if (this.HttpHeaders.ContainsKey("If-None-Match") && this.HttpHeaders["If-None-Match"].Equals(lastMod.ToETag()))
 			{
-				if (HttpHeaders["If-None-Match"].Equals(lastMod.ToETag()))
-				{
-					WriteNotModifiedHeader();
-					return;
-				}
+				this.WriteNotModifiedHeader();
+				return;
 			}
 
 			// Read/Write in 8 KB chunks
@@ -342,8 +345,8 @@ namespace WaveBox.Service.Services.Http
 			int bytesRead;
 			long bytesWritten = 0;
 			long totalBytesWritten = 0;
-			Socket.SendTimeout = 30000;
-			Stream stream = new BufferedStream(Socket.GetStream());
+			this.Socket.SendTimeout = 30000;
+			Stream stream = new BufferedStream(this.Socket.GetStream());
 			int sinceLastReport = 0;
 			long actualStartOffset = startOffset;
 			Stopwatch sw = new Stopwatch();
@@ -356,7 +359,7 @@ namespace WaveBox.Service.Services.Http
 				if (actualStartOffset < startOffset && !ReferenceEquals(Transcoder, null) && Transcoder.State == TranscodeState.Active)
 				{
 					// Wait for the file to catch up
-					while (Transcoder.State == TranscodeState.Active)
+					while (this.Transcoder.State == TranscodeState.Active)
 					{
 						// Try the seek again
 						fs.Seek(startOffset, SeekOrigin.Begin);
@@ -396,7 +399,7 @@ namespace WaveBox.Service.Services.Http
 				customHeaders["Content-Range"] = contentRange;
 			}
 
-			WriteSuccessHeader(isSendContentLength ? contentLength : -1, mimeType, customHeaders, lastMod, isPartial);
+			this.WriteSuccessHeader(isSendContentLength ? contentLength : -1, mimeType, customHeaders, lastMod, isPartial);
 			logger.IfInfo("File header, contentLength: " + contentLength + ", contentType: " + mimeType);
 
 			sw.Start();
@@ -436,6 +439,7 @@ namespace WaveBox.Service.Services.Http
 								Math.Round((((double)(sinceLastReport * 8) / 1024) / 1024) / (double)(sw.ElapsedMilliseconds / 1000), 5)
 							));
 						}
+
 						sinceLastReport = 0;
 						sw.Restart();
 					}
@@ -456,7 +460,7 @@ namespace WaveBox.Service.Services.Http
 						// Check if the stream is done
 						if (!fs.CanSeek || !(fs is FileStream) || totalBytesWritten >= fs.Length)
 						{
-							if ((object)Transcoder == null || Transcoder.State != TranscodeState.Active)
+							if ((object)this.Transcoder == null || Transcoder.State != TranscodeState.Active)
 							{
 								break;
 							}

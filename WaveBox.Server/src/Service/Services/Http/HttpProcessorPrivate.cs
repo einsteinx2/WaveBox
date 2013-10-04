@@ -37,7 +37,7 @@ namespace WaveBox.Service.Services.Http
 		{
 			try
 			{
-				string[] tokens = InputStream.ReadLine().Split(' ');
+				string[] tokens = this.InputStream.ReadLine().Split(' ');
 
 				// Expects: GET /url HTTP/1.1 or similar
 				if (tokens.Length != 3)
@@ -47,9 +47,9 @@ namespace WaveBox.Service.Services.Http
 				}
 
 				// Store necessary information about this request
-				HttpMethod = tokens[0].ToUpper();
-				HttpUrl = tokens[1];
-				HttpProtocolVersionString = tokens[2];
+				this.HttpMethod = tokens[0].ToUpper();
+				this.HttpUrl = tokens[1];
+				this.HttpProtocolVersionString = tokens[2];
 			}
 			// If client disconnects, ignore and continue
 			catch (IOException)
@@ -66,7 +66,7 @@ namespace WaveBox.Service.Services.Http
 			try
 			{
 				string line = null;
-				while ((line = InputStream.ReadLine()) != null)
+				while ((line = this.InputStream.ReadLine()) != null)
 				{
 					// Done reading, empty content
 					if (line == "" || line.Length == 0)
@@ -122,9 +122,9 @@ namespace WaveBox.Service.Services.Http
 
 			int content_len = 0;
 			MemoryStream ms = new MemoryStream();
-			if (HttpHeaders.ContainsKey("Content-Length"))
+			if (this.HttpHeaders.ContainsKey("Content-Length"))
 			{
-				content_len = Convert.ToInt32(HttpHeaders["Content-Length"]);
+				content_len = Convert.ToInt32(this.HttpHeaders["Content-Length"]);
 				if (content_len > MAX_POST_SIZE)
 				{
 					throw new Exception(String.Format("POST Content-Length({0}) too big for this simple server", content_len));
@@ -135,7 +135,7 @@ namespace WaveBox.Service.Services.Http
 
 				while (to_read > 0)
 				{
-					int numread = InputStream.Read(buf, 0, Math.Min(BUF_SIZE, to_read));
+					int numread = this.InputStream.Read(buf, 0, Math.Min(BUF_SIZE, to_read));
 					if (numread == 0)
 					{
 						if (to_read == 0)
