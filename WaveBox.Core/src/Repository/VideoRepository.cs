@@ -15,7 +15,9 @@ namespace WaveBox.Core.Model.Repository
 		public VideoRepository(IDatabase database)
 		{
 			if (database == null)
+			{
 				throw new ArgumentNullException("database");
+			}
 
 			this.database = database;
 		}
