@@ -37,44 +37,6 @@ namespace WaveBox.Core.Model
 		[JsonIgnore]
 		public string FilePath { get; set; }
 
-		/// <summary>
-		/// Constructors
-		/// </summary>
-
-		public Art()
-		{
-		}
-
-		public void InsertArt()
-		{
-			int? itemId = Injection.Kernel.Get<IItemRepository>().GenerateItemId(ItemType.Art);
-			if (itemId == null)
-			{
-				return;
-			}
-
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				ArtId = itemId;
-				int affected = conn.InsertLogged(this);
-
-				if (affected == 0)
-				{
-					ArtId = null;
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-			}
-		}
-
 		public override string ToString()
 		{
 			return String.Format("[Art: ArtId={0}, FilePath={1}, LastModified={2}]", this.ArtId, this.FilePath, this.LastModified);

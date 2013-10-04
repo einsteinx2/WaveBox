@@ -561,7 +561,8 @@ namespace WaveBox.FolderScanning
 
 			if ((object)art.ArtId == null)
 			{
-				art.InsertArt();
+				art.ArtId = Injection.Kernel.Get<IItemRepository>().GenerateItemId(ItemType.Art);
+				Injection.Kernel.Get<IArtRepository>().InsertArt(art);
 			}
 
 			// Dispose file stream
@@ -587,7 +588,8 @@ namespace WaveBox.FolderScanning
 				if (art.ArtId == null)
 				{
 					// This art isn't in the database yet, so add it
-					art.InsertArt();
+					art.ArtId = Injection.Kernel.Get<IItemRepository>().GenerateItemId(ItemType.Art);
+					Injection.Kernel.Get<IArtRepository>().InsertArt(art);
 				}
 			}
 
