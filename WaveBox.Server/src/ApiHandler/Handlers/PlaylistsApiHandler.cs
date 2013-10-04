@@ -98,8 +98,8 @@ namespace WaveBox.ApiHandler.Handlers
 				return;
 			}
 
-			// If not creating playlist, and no ID, or reading, return all playlists
-			if (uri.Id == null || uri.Action == "read")
+			// If not creating playlist, and no ID, return all playlists
+			if (uri.Id == null)
 			{
 				listOfPlaylists = Injection.Kernel.Get<IPlaylistRepository>().AllPlaylists();
 				sectionPositions = Utility.SectionPositionsFromSortedList(new List<IGroupingItem>(listOfPlaylists.Select(c => (IGroupingItem)c)));
@@ -112,6 +112,16 @@ namespace WaveBox.ApiHandler.Handlers
 			if (playlist.PlaylistId == null)
 			{
 				processor.WriteJson(new PlaylistsResponse("Playlist does not exist", null, null, null));
+				return;
+			}
+
+			// read - default action, list all of the items in a playlist
+			if (uri.Action == "read")
+			{
+				listOfPlaylists.Add(playlist);
+				listOfMediaItems = playlist.ListOfMediaItems();
+
+				processor.WriteJson(new PlaylistsResponse(null, listOfPlaylists, listOfMediaItems, sectionPositions));
 				return;
 			}
 
@@ -202,16 +212,6 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 
 				// Return playlist with media items
-				listOfPlaylists.Add(playlist);
-				listOfMediaItems = playlist.ListOfMediaItems();
-
-				processor.WriteJson(new PlaylistsResponse(null, listOfPlaylists, listOfMediaItems, sectionPositions));
-				return;
-			}
-
-			// list/read - list all of the items in a playlist ("list" keep for compatibility)
-			if (uri.Action == "list" || uri.Action == "read")
-			{
 				listOfPlaylists.Add(playlist);
 				listOfMediaItems = playlist.ListOfMediaItems();
 
