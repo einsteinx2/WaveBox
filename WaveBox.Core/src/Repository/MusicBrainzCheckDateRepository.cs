@@ -32,22 +32,9 @@ namespace WaveBox.Core.Model.Repository
 			return this.database.GetList<MusicBrainzCheckDate>("SELECT * FROM MusicBrainzCheckDate WHERE Timestamp < ?", timestamp);
 		}
 
-		public void InsertMusicBrainzCheckDate(MusicBrainzCheckDate checkDate, bool replace = false)
+		public bool InsertMusicBrainzCheckDate(MusicBrainzCheckDate checkDate, bool replace = false)
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				conn.InsertLogged(checkDate, replace ? InsertType.Replace : InsertType.InsertOrIgnore);
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-			}
+			return this.database.InsertObject<MusicBrainzCheckDate>(checkDate, replace ? InsertType.Replace : InsertType.InsertOrIgnore) > 0;
 		}
 	}
 }
