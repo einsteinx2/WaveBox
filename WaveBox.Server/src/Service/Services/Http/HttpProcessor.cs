@@ -72,10 +72,12 @@ namespace WaveBox.Service.Services.Http
 				// Captures hashtable of HTTP headers sent with request
 				this.ReadHeaders();
 
-				if (HttpMethod == "GET")
+				// GET, DELETE, PUT - parameters passed in query string
+				if (HttpMethod == "GET" || HttpMethod == "DELETE" || HttpMethod == "PUT")
 				{
 					this.HandleGETRequest();
 				}
+				// POST - parameters passed in HTTP headers
 				else if (HttpMethod == "POST")
 				{
 					this.HandlePOSTRequest();

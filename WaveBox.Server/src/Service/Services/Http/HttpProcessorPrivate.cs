@@ -166,7 +166,7 @@ namespace WaveBox.Service.Services.Http
 		private void ApiProcess()
 		{
 			// The API request wrapper
-			UriWrapper uri = new UriWrapper(this.HttpUrl);
+			UriWrapper uri = new UriWrapper(this.HttpUrl, this.HttpMethod);
 
 			// The user who is accessing the API
 			User apiUser = null;
@@ -237,7 +237,7 @@ namespace WaveBox.Service.Services.Http
 			}
 
 			// Log API call
-			logger.IfInfo(String.Format("[{0}/{1}@{2}] API: {3}", apiUser.UserName, apiUser.CurrentSession.ClientName, ip, this.HttpUrl));
+			logger.IfInfo(String.Format("[{0}/{1}@{2}] API: {3} {4}", apiUser.UserName, apiUser.CurrentSession.ClientName, ip, this.HttpMethod, this.HttpUrl));
 
 			// Check if user has appropriate permissions for this action on this API handler
 			if (!apiHandler.CheckPermission(apiUser, uri.Action))
