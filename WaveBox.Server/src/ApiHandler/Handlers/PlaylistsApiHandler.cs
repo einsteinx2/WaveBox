@@ -80,6 +80,7 @@ namespace WaveBox.ApiHandler.Handlers
 				}
 
 				// Looks like this name is unused, so create the playlist
+				playlist.PlaylistName = name;
 				playlist.CreatePlaylist();
 
 				// Try to get the itemIds to add them to the playlist if necessary
