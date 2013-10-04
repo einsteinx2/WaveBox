@@ -92,7 +92,7 @@ namespace WaveBox.Service.Services.Http
 			{
 				logger.Error("Exception occurred during HTTP processing");
 				logger.Error(e);
-				this.WriteErrorHeader();
+				this.WriteInternalServerErrorHeader();
 			}
 			finally
 			{
@@ -127,6 +127,15 @@ namespace WaveBox.Service.Services.Http
 			StreamWriter outStream = new StreamWriter(new BufferedStream(Socket.GetStream()));
 			outStream.WriteLine("HTTP/1.1 405 Method Not Allowed");
 			outStream.WriteLine("Allow: GET, POST");
+			outStream.WriteLine("Connection: close");
+			outStream.WriteLine("");
+			outStream.Flush();
+		}
+
+		public void WriteInternalServerErrorHeader()
+		{
+			StreamWriter outStream = new StreamWriter(new BufferedStream(Socket.GetStream()));
+			outStream.WriteLine("HTTP/1.1 500 Internal Server Error");
 			outStream.WriteLine("Connection: close");
 			outStream.WriteLine("");
 			outStream.Flush();
