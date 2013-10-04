@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Cirrious.MvvmCross.Plugins.Sqlite;
+using Ninject;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Static;
-using System.Linq;
 
 namespace WaveBox.Core.Model.Repository
 {
@@ -49,15 +50,18 @@ namespace WaveBox.Core.Model.Repository
 				else
 				{
 					Genre g = this.database.GetSingle<Genre>("SELECT * FROM Genre WHERE GenreName = ?", genreName);
-					if (g != null)
+					if (g.GenreName != null)
 					{
 						return g;
 					}
 
 					// If this genre didn't exist, generate an id and insert it
 					Genre genre2 = new Genre();
+					genre2.GenreId = Injection.Kernel.Get<IItemRepository>().GenerateItemId(ItemType.Genre);
 					genre2.GenreName = genreName;
-					genre2.InsertGenre();
+
+					this.InsertGenre(genre2);
+
 					return genre2;
 				}
 			}
@@ -110,6 +114,11 @@ namespace WaveBox.Core.Model.Repository
 				"LEFT JOIN Folder ON Song.FolderId = Folder.FolderId " +
 				"WHERE Genre.GenreId = ? GROUP BY Folder.FolderId",
 			genreId);
+		}
+
+		public bool InsertGenre(Genre genre, bool replace = false)
+		{
+			return this.database.InsertObject<Genre>(genre, replace ? InsertType.Replace : InsertType.InsertOrIgnore) > 0;
 		}
 	}
 }
