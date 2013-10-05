@@ -161,14 +161,14 @@ namespace WaveBox.Core.Model.Repository
 				"SELECT * FROM AlbumArtist " +
 				"WHERE AlbumArtistName BETWEEN LOWER(?) AND LOWER(?) " +
 				"OR AlbumArtistName BETWEEN UPPER(?) AND UPPER(?) " +
-				"ORDER BY AlbumArtistName",
+				"ORDER BY AlbumArtistName COLLATE NOCASE",
 			s, en, s, en);
 		}
 
 		// Return a list of album artists using SQL LIMIT x,y where X is starting index and Y is duration
 		public IList<AlbumArtist> LimitAlbumArtists(int index, int duration = Int32.MinValue)
 		{
-			string query = "SELECT * FROM AlbumArtist ORDER BY AlbumArtistName LIMIT ? ";
+			string query = "SELECT * FROM AlbumArtist ORDER BY AlbumArtistName COLLATE NOCASE LIMIT ? ";
 
 			// Add duration to LIMIT if needed
 			if (duration != Int32.MinValue && duration > 0)

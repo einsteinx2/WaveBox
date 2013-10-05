@@ -153,7 +153,7 @@ namespace WaveBox.Core.Model.Repository
 		// Return a list of artists using SQL LIMIT x,y where X is starting index and Y is duration
 		public IList<Artist> LimitArtists(int index, int duration = Int32.MinValue)
 		{
-			string query = "SELECT * FROM Artist ORDER BY AristName COLLATE NOCASE LIMIT ? ";
+			string query = "SELECT * FROM Artist ORDER BY ArtistName COLLATE NOCASE LIMIT ? ";
 
 			// Add duration to LIMIT if needed
 			if (duration != Int32.MinValue && duration > 0)
