@@ -109,7 +109,7 @@ namespace WaveBox.Core.Model.Repository
 				"SELECT * FROM Video " +
 				"WHERE Video.FileName BETWEEN LOWER(?) AND LOWER(?) " +
 				"OR Video.FileName BETWEEN UPPER(?) AND UPPER(?) " +
-				"ORDER BY Video.FileName",
+				"ORDER BY Video.FileName COLLATE NOCASE",
 			s, en, s, en);
 		}
 
