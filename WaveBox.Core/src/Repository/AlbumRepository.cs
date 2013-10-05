@@ -182,7 +182,7 @@ namespace WaveBox.Core.Model.Repository
 				"LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
 				"WHERE Album.AlbumName BETWEEN LOWER(?) AND LOWER(?) " +
 				"OR Album.AlbumName BETWEEN UPPER(?) AND UPPER(?) " +
-				"ORDER BY Album.AlbumName",
+				"ORDER BY Album.AlbumName COLLATE NOCASE",
 			s, en, s, en);
 		}
 
@@ -192,7 +192,7 @@ namespace WaveBox.Core.Model.Repository
 			string query = "SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Album " +
 				"LEFT JOIN AlbumArtist ON Album.AlbumArtistId = AlbumArtist.AlbumArtistId " +
 				"LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
-				"ORDER BY Album.AlbumName " +
+				"ORDER BY Album.AlbumName COLLATE NOCASE " +
 				"LIMIT ? ";
 
 			// Add duration to LIMIT if needed
