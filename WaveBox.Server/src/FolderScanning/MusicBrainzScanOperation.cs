@@ -8,6 +8,7 @@ using System.Threading;
 using System.Xml.Linq;
 using Ninject;
 using WaveBox.Core;
+using WaveBox.Core.Derived;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
 using WaveBox.Core.Model.Repository;
@@ -101,7 +102,8 @@ namespace WaveBox.FolderScanning
 
 			try
 			{
-				using (WebClient client = new WebClient())
+				// Allow server up to 15 seconds to respond
+				using (TimedWebClient client = new TimedWebClient(15000))
 				{
 					string address = "http://herpderp.me:5000/ws/2/artist?query=\"" + System.Web.HttpUtility.UrlEncode(artistName) + "\"";
 					//string address = "http://musicbrainz.org/ws/2/artist?query=\"" + System.Web.HttpUtility.UrlEncode(artistName) + "\"";
@@ -133,6 +135,11 @@ namespace WaveBox.FolderScanning
 						logger.Error("Exception parsing musicbrainz response for " + artistName + ", " + e);
 					}
 				}
+			}
+			// On timeout, report an error, but continue looping
+			catch (WebException)
+			{
+				logger.Error("Request timed out for " + artistName);
 			}
 			catch (Exception e)
 			{
