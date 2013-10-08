@@ -27,6 +27,13 @@ namespace WaveBox.Core.Model.Repository
 			return this.database.GetSingle<Video>("SELECT * FROM Video WHERE ItemId = ?", videoId);
 		}
 
+		public bool InsertVideo(Video video, bool replace = false)
+		{
+			int affected = this.database.InsertObject<Video>(video, replace ? InsertType.Replace : InsertType.InsertOrIgnore);
+
+			return affected > 0;
+		}
+
 		public IList<Video> AllVideos()
 		{
 			return this.database.GetList<Video>("SELECT * FROM Video");

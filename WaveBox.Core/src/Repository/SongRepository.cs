@@ -62,6 +62,13 @@ namespace WaveBox.Core.Model.Repository
 			return this.database.GetList<Song>(sb.ToString());
 		}
 
+		public bool InsertSong(Song song, bool replace = false)
+		{
+			int affected = this.database.InsertObject<Song>(song, replace ? InsertType.Replace : InsertType.InsertOrIgnore);
+
+			return affected > 0;
+		}
+
 		public IList<Song> AllSongs()
 		{
 			return this.database.GetList<Song>(
