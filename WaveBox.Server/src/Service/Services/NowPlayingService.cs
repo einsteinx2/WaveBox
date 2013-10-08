@@ -57,7 +57,7 @@ namespace WaveBox.Service.Services
 			// Check if client sent a timestamp (if not, use current time)
 			if (timestamp == null)
 			{
-				timestamp = DateTime.Now.ToUniversalUnixTimestamp();
+				timestamp = DateTime.UtcNow.ToUnixTime();
 			}
 
 			// Capture play time to set up automatic unregister on playback end

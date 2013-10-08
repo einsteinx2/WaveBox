@@ -61,7 +61,7 @@ namespace WaveBox.ApiHandler.Handlers
 				global::System.Diagnostics.Process proc = global::System.Diagnostics.Process.GetCurrentProcess();
 
 				// Get current UNIX time
-				long unixTime = DateTime.Now.ToUniversalUnixTimestamp();
+				long unixTime = DateTime.UtcNow.ToUnixTime();
 
 				// Get current query log ID
 				long queryLogId = Injection.Kernel.Get<IDatabase>().LastQueryLogId;
@@ -72,7 +72,7 @@ namespace WaveBox.ApiHandler.Handlers
 				// Get process ID
 				status["pid"] = proc.Id;
 				// Get uptime of WaveBox instance
-				status["uptime"] = unixTime - WaveBoxService.StartTime.ToUniversalUnixTimestamp();
+				status["uptime"] = unixTime - WaveBoxService.StartTime.ToUnixTime();
 				// Get last update time in UNIX format for status
 				status["updated"] = unixTime;
 				// Get hostname of machine

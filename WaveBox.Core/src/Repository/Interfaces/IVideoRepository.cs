@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using WaveBox.Core.Model;
 
 namespace WaveBox.Core.Model.Repository
 {
 	public interface IVideoRepository
 	{
 		Video VideoForId(int videoId);
+		bool InsertVideo(Video video, bool replace = false);
 		IList<Video> AllVideos();
 		int CountVideos();
 		long TotalVideoSize();
@@ -15,4 +17,3 @@ namespace WaveBox.Core.Model.Repository
 		IList<Video> LimitVideos(int index, int duration = Int32.MinValue);
 	}
 }
-

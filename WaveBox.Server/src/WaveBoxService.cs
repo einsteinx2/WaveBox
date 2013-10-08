@@ -92,10 +92,10 @@ namespace WaveBox
 				// Build date detection
 				BuildDate = ServerUtility.GetBuildDate();
 
-				logger.IfInfo("BuildDate timestamp: " + BuildDate.ToUniversalUnixTimestamp());
+				logger.IfInfo("BuildDate timestamp: " + BuildDate.ToUnixTime());
 
 				// Get start up time
-				StartTime = DateTime.Now;
+				StartTime = DateTime.UtcNow;
 
 				// Create WaveBox's temporary folder
 				if (!Directory.Exists(TempFolder))

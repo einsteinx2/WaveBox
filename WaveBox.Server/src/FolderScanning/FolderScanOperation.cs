@@ -488,7 +488,7 @@ namespace WaveBox.FolderScanning
 			FileInfo fsFile = new FileInfo(filePath);
 
 			song.FileSize = fsFile.Length;
-			song.LastModified = fsFile.LastWriteTime.ToUniversalUnixTimestamp();
+			song.LastModified = fsFile.LastWriteTime.ToUnixTime();
 			song.FileName = fsFile.Name;
 
 			// If there is no song name, use the file name
@@ -520,7 +520,7 @@ namespace WaveBox.FolderScanning
 				return false;
 			}
 
-			long lastModified = System.IO.File.GetLastWriteTime(filePath).ToUniversalUnixTimestamp();
+			long lastModified = System.IO.File.GetLastWriteTime(filePath).ToUnixTime();
 			bool needsUpdating = true;
 
 			ISQLiteConnection conn = null;
@@ -555,7 +555,7 @@ namespace WaveBox.FolderScanning
 			Art art = new Art();
 			art.Md5Hash = fs.MD5();
 			art.FileSize = fs.Length;
-			art.LastModified = System.IO.File.GetLastWriteTime(fs.Name).ToUniversalUnixTimestamp();
+			art.LastModified = System.IO.File.GetLastWriteTime(fs.Name).ToUnixTime();
 			art.ArtId = Injection.Kernel.Get<IArtRepository>().ArtIdForMd5(art.Md5Hash);
 			art.FilePath = filePath;
 
@@ -582,7 +582,7 @@ namespace WaveBox.FolderScanning
 				byte[] data = file.Tag.Pictures[0].Data.Data;
 				art.Md5Hash = data.MD5();
 				art.FileSize = data.Length;
-				art.LastModified = System.IO.File.GetLastWriteTime(file.Name).ToUniversalUnixTimestamp();
+				art.LastModified = System.IO.File.GetLastWriteTime(file.Name).ToUnixTime();
 
 				art.ArtId = Injection.Kernel.Get<IArtRepository>().ArtIdForMd5(art.Md5Hash);
 				if (art.ArtId == null)
@@ -622,7 +622,7 @@ namespace WaveBox.FolderScanning
 		private bool VideoNeedsUpdating(string filePath, int? folderId, out bool isNew, out int? itemId)
 		{
 			string fileName = Path.GetFileName(filePath);
-			long lastModified = System.IO.File.GetLastWriteTime(filePath).ToUniversalUnixTimestamp();
+			long lastModified = System.IO.File.GetLastWriteTime(filePath).ToUnixTime();
 			bool needsUpdating = true;
 			isNew = true;
 			itemId = null;
@@ -662,7 +662,7 @@ namespace WaveBox.FolderScanning
 		{
 			// We don't need to instantiate another folder to know what the folder id is.  This should be known when the method is called.
 			string fileName = Path.GetFileName(filePath);
-			long lastModified = System.IO.File.GetLastWriteTime(filePath).ToUniversalUnixTimestamp();
+			long lastModified = System.IO.File.GetLastWriteTime(filePath).ToUnixTime();
 			bool needsUpdating = true;
 			isNew = true;
 			itemId = null;
@@ -726,7 +726,7 @@ namespace WaveBox.FolderScanning
 			FileInfo fsFile = new FileInfo(filePath);
 
 			video.FileSize = fsFile.Length;
-			video.LastModified = fsFile.LastWriteTime.ToUniversalUnixTimestamp();
+			video.LastModified = fsFile.LastWriteTime.ToUnixTime();
 			video.FileName = fsFile.Name;
 
 			// Generate an art id from the embedded art, if it exists

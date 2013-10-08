@@ -30,7 +30,7 @@ namespace WaveBox.Service.Services.Cron
 		{ 
 			get 
 			{
-				if (DateTime.Now >= RunDateTime)
+				if (DateTime.UtcNow >= RunDateTime)
 				{
 					return true;
 				}
@@ -70,7 +70,7 @@ namespace WaveBox.Service.Services.Cron
 		/// </summary>
 		public void ResetWait()
 		{
-			RunDateTime = DateTime.Now.AddSeconds(originalDelayInMinutes);
+			RunDateTime = DateTime.UtcNow.AddSeconds(originalDelayInMinutes);
 		}
 
 		/// <summary>
@@ -78,7 +78,7 @@ namespace WaveBox.Service.Services.Cron
 		/// </summary>
 		public UserPurgeOperation(int minutesDelay)
 		{
-			RunDateTime = DateTime.Now.AddMinutes(minutesDelay);
+			RunDateTime = DateTime.UtcNow.AddMinutes(minutesDelay);
 			originalDelayInMinutes = minutesDelay;
 		}
 	}
