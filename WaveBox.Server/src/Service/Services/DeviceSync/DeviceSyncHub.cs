@@ -145,7 +145,7 @@ namespace WaveBox.Service.Services.DeviceSync
 
 				// Tell the client the current group state
 				var songIds = group.SongIds.Count > 0 ? Injection.Kernel.Get<ISongRepository>().SongsForIds(group.SongIds) : new List<Song>();
-				var progress = group.Progress + (float)(DateTime.Now.ToUniversalUnixTimestamp() - group.ProgressTimestamp);
+				var progress = group.Progress + (float)(DateTime.UtcNow.ToUnixTime() - group.ProgressTimestamp);
 				Clients.Caller.currentState(songIds, group.CurrentIndex, progress, group.IsShuffle, group.IsRepeat);
 			});
 		}
@@ -210,7 +210,7 @@ namespace WaveBox.Service.Services.DeviceSync
 				if (!ReferenceEquals(conn, null))
 				{
 					conn.MyGroup.Progress = progress;
-					conn.MyGroup.ProgressTimestamp = DateTime.Now.ToUniversalUnixTimestamp();
+					conn.MyGroup.ProgressTimestamp = DateTime.UtcNow.ToUnixTime();
 
 					Clients.OthersInGroup(conn.SessionId).progressUpdate(progress);
 				}

@@ -26,21 +26,21 @@ namespace WaveBox.Service.Services.DeviceSync
 			string user = GetUser(connectionId);
 
 			return Groups.Add(connectionId, "foo").ContinueWith(_ =>
-				Connection.Broadcast(DateTime.Now + ": " + user + " joined from " + clientIp)).Unwrap();
+				Connection.Broadcast(DateTime.UtcNow + ": " + user + " joined from " + clientIp)).Unwrap();
 		}
 
 		protected override Task OnReconnected(IRequest request, string connectionId)
 		{
 			string user = GetUser(connectionId);
 
-			return Connection.Broadcast(DateTime.Now + ": " + user + " reconnected");
+			return Connection.Broadcast(DateTime.UtcNow + ": " + user + " reconnected");
 		}
 
 		protected override Task OnDisconnected(IRequest request, string connectionId)
 		{
 			string ignored;
 			_users.TryRemove(connectionId, out ignored);
-			return Connection.Broadcast(DateTime.Now + ": " + GetUser(connectionId) + " disconnected");
+			return Connection.Broadcast(DateTime.UtcNow + ": " + GetUser(connectionId) + " disconnected");
 		}
 
 		protected override Task OnReceived(IRequest request, string connectionId, string data)

@@ -75,7 +75,7 @@ namespace WaveBox.Core.Model.Repository
 			}
 
 			session.ClientName = clientName;
-			long unixTime = DateTime.Now.ToUniversalUnixTimestamp();
+			long unixTime = DateTime.UtcNow.ToUnixTime();
 			session.CreateTime = unixTime;
 			session.UpdateTime = unixTime;
 
@@ -100,7 +100,7 @@ namespace WaveBox.Core.Model.Repository
 		public bool UpdateSession(Session session)
 		{
 			// Get current UNIX time
-			long unixTime = DateTime.Now.ToUniversalUnixTimestamp();
+			long unixTime = DateTime.UtcNow.ToUnixTime();
 
 			// Update session non-logged, because sessions aren't in backup anyway
 			int affected = this.database.ExecuteQueryNonLogged("UPDATE Session SET UpdateTime = ? WHERE SessionId = ?", unixTime, session.SessionId);

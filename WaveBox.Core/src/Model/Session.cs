@@ -39,7 +39,7 @@ namespace WaveBox.Core.Model
 
 		public bool Update()
 		{
-			this.UpdateTime = DateTime.Now.ToUniversalUnixTimestamp();
+			this.UpdateTime = DateTime.UtcNow.ToUnixTime();
 
 			return Injection.Kernel.Get<ISessionRepository>().UpdateSession(this);
 		}
