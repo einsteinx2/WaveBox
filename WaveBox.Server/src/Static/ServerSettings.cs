@@ -270,7 +270,7 @@ namespace WaveBox.Static
 			}
 
 			// Begin template creation with an auto-generated line stating WaveBox version and date/time generated
-			StringBuilder templateBuilder = new StringBuilder("// WaveBox auto-generated file on " + DateTime.Now.ToString("MM/dd/yyyy, hh:mm:sstt") + "\n");
+			StringBuilder templateBuilder = new StringBuilder("// WaveBox auto-generated file on " + DateTime.UtcNow.ToString("MM/dd/yyyy, hh:mm:sstt") + "\n");
 
 			// Add the template to templateBuilder
 			templateBuilder.Append(template);

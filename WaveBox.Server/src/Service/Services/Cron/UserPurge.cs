@@ -45,7 +45,7 @@ namespace WaveBox.Service.Services.Cron
 			var sessions = Injection.Kernel.Get<ISessionRepository>().AllSessions();
 
 			// Grab the current UNIX time
-			long unixTime = DateTime.Now.ToUniversalUnixTimestamp();
+			long unixTime = DateTime.UtcNow.ToUnixTime();
 
 			// Purge any sessions which have not been updated in a predefined period of time
 			foreach (Session s in sessions)

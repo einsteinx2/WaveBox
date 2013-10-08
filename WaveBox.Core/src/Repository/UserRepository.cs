@@ -105,7 +105,7 @@ namespace WaveBox.Core.Model.Repository
 			u.Password = password;
 			u.PasswordHash = hash;
 			u.PasswordSalt = salt;
-			u.CreateTime = DateTime.Now.ToUniversalUnixTimestamp();
+			u.CreateTime = DateTime.UtcNow.ToUnixTime();
 			u.DeleteTime = deleteTime;
 
 			this.database.InsertObject<User>(u);
@@ -124,7 +124,7 @@ namespace WaveBox.Core.Model.Repository
 				durationSeconds = 60 * 60 * 24;
 			}
 
-			return this.CreateUser(Utility.RandomString(16), Utility.RandomString(16), Role.Test, DateTime.Now.ToUniversalUnixTimestamp() + durationSeconds);
+			return this.CreateUser(Utility.RandomString(16), Utility.RandomString(16), Role.Test, DateTime.UtcNow.ToUnixTime() + durationSeconds);
 		}
 
 		public IList<User> AllUsers()
@@ -164,7 +164,7 @@ namespace WaveBox.Core.Model.Repository
 
 		public IList<User> ExpiredUsers()
 		{
-			return this.database.GetList<User>("SELECT * FROM User WHERE DeleteTime <= ? ORDER BY UserName COLLATE NOCASE", DateTime.Now.ToUniversalUnixTimestamp());
+			return this.database.GetList<User>("SELECT * FROM User WHERE DeleteTime <= ? ORDER BY UserName COLLATE NOCASE", DateTime.UtcNow.ToUnixTime());
 		}
 	}
 }

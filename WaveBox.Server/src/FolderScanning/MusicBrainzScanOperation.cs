@@ -22,27 +22,24 @@ namespace WaveBox.FolderScanning
 
 		public override string OperationType { get { return "MusicBrainzScanOperation"; } }
 
-		private IList<MusicBrainzCheckDate> checkDates;
-
-		private IDictionary<string, string> existingIds = new Dictionary<string, string>();
-		private IList<Artist> artistsMissingId = new List<Artist>();
-		private IList<AlbumArtist> albumArtistsMissingId = new List<AlbumArtist>();
-
-		Stopwatch testTotalScanTime = new Stopwatch();
-		Stopwatch testArtistScanTime = new Stopwatch();
-		Stopwatch testAlbumArtistScanTime = new Stopwatch();
-
 		public MusicBrainzScanOperation(int delayMilliSeconds) : base(delayMilliSeconds)
 		{
 		}
 
 		public override void Start()
 		{
-			logger.IfInfo("------------- MUSICBRAINZ SCAN -------------");
+			// Stopwatches to track scanning times
+			Stopwatch testTotalScanTime = new Stopwatch();
+			Stopwatch testArtistScanTime = new Stopwatch();
+			Stopwatch testAlbumArtistScanTime = new Stopwatch();
 
-			// Find all of the previous attempts so we don't retry too quickly
-			long timestamp = DateTime.UtcNow.AddDays(-1).ToUniversalUnixTimestamp();
-			checkDates = Injection.Kernel.Get<IMusicBrainzCheckDateRepository>().AllCheckDatesOlderThan(timestamp);
+			// Dictionary of artists and existing IDs
+			IDictionary<string, string> existingIds = new Dictionary<string, string>();
+
+			// List of artists who don't have IDs
+			IList<Artist> artistsMissingId = new List<Artist>();
+
+			logger.IfInfo("------------- MUSICBRAINZ SCAN -------------");
 
 			testTotalScanTime.Start();
 
@@ -61,8 +58,11 @@ namespace WaveBox.FolderScanning
 				}
 			}
 
+			IList<AlbumArtist> albumArtistsMissingId = new List<AlbumArtist>();
+
 			IAlbumArtistRepository albumArtistRepository = Injection.Kernel.Get<IAlbumArtistRepository>();
 			IList<AlbumArtist> allAlbumArtists = albumArtistRepository.AllAlbumArtists();
+
 			foreach (AlbumArtist albumArtist in allAlbumArtists)
 			{
 				if (albumArtist.MusicBrainzId == null)
@@ -76,11 +76,11 @@ namespace WaveBox.FolderScanning
 			}
 
 			testArtistScanTime.Start();
-			this.ScanArtists();
+			int artistCount = this.ScanArtists(existingIds, artistsMissingId);
 			testArtistScanTime.Stop();
 
 			testAlbumArtistScanTime.Start();
-			this.ScanAlbumArtists();
+			int albumArtistCount = this.ScanAlbumArtists(existingIds, albumArtistsMissingId);
 			testAlbumArtistScanTime.Stop();
 
 			testTotalScanTime.Stop();
@@ -88,7 +88,9 @@ namespace WaveBox.FolderScanning
 			logger.IfInfo("------------- MUSICBRAINZ SCAN -------------");
 			logger.IfInfo("total scan time: " + testTotalScanTime.ElapsedMilliseconds + "ms");
 			logger.IfInfo("---------------------------------------------");
+			logger.IfInfo("artist IDs retrieved: " + artistCount);
 			logger.IfInfo("artist scan time: " + testArtistScanTime.ElapsedMilliseconds + "ms");
+			logger.IfInfo("albumArtist IDs retrieved: " + albumArtistCount);
 			logger.IfInfo("albumArtist scan time: " + testAlbumArtistScanTime.ElapsedMilliseconds + "ms");
 			logger.IfInfo("---------------------------------------------");
 		}
@@ -158,39 +160,32 @@ namespace WaveBox.FolderScanning
 			return null;
 		}
 
-		private void ScanArtists()
+		private int ScanArtists(IDictionary<string, string> existingIds, IList<Artist> artistsMissingId)
 		{
-			IMusicBrainzCheckDateRepository musicBrainzCheckDateRepository = Injection.Kernel.Get<IMusicBrainzCheckDateRepository>();
+			// Count of number of IDs retrieved
+			int count = 0;
+
 			IArtistRepository artistRepository = Injection.Kernel.Get<IArtistRepository>();
 			foreach (Artist artist in artistsMissingId)
 			{
 				if (isRestart)
-					return;
+				{
+					return 0;
+				}
 
 				if (artist.ArtistName == null)
+				{
 					continue;
+				}
 
 				// First check if the id already exists
 				string musicBrainzId = null;
 				existingIds.TryGetValue(artist.ArtistName, out musicBrainzId);
+
+				// If ID not found, try to fetch it
 				if (musicBrainzId == null)
 				{
-					// Only process if we didn't recently try
-					if (checkDates.SingleOrDefault(d => d.ItemId == artist.ArtistId) == null)
-					{
-						string id = MusicBrainzIdForArtistName(artist.ArtistName);
-						if (id == null)
-						{
-							// Store the time we tried, so we don't try again for a while
-							MusicBrainzCheckDate checkDate = new MusicBrainzCheckDate((int)artist.ArtistId);
-							musicBrainzCheckDateRepository.InsertMusicBrainzCheckDate(checkDate);
-						}
-						else
-						{
-							// We found an ID
-							musicBrainzId = id;
-						}
-					}
+					musicBrainzId = this.MusicBrainzIdForArtistName(artist.ArtistName);
 				}
 
 				if (musicBrainzId != null)
@@ -200,42 +195,34 @@ namespace WaveBox.FolderScanning
 					artist.MusicBrainzId = musicBrainzId;
 					artistRepository.InsertArtist(artist, true);
 					logger.IfInfo(artist.ArtistName + " = " + musicBrainzId);
+					count++;
 				}
 			}
+
+			return count;
 		}
 
-		private void ScanAlbumArtists()
+		private int ScanAlbumArtists(IDictionary<string, string> existingIds, IList<AlbumArtist> albumArtistsMissingId)
 		{
-			IMusicBrainzCheckDateRepository musicBrainzCheckDateRepository = Injection.Kernel.Get<IMusicBrainzCheckDateRepository>();
+			// Count of number of IDs retrieved
+			int count = 0;
+
 			IAlbumArtistRepository albumArtistRepository = Injection.Kernel.Get<IAlbumArtistRepository>();
 			foreach (AlbumArtist albumArtist in albumArtistsMissingId)
 			{
 				if (isRestart)
 				{
-					return;
+					return 0;
 				}
 
 				// First check if the id already exists
 				string musicBrainzId = null;
 				existingIds.TryGetValue(albumArtist.AlbumArtistName, out musicBrainzId);
+
+				// If ID not found, try to fetch it
 				if (musicBrainzId == null)
 				{
-					// Only process if we didn't recently try
-					if (checkDates.SingleOrDefault(d => d.ItemId == albumArtist.AlbumArtistId) == null)
-					{
-						string id = MusicBrainzIdForArtistName(albumArtist.AlbumArtistName);
-						if (id == null)
-						{
-							// Store the time we tried, so we don't try again for a while
-							MusicBrainzCheckDate checkDate = new MusicBrainzCheckDate((int)albumArtist.AlbumArtistId);
-							musicBrainzCheckDateRepository.InsertMusicBrainzCheckDate(checkDate);
-						}
-						else
-						{
-							// We found an ID
-							musicBrainzId = id;
-						}
-					}
+					musicBrainzId = this.MusicBrainzIdForArtistName(albumArtist.AlbumArtistName);
 				}
 
 				if (musicBrainzId != null)
@@ -245,9 +232,11 @@ namespace WaveBox.FolderScanning
 					albumArtist.MusicBrainzId = musicBrainzId;
 					albumArtistRepository.InsertAlbumArtist(albumArtist, true);
 					logger.IfInfo(albumArtist.AlbumArtistName + " = " + musicBrainzId);
+					count++;
 				}
 			}
+
+			return count;
 		}
 	}
 }
-

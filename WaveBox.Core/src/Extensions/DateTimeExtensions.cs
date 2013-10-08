@@ -21,14 +21,6 @@ namespace WaveBox.Core.Extensions
 		}
 
 		/// <summary>
-		/// Creates a local UNIX timestamp from a DateTime object
-		/// </summary>
-		public static long ToLocalUnixTimestamp(this DateTime dateTime)
-		{
-			return (long)(dateTime.ToUniversalTime() - new DateTime(1970, 1, 1).ToUniversalTime()).TotalSeconds;
-		}
-
-		/// <summary>
 		/// Convert a DateTime object to a RFC1123 (HTTP Last-Modified) string
 		/// <summary>
 		public static string ToRFC1123(this DateTime dateTime)
@@ -39,7 +31,7 @@ namespace WaveBox.Core.Extensions
 		/// <summary>
 		/// Creates a GMT UNIX timestamp from a DateTime object
 		/// </summary>
-		public static long ToUniversalUnixTimestamp(this DateTime dateTime)
+		public static long ToUnixTime(this DateTime dateTime)
 		{
 			return (long)(dateTime.ToLocalTime() - new DateTime(1970, 1, 1).ToLocalTime()).TotalSeconds;
 		}

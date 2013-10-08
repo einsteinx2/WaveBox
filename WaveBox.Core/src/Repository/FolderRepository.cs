@@ -86,6 +86,13 @@ namespace WaveBox.Core.Model.Repository
 			return folder;
 		}
 
+		public bool InsertFolder(Folder folder, bool replace = false)
+		{
+			int affected = this.database.InsertObject<Folder>(folder, replace ? InsertType.Replace : InsertType.InsertOrIgnore);
+
+			return affected > 0;
+		}
+
 		public IList<Folder> MediaFolders()
 		{
 			return this.database.GetList<Folder>("SELECT * FROM Folder WHERE ParentFolderId IS NULL");

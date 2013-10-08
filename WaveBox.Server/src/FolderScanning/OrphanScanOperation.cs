@@ -186,9 +186,9 @@ namespace WaveBox.FolderScanning
 				var result = conn.DeferredQuery<Song>("SELECT * FROM Song");
 				foreach (Song song in result)
 				{
-					long timestamp = DateTime.Now.ToUniversalUnixTimestamp();
+					long timestamp = DateTime.UtcNow.ToUnixTime();
 					bool exists = File.Exists(song.FilePath());
-					totalExistsTime += DateTime.Now.ToUniversalUnixTimestamp() - timestamp;
+					totalExistsTime += DateTime.UtcNow.ToUnixTime() - timestamp;
 
 					if (!exists)
 					{

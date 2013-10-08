@@ -94,7 +94,7 @@ namespace WaveBox.Core.Model.Repository
 			}
 
 			Favorite fav = new Favorite() { FavoriteId = itemId, FavoriteUserId = favoriteUserId, FavoriteItemId = favoriteItemId, FavoriteItemTypeId = (int)favoriteItemType };
-			fav.TimeStamp = DateTime.UtcNow.ToUniversalUnixTimestamp();
+			fav.TimeStamp = DateTime.UtcNow.ToUnixTime();
 
 			this.database.InsertObject<Favorite>(fav);
 

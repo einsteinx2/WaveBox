@@ -74,25 +74,14 @@ namespace WaveBox.Core.Model
 
 		public override void InsertMediaItem()
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				// insert the song into the database
-				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				conn.InsertLogged(this, InsertType.Replace);
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-			}
+			Injection.Kernel.Get<ISongRepository>().InsertSong(this, true);
 
+			// Update art relationships
 			Injection.Kernel.Get<IArtRepository>().UpdateArtItemRelationship(ArtId, ItemId, true);
 			Injection.Kernel.Get<IArtRepository>().UpdateArtItemRelationship(ArtId, AlbumId, true);
-			Injection.Kernel.Get<IArtRepository>().UpdateArtItemRelationship(ArtId, FolderId, false); // Only update a folder art relationship if it has no folder art
+
+			 // Only update a folder art relationship if it has no folder art
+			Injection.Kernel.Get<IArtRepository>().UpdateArtItemRelationship(ArtId, FolderId, false);
 		}
 
 		public static int CompareSongsByDiscAndTrack(Song x, Song y)

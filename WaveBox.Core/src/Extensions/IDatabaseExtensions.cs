@@ -115,14 +115,35 @@ namespace WaveBox.Core.Extensions
 			return 0;
 		}
 
+		// Execute a standard, logged query on the database
 		public static int ExecuteQuery(this IDatabase database, string query, params object[] args)
+		{
+			return database.InternalExecuteQuery(true, query, args);
+		}
+
+		// Execute a non-logged query on the database
+		public static int ExecuteQueryNonLogged(this IDatabase database, string query, params object[] args)
+		{
+			return database.InternalExecuteQuery(false, query, args);
+		}
+
+		// Execute a query on the database, with optional logging
+		private static int InternalExecuteQuery(this IDatabase database, bool logging, string query, params object[] args)
 		{
 			ISQLiteConnection conn = null;
 			try
 			{
 				// Get database connection, execute and log query
 				conn = database.GetSqliteConnection();
-				return conn.ExecuteLogged(query, args);
+
+				if (logging)
+				{
+					return conn.ExecuteLogged(query, args);
+				}
+				else
+				{
+					return conn.Execute(query, args);
+				}
 			}
 			catch (Exception e)
 			{

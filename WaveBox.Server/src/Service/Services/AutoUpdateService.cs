@@ -110,7 +110,7 @@ namespace WaveBox.Service.Services
 				if (updatesTemp.Count > 0)
 				{
 					// Check if an update is available
-					if (WaveBoxService.BuildDate.ToUniversalUnixTimestamp() < updatesTemp[0].BuildTime)
+					if (WaveBoxService.BuildDate.ToUnixTime() < updatesTemp[0].BuildTime)
 					{
 						isUpdateAvailable = true;
 					}

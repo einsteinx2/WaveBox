@@ -123,35 +123,21 @@ namespace WaveBox.Core.Model
 			return null;
 		}
 
-		public void InsertFolder(bool isMediaFolder)
+		public bool InsertFolder(bool isMediaFolder)
 		{
 			int? itemId = Injection.Kernel.Get<IItemRepository>().GenerateItemId(ItemType.Folder);
 			if (itemId == null)
 			{
-				return;
+				return false;
 			}
 
-			ISQLiteConnection conn = null;
-			try
+			this.FolderId = itemId;
+			if (!isMediaFolder)
 			{
-				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+				this.ParentFolderId = Injection.Kernel.Get<IFolderRepository>().GetParentFolderId(this.FolderPath);
+			}
 
-				FolderId = itemId;
-				if (!isMediaFolder)
-				{
-					ParentFolderId = Injection.Kernel.Get<IFolderRepository>().GetParentFolderId(FolderPath);
-				}
-
-				conn.InsertLogged(this);
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-			}
+			return Injection.Kernel.Get<IFolderRepository>().InsertFolder(this);
 		}
 
 		public override string ToString()

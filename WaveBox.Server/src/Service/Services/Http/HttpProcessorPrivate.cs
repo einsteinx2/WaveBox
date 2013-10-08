@@ -279,8 +279,8 @@ namespace WaveBox.Service.Services.Http
 		{
 			if (sessionId != null)
 			{
-				// Calculate session timeout time (DateTime.Now UTC + SessionTimeout minutes)
-				DateTime expire = DateTime.Now.ToUniversalTime().AddMinutes(Injection.Kernel.Get<IServerSettings>().SessionTimeout);
+				// Calculate session timeout time (DateTime.UtcNow UTC + SessionTimeout minutes)
+				DateTime expire = DateTime.UtcNow.ToUniversalTime().AddMinutes(Injection.Kernel.Get<IServerSettings>().SessionTimeout);
 
 				// Add a delayed header so cookie will be reset on each API call (to prevent timeout)
 				this.DelayedHeaders["Set-Cookie"] = String.Format("wavebox_session={0}; Path=/api; Expires={1};", sessionId, expire.ToRFC1123());

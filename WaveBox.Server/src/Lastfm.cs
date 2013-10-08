@@ -102,7 +102,7 @@ namespace WaveBox
 			// add the scrobble data to the parameter list
 			int limit = scrobbleType == LfmScrobbleType.NOWPLAYING ? 1 : scrobbles.Count > 100 ? 100 : scrobbles.Count;
 
-			long timestamp = DateTime.Now.ToUniversalUnixTimestamp();
+			long timestamp = DateTime.UtcNow.ToUnixTime();
 
 			for (int i = 0; i < limit; i++)
 			{

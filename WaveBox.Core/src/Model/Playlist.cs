@@ -101,7 +101,7 @@ namespace WaveBox.Core.Model
 					PlaylistId = itemId;
 					PlaylistCount = 0;
 					PlaylistDuration = 0;
-					LastUpdateTime = DateTime.Now.ToUniversalUnixTimestamp();
+					LastUpdateTime = DateTime.UtcNow.ToUnixTime();
 					Md5Hash = CalculateHash();
 
 					conn.ExecuteLogged("INSERT INTO Playlist (PlaylistId, PlaylistName, PlaylistCount, PlaylistDuration, Md5Hash, LastUpdateTime) " +
@@ -109,7 +109,7 @@ namespace WaveBox.Core.Model
 				}
 				else
 				{
-					LastUpdateTime = DateTime.Now.ToUniversalUnixTimestamp();
+					LastUpdateTime = DateTime.UtcNow.ToUnixTime();
 					Md5Hash = CalculateHash();
 					conn.ExecuteLogged("UPDATE Playlist SET PlaylistName = ?, PlaylistCount = ?, PlaylistDuration = ?, Md5Hash = ?, LastUpdateTime = ? " +
 										"WHERE PlaylistId = ?", PlaylistName == null ? "" : PlaylistName, PlaylistCount, PlaylistDuration, Md5Hash, LastUpdateTime, PlaylistId);
@@ -500,7 +500,7 @@ namespace WaveBox.Core.Model
 					{
 						PlaylistCount++;
 						PlaylistDuration += (int)item.Duration;
-						LastUpdateTime = DateTime.Now.ToUniversalUnixTimestamp();
+						LastUpdateTime = DateTime.UtcNow.ToUnixTime();
 						Md5Hash = CalculateHash();
 						conn.ExecuteLogged("UPDATE Playlist SET PlaylistName = ?, PlaylistCount = ?, PlaylistDuration = ?, Md5Hash = ?, LastUpdateTime = ? " +
 										   "WHERE PlaylistId = ?", PlaylistName == null ? "" : PlaylistName, PlaylistCount, PlaylistDuration, Md5Hash, LastUpdateTime, PlaylistId);

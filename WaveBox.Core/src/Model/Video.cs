@@ -50,23 +50,14 @@ namespace WaveBox.Core.Model
 
 		public override void InsertMediaItem()
 		{
-			ISQLiteConnection conn = null;
-			try
-			{
-				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				conn.InsertLogged(this, InsertType.Replace);
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-			}
+			// Insert video
+			Injection.Kernel.Get<IVideoRepository>().InsertVideo(this, true);
 
+			// Update art relationships
 			Injection.Kernel.Get<IArtRepository>().UpdateArtItemRelationship(ArtId, ItemId, true);
-			Injection.Kernel.Get<IArtRepository>().UpdateArtItemRelationship(ArtId, FolderId, false); // Only update a folder art relationship if it has no folder art
+
+			 // Only update a folder art relationship if it has no folder art
+			Injection.Kernel.Get<IArtRepository>().UpdateArtItemRelationship(ArtId, FolderId, false);
 		}
 
 		public override string ToString()

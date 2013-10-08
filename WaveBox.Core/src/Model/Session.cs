@@ -39,33 +39,9 @@ namespace WaveBox.Core.Model
 
 		public bool Update()
 		{
-			// Get current UNIX time
-			long unixTime = DateTime.Now.ToUniversalUnixTimestamp();
+			this.UpdateTime = DateTime.UtcNow.ToUnixTime();
 
-			ISQLiteConnection conn = null;
-			try
-			{
-				// Not logged, because sessions aren't needed in the backup database anyway
-				conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
-				int affected = conn.Execute("UPDATE Session SET UpdateTime = ? WHERE SessionId = ?", unixTime, this.SessionId);
-
-				if (affected > 0)
-				{
-					this.UpdateTime = unixTime;
-
-					return Injection.Kernel.Get<ISessionRepository>().UpdateSessionCache(this);
-				}
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
-			finally
-			{
-				Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
-			}
-
-			return false;
+			return Injection.Kernel.Get<ISessionRepository>().UpdateSession(this);
 		}
 
 		// Remove this session by its row ID
