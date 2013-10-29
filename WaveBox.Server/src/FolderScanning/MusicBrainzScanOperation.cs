@@ -107,7 +107,7 @@ namespace WaveBox.FolderScanning
 				// Allow server up to 15 seconds to respond
 				using (TimedWebClient client = new TimedWebClient(15000))
 				{
-					string address = "http://herpderp.me:5000/ws/2/artist?query=\"" + System.Web.HttpUtility.UrlEncode(artistName) + "\"";
+					string address = "http://musicbrainz.herpderp.me:5000/ws/2/artist?query=\"" + System.Web.HttpUtility.UrlEncode(artistName) + "\"";
 					//string address = "http://musicbrainz.org/ws/2/artist?query=\"" + System.Web.HttpUtility.UrlEncode(artistName) + "\"";
 					string responseXML = client.DownloadString(address);
 
@@ -197,6 +197,10 @@ namespace WaveBox.FolderScanning
 					logger.IfInfo(artist.ArtistName + " = " + musicBrainzId);
 					count++;
 				}
+				else
+				{
+					logger.IfInfo("No musicbrainz id found for " + artist.ArtistName);
+				}
 			}
 
 			return count;
@@ -233,6 +237,10 @@ namespace WaveBox.FolderScanning
 					albumArtistRepository.InsertAlbumArtist(albumArtist, true);
 					logger.IfInfo(albumArtist.AlbumArtistName + " = " + musicBrainzId);
 					count++;
+				}
+				else
+				{
+					logger.IfInfo("No musicbrainz id found for " + albumArtist.AlbumArtistName);
 				}
 			}
 

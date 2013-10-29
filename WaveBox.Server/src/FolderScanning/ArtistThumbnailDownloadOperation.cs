@@ -105,7 +105,7 @@ namespace WaveBox.FolderScanning
 					// Allow WaveBox fan art proxy up to 15 seconds to respond for each ID in set
 					using (TimedWebClient client = new TimedWebClient(15000))
 					{
-						string address = "http://herpderp.me:8000?action=art&type=artist&preview=1&id=" + musicBrainzId;
+						string address = "http://fanart1.waveboxapp.com:8000?action=art&type=artist&preview=1&id=" + musicBrainzId;
 						string path = this.ArtPathForMusicBrainzId(musicBrainzId);
 						client.DownloadFile(address, path);
 
