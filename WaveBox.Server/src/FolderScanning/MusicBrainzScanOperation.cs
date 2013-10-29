@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using Ninject;
 using WaveBox.Core;
@@ -13,7 +14,6 @@ using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
 using WaveBox.Core.Model.Repository;
 using WaveBox.Core.OperationQueue;
-using System.Net.Http;
 
 namespace WaveBox.FolderScanning
 {
@@ -106,47 +106,42 @@ namespace WaveBox.FolderScanning
 			try
 			{
 				// Allow server up to 15 seconds to respond
-				using (HttpClient client = new HttpClient())
+				using (TimedWebClient client = new TimedWebClient(15000))
 				{
 					string address = "http://musicbrainz.herpderp.me:5000/ws/2/artist?query=\"" + System.Web.HttpUtility.UrlEncode(artistName) + "\"";
+					string responseXML = client.DownloadString(address);
 
-					var response = client.GetAsync(address);
-					if (response.Result.IsSuccessStatusCode)
+					try
 					{
-						try
+						XDocument doc = XDocument.Parse(responseXML);
+						XElement firstElement = doc.Descendants().FirstOrDefault();
+						if (firstElement != null)
 						{
-							string responseXML = response.Result.Content.ReadAsStringAsync().Result;
-
-							XDocument doc = XDocument.Parse(responseXML);
-							XElement firstElement = doc.Descendants().FirstOrDefault();
-							if (firstElement != null)
+							XElement artistList = firstElement.Descendants().FirstOrDefault();
+							if (artistList != null)
 							{
-								XElement artistList = firstElement.Descendants().FirstOrDefault();
-								if (artistList != null)
+								foreach (XElement artist in artistList.Descendants())
 								{
-									foreach (XElement artist in artistList.Descendants())
+									// Return the first id
+									XAttribute idAttribute = artist.Attribute("id");
+									if (idAttribute != null)
 									{
-										// Return the first id
-										XAttribute idAttribute = artist.Attribute("id");
-										if (idAttribute != null)
-										{
-											return idAttribute.Value;
-										}
+										return idAttribute.Value;
 									}
 								}
 							}
 						}
-						catch (Exception e)
-						{
-							logger.Error("Exception parsing musicbrainz response for " + artistName + ", " + e);
-						}
 					}
-					else
+					catch (Exception e)
 					{
-						// All other exceptions
-						logger.Error("Exception contacting musicbrainz server for " + artistName);
+						logger.Error("Exception parsing musicbrainz response for " + artistName + ", " + e);
 					}
 				}
+			}
+			// On timeout, report an error, but continue looping
+			catch (WebException)
+			{
+				logger.Error("Request timed out for " + artistName);
 			}
 			catch (Exception e)
 			{
@@ -167,22 +162,20 @@ namespace WaveBox.FolderScanning
 
 		private int ScanArtists(IDictionary<string, string> existingIds, IList<Artist> artistsMissingId)
 		{
+			if (isRestart)
+			{
+				return 0;
+			}
+
+			// Lock to prevent race conditions on MusicBrainzID insert
+			object artistsLock = new object();
+
 			// Count of number of IDs retrieved
 			int count = 0;
 
 			IArtistRepository artistRepository = Injection.Kernel.Get<IArtistRepository>();
-			foreach (Artist artist in artistsMissingId)
-			{
-				if (isRestart)
-				{
-					return 0;
-				}
-
-				if (artist.ArtistName == null)
-				{
-					continue;
-				}
-
+			Parallel.ForEach(artistsMissingId, artist =>
+			                 {
 				// First check if the id already exists
 				string musicBrainzId = null;
 				existingIds.TryGetValue(artist.ArtistName, out musicBrainzId);
@@ -196,34 +189,40 @@ namespace WaveBox.FolderScanning
 				if (musicBrainzId != null)
 				{
 					// We found one, so update the record and our cache
-					existingIds[artist.ArtistName] = musicBrainzId;
-					artist.MusicBrainzId = musicBrainzId;
-					artistRepository.InsertArtist(artist, true);
-					logger.IfInfo(artist.ArtistName + " = " + musicBrainzId);
-					count++;
+					lock (artistsLock)
+					{
+						existingIds[artist.ArtistName] = musicBrainzId;
+						artist.MusicBrainzId = musicBrainzId;
+						artistRepository.InsertArtist(artist, true);
+						logger.IfInfo(artist.ArtistName + " = " + musicBrainzId);
+						count++;
+					}
 				}
 				else
 				{
 					logger.IfInfo("No musicbrainz id found for " + artist.ArtistName);
 				}
-			}
+			});
 
 			return count;
 		}
 
 		private int ScanAlbumArtists(IDictionary<string, string> existingIds, IList<AlbumArtist> albumArtistsMissingId)
 		{
+			if (isRestart)
+			{
+				return 0;
+			}
+
+			// Lock to prevent race conditions on MusicBrainzID insert
+			object albumArtistsLock = new object();
+
 			// Count of number of IDs retrieved
 			int count = 0;
 
 			IAlbumArtistRepository albumArtistRepository = Injection.Kernel.Get<IAlbumArtistRepository>();
-			foreach (AlbumArtist albumArtist in albumArtistsMissingId)
-			{
-				if (isRestart)
-				{
-					return 0;
-				}
-
+			Parallel.ForEach(albumArtistsMissingId, albumArtist =>
+			                 {
 				// First check if the id already exists
 				string musicBrainzId = null;
 				existingIds.TryGetValue(albumArtist.AlbumArtistName, out musicBrainzId);
@@ -237,17 +236,20 @@ namespace WaveBox.FolderScanning
 				if (musicBrainzId != null)
 				{
 					// We found one, so update the record and our cache
-					existingIds[albumArtist.AlbumArtistName] = musicBrainzId;
-					albumArtist.MusicBrainzId = musicBrainzId;
-					albumArtistRepository.InsertAlbumArtist(albumArtist, true);
-					logger.IfInfo(albumArtist.AlbumArtistName + " = " + musicBrainzId);
-					count++;
+					lock (albumArtistsLock)
+					{
+						existingIds[albumArtist.AlbumArtistName] = musicBrainzId;
+						albumArtist.MusicBrainzId = musicBrainzId;
+						albumArtistRepository.InsertAlbumArtist(albumArtist, true);
+						logger.IfInfo(albumArtist.AlbumArtistName + " = " + musicBrainzId);
+						count++;
+					}
 				}
 				else
 				{
 					logger.IfInfo("No musicbrainz id found for " + albumArtist.AlbumArtistName);
 				}
-			}
+			});
 
 			return count;
 		}

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 using Ninject;
 using WaveBox.Core;
 using WaveBox.Core.Derived;
@@ -98,8 +99,7 @@ namespace WaveBox.FolderScanning
 			// Track the number of items successfully downloaded
 			int downloadCount = 0;
 
-			foreach (string musicBrainzId in musicBrainzIds)
-			{
+			Parallel.ForEach(musicBrainzIds, musicBrainzId => {
 				try
 				{
 					// Allow WaveBox fan art proxy up to 15 seconds to respond for each ID in set
@@ -131,7 +131,7 @@ namespace WaveBox.FolderScanning
 				{
 					logger.Error("Exception contacting fanart server for " + musicBrainzId + ", " + e);
 				}
-			}
+			});
 
 			// Return number of successful downloads
 			return downloadCount;
