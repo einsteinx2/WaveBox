@@ -16,11 +16,18 @@ namespace WaveBox.Core.Derived
 		public TimedWebClient(int timeout)
 		{
 			this.timeout = timeout;
+
+			// Web request optimizations
+			ServicePointManager.DefaultConnectionLimit = 128;
+			ServicePointManager.Expect100Continue = false;
 		}
 
 		protected override WebRequest GetWebRequest(Uri uri)
 		{
 			WebRequest request = base.GetWebRequest(uri);
+
+			// Disable proxy lookup
+			request.Proxy = null;
 
 			// Set timeout
 			request.Timeout = this.timeout;

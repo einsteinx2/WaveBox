@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using Ninject;
 using WaveBox.Core;
@@ -161,22 +162,20 @@ namespace WaveBox.FolderScanning
 
 		private int ScanArtists(IDictionary<string, string> existingIds, IList<Artist> artistsMissingId)
 		{
+			if (isRestart)
+			{
+				return 0;
+			}
+
+			// Lock to prevent race conditions on MusicBrainzID insert
+			object artistsLock = new object();
+
 			// Count of number of IDs retrieved
 			int count = 0;
 
 			IArtistRepository artistRepository = Injection.Kernel.Get<IArtistRepository>();
-			foreach (Artist artist in artistsMissingId)
+			Parallel.ForEach(artistsMissingId, artist =>
 			{
-				if (isRestart)
-				{
-					return 0;
-				}
-
-				if (artist.ArtistName == null)
-				{
-					continue;
-				}
-
 				// First check if the id already exists
 				string musicBrainzId = null;
 				existingIds.TryGetValue(artist.ArtistName, out musicBrainzId);
@@ -190,34 +189,40 @@ namespace WaveBox.FolderScanning
 				if (musicBrainzId != null)
 				{
 					// We found one, so update the record and our cache
-					existingIds[artist.ArtistName] = musicBrainzId;
-					artist.MusicBrainzId = musicBrainzId;
-					artistRepository.InsertArtist(artist, true);
-					logger.IfInfo(artist.ArtistName + " = " + musicBrainzId);
-					count++;
+					lock (artistsLock)
+					{
+						existingIds[artist.ArtistName] = musicBrainzId;
+						artist.MusicBrainzId = musicBrainzId;
+						artistRepository.InsertArtist(artist, true);
+						logger.IfInfo(artist.ArtistName + " = " + musicBrainzId);
+						count++;
+					}
 				}
 				else
 				{
 					logger.IfInfo("No musicbrainz id found for " + artist.ArtistName);
 				}
-			}
+			});
 
 			return count;
 		}
 
 		private int ScanAlbumArtists(IDictionary<string, string> existingIds, IList<AlbumArtist> albumArtistsMissingId)
 		{
+			if (isRestart)
+			{
+				return 0;
+			}
+
+			// Lock to prevent race conditions on MusicBrainzID insert
+			object albumArtistsLock = new object();
+
 			// Count of number of IDs retrieved
 			int count = 0;
 
 			IAlbumArtistRepository albumArtistRepository = Injection.Kernel.Get<IAlbumArtistRepository>();
-			foreach (AlbumArtist albumArtist in albumArtistsMissingId)
+			Parallel.ForEach(albumArtistsMissingId, albumArtist =>
 			{
-				if (isRestart)
-				{
-					return 0;
-				}
-
 				// First check if the id already exists
 				string musicBrainzId = null;
 				existingIds.TryGetValue(albumArtist.AlbumArtistName, out musicBrainzId);
@@ -231,17 +236,20 @@ namespace WaveBox.FolderScanning
 				if (musicBrainzId != null)
 				{
 					// We found one, so update the record and our cache
-					existingIds[albumArtist.AlbumArtistName] = musicBrainzId;
-					albumArtist.MusicBrainzId = musicBrainzId;
-					albumArtistRepository.InsertAlbumArtist(albumArtist, true);
-					logger.IfInfo(albumArtist.AlbumArtistName + " = " + musicBrainzId);
-					count++;
+					lock (albumArtistsLock)
+					{
+						existingIds[albumArtist.AlbumArtistName] = musicBrainzId;
+						albumArtist.MusicBrainzId = musicBrainzId;
+						albumArtistRepository.InsertAlbumArtist(albumArtist, true);
+						logger.IfInfo(albumArtist.AlbumArtistName + " = " + musicBrainzId);
+						count++;
+					}
 				}
 				else
 				{
 					logger.IfInfo("No musicbrainz id found for " + albumArtist.AlbumArtistName);
 				}
-			}
+			});
 
 			return count;
 		}
