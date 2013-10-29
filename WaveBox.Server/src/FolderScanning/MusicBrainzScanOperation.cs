@@ -6,6 +6,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using System.Xml.Linq;
 using Ninject;
 using WaveBox.Core;
@@ -131,6 +132,10 @@ namespace WaveBox.FolderScanning
 								}
 							}
 						}
+					}
+					catch (XmlException e)
+					{
+						logger.Error("Received malformed XML from server for " + artistName);
 					}
 					catch (Exception e)
 					{
