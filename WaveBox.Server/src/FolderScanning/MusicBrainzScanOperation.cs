@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
 using System.Xml.Linq;
 using Ninject;
 using WaveBox.Core;
@@ -109,7 +111,29 @@ namespace WaveBox.FolderScanning
 				using (TimedWebClient client = new TimedWebClient(15000))
 				{
 					string address = "http://musicbrainz.herpderp.me:5000/ws/2/artist?query=\"" + System.Web.HttpUtility.UrlEncode(artistName) + "\"";
-					string responseXML = client.DownloadString(address);
+					string responseXML = null;
+
+					// SUPER HACK: Linux WebRequest libraries are really bad, so call wget to speed things up
+					if (WaveBoxService.Platform == "Linux")
+					{
+						using (Process wget = new Process())
+						{
+							wget.StartInfo.FileName = "wget";
+							wget.StartInfo.Arguments = "-O - '" + address + "'";
+							wget.StartInfo.UseShellExecute = false;
+							wget.StartInfo.RedirectStandardOutput = true;
+							wget.StartInfo.RedirectStandardError = true;
+							wget.Start();
+
+							responseXML = wget.StandardOutput.ReadToEnd();
+							wget.WaitForExit();
+						}
+					}
+					else
+					{
+						// All other operating systems, use WebClient
+						responseXML = client.DownloadString(address);
+					}
 
 					try
 					{
@@ -131,6 +155,10 @@ namespace WaveBox.FolderScanning
 								}
 							}
 						}
+					}
+					catch (XmlException e)
+					{
+						logger.Error("Received malformed XML from server for " + artistName);
 					}
 					catch (Exception e)
 					{
