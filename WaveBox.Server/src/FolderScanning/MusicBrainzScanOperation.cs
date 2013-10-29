@@ -13,6 +13,7 @@ using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
 using WaveBox.Core.Model.Repository;
 using WaveBox.Core.OperationQueue;
+using System.Net.Http;
 
 namespace WaveBox.FolderScanning
 {
@@ -105,43 +106,47 @@ namespace WaveBox.FolderScanning
 			try
 			{
 				// Allow server up to 15 seconds to respond
-				using (TimedWebClient client = new TimedWebClient(15000))
+				using (HttpClient client = new HttpClient())
 				{
 					string address = "http://musicbrainz.herpderp.me:5000/ws/2/artist?query=\"" + System.Web.HttpUtility.UrlEncode(artistName) + "\"";
-					//string address = "http://musicbrainz.org/ws/2/artist?query=\"" + System.Web.HttpUtility.UrlEncode(artistName) + "\"";
-					string responseXML = client.DownloadString(address);
 
-					try
+					var response = client.GetAsync(address);
+					if (response.Result.IsSuccessStatusCode)
 					{
-						XDocument doc = XDocument.Parse(responseXML);
-						XElement firstElement = doc.Descendants().FirstOrDefault();
-						if (firstElement != null)
+						try
 						{
-							XElement artistList = firstElement.Descendants().FirstOrDefault();
-							if (artistList != null)
+							string responseXML = response.Result.Content.ReadAsStringAsync().Result;
+
+							XDocument doc = XDocument.Parse(responseXML);
+							XElement firstElement = doc.Descendants().FirstOrDefault();
+							if (firstElement != null)
 							{
-								foreach (XElement artist in artistList.Descendants())
+								XElement artistList = firstElement.Descendants().FirstOrDefault();
+								if (artistList != null)
 								{
-									// Return the first id
-									XAttribute idAttribute = artist.Attribute("id");
-									if (idAttribute != null)
+									foreach (XElement artist in artistList.Descendants())
 									{
-										return idAttribute.Value;
+										// Return the first id
+										XAttribute idAttribute = artist.Attribute("id");
+										if (idAttribute != null)
+										{
+											return idAttribute.Value;
+										}
 									}
 								}
 							}
 						}
+						catch (Exception e)
+						{
+							logger.Error("Exception parsing musicbrainz response for " + artistName + ", " + e);
+						}
 					}
-					catch (Exception e)
+					else
 					{
-						logger.Error("Exception parsing musicbrainz response for " + artistName + ", " + e);
+						// All other exceptions
+						logger.Error("Exception contacting musicbrainz server for " + artistName);
 					}
 				}
-			}
-			// On timeout, report an error, but continue looping
-			catch (WebException)
-			{
-				logger.Error("Request timed out for " + artistName);
 			}
 			catch (Exception e)
 			{

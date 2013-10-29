@@ -115,6 +115,7 @@
       <HintPath>lib\Ninject.dll</HintPath>
     </Reference>
     <Reference Include="System.Configuration.Install" />
+    <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
