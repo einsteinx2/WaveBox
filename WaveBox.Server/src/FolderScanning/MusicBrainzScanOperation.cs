@@ -175,7 +175,7 @@ namespace WaveBox.FolderScanning
 
 			IArtistRepository artistRepository = Injection.Kernel.Get<IArtistRepository>();
 			Parallel.ForEach(artistsMissingId, artist =>
-			                 {
+			{
 				// First check if the id already exists
 				string musicBrainzId = null;
 				existingIds.TryGetValue(artist.ArtistName, out musicBrainzId);
@@ -222,7 +222,7 @@ namespace WaveBox.FolderScanning
 
 			IAlbumArtistRepository albumArtistRepository = Injection.Kernel.Get<IAlbumArtistRepository>();
 			Parallel.ForEach(albumArtistsMissingId, albumArtist =>
-			                 {
+			{
 				// First check if the id already exists
 				string musicBrainzId = null;
 				existingIds.TryGetValue(albumArtist.AlbumArtistName, out musicBrainzId);

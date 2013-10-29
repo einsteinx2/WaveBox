@@ -99,7 +99,8 @@ namespace WaveBox.FolderScanning
 			// Track the number of items successfully downloaded
 			int downloadCount = 0;
 
-			Parallel.ForEach(musicBrainzIds, musicBrainzId => {
+			Parallel.ForEach(musicBrainzIds, musicBrainzId =>
+			{
 				try
 				{
 					// Allow WaveBox fan art proxy up to 15 seconds to respond for each ID in set
