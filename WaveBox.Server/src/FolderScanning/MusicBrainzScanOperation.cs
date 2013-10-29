@@ -196,6 +196,10 @@ namespace WaveBox.FolderScanning
 					logger.IfInfo(artist.ArtistName + " = " + musicBrainzId);
 					count++;
 				}
+				else
+				{
+					logger.IfInfo("No musicbrainz id found for " + artist.ArtistName);
+				}
 			}
 
 			return count;
@@ -232,6 +236,10 @@ namespace WaveBox.FolderScanning
 					albumArtistRepository.InsertAlbumArtist(albumArtist, true);
 					logger.IfInfo(albumArtist.AlbumArtistName + " = " + musicBrainzId);
 					count++;
+				}
+				else
+				{
+					logger.IfInfo("No musicbrainz id found for " + albumArtist.AlbumArtistName);
 				}
 			}
 
