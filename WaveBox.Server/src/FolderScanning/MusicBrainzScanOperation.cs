@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -110,7 +111,29 @@ namespace WaveBox.FolderScanning
 				using (TimedWebClient client = new TimedWebClient(15000))
 				{
 					string address = "http://musicbrainz.herpderp.me:5000/ws/2/artist?query=\"" + System.Web.HttpUtility.UrlEncode(artistName) + "\"";
-					string responseXML = client.DownloadString(address);
+					string responseXML = null;
+
+					// SUPER HACK: Linux WebRequest libraries are really bad, so call curl to speed things up
+					if (WaveBoxService.Platform == "Linux")
+					{
+						using (Process curl = new Process())
+						{
+							curl.StartInfo.FileName = "curl";
+							curl.StartInfo.Arguments = "'" + address + "'";
+							curl.StartInfo.UseShellExecute = false;
+							curl.StartInfo.RedirectStandardOutput = true;
+							curl.StartInfo.RedirectStandardError = true;
+							curl.Start();
+
+							responseXML = curl.StandardOutput.ReadToEnd();
+							curl.WaitForExit();
+						}
+					}
+					else
+					{
+						// All other operating systems, use WebClient
+						responseXML = client.DownloadString(address);
+					}
 
 					try
 					{
