@@ -111,18 +111,23 @@ namespace WaveBox
 			Injection.Kernel.Load(new ServerModule());
 		}
 
+		/// <summary>
+		/// Perform dependency injection for all classes which have platform-specific implementations
+		/// </summary>
 		private static void InjectPlatformSpecificClasses()
 		{
-			// IWebClient - used to download strings and files using HTTP
+			// IWebClient - used to download strings and files using HTTP, with a timeout in milliseconds
+			int timeout = 5000;
+
 			// Linux WebRequest libraries are really bad, so we have our own implementation which calls curl
 			if (OS == ServerUtility.OS.Linux)
 			{
-				Injection.Kernel.Bind<IWebClient>().To<LinuxWebClient>().InSingletonScope().WithConstructorArgument("timeout", 5000);
+				Injection.Kernel.Bind<IWebClient>().To<LinuxWebClient>().InSingletonScope().WithConstructorArgument("timeout", timeout);
 			}
 			else
 			{
 				// All other operating systems use derived TimedWebClient
-				Injection.Kernel.Bind<IWebClient>().To<TimedWebClient>().InSingletonScope().WithConstructorArgument("timeout", 5000);
+				Injection.Kernel.Bind<IWebClient>().To<TimedWebClient>().InSingletonScope().WithConstructorArgument("timeout", timeout);
 			}
 		}
 
