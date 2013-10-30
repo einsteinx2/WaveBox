@@ -91,6 +91,7 @@
     <Compile Include="src\Extensions\IntExtensions.cs" />
     <Compile Include="src\Extensions\Log4NetExtensions.cs" />
     <Compile Include="src\Extensions\StringExtensions.cs" />
+    <Compile Include="src\Derived\LinuxWebClient.cs" />
     <Compile Include="src\Derived\TimedWebClient.cs" />
     <Compile Include="src\Injection\CoreModule.cs" />
     <Compile Include="src\Injection\Injection.cs" />

@@ -107,63 +107,54 @@ namespace WaveBox.FolderScanning
 
 			try
 			{
-				// Allow server up to 15 seconds to respond
-				using (TimedWebClient client = new TimedWebClient(15000))
+				// Set query address
+				string address = "http://musicbrainz.herpderp.me:5000/ws/2/artist?query=\"" + System.Web.HttpUtility.UrlEncode(artistName) + "\"";
+
+				// Set web client default timeout in milliseconds
+				int timeout = 5000;
+
+				// Capture XML response
+				string responseXML = null;
+
+				// SUPER HACK: Linux WebRequest libraries are really bad, so call curl to speed things up
+				if (WaveBoxService.Platform == "Linux")
 				{
-					string address = "http://musicbrainz.herpderp.me:5000/ws/2/artist?query=\"" + System.Web.HttpUtility.UrlEncode(artistName) + "\"";
-					string responseXML = null;
+					responseXML = new LinuxWebClient(timeout).DownloadString(address);
+				}
+				else
+				{
+					// All other operating systems, use TimedWebClient
+					responseXML = new TimedWebClient(timeout).DownloadString(address);
+				}
 
-					// SUPER HACK: Linux WebRequest libraries are really bad, so call curl to speed things up
-					if (WaveBoxService.Platform == "Linux")
+				try
+				{
+					XDocument doc = XDocument.Parse(responseXML);
+					XElement firstElement = doc.Descendants().FirstOrDefault();
+					if (firstElement != null)
 					{
-						using (Process curl = new Process())
+						XElement artistList = firstElement.Descendants().FirstOrDefault();
+						if (artistList != null)
 						{
-							curl.StartInfo.FileName = "curl";
-							curl.StartInfo.Arguments = "'" + address + "'";
-							curl.StartInfo.UseShellExecute = false;
-							curl.StartInfo.RedirectStandardOutput = true;
-							curl.StartInfo.RedirectStandardError = true;
-							curl.Start();
-
-							responseXML = curl.StandardOutput.ReadToEnd();
-							curl.WaitForExit();
-						}
-					}
-					else
-					{
-						// All other operating systems, use WebClient
-						responseXML = client.DownloadString(address);
-					}
-
-					try
-					{
-						XDocument doc = XDocument.Parse(responseXML);
-						XElement firstElement = doc.Descendants().FirstOrDefault();
-						if (firstElement != null)
-						{
-							XElement artistList = firstElement.Descendants().FirstOrDefault();
-							if (artistList != null)
+							foreach (XElement artist in artistList.Descendants())
 							{
-								foreach (XElement artist in artistList.Descendants())
+								// Return the first id
+								XAttribute idAttribute = artist.Attribute("id");
+								if (idAttribute != null)
 								{
-									// Return the first id
-									XAttribute idAttribute = artist.Attribute("id");
-									if (idAttribute != null)
-									{
-										return idAttribute.Value;
-									}
+									return idAttribute.Value;
 								}
 							}
 						}
 					}
-					catch (XmlException e)
-					{
-						logger.Error("Received malformed XML from server for " + artistName);
-					}
-					catch (Exception e)
-					{
-						logger.Error("Exception parsing musicbrainz response for " + artistName + ", " + e);
-					}
+				}
+				catch (XmlException e)
+				{
+					logger.Error("Received malformed XML from server for " + artistName);
+				}
+				catch (Exception e)
+				{
+					logger.Error("Exception parsing musicbrainz response for " + artistName + ", " + e);
 				}
 			}
 			// On timeout, report an error, but continue looping
