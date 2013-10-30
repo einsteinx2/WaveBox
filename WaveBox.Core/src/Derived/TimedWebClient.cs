@@ -10,7 +10,7 @@ namespace WaveBox.Core.Derived
 {
 	public class TimedWebClient : WebClient
 	{
-		private int timeout;
+		protected int timeout;
 
 		// Used to perform a web request with a timeout in milliseconds
 		public TimedWebClient(int timeout)
