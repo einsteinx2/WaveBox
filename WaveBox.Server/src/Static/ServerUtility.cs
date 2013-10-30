@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -19,7 +20,33 @@ namespace WaveBox
 		// Adapted from here: http://mono.1490590.n4.nabble.com/Howto-detect-os-td1549244.html
 		[DllImport("libc")]
 		static extern int uname(IntPtr buf);
-		public enum OS {Windows, MacOSX, Linux, BSD, Solaris, Unix, unknown};
+
+		// Enumerations for operating system
+		public enum OS
+		{
+			[Description("Windows")]
+			Windows,
+			[Description("Mac OS X")]
+			MacOSX,
+			[Description("Linux")]
+			Linux,
+			[Description("BSD")]
+			BSD,
+			[Description("Solaris")]
+			Solaris,
+			[Description("Unix")]
+			Unix,
+			[Description("Unknown")]
+			Unknown,
+		}
+
+		// Retrieve string description from OS enumeration
+		// Thanks: http://stackoverflow.com/questions/424366/c-sharp-string-enums
+		public static string ToDescription(this Enum value)
+		{
+			var da = (DescriptionAttribute[])(value.GetType().GetField(value.ToString())).GetCustomAttributes(typeof(DescriptionAttribute), false);
+			return da.Length > 0 ? da[0].Description : value.ToString();
+		}
 
 		/// <summary>
 		/// DetectOS uses a couple different tricks to detect if we are running on Windows, Mac OSX, or Unix.
@@ -66,7 +93,7 @@ namespace WaveBox
 			}
 
 			// If no matching cases, OS is unknown
-			return OS.unknown;
+			return OS.Unknown;
 		}
 
 		/// <summary>

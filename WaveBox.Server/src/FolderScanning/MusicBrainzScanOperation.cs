@@ -110,22 +110,8 @@ namespace WaveBox.FolderScanning
 				// Set query address
 				string address = "http://musicbrainz.herpderp.me:5000/ws/2/artist?query=\"" + System.Web.HttpUtility.UrlEncode(artistName) + "\"";
 
-				// Set web client default timeout in milliseconds
-				int timeout = 5000;
-
 				// Capture XML response
-				string responseXML = null;
-
-				// SUPER HACK: Linux WebRequest libraries are really bad, so call curl to speed things up
-				if (WaveBoxService.Platform == "Linux")
-				{
-					responseXML = new LinuxWebClient(timeout).DownloadString(address);
-				}
-				else
-				{
-					// All other operating systems, use TimedWebClient
-					responseXML = new TimedWebClient(timeout).DownloadString(address);
-				}
+				string responseXML = Injection.Kernel.Get<IWebClient>().DownloadString(address);
 
 				try
 				{
