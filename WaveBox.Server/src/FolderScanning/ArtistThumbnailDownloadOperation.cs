@@ -103,43 +103,34 @@ namespace WaveBox.FolderScanning
 			{
 				try
 				{
-					// Allow WaveBox fan art proxy up to 15 seconds to respond for each ID in set
-					using (TimedWebClient client = new TimedWebClient(15000))
+					// Set query address and art download path
+					string address = "http://fanart1.waveboxapp.com:8000?action=art&type=artist&preview=1&id=" + musicBrainzId;
+					string path = this.ArtPathForMusicBrainzId(musicBrainzId);
+
+					// Set web client default timeout in milliseconds
+					int timeout = 5000;
+
+					// SUPER HACK: Linux WebRequest libraries are really bad, so call curl to speed things up
+					if (WaveBoxService.Platform == "Linux")
 					{
-						string address = "http://fanart1.waveboxapp.com:8000?action=art&type=artist&preview=1&id=" + musicBrainzId;
-						string path = this.ArtPathForMusicBrainzId(musicBrainzId);
+						new LinuxWebClient(timeout).DownloadFile(address, path);
+					}
+					else
+					{
+						// All other operating systems, use TimedWebClient
+						new TimedWebClient(timeout).DownloadFile(address, path);
+					}
 
-						// SUPER HACK: Linux WebRequest libraries are really bad, so call curl to speed things up
-						if (WaveBoxService.Platform == "Linux")
-						{
-							using (Process curl = new Process())
-							{
-								curl.StartInfo.FileName = "curl";
-								curl.StartInfo.Arguments = "-o " + path + " '" + address + "'";
-								curl.StartInfo.UseShellExecute = false;
-								curl.StartInfo.RedirectStandardOutput = true;
-								curl.StartInfo.RedirectStandardError = true;
-								curl.Start();
-								curl.WaitForExit();
-							}
-						}
-						else
-						{
-							// All other operating systems, use WebClient
-							client.DownloadFile(address, path);
-						}
-
-						// Make sure the file has contents, otherwise delete it
-						FileInfo info = new FileInfo(path);
-						if (info.Exists && info.Length == 0)
-						{
-							File.Delete(path);
-						}
-						else
-						{
-							logger.IfInfo("Downloaded art for " + musicBrainzId);
-							downloadCount++;
-						}
+					// Make sure the file has contents, otherwise delete it
+					FileInfo info = new FileInfo(path);
+					if (info.Exists && info.Length == 0)
+					{
+						File.Delete(path);
+					}
+					else
+					{
+						logger.IfInfo("Downloaded art for " + musicBrainzId);
+						downloadCount++;
 					}
 				}
 				// On timeout, report an error, but continue looping
