@@ -113,20 +113,20 @@ namespace WaveBox.FolderScanning
 					string address = "http://musicbrainz.herpderp.me:5000/ws/2/artist?query=\"" + System.Web.HttpUtility.UrlEncode(artistName) + "\"";
 					string responseXML = null;
 
-					// SUPER HACK: Linux WebRequest libraries are really bad, so call wget to speed things up
+					// SUPER HACK: Linux WebRequest libraries are really bad, so call curl to speed things up
 					if (WaveBoxService.Platform == "Linux")
 					{
-						using (Process wget = new Process())
+						using (Process curl = new Process())
 						{
-							wget.StartInfo.FileName = "wget";
-							wget.StartInfo.Arguments = "-O - '" + address + "'";
-							wget.StartInfo.UseShellExecute = false;
-							wget.StartInfo.RedirectStandardOutput = true;
-							wget.StartInfo.RedirectStandardError = true;
-							wget.Start();
+							curl.StartInfo.FileName = "curl";
+							curl.StartInfo.Arguments = "'" + address + "'";
+							curl.StartInfo.UseShellExecute = false;
+							curl.StartInfo.RedirectStandardOutput = true;
+							curl.StartInfo.RedirectStandardError = true;
+							curl.Start();
 
-							responseXML = wget.StandardOutput.ReadToEnd();
-							wget.WaitForExit();
+							responseXML = curl.StandardOutput.ReadToEnd();
+							curl.WaitForExit();
 						}
 					}
 					else
