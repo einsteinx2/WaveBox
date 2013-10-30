@@ -158,10 +158,9 @@ namespace WaveBox.FolderScanning
 				}
 			}
 			// On timeout, report an error, but continue looping
-			catch (WebException e)
+			catch (WebException)
 			{
 				logger.Error("Request timed out for " + artistName);
-				logger.Error(e);
 			}
 			catch (Exception e)
 			{
