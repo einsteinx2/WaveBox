@@ -107,19 +107,8 @@ namespace WaveBox.FolderScanning
 					string address = "http://fanart1.waveboxapp.com:8000?action=art&type=artist&preview=1&id=" + musicBrainzId;
 					string path = this.ArtPathForMusicBrainzId(musicBrainzId);
 
-					// Set web client default timeout in milliseconds
-					int timeout = 5000;
-
-					// SUPER HACK: Linux WebRequest libraries are really bad, so call curl to speed things up
-					if (WaveBoxService.Platform == "Linux")
-					{
-						new LinuxWebClient(timeout).DownloadFile(address, path);
-					}
-					else
-					{
-						// All other operating systems, use TimedWebClient
-						new TimedWebClient(timeout).DownloadFile(address, path);
-					}
+					// Download file to specified path
+					Injection.Kernel.Get<IWebClient>().DownloadFile(address, path);
 
 					// Make sure the file has contents, otherwise delete it
 					FileInfo info = new FileInfo(path);

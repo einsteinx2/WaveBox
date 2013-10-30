@@ -82,7 +82,7 @@ namespace WaveBox.ApiHandler.Handlers
 				// Get build date
 				status["buildDate"] = WaveBoxService.BuildDate.ToString("MMMM dd, yyyy");
 				// Get host platform
-				status["platform"] = WaveBoxService.Platform;
+				status["platform"] = WaveBoxService.OS.ToDescription();
 				// Get current CPU usage
 				status["cpuPercent"] = CpuUsage();
 				// Get current memory usage in MB

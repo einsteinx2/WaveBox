@@ -8,7 +8,7 @@ using System.Web;
 
 namespace WaveBox.Core.Derived
 {
-	public class TimedWebClient : WebClient
+	public class TimedWebClient : WebClient, IWebClient
 	{
 		protected int timeout;
 

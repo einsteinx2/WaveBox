@@ -11,14 +11,15 @@ using System.Web;
 using Mono.Unix.Native;
 using Mono.Unix;
 using Ninject;
+using WaveBox.Core;
+using WaveBox.Core.Derived;
 using WaveBox.Core.Extensions;
+using WaveBox.Core.Model;
 using WaveBox.Server;
 using WaveBox.Server.Extensions;
 using WaveBox.Service;
 using WaveBox.Static;
 using WaveBox.Transcoding;
-using WaveBox.Core.Model;
-using WaveBox.Core;
 
 namespace WaveBox
 {
@@ -31,8 +32,8 @@ namespace WaveBox
 		public static string TempFolder = Path.GetTempPath() + "wavebox";
 
 		// Gather metrics about WaveBox instance
-		// Operating system platform
-		public static string Platform { get; set; }
+		// Operating system enumeration
+		public static ServerUtility.OS OS { get; set; }
 		// Current version of WaveBox, from assembly
 		public static string BuildVersion { get; set; }
 		// DateTime object containing the build date of WaveBox (for versioning, status metric)
@@ -56,34 +57,13 @@ namespace WaveBox
 				this.ServiceName = "WaveBox";
 
 				// Register shutdown handlers for Unix or Windows
-				RegisterShutdownHandler();
+				this.RegisterShutdownHandler();
 
-				// Gather some metrics about this instance of WaveBox
-				// Operating system detection
-				switch (ServerUtility.DetectOS())
-				{
-					case ServerUtility.OS.Windows:
-						Platform = "Windows";
-						break;
-					case ServerUtility.OS.MacOSX:
-						Platform = "Mac OS X";
-						break;
-					case ServerUtility.OS.Linux:
-						Platform = "Linux";
-						break;
-					case ServerUtility.OS.BSD:
-						Platform = "BSD";
-						break;
-					case ServerUtility.OS.Solaris:
-						Platform = "Solaris";
-						break;
-					case ServerUtility.OS.Unix:
-						Platform = "Unix";
-						break;
-					default:
-						Platform = "unknown";
-						break;
-				}
+				// Detect operating system
+				OS = ServerUtility.DetectOS();
+
+				// Now that platform is detected, inject platform-specific classes
+				InjectPlatformSpecificClasses();
 
 				// Store version
 				var assembly = Assembly.GetExecutingAssembly().GetName();
@@ -129,6 +109,21 @@ namespace WaveBox
 
 			// Load Server
 			Injection.Kernel.Load(new ServerModule());
+		}
+
+		private static void InjectPlatformSpecificClasses()
+		{
+			// IWebClient - used to download strings and files using HTTP
+			// Linux WebRequest libraries are really bad, so we have our own implementation which calls curl
+			if (OS == ServerUtility.OS.Linux)
+			{
+				Injection.Kernel.Bind<IWebClient>().To<LinuxWebClient>().InSingletonScope().WithConstructorArgument("timeout", 5000);
+			}
+			else
+			{
+				// All other operating systems use derived TimedWebClient
+				Injection.Kernel.Bind<IWebClient>().To<TimedWebClient>().InSingletonScope().WithConstructorArgument("timeout", 5000);
+			}
 		}
 
 		/// <summary>

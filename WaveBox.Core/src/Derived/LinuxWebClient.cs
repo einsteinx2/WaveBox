@@ -6,7 +6,7 @@ using System.Web;
 
 namespace WaveBox.Core.Derived
 {
-	public class LinuxWebClient : TimedWebClient
+	public class LinuxWebClient : TimedWebClient, IWebClient
 	{
 		// Set timeout using base constructor
 		public LinuxWebClient(int timeout) : base(timeout)
