@@ -18,6 +18,7 @@ using WaveBox.Core.Model;
 using WaveBox.Server;
 using WaveBox.Server.Extensions;
 using WaveBox.Service;
+using WaveBox.Service.Services.FileManager;
 using WaveBox.Static;
 using WaveBox.Transcoding;
 
@@ -128,6 +129,18 @@ namespace WaveBox
 			{
 				// All other operating systems use derived TimedWebClient
 				Injection.Kernel.Bind<IWebClient>().To<TimedWebClient>().InSingletonScope().WithConstructorArgument("timeout", timeout);
+			}
+
+			// IFileManager - used to scan and keep track of file changes
+
+			// Mac OSX has a better filesystem watching facility called FSEvents, so we make use of that here
+			if (OS == ServerUtility.OS.MacOSX)
+			{
+				Injection.Kernel.Bind<IFileManager>().To<MacOSXFileManager>().InSingletonScope();
+			}
+			else
+			{
+				Injection.Kernel.Bind<IFileManager>().To<FileManager>().InSingletonScope();
 			}
 		}
 
