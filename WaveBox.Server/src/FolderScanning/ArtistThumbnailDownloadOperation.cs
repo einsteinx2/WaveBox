@@ -108,7 +108,26 @@ namespace WaveBox.FolderScanning
 					{
 						string address = "http://fanart1.waveboxapp.com:8000?action=art&type=artist&preview=1&id=" + musicBrainzId;
 						string path = this.ArtPathForMusicBrainzId(musicBrainzId);
-						client.DownloadFile(address, path);
+
+						// SUPER HACK: Linux WebRequest libraries are really bad, so call curl to speed things up
+						if (WaveBoxService.Platform == "Linux")
+						{
+							using (Process curl = new Process())
+							{
+								curl.StartInfo.FileName = "curl";
+								curl.StartInfo.Arguments = "-o " + path + " '" + address + "'";
+								curl.StartInfo.UseShellExecute = false;
+								curl.StartInfo.RedirectStandardOutput = true;
+								curl.StartInfo.RedirectStandardError = true;
+								curl.Start();
+								curl.WaitForExit();
+							}
+						}
+						else
+						{
+							// All other operating systems, use WebClient
+							client.DownloadFile(address, path);
+						}
 
 						// Make sure the file has contents, otherwise delete it
 						FileInfo info = new FileInfo(path);
