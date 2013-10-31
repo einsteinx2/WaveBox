@@ -182,6 +182,10 @@
     <Compile Include="src\Service\Services\DeviceSync\RawConnection.cs" />
     <Compile Include="src\Service\Services\DynamicDnsService.cs" />
     <Compile Include="src\Service\Services\FileManagerService.cs" />
+    <Compile Include="src\Service\Services\FileManager\Abstract\AbstractFileManager.cs" />
+    <Compile Include="src\Service\Services\FileManager\Interfaces\IFileManager.cs" />
+    <Compile Include="src\Service\Services\FileManager\FileManager.cs" />
+    <Compile Include="src\Service\Services\FileManager\MacOSXFileManager.cs" />
     <Compile Include="src\Service\Services\HttpService.cs" />
     <Compile Include="src\Service\Services\Http\HttpHeader.cs" />
     <Compile Include="src\Service\Services\Http\HttpProcessor.cs" />
