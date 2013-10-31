@@ -122,12 +122,12 @@ namespace WaveBox
 			// Linux WebRequest libraries are really bad, so we have our own implementation which calls curl
 			if (OS == ServerUtility.OS.Linux)
 			{
-				Injection.Kernel.Bind<IWebClient>().To<LinuxWebClient>().InSingletonScope().WithConstructorArgument("timeout", timeout);
+				Injection.Kernel.Bind<IWebClient>().To<LinuxWebClient>().WithConstructorArgument("timeout", timeout);
 			}
 			else
 			{
 				// All other operating systems use derived TimedWebClient
-				Injection.Kernel.Bind<IWebClient>().To<TimedWebClient>().InSingletonScope().WithConstructorArgument("timeout", timeout);
+				Injection.Kernel.Bind<IWebClient>().To<TimedWebClient>().WithConstructorArgument("timeout", timeout);
 			}
 		}
 
