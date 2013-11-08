@@ -291,8 +291,6 @@ namespace WaveBox.FolderScanning
 								Injection.Kernel.Get<IArtRepository>().UpdateArtItemRelationship(newArtId, m.ItemId, false);
 							}
 						}
-
-						logger.IfInfo("Updating art for folderId: " + folderId);
 					}
 				}
 			}
@@ -516,6 +514,13 @@ namespace WaveBox.FolderScanning
 		private bool ArtFileNeedsUpdating(string filePath)
 		{
 			if (filePath == null)
+			{
+				return false;
+			}
+
+			// Verify file is one that we recognize as art
+			FileInfo file = new FileInfo(filePath);
+			if (!Injection.Kernel.Get<IServerSettings>().FolderArtNames.Contains(file.Name))
 			{
 				return false;
 			}
