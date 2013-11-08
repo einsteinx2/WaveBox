@@ -31,8 +31,13 @@ namespace WaveBox.Core.Derived
 				response = curl.StandardOutput.ReadToEnd();
 				curl.WaitForExit();
 
-				// Exit code 28 indicates timeout, so throw exception
-				if (curl.ExitCode == 28)
+				// Exit code 7 indicates a failure to connect
+				if (curl.ExitCode == 7)
+				{
+					throw new WebException("LinuxWebClient failed to connect");
+				}
+				// Exit code 28 indicates timeout
+				else if (curl.ExitCode == 28)
 				{
 					throw new WebException("LinuxWebClient timed out");
 				}
