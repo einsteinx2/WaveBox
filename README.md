@@ -17,8 +17,9 @@ Though WaveBox is currently under heavy development, several clients and librari
 
 1. [WaveBoxWebClient](https://github.com/einsteinx2/WaveBoxWebClient) - The official HTML5 web client for WaveBox.  GPL3 licensed.
 2. [php-wavebox](https://github.com/mdlayher/php-wavebox) - A PHP 5.4+ WaveBox API client library. MIT licensed.
+2. [rb-wavebox](https://github.com/mdlayher/rb-wavebox) - A Ruby WaveBox API client library. MIT licensed.
 
-Get in touch
-------------
+IRC
+---
 
-Come talk to us on IRC on the FreeNode network in #wavebox
+Have questions about the project, or want to help out?  Come talk to us on [irc.freenode.net at #wavebox](irc://irc.freenode.net/wavebox)!
