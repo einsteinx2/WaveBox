@@ -69,8 +69,6 @@
     <Compile Include="src\ApiResponse\LogoutResponse.cs" />
     <Compile Include="src\ApiResponse\NowPlayingResponse.cs" />
     <Compile Include="src\ApiResponse\PlaylistsResponse.cs" />
-    <Compile Include="src\ApiResponse\PodcastActionResponse.cs" />
-    <Compile Include="src\ApiResponse\PodcastContentResponse.cs" />
     <Compile Include="src\ApiResponse\ScrobbleResponse.cs" />
     <Compile Include="src\ApiResponse\SearchResponse.cs" />
     <Compile Include="src\ApiResponse\SettingsResponse.cs" />
@@ -107,14 +105,11 @@
     <Compile Include="src\Model\Genre.cs" />
     <Compile Include="src\Model\Interfaces\IItem.cs" />
     <Compile Include="src\Model\Interfaces\IMediaItem.cs" />
-    <Compile Include="src\Model\Interfaces\IPodcastShim.cs" />
     <Compile Include="src\Model\ItemType.cs" />
     <Compile Include="src\Model\MediaItem.cs" />
     <Compile Include="src\Model\NowPlaying.cs" />
     <Compile Include="src\Model\Playlist.cs" />
     <Compile Include="src\Model\PlaylistItem.cs" />
-    <Compile Include="src\Model\Podcast.cs" />
-    <Compile Include="src\Model\PodcastEpisode.cs" />
     <Compile Include="src\Model\QueryLog.cs" />
     <Compile Include="src\Model\Role.cs" />
     <Compile Include="src\Model\ServerSettingsData.cs" />
