@@ -136,12 +136,10 @@
     <Compile Include="src\ApiHandler\Handlers\FavoritesApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\FoldersApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\GenresApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\JukeboxApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\LoginApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\LogoutApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\NowPlayingApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\PlaylistsApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\PodcastsApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\ScrobbleApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\SearchApiHandler.cs" />
     <Compile Include="src\ApiHandler\Handlers\SettingsApiHandler.cs" />
@@ -166,21 +164,14 @@
     <Compile Include="src\Injection\Interfaces\IApiHandlerFactory.cs" />
     <Compile Include="src\Injection\ServerModule.cs" />
     <Compile Include="src\Lastfm.cs" />
-    <Compile Include="src\PodcastManagement\PodcastShim.cs" />
     <Compile Include="src\Service\IService.cs" />
     <Compile Include="src\Service\ServiceFactory.cs" />
     <Compile Include="src\Service\ServiceManager.cs" />
-    <Compile Include="src\Service\Services\AutoUpdateService.cs" />
     <Compile Include="src\Service\Services\CronService.cs" />
     <Compile Include="src\Service\Services\Cron\DownloadQueue.cs" />
     <Compile Include="src\Service\Services\Cron\FeedCheckOperation.cs" />
     <Compile Include="src\Service\Services\Cron\UserPurge.cs" />
     <Compile Include="src\Service\Services\Cron\UserPurgeOperation.cs" />
-    <Compile Include="src\Service\Services\DeviceSyncService.cs" />
-    <Compile Include="src\Service\Services\DeviceSync\DeviceSyncHub.cs" />
-    <Compile Include="src\Service\Services\DeviceSync\DeviceSyncStartup.cs" />
-    <Compile Include="src\Service\Services\DeviceSync\RawConnection.cs" />
-    <Compile Include="src\Service\Services\DynamicDnsService.cs" />
     <Compile Include="src\Service\Services\FileManagerService.cs" />
     <Compile Include="src\Service\Services\FileManager\Abstract\AbstractFileManager.cs" />
     <Compile Include="src\Service\Services\FileManager\Interfaces\IFileManager.cs" />
@@ -191,7 +182,6 @@
     <Compile Include="src\Service\Services\Http\HttpProcessor.cs" />
     <Compile Include="src\Service\Services\Http\HttpProcessorPrivate.cs" />
     <Compile Include="src\Service\Services\Http\IHttpProcessor.cs" />
-    <Compile Include="src\Service\Services\JukeboxService.cs" />
     <Compile Include="src\Service\Services\NatService.cs" />
     <Compile Include="src\Service\Services\NowPlayingService.cs" />
     <Compile Include="src\Service\Services\TranscodeService.cs" />
@@ -326,7 +316,6 @@
   <ItemGroup>
     <Folder Include="src\Static\" />
     <Folder Include="src\Extensions\" />
-    <Folder Include="src\PodcastManagement\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WaveBox.Core\WaveBox.Core.csproj">
