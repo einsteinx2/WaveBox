@@ -10,20 +10,11 @@
 	// Choose the port for WaveBox to listen on. If choosing a port under 1024, WaveBox will need to be run as root.
 	"port": {setting-port},
 
-	// Choose the port for WaveBox's WebSockets interface to listen on.
-	"wsPort": {setting-wsPort},
-
 	// Choose the default theme for WaveBox's built-in Web UI.
 	"theme": "{setting-theme}",
 
 	// Define your media folders here.  They are comma-delimited between the brackets, e.g. ["path1", "path2"]
 	"mediaFolders": [{setting-mediaFolders}],
-
-	// Define where WaveBox will store podcasts it downloads from the feeds you provide.
-	"podcastFolder": "{setting-podcastFolder}",
-
-	// Defines how often WaveBox will check for new podcasts (in minutes).
-	"podcastCheckInterval": {setting-podcastCheckInterval},
 
 	// Defines how long a session may remain idle before being purged by the session scrubber (in minutes).
 	"sessionTimeout": {setting-sessionTimeout},
@@ -41,18 +32,6 @@
 
 	// Defines which auxiliary services WaveBox will start on launch. Adding a '!' prefix will disable service.
 	"services": [
-		// autoupdate - Enables WaveBox to automatically check for updates.
-		"{setting-services-autoupdate}",
-
-		// devicesync - Enables sync of WaveBox state between devices.
-		"{setting-services-devicesync}",
-
-		// dynamicdns - Enables easy access to WaveBox through a predefined address.
-		"{setting-services-dynamicdns}",
-
-		// jukebox - Enables music to be played over the server's audio device.
-		"{setting-services-jukebox}",
-
 		// nat - Enables NAT for UPnP/NAT-PMP and automatic router port forwarding.
 		"{setting-services-nat}",
 

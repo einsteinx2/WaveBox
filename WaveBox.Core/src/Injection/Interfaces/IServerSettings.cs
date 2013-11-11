@@ -16,15 +16,9 @@ namespace WaveBox.Core
 
 		short Port { get; }
 
-		short WsPort { get; }
-
 		string Theme { get; }
 
 		IList<string> MediaFolders { get; }
-
-		string PodcastFolder { get; }
-
-		int PodcastCheckInterval { get; }
 
 		int SessionTimeout { get; }
 

@@ -29,10 +29,6 @@ namespace WaveBox.Service.Services
 			// run a unified timer and spin each of these off as needed
 			logger.IfInfo("Scheduling and starting all cronjobs...");
 
-			// Start podcast download queue
-			DownloadQueue.FeedChecks.queueOperation(new FeedCheckOperation(0));
-			DownloadQueue.FeedChecks.startQueue();
-
 			// Start user and session purge operation
 			UserPurge.Queue.queueOperation(new UserPurgeOperation(0));
 			UserPurge.Queue.startQueue();
@@ -45,7 +41,6 @@ namespace WaveBox.Service.Services
 		public bool Stop()
 		{
 			// Stop all queues
-			DownloadQueue.FeedChecks = null;
 			UserPurge.Queue = null;
 
 			return true;

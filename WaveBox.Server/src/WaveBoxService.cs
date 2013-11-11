@@ -106,7 +106,6 @@ namespace WaveBox
 			// Core
 			Injection.Kernel.Bind<IDatabase>().To<Database>().InSingletonScope();
 			Injection.Kernel.Bind<IServerSettings>().To<ServerSettings>().InSingletonScope();
-			Injection.Kernel.Bind<IPodcastShim>().To<PodcastShim>().InSingletonScope();
 
 			// Load Server
 			Injection.Kernel.Load(new ServerModule());

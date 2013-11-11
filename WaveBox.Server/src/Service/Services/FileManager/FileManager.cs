@@ -59,11 +59,15 @@ namespace WaveBox.Service.Services.FileManager
 				}
 			}
 
+			/*
+			// Disabled until new web services in place - MDL, 11/11/13
+
 			// Queue the musicbrainz scan after the folder scan
 			this.scanQueue.queueOperation(new MusicBrainzScanOperation(0));
 
 			// Queue the artist thumbnail downloader
 			this.scanQueue.queueOperation(new ArtistThumbnailDownloadOperation(0));
+			*/
 
 			// Report if no media folders in configuration
 			if (mediaFolders.Count == 0)

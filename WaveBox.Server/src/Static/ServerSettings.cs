@@ -30,15 +30,9 @@ namespace WaveBox.Static
 
 		public short Port { get { return settingsModel.Port; } }
 
-		public short WsPort { get { return settingsModel.WsPort; } }
-
 		public string Theme { get { return settingsModel.Theme; } }
 
 		public IList<String> MediaFolders { get { return settingsModel.MediaFolders; } }
-
-		public string PodcastFolder { get { return settingsModel.PodcastFolder; } }
-
-		public int PodcastCheckInterval { get { return settingsModel.PodcastCheckInterval; } }
 
 		public int SessionTimeout { get { return settingsModel.SessionTimeout; } }
 
@@ -110,18 +104,6 @@ namespace WaveBox.Static
 
 			try
 			{
-				short? wsPort = json.wsPort;
-				if (wsPort != null)
-				{
-					settingsModel.WsPort = (short)wsPort;
-					settingsChanged = true;
-					logger.IfInfo("Setting 'wsPort': " + settingsModel.WsPort);
-				}
-			}
-			catch { }
-
-			try
-			{
 				string themeTemp = json.theme;
 				if (themeTemp != null)
 				{
@@ -151,36 +133,12 @@ namespace WaveBox.Static
 
 			try
 			{
-				string podcastFolderTemp = json.podcastFolder;
-				if (podcastFolderTemp != null)
-				{
-					settingsModel.PodcastFolder = podcastFolderTemp;
-					settingsChanged = true;
-					logger.IfInfo("Setting 'podcastFolder': " + settingsModel.PodcastFolder);
-				}
-			}
-			catch { }
-
-			try
-			{
 				bool? prettyJsonTemp = json.prettyJson;
 				if (prettyJsonTemp != null)
 				{
 					settingsModel.PrettyJson = (bool)prettyJsonTemp;
 					settingsChanged = true;
 					logger.IfInfo("Setting 'prettyJson': " + settingsModel.PrettyJson);
-				}
-			}
-			catch { }
-
-			try
-			{
-				int? podcastCheckIntervalTemp = json.podcastCheckInterval;
-				if (podcastCheckIntervalTemp != null)
-				{
-					settingsModel.PodcastCheckInterval = (int)podcastCheckIntervalTemp;
-					settingsChanged = true;
-					logger.IfInfo("Setting 'podcastCheckInterval': " + settingsModel.PodcastCheckInterval);
 				}
 			}
 			catch { }
@@ -291,11 +249,8 @@ namespace WaveBox.Static
 			{
 				templateBuilder
 					.Replace("{setting-port}", settingsModel.Port.ToString())
-					.Replace("{setting-wsPort}", settingsModel.WsPort.ToString())
 					.Replace("{setting-theme}", settingsModel.Theme)
 					.Replace("{setting-mediaFolders}", settingsModel.MediaFolders.ToCSV(true))
-					.Replace("{setting-podcastFolder}", settingsModel.PodcastFolder)
-					.Replace("{setting-podcastCheckInterval}", settingsModel.PodcastCheckInterval.ToString())
 					.Replace("{setting-sessionTimeout}", settingsModel.SessionTimeout.ToString())
 					.Replace("{setting-prettyJson}", settingsModel.PrettyJson.ToString().ToLower())
 					.Replace("{setting-folderArtNames}", settingsModel.FolderArtNames.ToCSV(true))
@@ -303,7 +258,7 @@ namespace WaveBox.Static
 					.Replace("{setting-crashReportEnable}", settingsModel.CrashReportEnable.ToString().ToLower());
 
 				// For services, only enable them if specified in JSON. Disable otherwise
-				List<string> services = new List<string>{"autoupdate", "devicesync", "dynamicdns", "jukebox", "nat", "nowplaying", "zeroconf"};
+				List<string> services = new List<string>{"nat", "nowplaying", "zeroconf"};
 				foreach (string s in services)
 				{
 					if (settingsModel.Services.Contains(s))
