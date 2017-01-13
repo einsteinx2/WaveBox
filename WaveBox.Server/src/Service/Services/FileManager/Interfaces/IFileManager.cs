@@ -15,20 +15,18 @@ using WaveBox.Service;
 using WaveBox.Static;
 using WaveBox.Core.Model.Repository;
 
-namespace WaveBox.Service.Services.FileManager
-{
-	public interface IFileManager
-	{
-		bool Start();
-		bool Stop();
+namespace WaveBox.Service.Services.FileManager {
+    public interface IFileManager {
+        bool Start();
+        bool Stop();
 
-		void OnChanged(object source, FileSystemEventArgs e);
-		void OnCreated(object source, FileSystemEventArgs e);
-		void OnDeleted(object source, FileSystemEventArgs e);
-		void OnRenamed(object source, RenamedEventArgs e);
+        void OnChanged(object source, FileSystemEventArgs e);
+        void OnCreated(object source, FileSystemEventArgs e);
+        void OnDeleted(object source, FileSystemEventArgs e);
+        void OnRenamed(object source, RenamedEventArgs e);
 
-		void ItemCreated(string fullPath);
-		void ItemDeleted();
-		void ItemRenamed(string fullPath);
-	}
+        void ItemCreated(string fullPath);
+        void ItemDeleted();
+        void ItemRenamed(string fullPath);
+    }
 }

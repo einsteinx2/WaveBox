@@ -10,29 +10,25 @@ using Ninject;
 using WaveBox.Core.Model;
 using WaveBox.Core.Static;
 
-namespace WaveBox.Core.Model
-{
-	public enum StatType
-	{
-		PLAYED = 0,
-		Unknown = 2147483647 // Int32.MaxValue used for database compatibility
-	}
+namespace WaveBox.Core.Model {
+    public enum StatType {
+        PLAYED = 0,
+        Unknown = 2147483647 // Int32.MaxValue used for database compatibility
+    }
 
-	public class Stat
-	{
-		[PrimaryKey]
-		public int? StatId { get; set; }
+    public class Stat {
+        [PrimaryKey]
+        public int? StatId { get; set; }
 
-		public StatType? StatType { get; set; }
+        public StatType? StatType { get; set; }
 
-		public int? ItemId { get; set; }
+        public int? ItemId { get; set; }
 
-		public long? Timestamp { get; set; }
+        public long? Timestamp { get; set; }
 
-		public override string ToString()
-		{
-			return String.Format("[Stat: ItemId={0}, StatId={1}, StatType={2}]", this.ItemId, this.StatId, this.StatType);
-		}
-	}
+        public override string ToString() {
+            return String.Format("[Stat: ItemId={0}, StatId={1}, StatType={2}]", this.ItemId, this.StatId, this.StatType);
+        }
+    }
 }
 

@@ -6,117 +6,97 @@ using System.Text;
 using System.Threading;
 using WaveBox.Core.Extensions;
 
-namespace WaveBox.Core.OperationQueue
-{
-	public abstract class AbstractOperation : IDelayedOperation
-	{
-		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+namespace WaveBox.Core.OperationQueue {
+    public abstract class AbstractOperation : IDelayedOperation {
+        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public bool IsReady { get { return DateTime.UtcNow.CompareTo(RunDateTime) >= 0; } }
+        public bool IsReady { get { return DateTime.UtcNow.CompareTo(RunDateTime) >= 0; } }
 
-		public abstract string OperationType { get; }
+        public abstract string OperationType { get; }
 
-		private DelayedOperationState state = DelayedOperationState.None;
-		public DelayedOperationState State { get { return state; } }
+        private DelayedOperationState state = DelayedOperationState.None;
+        public DelayedOperationState State { get { return state; } }
 
-		public DateTime RunDateTime { get; set; }
+        public DateTime RunDateTime { get; set; }
 
-		private int delayMillis;
+        private int delayMillis;
 
-		protected bool isRestart = false;
+        protected bool isRestart = false;
 
-		public AbstractOperation(int delayMilliSeconds)
-		{
-			state = DelayedOperationState.Queued;
+        public AbstractOperation(int delayMilliSeconds) {
+            state = DelayedOperationState.Queued;
 
-			delayMillis = delayMilliSeconds;
-			ResetRunDateTime();
-		}
+            delayMillis = delayMilliSeconds;
+            ResetRunDateTime();
+        }
 
-		private void ResetRunDateTime()
-		{
-			RunDateTime = DateTime.UtcNow;
-			RunDateTime = RunDateTime.AddMilliseconds(delayMillis);
-		}
+        private void ResetRunDateTime() {
+            RunDateTime = DateTime.UtcNow;
+            RunDateTime = RunDateTime.AddMilliseconds(delayMillis);
+        }
 
-		public void Run()
-		{
-			state = DelayedOperationState.Running;
+        public void Run() {
+            state = DelayedOperationState.Running;
 
-			do
-			{
-				isRestart = false;
-				Start();
-			}
-			while (isRestart);
+            do {
+                isRestart = false;
+                Start();
+            } while (isRestart);
 
-			state = DelayedOperationState.Completed;
-		}
+            state = DelayedOperationState.Completed;
+        }
 
-		public abstract void Start();
+        public abstract void Start();
 
-		public void Cancel()
-		{
-			state = DelayedOperationState.Canceled;
-		}
+        public void Cancel() {
+            state = DelayedOperationState.Canceled;
+        }
 
-		public void ExtendWaitOrRestart()
-		{
-			if (state == DelayedOperationState.Queued)
-			{
-				ResetWait();
-				logger.IfInfo("Extending wait period.");
-			}
-			else if (state == DelayedOperationState.Running)
-			{
-				Restart();
-			}
-		}
+        public void ExtendWaitOrRestart() {
+            if (state == DelayedOperationState.Queued) {
+                ResetWait();
+                logger.IfInfo("Extending wait period.");
+            } else if (state == DelayedOperationState.Running) {
+                Restart();
+            }
+        }
 
-		public void ResetWait()
-		{
-			ResetRunDateTime();
-		}
+        public void ResetWait() {
+            ResetRunDateTime();
+        }
 
-		public void Restart()
-		{
-			isRestart = true;
-		}
+        public void Restart() {
+            isRestart = true;
+        }
 
-		public override bool Equals(Object obj)
-		{
-			// If parameter is null return false.
-			if ((object)obj == null)
-			{
-				return false;
-			}
+        public override bool Equals(Object obj) {
+            // If parameter is null return false.
+            if ((object)obj == null) {
+                return false;
+            }
 
-			// If parameter cannot be cast to DelayedOperation return false.
-			AbstractOperation op = obj as AbstractOperation;
-			if ((object)op == null)
-			{
-				return false;
-			}
+            // If parameter cannot be cast to DelayedOperation return false.
+            AbstractOperation op = obj as AbstractOperation;
+            if ((object)op == null) {
+                return false;
+            }
 
-			// Return true if the fields match:
-			return Equals(op);
-		}
+            // Return true if the fields match:
+            return Equals(op);
+        }
 
-		public bool Equals(AbstractOperation op)
-		{
-			// If parameter is null return false:
-			if ((object)op == null)
-			{
-				return false;
-			}
+        public bool Equals(AbstractOperation op) {
+            // If parameter is null return false:
+            if ((object)op == null) {
+                return false;
+            }
 
-			// Return true if the operation types match:
-			return OperationType.Equals(op.OperationType);
-		}
+            // Return true if the operation types match:
+            return OperationType.Equals(op.OperationType);
+        }
 
-		public override int GetHashCode()
-		{
-			return OperationType.GetHashCode();
-		}
-	}
+        public override int GetHashCode() {
+            return OperationType.GetHashCode();
+        }
+    }
 }

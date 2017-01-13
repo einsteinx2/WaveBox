@@ -13,51 +13,44 @@ using WaveBox.Service.Services;
 using WaveBox.Service.Services.Http;
 using WaveBox.Static;
 
-namespace WaveBox.ApiHandler.Handlers
-{
-	class NowPlayingApiHandler : IApiHandler
-	{
-		public string Name { get { return "nowplaying"; } set { } }
+namespace WaveBox.ApiHandler.Handlers {
+    class NowPlayingApiHandler : IApiHandler {
+        public string Name { get { return "nowplaying"; } set { } }
 
-		// API handler is read-only, so no permissions checks needed
-		public bool CheckPermission(User user, string action)
-		{
-			return true;
-		}
+        // API handler is read-only, so no permissions checks needed
+        public bool CheckPermission(User user, string action) {
+            return true;
+        }
 
-		/// <summary>
-		/// Process returns a readonly list of now playing media items, filtered by optional parameters
-		/// </summary>
-		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
-		{
-			// Get NowPlayingService instance
-			NowPlayingService nowPlayingService = (NowPlayingService)ServiceManager.GetInstance("nowplaying");
+        /// <summary>
+        /// Process returns a readonly list of now playing media items, filtered by optional parameters
+        /// </summary>
+        public void Process(UriWrapper uri, IHttpProcessor processor, User user) {
+            // Get NowPlayingService instance
+            NowPlayingService nowPlayingService = (NowPlayingService)ServiceManager.GetInstance("nowplaying");
 
-			// Ensure service is running
-			if (nowPlayingService == null)
-			{
-				processor.WriteJson(new NowPlayingResponse("NowPlayingService is not running!", null));
-				return;
-			}
+            // Ensure service is running
+            if (nowPlayingService == null) {
+                processor.WriteJson(new NowPlayingResponse("NowPlayingService is not running!", null));
+                return;
+            }
 
-			// Store list of now playing objects
-			IList<NowPlaying> nowPlaying = nowPlayingService.Playing;
+            // Store list of now playing objects
+            IList<NowPlaying> nowPlaying = nowPlayingService.Playing;
 
-			// Filter by user name
-			if (uri.Parameters.ContainsKey("user"))
-			{
-				nowPlaying = nowPlaying.Where(x => x.User.UserName == uri.Parameters["user"]).ToList();
-			}
+            // Filter by user name
+            if (uri.Parameters.ContainsKey("user")) {
+                nowPlaying = nowPlaying.Where(x => x.User.UserName == uri.Parameters["user"]).ToList();
+            }
 
-			// Filter by client name
-			if (uri.Parameters.ContainsKey("client"))
-			{
-				nowPlaying = nowPlaying.Where(x => x.User.CurrentSession.ClientName == uri.Parameters["client"]).ToList();
-			}
+            // Filter by client name
+            if (uri.Parameters.ContainsKey("client")) {
+                nowPlaying = nowPlaying.Where(x => x.User.CurrentSession.ClientName == uri.Parameters["client"]).ToList();
+            }
 
-			// Return list of now playing items
-			processor.WriteJson(new NowPlayingResponse(null, nowPlaying));
-			return;
-		}
-	}
+            // Return list of now playing items
+            processor.WriteJson(new NowPlayingResponse(null, nowPlaying));
+            return;
+        }
+    }
 }

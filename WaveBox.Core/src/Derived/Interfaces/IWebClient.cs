@@ -6,12 +6,10 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Web;
 
-namespace WaveBox.Core.Derived
-{
-	public interface IWebClient
-	{
-		string DownloadString(string uri);
+namespace WaveBox.Core.Derived {
+    public interface IWebClient {
+        string DownloadString(string uri);
 
-		void DownloadFile(string address, string path);
-	}
+        void DownloadFile(string address, string path);
+    }
 }

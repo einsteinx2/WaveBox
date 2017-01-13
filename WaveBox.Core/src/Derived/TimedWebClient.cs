@@ -6,32 +6,28 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Web;
 
-namespace WaveBox.Core.Derived
-{
-	public class TimedWebClient : WebClient, IWebClient
-	{
-		protected int timeout;
+namespace WaveBox.Core.Derived {
+    public class TimedWebClient : WebClient, IWebClient {
+        protected int timeout;
 
-		// Used to perform a web request with a timeout in milliseconds
-		public TimedWebClient(int timeout)
-		{
-			this.timeout = timeout;
+        // Used to perform a web request with a timeout in milliseconds
+        public TimedWebClient(int timeout) {
+            this.timeout = timeout;
 
-			// Web request optimizations
-			ServicePointManager.DefaultConnectionLimit = 128;
-			ServicePointManager.Expect100Continue = false;
-		}
+            // Web request optimizations
+            ServicePointManager.DefaultConnectionLimit = 128;
+            ServicePointManager.Expect100Continue = false;
+        }
 
-		protected override WebRequest GetWebRequest(Uri uri)
-		{
-			WebRequest request = base.GetWebRequest(uri);
+        protected override WebRequest GetWebRequest(Uri uri) {
+            WebRequest request = base.GetWebRequest(uri);
 
-			// Disable proxy lookup
-			request.Proxy = null;
+            // Disable proxy lookup
+            request.Proxy = null;
 
-			// Set timeout
-			request.Timeout = this.timeout;
-			return request;
-		}
-	}
+            // Set timeout
+            request.Timeout = this.timeout;
+            return request;
+        }
+    }
 }

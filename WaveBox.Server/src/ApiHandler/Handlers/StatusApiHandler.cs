@@ -21,152 +21,139 @@ using WaveBox.Core.ApiResponse;
 using WaveBox.Core;
 using WaveBox.Core.Static;
 
-namespace WaveBox.ApiHandler.Handlers
-{
-	class StatusApiCache
-	{
-		public IDictionary<string, object> Cache = new Dictionary<string, object>();
+namespace WaveBox.ApiHandler.Handlers {
+    class StatusApiCache {
+        public IDictionary<string, object> Cache = new Dictionary<string, object>();
 
-		public long? LastQueryId { get; set; }
-	}
+        public long? LastQueryId { get; set; }
+    }
 
-	class StatusApiHandler : IApiHandler
-	{
-		private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+    class StatusApiHandler : IApiHandler {
+        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		public string Name { get { return "status"; } }
+        public string Name { get { return "status"; } }
 
-		// API handler is read-only, so no permissions checks needed
-		public bool CheckPermission(User user, string action)
-		{
-			return true;
-		}
+        // API handler is read-only, so no permissions checks needed
+        public bool CheckPermission(User user, string action) {
+            return true;
+        }
 
-		// Status API cache
-		private static StatusApiCache statusCache = new StatusApiCache();
-		public static StatusApiCache StatusCache { get { return statusCache; } }
+        // Status API cache
+        private static StatusApiCache statusCache = new StatusApiCache();
+        public static StatusApiCache StatusCache { get { return statusCache; } }
 
-		/// <summary>
-		/// Process is used to return a JSON object containing a variety of information about the host system
-		/// which is running the WaveBox server
-		/// </summary>
-		public void Process(UriWrapper uri, IHttpProcessor processor, User user)
-		{
-			try
-			{
-				// Allocate an array of various statistics about the running process
-				IDictionary<string, object> status = new Dictionary<string, object>();
+        /// <summary>
+        /// Process is used to return a JSON object containing a variety of information about the host system
+        /// which is running the WaveBox server
+        /// </summary>
+        public void Process(UriWrapper uri, IHttpProcessor processor, User user) {
+            try {
+                // Allocate an array of various statistics about the running process
+                IDictionary<string, object> status = new Dictionary<string, object>();
 
-				// Gather data about WaveBox process
-				global::System.Diagnostics.Process proc = global::System.Diagnostics.Process.GetCurrentProcess();
+                // Gather data about WaveBox process
+                global::System.Diagnostics.Process proc = global::System.Diagnostics.Process.GetCurrentProcess();
 
-				// Get current UNIX time
-				long unixTime = DateTime.UtcNow.ToUnixTime();
+                // Get current UNIX time
+                long unixTime = DateTime.UtcNow.ToUnixTime();
 
-				// Get current query log ID
-				long queryLogId = Injection.Kernel.Get<IDatabase>().LastQueryLogId;
+                // Get current query log ID
+                long queryLogId = Injection.Kernel.Get<IDatabase>().LastQueryLogId;
 
-				// Get process ID
-				status["pid"] = proc.Id;
-				// Get uptime of WaveBox instance
-				status["uptime"] = unixTime - WaveBoxService.StartTime.ToUnixTime();
-				// Get last update time in UNIX format for status
-				status["updated"] = unixTime;
-				// Get hostname of machine
-				status["hostname"] = System.Environment.MachineName;
-				// Get WaveBox version
-				status["version"] = WaveBoxService.BuildVersion;
-				// Get build date
-				status["buildDate"] = WaveBoxService.BuildDate.ToString("MMMM dd, yyyy");
-				// Get host platform
-				status["platform"] = WaveBoxService.OS.ToDescription();
-				// Get current CPU usage
-				status["cpuPercent"] = CpuUsage();
-				// Get current memory usage in MB
-				status["memoryMb"] = (float)proc.WorkingSet64 / 1024f / 1024f;
-				// Get peak memory usage in MB
-				status["peakMemoryMb"] = (float)proc.PeakWorkingSet64 / 1024f / 1024f;
-				// Get list of media types WaveBox can index and serve (removing "Unknown")
-				status["mediaTypes"] = Enum.GetNames(typeof(FileType)).Where(x => x != "Unknown").ToList();
-				// Get list of transcoders available
-				status["transcoders"] = Enum.GetNames(typeof(TranscodeType)).ToList();
-				// Get list of services
-				status["services"] = ServiceManager.GetServices();
-				// Get last query log ID
-				status["lastQueryLogId"] = queryLogId;
+                // Get process ID
+                status["pid"] = proc.Id;
+                // Get uptime of WaveBox instance
+                status["uptime"] = unixTime - WaveBoxService.StartTime.ToUnixTime();
+                // Get last update time in UNIX format for status
+                status["updated"] = unixTime;
+                // Get hostname of machine
+                status["hostname"] = System.Environment.MachineName;
+                // Get WaveBox version
+                status["version"] = WaveBoxService.BuildVersion;
+                // Get build date
+                status["buildDate"] = WaveBoxService.BuildDate.ToString("MMMM dd, yyyy");
+                // Get host platform
+                status["platform"] = WaveBoxService.OS.ToDescription();
+                // Get current CPU usage
+                status["cpuPercent"] = CpuUsage();
+                // Get current memory usage in MB
+                status["memoryMb"] = (float)proc.WorkingSet64 / 1024f / 1024f;
+                // Get peak memory usage in MB
+                status["peakMemoryMb"] = (float)proc.PeakWorkingSet64 / 1024f / 1024f;
+                // Get list of media types WaveBox can index and serve (removing "Unknown")
+                status["mediaTypes"] = Enum.GetNames(typeof(FileType)).Where(x => x != "Unknown").ToList();
+                // Get list of transcoders available
+                status["transcoders"] = Enum.GetNames(typeof(TranscodeType)).ToList();
+                // Get list of services
+                status["services"] = ServiceManager.GetServices();
+                // Get last query log ID
+                status["lastQueryLogId"] = queryLogId;
 
-				// Call for extended status, which uses some database intensive calls
-				if (uri.Parameters.ContainsKey("extended"))
-				{
-					if (uri.Parameters["extended"].IsTrue())
-					{
-						// Check if any destructive queries have been performed since the last cache
-						if ((statusCache.LastQueryId == null) || (queryLogId > statusCache.LastQueryId))
-						{
-							// Update to the latest query log ID
-							statusCache.LastQueryId = queryLogId;
+                // Call for extended status, which uses some database intensive calls
+                if (uri.Parameters.ContainsKey("extended")) {
+                    if (uri.Parameters["extended"].IsTrue()) {
+                        // Check if any destructive queries have been performed since the last cache
+                        if ((statusCache.LastQueryId == null) || (queryLogId > statusCache.LastQueryId)) {
+                            // Update to the latest query log ID
+                            statusCache.LastQueryId = queryLogId;
 
-							logger.IfInfo("Gathering extended status metrics from database");
+                            logger.IfInfo("Gathering extended status metrics from database");
 
-							// Get count of artists
-							statusCache.Cache["artistCount"] = Injection.Kernel.Get<IArtistRepository>().CountArtists();
-							// Get count of album artists
-							statusCache.Cache["albumArtistCount"] = Injection.Kernel.Get<IAlbumArtistRepository>().CountAlbumArtists();
-							// Get count of albums
-							statusCache.Cache["albumCount"] = Injection.Kernel.Get<IAlbumRepository>().CountAlbums();
-							// Get count of songs
-							statusCache.Cache["songCount"] = Injection.Kernel.Get<ISongRepository>().CountSongs();
-							// Get count of videos
-							statusCache.Cache["videoCount"] = Injection.Kernel.Get<IVideoRepository>().CountVideos();
-							// Get total file size of songs (bytes)
-							statusCache.Cache["songFileSize"] = Injection.Kernel.Get<ISongRepository>().TotalSongSize();
-							// Get total file size of videos (bytes)
-							statusCache.Cache["videoFileSize"] = Injection.Kernel.Get<IVideoRepository>().TotalVideoSize();
-							// Get total song duration
-							statusCache.Cache["songDuration"] = Injection.Kernel.Get<ISongRepository>().TotalSongDuration();
-							// Get total video duration
-							statusCache.Cache["videoDuration"] = Injection.Kernel.Get<IVideoRepository>().TotalVideoDuration();
+                            // Get count of artists
+                            statusCache.Cache["artistCount"] = Injection.Kernel.Get<IArtistRepository>().CountArtists();
+                            // Get count of album artists
+                            statusCache.Cache["albumArtistCount"] = Injection.Kernel.Get<IAlbumArtistRepository>().CountAlbumArtists();
+                            // Get count of albums
+                            statusCache.Cache["albumCount"] = Injection.Kernel.Get<IAlbumRepository>().CountAlbums();
+                            // Get count of songs
+                            statusCache.Cache["songCount"] = Injection.Kernel.Get<ISongRepository>().CountSongs();
+                            // Get count of videos
+                            statusCache.Cache["videoCount"] = Injection.Kernel.Get<IVideoRepository>().CountVideos();
+                            // Get total file size of songs (bytes)
+                            statusCache.Cache["songFileSize"] = Injection.Kernel.Get<ISongRepository>().TotalSongSize();
+                            // Get total file size of videos (bytes)
+                            statusCache.Cache["videoFileSize"] = Injection.Kernel.Get<IVideoRepository>().TotalVideoSize();
+                            // Get total song duration
+                            statusCache.Cache["songDuration"] = Injection.Kernel.Get<ISongRepository>().TotalSongDuration();
+                            // Get total video duration
+                            statusCache.Cache["videoDuration"] = Injection.Kernel.Get<IVideoRepository>().TotalVideoDuration();
 
-							logger.IfInfo("Metric gathering complete, cached results!");
-						}
+                            logger.IfInfo("Metric gathering complete, cached results!");
+                        }
 
-						// Append cached status dictionary to status
-						status = status.Concat(statusCache.Cache).ToDictionary(x => x.Key, x => x.Value);
-					}
-				}
+                        // Append cached status dictionary to status
+                        status = status.Concat(statusCache.Cache).ToDictionary(x => x.Key, x => x.Value);
+                    }
+                }
 
-				// Return all status
-				processor.WriteJson(new StatusResponse(null, status));
-				return;
-			}
-			catch (Exception e)
-			{
-				logger.Error(e);
-			}
+                // Return all status
+                processor.WriteJson(new StatusResponse(null, status));
+                return;
+            } catch (Exception e) {
+                logger.Error(e);
+            }
 
-			// Return error
-			processor.WriteJson(new StatusResponse("Could not retrieve server status", null));
-			return;
-		}
+            // Return error
+            processor.WriteJson(new StatusResponse("Could not retrieve server status", null));
+            return;
+        }
 
-		// Borrowed from http://stackoverflow.com/questions/278071/how-to-get-the-cpu-usage-in-c
-		/// <summary>
-		/// Returns a string containing the CPU usage of WaveBox at this instant in time
-		/// </summary>
-		private float CpuUsage()
-		{
-			PerformanceCounter cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
-			cpuCounter.NextValue();
-			Thread.Sleep(10);
-			float usage = cpuCounter.NextValue();
+        // Borrowed from http://stackoverflow.com/questions/278071/how-to-get-the-cpu-usage-in-c
+        /// <summary>
+        /// Returns a string containing the CPU usage of WaveBox at this instant in time
+        /// </summary>
+        private float CpuUsage() {
+            PerformanceCounter cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
+            cpuCounter.NextValue();
+            Thread.Sleep(10);
+            float usage = cpuCounter.NextValue();
 
-			// If CPU usage is negative (ie, sudden drop in usage between cpuCounter.NextValue()), just return 0%
-			if (usage < 0.00)
-			{
-				usage = 0.0f;
-			}
+            // If CPU usage is negative (ie, sudden drop in usage between cpuCounter.NextValue()), just return 0%
+            if (usage < 0.00) {
+                usage = 0.0f;
+            }
 
-			return usage;
-		}
-	}
+            return usage;
+        }
+    }
 }

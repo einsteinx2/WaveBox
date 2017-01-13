@@ -3,38 +3,36 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using WaveBox.Core.Model;
 
-namespace WaveBox.Core
-{
-	public interface IServerSettings
-	{
-		string SettingsTemplatePath();
-		string SettingsPath();
+namespace WaveBox.Core {
+    public interface IServerSettings {
+        string SettingsTemplatePath();
+        string SettingsPath();
 
-		ServerSettingsData SettingsModel { get; }
+        ServerSettingsData SettingsModel { get; }
 
-		Formatting JsonFormatting { get; }
+        Formatting JsonFormatting { get; }
 
-		short Port { get; }
+        short Port { get; }
 
-		string Theme { get; }
+        string Theme { get; }
 
-		IList<string> MediaFolders { get; }
+        IList<string> MediaFolders { get; }
 
-		int SessionTimeout { get; }
+        int SessionTimeout { get; }
 
-		IList<string> FolderArtNames { get; }
+        IList<string> FolderArtNames { get; }
 
-		bool CrashReportEnable { get; }
+        bool CrashReportEnable { get; }
 
-		IList<string> Services { get; }
+        IList<string> Services { get; }
 
-		void Reload();
+        void Reload();
 
-		bool WriteSettings(string jsonString);
+        bool WriteSettings(string jsonString);
 
-		void FlushSettings();
+        void FlushSettings();
 
-		void SettingsSetup();
-	}
+        void SettingsSetup();
+    }
 }
 

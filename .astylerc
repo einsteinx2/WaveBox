@@ -1,0 +1,10 @@
+--style=java
+--indent=spaces=4
+--indent-classes
+--indent-namespaces
+--add-brackets
+--preserve-date
+--lineend=linux 
+--keep-one-line-blocks
+--add-brackets
+--suffix=none
