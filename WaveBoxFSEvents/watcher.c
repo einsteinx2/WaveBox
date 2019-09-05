@@ -88,6 +88,14 @@ void WatchPaths(char **paths, size_t numberOfPaths, double latency, WatchCallbac
         }
     }
     
+    // Bail if there are no directories to watch
+    if (CFArrayGetCount(pathsToWatch) == 0)
+    {
+        printf("FSEvents no paths to watch\n");
+        CFRelease(pathsToWatch);
+        return;
+    }
+    
     // Start the FSEvent stream
     eventStream = FSEventStreamCreate(NULL,
                                       &InternalCallback,
