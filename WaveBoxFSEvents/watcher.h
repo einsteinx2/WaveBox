@@ -15,10 +15,9 @@
 #include <CoreServices/CoreServices.h>
 
 // External callback definition
-typedef void (__stdcall *WatchCallback)(char **changedPaths, int numberOfPaths, long *eventFlags, bool fileEventsEnabled);
-
-typedef void (__stdcall *SimpleWatchCallback)();
+typedef void (*WatchCallback)(char **changedPaths, size_t numberOfPaths, long *eventFlags, bool fileEventsEnabled);
+typedef void (*SimpleWatchCallback)(void);
 
 // Exported functions
-void WatchPaths(char **paths, int numberOfPaths, double latency, WatchCallback callback);
-void StopWatchingPaths();
+void WatchPaths(char **paths, size_t numberOfPaths, double latency, WatchCallback callback);
+void StopWatchingPaths(void);

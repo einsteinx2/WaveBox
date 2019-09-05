@@ -16,6 +16,7 @@ using WaveBox.Static;
 using WaveBox.Core.Model.Repository;
 
 namespace WaveBox.Service.Services.FileManager {
+    [Flags]
     enum FSEventFlags {
         None = 0x00000000,
         MustScanSubDirs = 0x00000001,

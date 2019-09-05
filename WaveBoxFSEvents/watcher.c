@@ -7,6 +7,9 @@
 //
 
 #include "watcher.h"
+#include <stdio.h>
+#include <dirent.h>
+#include <errno.h>
 
 // Internal state
 void *callbackInfo = NULL;
@@ -25,9 +28,33 @@ void InternalCallback(ConstFSEventStreamRef streamRef, void *clientCallBackInfo,
     }
 }
 
+// Check if a path exists
+bool PathExists(char *path)
+{
+    DIR* dir = opendir(path);
+    if (dir)
+    {
+        // Path exists
+        closedir(dir);
+        return true;
+    }
+    else if (ENOENT == errno)
+    {
+        // Path does not exist
+        printf("Path %s does not exist\n", path);
+    }
+    else
+    {
+        // opendir failed
+        printf("Path %s may exist, but opendir failed so returning false\n", path);
+    }
+    return false;
+}
+
 // Blocks until runloop finishes, should be called from a dedicated thread
-void WatchPaths(char **paths, int numberOfPaths, double latency, WatchCallback callback)
-{     
+void WatchPaths(char **paths, size_t numberOfPaths, double latency, WatchCallback callback)
+{
+    // TODO: Probably remove this as there is no plan to continue supporting such old versions of OS X
     // Check if file events is enabled. File events are only available for OS X 10.7 and higher.
     // Note that this function retrieves the kernel version, and kernel version 11 is OS X 10.7
     char str[256];
@@ -50,10 +77,15 @@ void WatchPaths(char **paths, int numberOfPaths, double latency, WatchCallback c
     // Parse the paths into CFStringRefs in a CFArrayRef to pass to the FSEvents API
     CFMutableArrayRef pathsToWatch = CFArrayCreateMutable(NULL, numberOfPaths, NULL);
     for (int i = 0; i < numberOfPaths; i++)
-    {        
-        CFStringRef pathString = CFStringCreateWithCString(NULL, paths[i], kCFStringEncodingUTF8);
-        CFArrayAppendValue(pathsToWatch, pathString);
-        CFRelease(pathString);
+    {
+        // First check if the path actually exists
+        if (PathExists(paths[i]))
+        {
+            printf("FSEvents watching path %s\n", paths[i]);
+            CFStringRef pathString = CFStringCreateWithCString(NULL, paths[i], kCFStringEncodingUTF8);
+            CFArrayAppendValue(pathsToWatch, pathString);
+            CFRelease(pathString);
+        }
     }
     
     // Start the FSEvent stream
@@ -88,7 +120,7 @@ void StopWatchingPaths()
         FSEventStreamRelease(eventStream);
         eventStream = NULL;
     }
-        
+    
     // Stop the run loop
     if (runLoop != NULL)
     {
