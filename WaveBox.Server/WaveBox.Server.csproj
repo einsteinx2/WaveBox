@@ -200,7 +200,6 @@
     <Compile Include="src\Transcoding\VideoTranscoder.cs" />
     <Compile Include="src\WaveBoxMain.cs" />
     <Compile Include="src\WaveBoxService.cs">
-      <Compile Include="src\WaveBoxServiceInstaller.cs" />
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="src\FolderScanning\MusicBrainzScanOperation.cs" />

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace WaveBox.Core.Model {
     public enum Role {
