@@ -17,7 +17,7 @@ using WaveBox.Core.Model.Repository;
 
 namespace WaveBox.Service.Services.FileManager {
     public class FileManager : AbstractFileManager, IFileManager {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static new readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public override bool Start() {
             // Grab list of media folders, initialize the scan queue

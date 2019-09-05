@@ -8,8 +8,10 @@ using System.Web;
 
 namespace WaveBox.Core.Derived {
     public interface IWebClient {
-        string DownloadString(string uri);
+        // Download a string
+        string DownloadString (string address);
 
-        void DownloadFile(string address, string path);
+        // Download a file to a specified path
+        void DownloadFile (string address, string fileName);
     }
 }

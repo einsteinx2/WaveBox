@@ -64,7 +64,7 @@ namespace WaveBox.Core.Model {
         public string Comment { get; set; }
 
         [JsonIgnore, IgnoreRead, IgnoreWrite]
-        public string GroupingName { get { return SongName; } }
+        public override string GroupingName { get { return SongName; } }
 
         public Song() {
         }

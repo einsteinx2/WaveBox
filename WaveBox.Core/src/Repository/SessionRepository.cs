@@ -42,7 +42,6 @@ namespace WaveBox.Core.Model.Repository {
 
         public Session SessionForSessionId(string sessionId) {
             lock (this.Sessions) {
-                Session session = null;
                 if (this.Sessions.ContainsKey(sessionId)) {
                     return this.Sessions[sessionId];
                 }

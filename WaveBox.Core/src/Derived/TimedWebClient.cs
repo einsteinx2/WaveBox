@@ -19,8 +19,8 @@ namespace WaveBox.Core.Derived {
             ServicePointManager.Expect100Continue = false;
         }
 
-        protected override WebRequest GetWebRequest(Uri uri) {
-            WebRequest request = base.GetWebRequest(uri);
+        protected override WebRequest GetWebRequest(Uri address) {
+            WebRequest request = base.GetWebRequest(address);
 
             // Disable proxy lookup
             request.Proxy = null;

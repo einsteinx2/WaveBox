@@ -11,7 +11,7 @@ namespace WaveBox.Core.Derived {
         }
 
         // Download a string using curl
-        public string DownloadString(string uri) {
+        public new string DownloadString(string uri) {
             string response = null;
             using (Process curl = new Process()) {
                 // Invoke curl, set timeout in seconds, set URI
@@ -44,7 +44,7 @@ namespace WaveBox.Core.Derived {
         }
 
         // Download a file to a specified path using curl
-        public void DownloadFile(string address, string path) {
+        public new void DownloadFile(string address, string path) {
             using (Process curl = new Process()) {
                 // Invoke curl, set timeout in seconds, set destination file, set URI
                 curl.StartInfo.FileName = "curl";

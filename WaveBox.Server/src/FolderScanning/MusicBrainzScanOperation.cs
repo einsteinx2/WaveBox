@@ -114,7 +114,7 @@ namespace WaveBox.FolderScanning {
                         }
                     }
                 } catch (XmlException e) {
-                    logger.Error("Received malformed XML from server for " + artistName);
+                    logger.Error("Received malformed XML from server for " + artistName + ", " + e);
                 } catch (Exception e) {
                     logger.Error("Exception parsing musicbrainz response for " + artistName + ", " + e);
                 }
