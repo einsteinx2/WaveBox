@@ -15,30 +15,14 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}.Debug|Any CPU.Build.0 = Debug|x86
-		{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}.Debug|x86.ActiveCfg = Debug|x86
-		{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}.Debug|x86.Build.0 = Debug|x86
+		{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}.Release|Any CPU.ActiveCfg = Release|x86
 		{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}.Release|Any CPU.Build.0 = Release|x86
-		{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}.Release|Mixed Platforms.Build.0 = Release|x86
-		{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}.Release|x86.ActiveCfg = Release|x86
-		{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}.Release|x86.Build.0 = Release|x86
 		{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}.Debug|x86.Build.0 = Debug|Any CPU
 		{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}.Release|x86.ActiveCfg = Release|Any CPU
-		{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = WaveBox.Server\WaveBox.Server.csproj
