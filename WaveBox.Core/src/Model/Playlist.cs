@@ -69,7 +69,7 @@ namespace WaveBox.Core.Model {
                 Injection.Get<IDatabase>().CloseSqliteConnection(conn);
             }
 
-            return itemIds.ToString().MD5().Replace("-", string.Empty);
+            return itemIds.ToString().MD5();
         }
 
         public void UpdateDatabase() {

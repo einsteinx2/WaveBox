@@ -38,15 +38,15 @@ namespace WaveBox.Core.Extensions {
         }
 
         /// <summary>
-        /// Generates a MD5 sum of a given string
+        /// Generates a MD5 sum of a given string, as lowercase hex
         /// <summary>
         public static string MD5(this string sumthis) {
             if (sumthis == "" || sumthis == null) {
                 return "";
             }
 
-            MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider();
-            return BitConverter.ToString(md5.ComputeHash(System.Text.Encoding.ASCII.GetBytes(sumthis)), 0);
+            byte[] hash = System.Security.Cryptography.MD5.HashData(Encoding.ASCII.GetBytes(sumthis));
+            return Convert.ToHexString(hash).ToLowerInvariant();
         }
 
         /// <summary>
@@ -84,15 +84,15 @@ namespace WaveBox.Core.Extensions {
         }
 
         /// <summary>
-        /// Generates a SHA1 sum of a given string
+        /// Generates a SHA1 sum of a given string, as lowercase hex
         /// </summary>
         public static string SHA1(this string sumthis) {
             if (sumthis == "" || sumthis == null) {
                 return "";
             }
 
-            SHA1CryptoServiceProvider provider = new SHA1CryptoServiceProvider();
-            return BitConverter.ToString(provider.ComputeHash(Encoding.ASCII.GetBytes(sumthis))).Replace("-", "");
+            byte[] hash = System.Security.Cryptography.SHA1.HashData(Encoding.ASCII.GetBytes(sumthis));
+            return Convert.ToHexString(hash).ToLowerInvariant();
         }
 
         /// <summary>

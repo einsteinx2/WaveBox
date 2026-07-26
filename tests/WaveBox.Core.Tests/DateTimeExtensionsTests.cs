@@ -63,8 +63,8 @@ namespace WaveBox.Core.Tests {
             DateTime dt = new DateTime(2001, 2, 3, 4, 5, 6, DateTimeKind.Utc);
             string etag = dt.ToETag();
             Assert.Equal(dt.ToRFC1123().SHA1(), etag);
-            // 40 uppercase hex chars (SHA1 in this codebase's uppercase, dash-stripped format)
-            Assert.Matches(new Regex("^[0-9A-F]{40}$"), etag);
+            // 40 lowercase hex chars
+            Assert.Matches(new Regex("^[0-9a-f]{40}$"), etag);
         }
     }
 }
