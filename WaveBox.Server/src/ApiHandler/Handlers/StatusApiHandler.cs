@@ -6,8 +6,6 @@ using System.Runtime.Serialization.Formatters;
 using System.Threading;
 using System.Linq;
 using System.Text;
-using Newtonsoft.Json;
-using Ninject;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
 using WaveBox.Static;
@@ -29,7 +27,7 @@ namespace WaveBox.ApiHandler.Handlers {
     }
 
     class StatusApiHandler : IApiHandler {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         public string Name { get { return "status"; } }
 
@@ -58,22 +56,22 @@ namespace WaveBox.ApiHandler.Handlers {
                 long unixTime = DateTime.UtcNow.ToUnixTime();
 
                 // Get current query log ID
-                long queryLogId = Injection.Kernel.Get<IDatabase>().LastQueryLogId;
+                long queryLogId = Injection.Get<IDatabase>().LastQueryLogId;
 
                 // Get process ID
                 status["pid"] = proc.Id;
                 // Get uptime of WaveBox instance
-                status["uptime"] = unixTime - WaveBoxService.StartTime.ToUnixTime();
+                status["uptime"] = unixTime - ServerInfo.StartTime.ToUnixTime();
                 // Get last update time in UNIX format for status
                 status["updated"] = unixTime;
                 // Get hostname of machine
                 status["hostname"] = System.Environment.MachineName;
                 // Get WaveBox version
-                status["version"] = WaveBoxService.BuildVersion;
+                status["version"] = ServerInfo.BuildVersion;
                 // Get build date
-                status["buildDate"] = WaveBoxService.BuildDate.ToString("MMMM dd, yyyy");
+                status["buildDate"] = ServerInfo.BuildDate.ToString("MMMM dd, yyyy");
                 // Get host platform
-                status["platform"] = WaveBoxService.OS.ToDescription();
+                status["platform"] = ServerInfo.OS.ToDescription();
                 // Get current CPU usage
                 status["cpuPercent"] = CpuUsage();
                 // Get current memory usage in MB
@@ -100,23 +98,23 @@ namespace WaveBox.ApiHandler.Handlers {
                             logger.IfInfo("Gathering extended status metrics from database");
 
                             // Get count of artists
-                            statusCache.Cache["artistCount"] = Injection.Kernel.Get<IArtistRepository>().CountArtists();
+                            statusCache.Cache["artistCount"] = Injection.Get<IArtistRepository>().CountArtists();
                             // Get count of album artists
-                            statusCache.Cache["albumArtistCount"] = Injection.Kernel.Get<IAlbumArtistRepository>().CountAlbumArtists();
+                            statusCache.Cache["albumArtistCount"] = Injection.Get<IAlbumArtistRepository>().CountAlbumArtists();
                             // Get count of albums
-                            statusCache.Cache["albumCount"] = Injection.Kernel.Get<IAlbumRepository>().CountAlbums();
+                            statusCache.Cache["albumCount"] = Injection.Get<IAlbumRepository>().CountAlbums();
                             // Get count of songs
-                            statusCache.Cache["songCount"] = Injection.Kernel.Get<ISongRepository>().CountSongs();
+                            statusCache.Cache["songCount"] = Injection.Get<ISongRepository>().CountSongs();
                             // Get count of videos
-                            statusCache.Cache["videoCount"] = Injection.Kernel.Get<IVideoRepository>().CountVideos();
+                            statusCache.Cache["videoCount"] = Injection.Get<IVideoRepository>().CountVideos();
                             // Get total file size of songs (bytes)
-                            statusCache.Cache["songFileSize"] = Injection.Kernel.Get<ISongRepository>().TotalSongSize();
+                            statusCache.Cache["songFileSize"] = Injection.Get<ISongRepository>().TotalSongSize();
                             // Get total file size of videos (bytes)
-                            statusCache.Cache["videoFileSize"] = Injection.Kernel.Get<IVideoRepository>().TotalVideoSize();
+                            statusCache.Cache["videoFileSize"] = Injection.Get<IVideoRepository>().TotalVideoSize();
                             // Get total song duration
-                            statusCache.Cache["songDuration"] = Injection.Kernel.Get<ISongRepository>().TotalSongDuration();
+                            statusCache.Cache["songDuration"] = Injection.Get<ISongRepository>().TotalSongDuration();
                             // Get total video duration
-                            statusCache.Cache["videoDuration"] = Injection.Kernel.Get<IVideoRepository>().TotalVideoDuration();
+                            statusCache.Cache["videoDuration"] = Injection.Get<IVideoRepository>().TotalVideoDuration();
 
                             logger.IfInfo("Metric gathering complete, cached results!");
                         }
@@ -138,22 +136,27 @@ namespace WaveBox.ApiHandler.Handlers {
             return;
         }
 
-        // Borrowed from http://stackoverflow.com/questions/278071/how-to-get-the-cpu-usage-in-c
         /// <summary>
-        /// Returns a string containing the CPU usage of WaveBox at this instant in time
+        /// Returns the CPU usage of the WaveBox process at this instant in time, as a percentage of
+        /// total machine capacity (PerformanceCounter was Windows-only, so this samples process time instead)
         /// </summary>
         private float CpuUsage() {
-            PerformanceCounter cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
-            cpuCounter.NextValue();
-            Thread.Sleep(10);
-            float usage = cpuCounter.NextValue();
+            using (System.Diagnostics.Process process = System.Diagnostics.Process.GetCurrentProcess()) {
+                TimeSpan startCpuTime = process.TotalProcessorTime;
+                Stopwatch wallClock = Stopwatch.StartNew();
+                Thread.Sleep(100);
+                wallClock.Stop();
+                process.Refresh();
+                TimeSpan endCpuTime = process.TotalProcessorTime;
 
-            // If CPU usage is negative (ie, sudden drop in usage between cpuCounter.NextValue()), just return 0%
-            if (usage < 0.00) {
-                usage = 0.0f;
+                double usage = (endCpuTime - startCpuTime).TotalMilliseconds / (Environment.ProcessorCount * wallClock.Elapsed.TotalMilliseconds) * 100.0;
+
+                if (usage < 0.0) {
+                    usage = 0.0;
+                }
+
+                return (float)usage;
             }
-
-            return usage;
         }
     }
 }

@@ -8,7 +8,7 @@ using WaveBox.Core.Extensions;
 
 namespace WaveBox.Core.OperationQueue {
     public class DelayedOperationQueue : IOperationQueue {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         public const int DEFAULT_DELAY = 10;
         public const int DEFAULT_PRECISION = 250;
@@ -17,12 +17,13 @@ namespace WaveBox.Core.OperationQueue {
         public IDelayedOperation CurrentOperation { get { return currentOperation; } }
 
         private Thread queueThread;
-        private bool queueShouldLoop = true;
+        private readonly CancellationTokenSource queueCts = new CancellationTokenSource();
         private Queue<IDelayedOperation> operationQueue = new Queue<IDelayedOperation>();
 
         public void startQueue() {
+            CancellationToken token = queueCts.Token;
             queueThread = new Thread(delegate() {
-                while (queueShouldLoop) {
+                while (!token.IsCancellationRequested) {
                     lock (operationQueue) {
                         if (operationQueue.Count > 0 && operationQueue.Peek() != null && operationQueue.Peek().IsReady) {
                             try {
@@ -38,8 +39,10 @@ namespace WaveBox.Core.OperationQueue {
                         }
                     }
 
-                    // Sleep to prevent a tight loop
-                    Thread.Sleep(DEFAULT_PRECISION);
+                    // Sleep to prevent a tight loop, waking immediately on cancellation
+                    if (token.WaitHandle.WaitOne(DEFAULT_PRECISION)) {
+                        break;
+                    }
                 }
             });
             queueThread.IsBackground = true;
@@ -47,9 +50,11 @@ namespace WaveBox.Core.OperationQueue {
         }
 
         public void stopQueue() {
-            queueShouldLoop = false; // Break the loop
-            queueThread.Abort(); // Abort the thread
-            queueThread.Join(); // Wait for the thread to die
+            // Cooperative cancellation (Thread.Abort throws PlatformNotSupportedException on modern .NET)
+            queueCts.Cancel();
+            if (queueThread != null) {
+                queueThread.Join();
+            }
         }
 
         public void queueOperation(IDelayedOperation op) {
