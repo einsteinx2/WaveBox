@@ -139,7 +139,8 @@ CREATE TABLE "User" (
     "PasswordSalt" TEXT NOT NULL,
     "LastfmSession" TEXT,
     "CreateTime" INTEGER NOT NULL,
-    "DeleteTime" INTEGER
+    "DeleteTime" INTEGER,
+    "ApiKey" TEXT
 );
 CREATE TABLE "Song" (
     "ItemId" INTEGER UNIQUE NOT NULL,
@@ -207,5 +208,6 @@ CREATE INDEX "stat_Timestamp" ON "Stat" ("Timestamp");
 CREATE INDEX "song_FolderIdFileName" ON "song" ("FolderId","FileName");
 CREATE INDEX "song_ItemId" ON "Song" ("ItemId");
 CREATE INDEX "favorite_userId" ON "Favorite" ("FavoriteUserId");
+CREATE UNIQUE INDEX "user_ApiKey" ON "User" ("ApiKey");
 CREATE UNIQUE INDEX "album_AlbumNameArtistId" ON "Album" ("AlbumName", "AlbumArtistId");
 COMMIT;

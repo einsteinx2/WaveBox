@@ -20,6 +20,7 @@ namespace WaveBox.Core {
             Root<Favorite>();
             Root<Folder>();
             Root<Genre>();
+            Root<GroupCount>();
             Root<MediaItem>();
             Root<Playlist>();
             Root<PlaylistItem>();

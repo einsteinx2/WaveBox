@@ -77,6 +77,10 @@ namespace WaveBox.Static {
                 }
             }
 
+            // Upgrade databases created before newer columns existed (the bundled template's
+            // Version table is empty, so schema state is detected per-column instead)
+            this.UpgradeSchema();
+
             if (!File.Exists(QuerylogPath)) {
                 try {
                     logger.IfInfo("Query log database file doesn't exist; Creating it : " + QUERY_LOG_FILE_NAME);
@@ -98,6 +102,25 @@ namespace WaveBox.Static {
                 } catch (Exception e) {
                     logger.Error(e);
                 }
+            }
+        }
+
+        private void UpgradeSchema() {
+            ISQLiteConnection conn = null;
+            try {
+                conn = GetSqliteConnection();
+
+                // Subsonic API keys: User.ApiKey column + unique index
+                int hasApiKey = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM pragma_table_info('User') WHERE name = 'ApiKey'");
+                if (hasApiKey == 0) {
+                    logger.IfInfo("Upgrading database schema: adding User.ApiKey");
+                    conn.Execute("ALTER TABLE User ADD COLUMN ApiKey TEXT");
+                }
+                conn.Execute("CREATE UNIQUE INDEX IF NOT EXISTS user_ApiKey ON User(ApiKey)");
+            } catch (Exception e) {
+                logger.Error(e);
+            } finally {
+                CloseSqliteConnection(conn);
             }
         }
 

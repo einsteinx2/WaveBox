@@ -48,6 +48,12 @@ namespace WaveBox.Core.Model {
         [JsonPropertyName("lastfmSession")]
         public string LastfmSession { get; set; }
 
+        // Persistent key for OpenSubsonic apiKey authentication.  IgnoreWrite keeps ORM inserts
+        // from referencing the column (it is added by a schema migration and written only via
+        // the raw SQL in UpdateApiKey); databases created before the migration simply read null.
+        [JsonPropertyName("apiKey"), IgnoreWrite]
+        public string ApiKey { get; set; }
+
         [JsonPropertyName("createTime")]
         public long? CreateTime { get; set; }
 
@@ -131,6 +137,27 @@ namespace WaveBox.Core.Model {
 
                 if (affected > 0) {
                     this.LastfmSession = sessionKey;
+
+                    return Injection.Get<IUserRepository>().UpdateUserCache(this);
+                }
+            } catch (Exception e) {
+                logger.Error(e);
+            } finally {
+                Injection.Get<IDatabase>().CloseSqliteConnection(conn);
+            }
+
+            return false;
+        }
+
+        // Set or clear (null) this user's OpenSubsonic API key
+        public bool UpdateApiKey(string apiKey) {
+            ISQLiteConnection conn = null;
+            try {
+                conn = Injection.Get<IDatabase>().GetSqliteConnection();
+                int affected = conn.Execute("UPDATE User SET ApiKey = ? WHERE UserId = ?", apiKey, this.UserId);
+
+                if (affected > 0) {
+                    this.ApiKey = apiKey;
 
                     return Injection.Get<IUserRepository>().UpdateUserCache(this);
                 }

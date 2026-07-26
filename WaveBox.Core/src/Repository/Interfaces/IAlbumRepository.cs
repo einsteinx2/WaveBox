@@ -15,6 +15,11 @@ namespace WaveBox.Core.Model.Repository {
         IList<Album> RangeAlbums(char start, char end);
         IList<Album> LimitAlbums(int index, int duration = Int32.MinValue);
         IList<Album> AllWithNoMusicBrainzId();
+        IList<Album> NewestAlbums(int limit, int offset);
+        IList<Album> RecentAlbums(int limit, int offset);
+        IList<Album> FrequentAlbums(int limit, int offset);
+        IList<GroupCount> SongCountsByAlbum();
+        IList<GroupCount> AlbumCountsByAlbumArtist();
     }
 }
 

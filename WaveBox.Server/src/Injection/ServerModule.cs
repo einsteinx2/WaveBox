@@ -18,6 +18,9 @@ namespace WaveBox.Server {
             services.AddSingleton<IApiAuthenticate, ApiAuthenticate>();
             services.AddSingleton<IApiHandlerFactory, ApiHandlerFactory>();
 
+            // Subsonic API (stateless per-request auth with a verified-credential cache)
+            services.AddSingleton<WaveBox.Subsonic.SubsonicAuth>();
+
             // Web client with 5 second timeout (was TimedWebClient/LinuxWebClient under Mono)
             services.AddSingleton<IWebClient>(sp => new HttpClientWebClient(5000));
 

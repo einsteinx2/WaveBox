@@ -244,6 +244,17 @@ namespace WaveBox.Core.Model {
             } finally {
                 Injection.Get<IDatabase>().CloseSqliteConnection(conn);
             }
+
+            // Refresh the playlist's cached count/duration to match the remaining rows;
+            // stale counts corrupt the positions of later inserts
+            IList<IMediaItem> remaining = ListOfMediaItems();
+            int duration = 0;
+            foreach (IMediaItem remainingItem in remaining) {
+                duration += remainingItem.Duration ?? 0;
+            }
+            PlaylistCount = remaining.Count;
+            PlaylistDuration = duration;
+            UpdateDatabase();
         }
 
         public void MoveMediaItem(int fromIndex, int toIndex) {

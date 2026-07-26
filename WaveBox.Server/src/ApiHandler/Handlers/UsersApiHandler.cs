@@ -25,7 +25,10 @@ namespace WaveBox.ApiHandler.Handlers {
                 return user.HasPermission(Role.Admin);
             // Write
             // update - so user can update their own username/password, but not role
+            // generateApiKey/revokeApiKey - self-service (admin may manage any user's key)
             case "update":
+            case "generateApiKey":
+            case "revokeApiKey":
                 return user.HasPermission(Role.User);
             // Read
             case "read":
@@ -170,6 +173,9 @@ namespace WaveBox.ApiHandler.Handlers {
                     return;
                 }
 
+                // Drop any cached Subsonic credential verification for this user
+                Injection.Get<WaveBox.Subsonic.SubsonicAuth>().Evict(deleteUser.UserName);
+
                 // Return deleted user
                 logger.IfInfo(String.Format("Successfully deleted user [id: {0}, username: {1}]", deleteUser.UserId, deleteUser.UserName));
                 listOfUsers.Add(deleteUser);
@@ -186,6 +192,10 @@ namespace WaveBox.ApiHandler.Handlers {
                     processor.WriteJson(new UsersResponse("Invalid user ID for action 'update'", null));
                     return;
                 }
+
+                // Drop any cached Subsonic credential verification before mutating credentials
+                // (keyed by the pre-update username)
+                Injection.Get<WaveBox.Subsonic.SubsonicAuth>().Evict(updateUser.UserName);
 
                 // If user isn't an admin, verify that they are attempting to update themselves
                 if (!user.HasPermission(Role.Admin) && user.UserId != updateUser.UserId) {
@@ -220,6 +230,35 @@ namespace WaveBox.ApiHandler.Handlers {
                 // Return updated user
                 logger.IfInfo(String.Format("Successfully updated user [id: {0}, username: {1}]", updateUser.UserId, updateUser.UserName));
                 listOfUsers.Add(updateUser);
+
+                processor.WriteJson(new UsersResponse(null, listOfUsers));
+                return;
+            }
+
+            // generateApiKey / revokeApiKey - manage the user's OpenSubsonic API key
+            if (uri.Action == "generateApiKey" || uri.Action == "revokeApiKey") {
+                User keyUser = Injection.Get<IUserRepository>().UserForId((int)uri.Id);
+                if (keyUser.UserName == null) {
+                    processor.WriteJson(new UsersResponse("Invalid user ID for action '" + uri.Action + "'", null));
+                    return;
+                }
+
+                // Non-admins may only manage their own key
+                if (!user.HasPermission(Role.Admin) && user.UserId != keyUser.UserId) {
+                    processor.WriteJson(new UsersResponse("Permission denied", null));
+                    return;
+                }
+
+                string apiKey = uri.Action == "generateApiKey"
+                    ? Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32)).ToLowerInvariant()
+                    : null;
+                if (!keyUser.UpdateApiKey(apiKey)) {
+                    processor.WriteJson(new UsersResponse("Action '" + uri.Action + "' failed to update API key", null));
+                    return;
+                }
+
+                logger.IfInfo(String.Format("Successfully {0} API key for user [id: {1}, username: {2}]", apiKey == null ? "revoked" : "generated", keyUser.UserId, keyUser.UserName));
+                listOfUsers.Add(keyUser);
 
                 processor.WriteJson(new UsersResponse(null, listOfUsers));
                 return;

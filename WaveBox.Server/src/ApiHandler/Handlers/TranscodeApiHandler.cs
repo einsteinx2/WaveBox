@@ -207,63 +207,10 @@ namespace WaveBox.ApiHandler.Handlers {
                     transcoder = transcodeService.TranscodeVideo(item, transType, quality, isDirect, width, height, maintainAspect, offsetSeconds, lengthSeconds);
                 }
 
-                // If a transcoder was generated...
-                if ((object)transcoder != null) {
-                    length = (long)transcoder.EstimatedOutputSize;
-
-                    // Wait up 5 seconds for file or basestream to appear
-                    for (int i = 0; i < 20; i++) {
-                        if (transcoder.IsDirect) {
-                            logger.IfInfo("Checking if base stream exists");
-                            if ((object)transcoder.TranscodeProcess != null && (object)transcoder.TranscodeProcess.StandardOutput.BaseStream != null) {
-                                // The base stream exists, so the transcoding process has started
-                                logger.IfInfo("Base stream exists, starting transfer");
-                                stream = transcoder.TranscodeProcess.StandardOutput.BaseStream;
-                                break;
-                            }
-                        } else {
-                            logger.IfInfo("Checking if file exists (" + transcoder.OutputPath + ")");
-                            if (File.Exists(transcoder.OutputPath)) {
-                                // The file exists, so the transcoding process has started
-                                stream = new FileStream(transcoder.OutputPath, FileMode.Open, FileAccess.Read);
-                                break;
-                            }
-                        }
-                        Thread.Sleep(250);
-                    }
-                }
-
-                // Send the file if either there is no transcoder and the original file exists OR
-                // it's a direct transcoder and the base stream exists OR
-                // it's a file transcoder and the transcoded file exists
-                if ((object)transcoder == null && File.Exists(item.FilePath()) ||
-                        (transcoder.IsDirect && (object)stream != null) ||
-                        (!transcoder.IsDirect && File.Exists(transcoder.OutputPath))) {
-                    logger.IfInfo("Sending direct stream");
-                    string mimeType = (object)transcoder == null ? item.FileType.MimeType() : transcoder.MimeType;
-                    processor.Transcoder = transcoder;
-
-                    if (uri.Parameters.ContainsKey("offsetSeconds")) {
-                        logger.IfInfo("Writing file at offsetSeconds " + uri.Parameters["offsetSeconds"]);
-                    }
-
-                    DateTime lastModified = transcoder.IsDirect ? DateTime.UtcNow : new FileInfo(transcoder.OutputPath).LastWriteTimeUtc;
-
-                    // Direct write file
-                    processor.WriteFile(stream, startOffset, length, mimeType, null, estimateContentLength, lastModified, limitToSize);
-                    stream.Close();
+                // Wait for the transcoder's output and send it (shared with Subsonic stream)
+                if (TranscodeStreamer.Send(transcodeService, transcoder, processor, startOffset, limitToSize, estimateContentLength)) {
                     logger.IfInfo("Successfully sent direct stream");
-
-                    if (uri.Parameters.ContainsKey("offsetSeconds")) {
-                        logger.IfInfo("DONE writing file at offsetSeconds " + uri.Parameters["offsetSeconds"]);
-                    }
-                } else {
-                    processor.WriteErrorHeader();
                 }
-
-                // Spin off a thread to consume the transcoder in 30 seconds.
-                Thread consume = new Thread(() => transcodeService.ConsumedTranscode(transcoder));
-                consume.Start();
             } catch (Exception e) {
                 logger.Error(e);
             }

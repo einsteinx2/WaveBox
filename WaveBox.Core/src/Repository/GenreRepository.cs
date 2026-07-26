@@ -23,6 +23,20 @@ namespace WaveBox.Core.Model.Repository {
             return this.database.GetSingle<Genre>("SELECT * FROM Genre WHERE GenreId = ?", genreId);
         }
 
+        // Song count per genre, one row per GenreId
+        public IList<GroupCount> SongCountsByGenre() {
+            return this.database.GetList<GroupCount>(
+                       "SELECT GenreId AS GroupId, COUNT(*) AS Count, 0 AS Total FROM Song " +
+                       "WHERE GenreId IS NOT NULL GROUP BY GenreId");
+        }
+
+        // Distinct album count per genre, one row per GenreId
+        public IList<GroupCount> AlbumCountsByGenre() {
+            return this.database.GetList<GroupCount>(
+                       "SELECT GenreId AS GroupId, COUNT(DISTINCT AlbumId) AS Count, 0 AS Total FROM Song " +
+                       "WHERE GenreId IS NOT NULL AND AlbumId IS NOT NULL GROUP BY GenreId");
+        }
+
         private static List<Genre> memCachedGenres = new List<Genre>();
         public Genre GenreForName(string genreName) {
             if ((object)genreName == null) {
