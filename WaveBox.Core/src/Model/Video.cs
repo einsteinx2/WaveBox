@@ -4,31 +4,30 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Cirrious.MvvmCross.Plugins.Sqlite;
-using Newtonsoft.Json;
-using Ninject;
+using System.Text.Json.Serialization;
 using WaveBox.Core.Model;
 using WaveBox.Core.Static;
 using WaveBox.Core.Model.Repository;
 
 namespace WaveBox.Core.Model {
     public class Video : MediaItem {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         public static readonly string[] ValidExtensions = { "m4v", "mp4", "mpg", "mkv", "avi" };
 
         [JsonIgnore, IgnoreRead, IgnoreWrite]
         public override ItemType ItemType { get { return ItemType.Video; } }
 
-        [JsonProperty("itemTypeId"), IgnoreRead, IgnoreWrite]
+        [JsonPropertyName("itemTypeId"), IgnoreRead, IgnoreWrite]
         public override int ItemTypeId { get { return (int)ItemType; } }
 
-        [JsonProperty("width")]
+        [JsonPropertyName("width")]
         public int? Width { get; set; }
 
-        [JsonProperty("height")]
+        [JsonPropertyName("height")]
         public int? Height { get; set; }
 
-        [JsonProperty("aspectRatio")]
+        [JsonPropertyName("aspectRatio")]
         public float? AspectRatio {
             get {
                 if ((object)Width == null || (object)Height == null || Height == 0) {
@@ -44,13 +43,13 @@ namespace WaveBox.Core.Model {
 
         public override void InsertMediaItem() {
             // Insert video
-            Injection.Kernel.Get<IVideoRepository>().InsertVideo(this, true);
+            Injection.Get<IVideoRepository>().InsertVideo(this, true);
 
             // Update art relationships
-            Injection.Kernel.Get<IArtRepository>().UpdateArtItemRelationship(ArtId, ItemId, true);
+            Injection.Get<IArtRepository>().UpdateArtItemRelationship(ArtId, ItemId, true);
 
             // Only update a folder art relationship if it has no folder art
-            Injection.Kernel.Get<IArtRepository>().UpdateArtItemRelationship(ArtId, FolderId, false);
+            Injection.Get<IArtRepository>().UpdateArtItemRelationship(ArtId, FolderId, false);
         }
 
         public override string ToString() {

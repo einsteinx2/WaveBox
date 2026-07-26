@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Newtonsoft.Json;
+using System.Text.Json.Nodes;
 using WaveBox.ApiHandler;
 using WaveBox.Core.ApiResponse;
 using WaveBox.Core.Model;
@@ -12,7 +12,7 @@ using WaveBox.Static;
 
 namespace WaveBox.ApiHandler.Handlers {
     class ScrobbleApiHandler : IApiHandler {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         public string Name { get { return "scrobble"; } }
 
@@ -100,7 +100,7 @@ namespace WaveBox.ApiHandler.Handlers {
 
             // Scrobble all plays
             string result = lfm.Scrobble(scrobbles, scrobbleType);
-            dynamic resp = null;
+            JsonNode resp = null;
 
             // No response, service must be offline
             if (result == null) {
@@ -110,20 +110,25 @@ namespace WaveBox.ApiHandler.Handlers {
 
             // If result is not null, store deserialize and store it
             try {
-                resp = JsonConvert.DeserializeObject(result);
+                resp = JsonNode.Parse(result);
             } catch (Exception e) {
                 logger.Error(e);
             }
 
+            if (resp == null) {
+                processor.WriteJson(new ScrobbleResponse("LFMServiceOffline"));
+                return;
+            }
+
             // Check for nowplaying or scrobbles fields
-            if ((resp.nowplaying != null) || (resp.scrobbles != null)) {
+            if ((resp["nowplaying"] != null) || (resp["scrobbles"] != null)) {
                 // Write blank scrobble response
                 processor.WriteJson(new ScrobbleResponse());
                 return;
             }
             // Write error JSON if it exists
-            else if (resp.error != null) {
-                processor.WriteJson(new ScrobbleResponse(string.Format("LFM{0}: {1}", resp.error, resp.message)));
+            else if (resp["error"] != null) {
+                processor.WriteJson(new ScrobbleResponse(string.Format("LFM{0}: {1}", resp["error"], resp["message"])));
                 return;
             }
         }

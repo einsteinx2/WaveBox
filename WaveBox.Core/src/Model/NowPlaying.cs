@@ -4,23 +4,22 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Timers;
-using Newtonsoft.Json;
-using Ninject;
+using System.Text.Json.Serialization;
 using WaveBox.Core.Model;
 using WaveBox.Core.Static;
 
 namespace WaveBox.Core.Model {
     public class NowPlaying {
-        [JsonProperty("startTime")]
+        [JsonPropertyName("startTime")]
         public long? StartTime { get; set; }
 
-        [JsonProperty("endTime")]
+        [JsonPropertyName("endTime")]
         public long? EndTime { get; set; }
 
-        [JsonProperty("user")]
+        [JsonPropertyName("user")]
         public User User { get; set; }
 
-        [JsonProperty("mediaItem")]
+        [JsonPropertyName("mediaItem")]
         public IMediaItem MediaItem { get; set; }
 
         [JsonIgnore]

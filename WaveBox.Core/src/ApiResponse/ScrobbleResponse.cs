@@ -1,12 +1,12 @@
 using System;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace WaveBox.Core.ApiResponse {
     public class ScrobbleResponse : IApiResponse {
-        [JsonProperty("error")]
+        [JsonPropertyName("error")]
         public string Error { get; set; }
 
-        [JsonProperty("authUrl")]
+        [JsonPropertyName("authUrl")]
         public string AuthUrl { get; set; }
 
         public ScrobbleResponse(string error = null, string authUrl = null) {

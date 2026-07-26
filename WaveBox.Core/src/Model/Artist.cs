@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Cirrious.MvvmCross.Plugins.Sqlite;
-using Newtonsoft.Json;
-using Ninject;
+using System.Text.Json.Serialization;
 using WaveBox.Core.Static;
 using WaveBox.Core.Model.Repository;
 
@@ -16,20 +15,20 @@ namespace WaveBox.Core.Model {
         [JsonIgnore, IgnoreRead, IgnoreWrite]
         public ItemType ItemType { get { return ItemType.Artist; } }
 
-        [JsonProperty("itemTypeId"), IgnoreRead, IgnoreWrite]
+        [JsonPropertyName("itemTypeId"), IgnoreRead, IgnoreWrite]
         public int ItemTypeId { get { return (int)ItemType; } }
 
-        [JsonProperty("artistId")]
+        [JsonPropertyName("artistId")]
         public int? ArtistId { get; set; }
 
-        [JsonProperty("artistName")]
+        [JsonPropertyName("artistName")]
         public string ArtistName { get; set; }
 
-        [JsonProperty("musicBrainzId")]
+        [JsonPropertyName("musicBrainzId")]
         public string MusicBrainzId { get; set; }
 
-        [JsonProperty("artId"), IgnoreWrite]
-        public int? ArtId { get { return Injection.Kernel.Get<IArtRepository>().ArtIdForItemId(ArtistId); } }
+        [JsonPropertyName("artId"), IgnoreWrite]
+        public int? ArtId { get { return Injection.Get<IArtRepository>().ArtIdForItemId(ArtistId); } }
 
         [JsonIgnore, IgnoreRead, IgnoreWrite]
         public string GroupingName { get { return ArtistName; } }
@@ -50,11 +49,11 @@ namespace WaveBox.Core.Model {
                 return new List<Album>();
             }
 
-            return Injection.Kernel.Get<IArtistRepository>().AlbumsForArtistId((int)ArtistId);
+            return Injection.Get<IArtistRepository>().AlbumsForArtistId((int)ArtistId);
         }
 
         public IList<Song> ListOfSongs() {
-            return Injection.Kernel.Get<ISongRepository>().SearchSongs("ArtistId", ArtistId.ToString());
+            return Injection.Get<ISongRepository>().SearchSongs("ArtistId", ArtistId.ToString());
         }
 
         public override string ToString() {

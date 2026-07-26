@@ -1,40 +1,40 @@
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace WaveBox.Core.Model {
     public class ServerSettingsData {
-        [JsonProperty("port")]
+        [JsonPropertyName("port")]
         public short Port { get; set; }
 
-        [JsonProperty("wsPort")]
+        [JsonPropertyName("wsPort")]
         public short WsPort { get; set; }
 
-        [JsonProperty("theme")]
+        [JsonPropertyName("theme")]
         public string Theme { get; set; }
 
-        [JsonProperty("mediaFolders")]
+        [JsonPropertyName("mediaFolders")]
         public IList<string> MediaFolders { get; set; }
 
-        [JsonProperty("podcastFolder")]
+        [JsonPropertyName("podcastFolder")]
         public string PodcastFolder { get; set; }
 
-        [JsonProperty("podcastCheckInterval")]
+        [JsonPropertyName("podcastCheckInterval")]
         public int PodcastCheckInterval { get; set; }
 
-        [JsonProperty("sessionTimeout")]
+        [JsonPropertyName("sessionTimeout")]
         public int SessionTimeout { get; set; }
 
-        [JsonProperty("prettyJson")]
+        [JsonPropertyName("prettyJson")]
         public bool PrettyJson { get; set; }
 
-        [JsonProperty("folderArtNames")]
+        [JsonPropertyName("folderArtNames")]
         public IList<string> FolderArtNames { get; set; }
 
-        [JsonProperty("crashReportEnable")]
+        [JsonPropertyName("crashReportEnable")]
         public bool CrashReportEnable { get; set; }
 
-        [JsonProperty("services")]
+        [JsonPropertyName("services")]
         public IList<string> Services { get; set; }
     }
 }

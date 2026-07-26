@@ -2,14 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Cirrious.MvvmCross.Plugins.Sqlite;
-using Ninject;
 using WaveBox.Core.Static;
 using WaveBox.Core.Model.Repository;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace WaveBox.Core.Model {
     public class Genre : IItem, IGroupingItem {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         [JsonIgnore, IgnoreRead, IgnoreWrite]
         public int? ItemId { get { return GenreId; } set { GenreId = ItemId; } }
@@ -17,17 +16,17 @@ namespace WaveBox.Core.Model {
         [JsonIgnore, IgnoreRead, IgnoreWrite]
         public ItemType ItemType { get { return ItemType.Genre; } }
 
-        [JsonProperty("itemTypeId"), IgnoreRead, IgnoreWrite]
+        [JsonPropertyName("itemTypeId"), IgnoreRead, IgnoreWrite]
         public int ItemTypeId { get { return (int)ItemType; } }
 
-        [JsonProperty("genreId")]
+        [JsonPropertyName("genreId")]
         public int? GenreId { get; set; }
 
-        [JsonProperty("genreName")]
+        [JsonPropertyName("genreName")]
         public string GenreName { get; set; }
 
         // Currently unused, only to satisfy IItem interface requirements
-        [JsonProperty("artId"), IgnoreRead, IgnoreWrite]
+        [JsonPropertyName("artId"), IgnoreRead, IgnoreWrite]
         public int? ArtId { get; set; }
 
         [JsonIgnore, IgnoreRead, IgnoreWrite]
@@ -38,7 +37,7 @@ namespace WaveBox.Core.Model {
                 return new List<Artist>();
             }
 
-            return Injection.Kernel.Get<IGenreRepository>().ListOfArtists((int)GenreId);
+            return Injection.Get<IGenreRepository>().ListOfArtists((int)GenreId);
         }
 
         public IList<Album> ListOfAlbums() {
@@ -46,7 +45,7 @@ namespace WaveBox.Core.Model {
                 return new List<Album>();
             }
 
-            return Injection.Kernel.Get<IGenreRepository>().ListOfAlbums((int)GenreId);
+            return Injection.Get<IGenreRepository>().ListOfAlbums((int)GenreId);
         }
 
         public IList<Song> ListOfSongs() {
@@ -54,7 +53,7 @@ namespace WaveBox.Core.Model {
                 return new List<Song>();
             }
 
-            return Injection.Kernel.Get<IGenreRepository>().ListOfSongs((int)GenreId);
+            return Injection.Get<IGenreRepository>().ListOfSongs((int)GenreId);
         }
 
         public IList<Folder> ListOfFolders() {
@@ -62,7 +61,7 @@ namespace WaveBox.Core.Model {
                 return new List<Folder>();
             }
 
-            return Injection.Kernel.Get<IGenreRepository>().ListOfFolders((int)GenreId);
+            return Injection.Get<IGenreRepository>().ListOfFolders((int)GenreId);
         }
 
         public override string ToString() {

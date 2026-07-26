@@ -1,26 +1,26 @@
 using System;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using System.Collections.Generic;
 using WaveBox.Core.Model;
 
 namespace WaveBox.Core.ApiResponse {
     public class SearchResponse : IApiResponse {
-        [JsonProperty("error")]
+        [JsonPropertyName("error")]
         public string Error { get; set; }
 
-        [JsonProperty("artists")]
+        [JsonPropertyName("artists")]
         public IList<Artist> Artists { get; set; }
 
-        [JsonProperty("albumArtists")]
+        [JsonPropertyName("albumArtists")]
         public IList<AlbumArtist> AlbumArtists { get; set; }
 
-        [JsonProperty("albums")]
+        [JsonPropertyName("albums")]
         public IList<Album> Albums { get; set; }
 
-        [JsonProperty("songs")]
+        [JsonPropertyName("songs")]
         public IList<Song> Songs { get; set; }
 
-        [JsonProperty("videos")]
+        [JsonPropertyName("videos")]
         public IList<Video> Videos { get; set; }
 
         public SearchResponse(string error, IList<Artist> artists, IList<AlbumArtist> albumArtists, IList<Album> albums, IList<Song> songs, IList<Video> videos) {

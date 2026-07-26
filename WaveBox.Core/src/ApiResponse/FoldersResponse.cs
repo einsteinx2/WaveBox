@@ -1,26 +1,26 @@
 using System;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using WaveBox.Core.Model;
 using System.Collections.Generic;
 
 namespace WaveBox.Core.ApiResponse {
     public class FoldersResponse : IApiResponse {
-        [JsonProperty("error")]
+        [JsonPropertyName("error")]
         public string Error { get; set; }
 
-        [JsonProperty("folders")]
+        [JsonPropertyName("folders")]
         public IList<Folder> Folders { get; set; }
 
-        [JsonProperty("containingFolder")]
+        [JsonPropertyName("containingFolder")]
         public Folder ContainingFolder { get; set; }
 
-        [JsonProperty("songs")]
+        [JsonPropertyName("songs")]
         public IList<Song> Songs { get; set; }
 
-        [JsonProperty("videos")]
+        [JsonPropertyName("videos")]
         public IList<Video> Videos { get; set; }
 
-        [JsonProperty("sectionPositions")]
+        [JsonPropertyName("sectionPositions")]
         public PairList<string, int> SectionPositions { get; set; }
 
         public FoldersResponse(string error, Folder containingFolder, IList<Folder> folders, IList<Song> songs, IList<Video>videos, PairList<string, int> sectionPositions) {

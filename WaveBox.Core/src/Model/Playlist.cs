@@ -5,15 +5,14 @@ using System.Linq;
 using System.Text;
 using System.Security.Cryptography;
 using Cirrious.MvvmCross.Plugins.Sqlite;
-using Newtonsoft.Json;
-using Ninject;
+using System.Text.Json.Serialization;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Static;
 using WaveBox.Core.Model.Repository;
 
 namespace WaveBox.Core.Model {
     public class Playlist : IItem, IGroupingItem {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         [JsonIgnore]
         public int? ItemId { get { return PlaylistId; } set { PlaylistId = ItemId; } }
@@ -21,29 +20,29 @@ namespace WaveBox.Core.Model {
         [JsonIgnore]
         public ItemType ItemType { get { return ItemType.Playlist; } }
 
-        [JsonProperty("itemTypeId")]
+        [JsonPropertyName("itemTypeId")]
         public int ItemTypeId { get { return (int)ItemType; } }
 
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public int? PlaylistId { get; set; }
 
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string PlaylistName { get; set; }
 
-        [JsonProperty("count")]
+        [JsonPropertyName("count")]
         public int? PlaylistCount { get; set; }
 
-        [JsonProperty("duration")]
+        [JsonPropertyName("duration")]
         public int? PlaylistDuration { get; set; }
 
-        [JsonProperty("md5Hash")]
+        [JsonPropertyName("md5Hash")]
         public string Md5Hash { get; set; }
 
-        [JsonProperty("lastUpdateTime")]
+        [JsonPropertyName("lastUpdateTime")]
         public long? LastUpdateTime { get; set; }
 
         // Currently unused, only to satisfy IItem interface requirements
-        [JsonProperty("artId"), IgnoreRead, IgnoreWrite]
+        [JsonPropertyName("artId"), IgnoreRead, IgnoreWrite]
         public int? ArtId { get; set; }
 
         [JsonIgnore, IgnoreRead, IgnoreWrite]
@@ -57,7 +56,7 @@ namespace WaveBox.Core.Model {
 
             ISQLiteConnection conn = null;
             try {
-                conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+                conn = Injection.Get<IDatabase>().GetSqliteConnection();
                 var result = conn.DeferredQuery<PlaylistItem>("SELECT ItemId FROM PlaylistItem WHERE PlaylistId = ?", PlaylistId);
 
                 foreach (PlaylistItem playlistItem in result) {
@@ -67,7 +66,7 @@ namespace WaveBox.Core.Model {
             } catch (Exception e) {
                 logger.Error(e);
             } finally {
-                Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+                Injection.Get<IDatabase>().CloseSqliteConnection(conn);
             }
 
             return itemIds.ToString().MD5().Replace("-", string.Empty);
@@ -76,10 +75,10 @@ namespace WaveBox.Core.Model {
         public void UpdateDatabase() {
             ISQLiteConnection conn = null;
             try {
-                conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+                conn = Injection.Get<IDatabase>().GetSqliteConnection();
 
                 if (PlaylistId == null) {
-                    int? itemId = Injection.Kernel.Get<IItemRepository>().GenerateItemId(ItemType.Playlist);
+                    int? itemId = Injection.Get<IItemRepository>().GenerateItemId(ItemType.Playlist);
                     if (itemId == null) {
                         return;
                     }
@@ -101,7 +100,7 @@ namespace WaveBox.Core.Model {
             } catch (Exception e) {
                 logger.Error(e);
             } finally {
-                Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+                Injection.Get<IDatabase>().CloseSqliteConnection(conn);
             }
         }
 
@@ -109,14 +108,14 @@ namespace WaveBox.Core.Model {
             ISQLiteConnection conn = null;
 
             try {
-                conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+                conn = Injection.Get<IDatabase>().GetSqliteConnection();
                 return conn.ExecuteScalar<int>("SELECT ItemPosition FROM PlaylistItem " +
                                                "WHERE PlaylistId = ? AND ItemType = ? " +
                                                "ORDER BY ItemPosition LIMIT 1", PlaylistId, item.ItemTypeId);
             } catch (Exception e) {
                 logger.Error(e);
             } finally {
-                Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+                Injection.Get<IDatabase>().CloseSqliteConnection(conn);
             }
 
             return 0;
@@ -125,15 +124,15 @@ namespace WaveBox.Core.Model {
         public IMediaItem MediaItemAtIndex(int index) {
             ISQLiteConnection conn = null;
             try {
-                conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+                conn = Injection.Get<IDatabase>().GetSqliteConnection();
                 var result = conn.DeferredQuery<PlaylistItem>("SELECT * FROM PlaylistItem WHERE PlaylistId = ? AND ItemPosition = ? LIMIT 1", PlaylistId, index);
 
                 foreach (PlaylistItem playlistItem in result) {
                     switch (playlistItem.ItemType) {
                     case ItemType.Song:
-                        return Injection.Kernel.Get<ISongRepository>().SongForId((int)playlistItem.ItemId);
+                        return Injection.Get<ISongRepository>().SongForId((int)playlistItem.ItemId);
                     case ItemType.Video:
-                        return Injection.Kernel.Get<IVideoRepository>().VideoForId((int)playlistItem.ItemId);
+                        return Injection.Get<IVideoRepository>().VideoForId((int)playlistItem.ItemId);
                     default:
                         break;
                     }
@@ -141,7 +140,7 @@ namespace WaveBox.Core.Model {
             } catch (Exception e) {
                 logger.Error(e);
             } finally {
-                Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+                Injection.Get<IDatabase>().CloseSqliteConnection(conn);
             }
 
             return new MediaItem();
@@ -150,13 +149,13 @@ namespace WaveBox.Core.Model {
         public IList<IMediaItem> ListOfMediaItems() {
             ISQLiteConnection conn = null;
             try {
-                conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+                conn = Injection.Get<IDatabase>().GetSqliteConnection();
                 var result = conn.DeferredQuery<PlaylistItem>("SELECT * FROM PlaylistItem WHERE PlaylistId = ? ORDER BY ItemPosition", PlaylistId);
 
                 IList<IMediaItem> items = new List<IMediaItem>();
                 foreach (PlaylistItem playlistItem in result) {
                     if (!ReferenceEquals(playlistItem.ItemId, null)) {
-                        IMediaItem item = Injection.Kernel.Get<IMediaItemRepository>().MediaItemForId((int)playlistItem.ItemId);
+                        IMediaItem item = Injection.Get<IMediaItemRepository>().MediaItemForId((int)playlistItem.ItemId);
                         if (!ReferenceEquals(item, null)) {
                             items.Add(item);
                         }
@@ -167,7 +166,7 @@ namespace WaveBox.Core.Model {
             } catch (Exception e) {
                 logger.Error(e);
             } finally {
-                Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+                Injection.Get<IDatabase>().CloseSqliteConnection(conn);
             }
 
             return new List<IMediaItem>();
@@ -199,7 +198,7 @@ namespace WaveBox.Core.Model {
 
             ISQLiteConnection conn = null;
             try {
-                conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+                conn = Injection.Get<IDatabase>().GetSqliteConnection();
                 conn.BeginTransaction();
                 conn.ExecuteLogged("DELETE FROM PlaylistItem WHERE PlaylistId = ? AND ItemPosition = ?", PlaylistId, index);
                 conn.ExecuteLogged("UPDATE PlaylistItem SET ItemPosition = ItemPosition - 1 WHERE PlaylistId = ? AND ItemPosition > ?", PlaylistId, index);
@@ -210,14 +209,14 @@ namespace WaveBox.Core.Model {
                 }
                 logger.Error(e);
             } finally {
-                Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+                Injection.Get<IDatabase>().CloseSqliteConnection(conn);
             }
         }
 
         public void RemoveMediaItemAtIndexes(IList<int> indices) {
             ISQLiteConnection conn = null;
             try {
-                conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+                conn = Injection.Get<IDatabase>().GetSqliteConnection();
                 conn.BeginTransaction();
 
                 // delete the items at the indicated indices
@@ -243,7 +242,7 @@ namespace WaveBox.Core.Model {
                 }
                 logger.Error(e);
             } finally {
-                Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+                Injection.Get<IDatabase>().CloseSqliteConnection(conn);
             }
         }
 
@@ -259,7 +258,7 @@ namespace WaveBox.Core.Model {
             ISQLiteConnection conn = null;
             try {
                 // to do - better way of knowing whether or not a query has been successfully completed.
-                conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+                conn = Injection.Get<IDatabase>().GetSqliteConnection();
                 conn.BeginTransaction();
 
                 // Get the item out of the way to prevent constraint violations
@@ -292,16 +291,16 @@ namespace WaveBox.Core.Model {
                 }
                 logger.Error(e);
             } finally {
-                Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+                Injection.Get<IDatabase>().CloseSqliteConnection(conn);
             }
         }
 
         public void AddMediaItem(IMediaItem item, bool updateDatabase = true) {
             ISQLiteConnection conn = null;
             try {
-                int? id = Injection.Kernel.Get<IItemRepository>().GenerateItemId(ItemType.PlaylistItem);
+                int? id = Injection.Get<IItemRepository>().GenerateItemId(ItemType.PlaylistItem);
                 // to do - better way of knowing whether or not a query has been successfully completed.
-                conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+                conn = Injection.Get<IDatabase>().GetSqliteConnection();
                 var playlistItem = new PlaylistItem();
                 playlistItem.PlaylistItemId = id;
                 playlistItem.PlaylistId = PlaylistId;
@@ -321,7 +320,7 @@ namespace WaveBox.Core.Model {
             } catch (Exception e) {
                 logger.Error(e);
             } finally {
-                Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+                Injection.Get<IDatabase>().CloseSqliteConnection(conn);
             }
         }
 
@@ -338,7 +337,7 @@ namespace WaveBox.Core.Model {
         }
 
         public void AddMediaItem(int itemId, bool updateDatabase = true) {
-            IMediaItem item = Injection.Kernel.Get<IMediaItemRepository>().MediaItemForId(itemId);
+            IMediaItem item = Injection.Get<IMediaItemRepository>().MediaItemForId(itemId);
 
             if (!ReferenceEquals(item, null)) {
                 AddMediaItem(item, updateDatabase);
@@ -349,7 +348,7 @@ namespace WaveBox.Core.Model {
             IList<IMediaItem> items = new List<IMediaItem>();
             foreach (int itemId in itemIds) {
                 logger.IfInfo("Checking item id " + itemId);
-                IMediaItem item = Injection.Kernel.Get<IMediaItemRepository>().MediaItemForId(itemId);
+                IMediaItem item = Injection.Get<IMediaItemRepository>().MediaItemForId(itemId);
                 if (!ReferenceEquals(item, null)) {
                     logger.IfInfo("Found item " + item);
                     items.Add(item);
@@ -360,7 +359,7 @@ namespace WaveBox.Core.Model {
         }
 
         public void InsertMediaItem(int itemId, int index) {
-            IMediaItem item = Injection.Kernel.Get<IMediaItemRepository>().MediaItemForId(itemId);
+            IMediaItem item = Injection.Get<IMediaItemRepository>().MediaItemForId(itemId);
             InsertMediaItem(item, index);
         }
 
@@ -372,11 +371,11 @@ namespace WaveBox.Core.Model {
 
             ISQLiteConnection conn = null;
             try {
-                int? id = Injection.Kernel.Get<IItemRepository>().GenerateItemId(ItemType.PlaylistItem);
+                int? id = Injection.Get<IItemRepository>().GenerateItemId(ItemType.PlaylistItem);
 
                 if (!ReferenceEquals(id, null)) {
                     // to do - better way of knowing whether or not a query has been successfully completed.
-                    conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+                    conn = Injection.Get<IDatabase>().GetSqliteConnection();
                     conn.BeginTransaction();
                     for (int position = (int)PlaylistCount - 1; position >= index; position--) {
                         logger.IfInfo("Updating position " + position + " to " + (position + 1));
@@ -415,19 +414,19 @@ namespace WaveBox.Core.Model {
                 }
                 logger.Error(e);
             } finally {
-                Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+                Injection.Get<IDatabase>().CloseSqliteConnection(conn);
             }
         }
 
         public void ClearPlaylist() {
             ISQLiteConnection conn = null;
             try {
-                conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+                conn = Injection.Get<IDatabase>().GetSqliteConnection();
                 conn.ExecuteLogged("DELETE FROM PlaylistItem WHERE PlaylistId = ?", PlaylistId);
             } catch (Exception e) {
                 logger.Error(e);
             } finally {
-                Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+                Injection.Get<IDatabase>().CloseSqliteConnection(conn);
             }
 
             PlaylistCount = 0;
@@ -449,7 +448,7 @@ namespace WaveBox.Core.Model {
             ISQLiteConnection conn = null;
             try {
                 // Delete the entry from the Playlist table
-                conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+                conn = Injection.Get<IDatabase>().GetSqliteConnection();
                 conn.ExecuteLogged("DELETE FROM Playlist WHERE PlaylistId = ?", PlaylistId);
 
                 // Clear the playlist items
@@ -457,7 +456,7 @@ namespace WaveBox.Core.Model {
             } catch (Exception e) {
                 logger.Error(e);
             } finally {
-                Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+                Injection.Get<IDatabase>().CloseSqliteConnection(conn);
             }
         }
 

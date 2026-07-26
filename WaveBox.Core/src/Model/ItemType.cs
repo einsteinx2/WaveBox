@@ -27,7 +27,7 @@ namespace WaveBox.Core.Model {
     public static class ItemTypeExtensions {
         public static ItemType ItemTypeForId(int id) {
             // check the id number against all the enum types
-            foreach (ItemType type in Enum.GetValues(typeof(ItemType))) {
+            foreach (ItemType type in Enum.GetValues<ItemType>()) {
                 if ((int)type == id) {
                     return type;
                 }
