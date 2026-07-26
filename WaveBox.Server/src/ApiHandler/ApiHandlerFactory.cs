@@ -1,18 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text;
-using Ninject;
+using WaveBox.ApiHandler.Handlers;
 using WaveBox.Core.Extensions;
 using WaveBox.Server;
 using WaveBox.Static;
 
 namespace WaveBox.ApiHandler {
     public class ApiHandlerFactory : IApiHandlerFactory {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger(typeof(ApiHandlerFactory));
 
-        // List of API handlers which are keyed and instantiated upon discovery
+        // List of API handlers keyed by name (explicit list - reflection scanning is not NativeAOT-compatible)
         private List<IApiHandler> apiHandlers;
 
         /// <summary>
@@ -24,23 +23,40 @@ namespace WaveBox.ApiHandler {
         }
 
         /// <summary>
-        /// Use reflection to scan for all available IApiHandler-implementing classes, register them as valid API
-        /// handlers to be created by factory
+        /// Register all available API handlers with the factory
         /// <summary>
         public void Initialize() {
-            try {
-                // Initialize list
-                apiHandlers = new List<IApiHandler>();
+            this.apiHandlers = new List<IApiHandler> {
+                new AlbumArtistsApiHandler(),
+                new AlbumsApiHandler(),
+                new ArtApiHandler(),
+                new ArtistsApiHandler(),
+                new DatabaseApiHandler(),
+                new ErrorApiHandler(),
+                new FanArtThumbnailApiHandler(),
+                new FavoriteApiHandler(),
+                new FoldersApiHandler(),
+                new GenresApiHandler(),
+                new LoginApiHandler(),
+                new LogoutApiHandler(),
+                new NowPlayingApiHandler(),
+                new PlaylistsApiHandler(),
+                new ScrobbleApiHandler(),
+                new SearchApiHandler(),
+                new SettingsApiHandler(),
+                new SongsApiHandler(),
+                new StatsApiHandler(),
+                new StatusApiHandler(),
+                new StreamApiHandler(),
+                new TranscodeApiHandler(),
+                new TranscodeHlsApiHandler(),
+                new UsersApiHandler(),
+                new VideosApiHandler(),
+                new WebApiHandler(),
+            };
 
-                // Grab all available types which implement IApiHandler
-                foreach (Type t in Assembly.GetExecutingAssembly().GetTypes().Where(x => x.GetInterfaces().Contains(typeof(IApiHandler)))) {
-                    // Discover and instantiate all available apiHandlers
-                    IApiHandler instance = (IApiHandler)Activator.CreateInstance(t);
-                    logger.IfInfo("Discovered API: " + instance.Name + " -> " + t);
-                    this.apiHandlers.Add(instance);
-                }
-            } catch (Exception e) {
-                logger.Error(e);
+            foreach (IApiHandler handler in this.apiHandlers) {
+                logger.IfInfo("Registered API: " + handler.Name + " -> " + handler.GetType());
             }
         }
     }
