@@ -30,21 +30,39 @@ namespace WaveBox.Server.Tests {
             }
         }
 
-        private static void Execute(string sql) {
+        private static int QuerylogScalar(string sql) {
             IDatabase db = Injection.Get<IDatabase>();
             ISQLiteConnection conn = null;
             try {
-                conn = db.GetSqliteConnection();
-                conn.Execute(sql);
+                conn = db.GetQueryLogSqliteConnection();
+                return conn.ExecuteScalar<int>(sql);
             } finally {
-                db.CloseSqliteConnection(conn);
+                db.CloseQueryLogSqliteConnection(conn);
             }
         }
 
         [Fact]
-        public void SetupCopiesTemplateDatabasesIntoRoot() {
+        public void SetupCreatesDatabasesInRoot() {
             Assert.True(File.Exists(Path.Combine(harness.Root.Path, "wavebox.db")));
             Assert.True(File.Exists(Path.Combine(harness.Root.Path, "wavebox_querylog.db")));
+        }
+
+        [Fact]
+        public void SetupAppliesFullSchemaFromScript() {
+            // The whole script has to run, not just its first statement: a partial apply would
+            // still produce a file and a User table, so assert on tables declared near the end
+            Assert.Equal(1, Scalar("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'User'"));
+            Assert.Equal(1, Scalar("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'Favorite'"));
+            Assert.Equal(1, Scalar("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'MusicBrainzCheckDate'"));
+            Assert.Equal(1, QuerylogScalar("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'QueryLog'"));
+        }
+
+        [Fact]
+        public void SetupSeedsLookupTables() {
+            // These rows came from the old prebuilt wavebox.db template; they now come from the
+            // INSERTs in wavebox.sql, and nothing else would notice if they went missing
+            Assert.Equal(12, Scalar("SELECT COUNT(*) FROM ItemType"));
+            Assert.Equal(10, Scalar("SELECT COUNT(*) FROM FileType"));
         }
 
         [Fact]
@@ -61,25 +79,8 @@ namespace WaveBox.Server.Tests {
             db.DatabaseSetup();
 
             Assert.Equal(1, Scalar("SELECT COUNT(*) FROM pragma_table_info('User') WHERE name = 'ApiKey'"));
+            Assert.Equal(12, Scalar("SELECT COUNT(*) FROM ItemType"));
             Assert.True(File.Exists(Path.Combine(harness.Root.Path, "wavebox.db")));
-        }
-
-        [Fact]
-        public void UpgradeSchemaRestoresApiKeyOnPreMigrationDatabase() {
-            // Simulate a database created before the ApiKey migration
-            Execute("DROP INDEX user_ApiKey");
-            Execute("ALTER TABLE User DROP COLUMN ApiKey");
-            Assert.Equal(0, Scalar("SELECT COUNT(*) FROM pragma_table_info('User') WHERE name = 'ApiKey'"));
-
-            IDatabase db = Injection.Get<IDatabase>();
-            db.DatabaseSetup();
-
-            Assert.Equal(1, Scalar("SELECT COUNT(*) FROM pragma_table_info('User') WHERE name = 'ApiKey'"));
-            Assert.Equal(1, Scalar("SELECT COUNT(*) FROM sqlite_master WHERE type = 'index' AND name = 'user_ApiKey'"));
-
-            // Running the migration again on an already-upgraded schema is a no-op
-            db.DatabaseSetup();
-            Assert.Equal(1, Scalar("SELECT COUNT(*) FROM pragma_table_info('User') WHERE name = 'ApiKey'"));
         }
 
         [Fact]

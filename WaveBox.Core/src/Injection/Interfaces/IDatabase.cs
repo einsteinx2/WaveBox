@@ -9,10 +9,10 @@ namespace WaveBox.Core {
 
         int Version { get; }
 
-        string DatabaseTemplatePath { get; }
+        string DatabaseSchemaPath { get; }
         string DatabasePath { get; }
 
-        string QuerylogTemplatePath { get; }
+        string QuerylogSchemaPath { get; }
         string QuerylogPath { get; }
 
         void DatabaseSetup();

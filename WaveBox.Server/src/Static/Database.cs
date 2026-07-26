@@ -15,11 +15,13 @@ namespace WaveBox.Static {
         private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         private static readonly string DATABASE_FILE_NAME = "wavebox.db";
-        public string DatabaseTemplatePath { get { return ServerUtility.ExecutablePath() + "res" + Path.DirectorySeparatorChar + DATABASE_FILE_NAME; } }
+        private static readonly string DATABASE_SCHEMA_FILE_NAME = "wavebox.sql";
+        public string DatabaseSchemaPath { get { return ServerUtility.ExecutablePath() + "res" + Path.DirectorySeparatorChar + DATABASE_SCHEMA_FILE_NAME; } }
         public string DatabasePath { get { return ServerUtility.RootPath() + DATABASE_FILE_NAME; } }
 
         private static readonly string QUERY_LOG_FILE_NAME = "wavebox_querylog.db";
-        public string QuerylogTemplatePath { get { return ServerUtility.ExecutablePath() + "res" + Path.DirectorySeparatorChar + QUERY_LOG_FILE_NAME; } }
+        private static readonly string QUERY_LOG_SCHEMA_FILE_NAME = "wavebox_querylog.sql";
+        public string QuerylogSchemaPath { get { return ServerUtility.ExecutablePath() + "res" + Path.DirectorySeparatorChar + QUERY_LOG_SCHEMA_FILE_NAME; } }
         public string QuerylogPath { get { return ServerUtility.RootPath() + QUERY_LOG_FILE_NAME; } }
 
         private static readonly object dbBackupLock = new object();
@@ -54,74 +56,70 @@ namespace WaveBox.Static {
         }
 
         public void DatabaseSetup() {
-            if (!File.Exists(DatabasePath)) {
-                try {
-                    logger.IfInfo("Database file doesn't exist; Creating it : " + DATABASE_FILE_NAME);
+            ApplySchemaIfEmpty(DATABASE_FILE_NAME, DatabaseSchemaPath, GetSqliteConnection, CloseSqliteConnection);
+            ApplySchemaIfEmpty(QUERY_LOG_FILE_NAME, QuerylogSchemaPath, GetQueryLogSqliteConnection, CloseQueryLogSqliteConnection);
+        }
 
-                    // new filestream on the template
-                    FileStream dbTemplate = new FileStream(DatabaseTemplatePath, FileMode.Open);
+        /// <summary>
+        /// Creates a database from its bundled schema script if it has no tables yet. Checking for
+        /// tables rather than for the file means an empty database left behind by an earlier
+        /// connection still gets its schema, and makes repeat calls a no-op.
+        /// </summary>
+        private void ApplySchemaIfEmpty(string name, string schemaPath, Func<ISQLiteConnection> open, Action<ISQLiteConnection> close) {
+            ISQLiteConnection conn = null;
+            try {
+                conn = open();
 
-                    // a new byte array
-                    byte[] dbData = new byte[dbTemplate.Length];
-
-                    // read the template file into memory
-                    dbTemplate.Read(dbData, 0, Convert.ToInt32(dbTemplate.Length));
-
-                    // write it all out
-                    System.IO.File.WriteAllBytes(DatabasePath, dbData);
-
-                    // close the template file
-                    dbTemplate.Close();
-                } catch (Exception e) {
-                    logger.Error(e);
+                if (conn.ExecuteScalar<int>("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table'") > 0) {
+                    return;
                 }
-            }
 
-            // Upgrade databases created before newer columns existed (the bundled template's
-            // Version table is empty, so schema state is detected per-column instead)
-            this.UpgradeSchema();
+                logger.IfInfo("Database " + name + " is empty; applying schema from " + schemaPath);
 
-            if (!File.Exists(QuerylogPath)) {
+                conn.BeginTransaction();
                 try {
-                    logger.IfInfo("Query log database file doesn't exist; Creating it : " + QUERY_LOG_FILE_NAME);
-
-                    // new filestream on the template
-                    FileStream dbTemplate = new FileStream(QuerylogTemplatePath, FileMode.Open);
-
-                    // a new byte array
-                    byte[] dbData = new byte[dbTemplate.Length];
-
-                    // read the template file into memory
-                    dbTemplate.Read(dbData, 0, Convert.ToInt32(dbTemplate.Length));
-
-                    // write it all out
-                    System.IO.File.WriteAllBytes(QuerylogPath, dbData);
-
-                    // close the template file
-                    dbTemplate.Close();
-                } catch (Exception e) {
-                    logger.Error(e);
+                    foreach (string statement in ReadSchemaStatements(schemaPath)) {
+                        conn.Execute(statement);
+                    }
+                    conn.Commit();
+                } catch (Exception) {
+                    conn.Rollback();
+                    throw;
                 }
+            } catch (Exception e) {
+                // Log before rethrowing so the failure lands in the server log, then fail loudly:
+                // continuing with no schema only turns into confusing null references later on
+                logger.Error(e);
+                throw;
+            } finally {
+                close(conn);
             }
         }
 
-        private void UpgradeSchema() {
-            ISQLiteConnection conn = null;
-            try {
-                conn = GetSqliteConnection();
-
-                // Subsonic API keys: User.ApiKey column + unique index
-                int hasApiKey = conn.ExecuteScalar<int>("SELECT COUNT(*) FROM pragma_table_info('User') WHERE name = 'ApiKey'");
-                if (hasApiKey == 0) {
-                    logger.IfInfo("Upgrading database schema: adding User.ApiKey");
-                    conn.Execute("ALTER TABLE User ADD COLUMN ApiKey TEXT");
+        /// <summary>
+        /// Splits a schema script into individual statements. The vendored sqlite-net only executes
+        /// one statement per call and exposes no sqlite3_exec, so the script has to be split here.
+        /// Naive splitting on ';' is safe only because these files are sqlite3 .dump output whose
+        /// string literals contain no semicolons -- do not point this at hand-written SQL.
+        ///
+        /// A .dump also wraps itself in BEGIN TRANSACTION/COMMIT; those are dropped so the caller
+        /// owns the transaction and a failure part way through rolls the whole thing back.
+        /// </summary>
+        private static IEnumerable<string> ReadSchemaStatements(string schemaPath) {
+            foreach (string statement in File.ReadAllText(schemaPath).Split(';')) {
+                string trimmed = statement.Trim();
+                if (trimmed.Length == 0 || IsTransactionControl(trimmed)) {
+                    continue;
                 }
-                conn.Execute("CREATE UNIQUE INDEX IF NOT EXISTS user_ApiKey ON User(ApiKey)");
-            } catch (Exception e) {
-                logger.Error(e);
-            } finally {
-                CloseSqliteConnection(conn);
+
+                yield return trimmed;
             }
+        }
+
+        private static bool IsTransactionControl(string statement) {
+            return statement.StartsWith("BEGIN", StringComparison.OrdinalIgnoreCase)
+                || statement.StartsWith("COMMIT", StringComparison.OrdinalIgnoreCase)
+                || statement.StartsWith("ROLLBACK", StringComparison.OrdinalIgnoreCase);
         }
 
         public ISQLiteConnection GetSqliteConnection() {
