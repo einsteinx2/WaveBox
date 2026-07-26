@@ -208,16 +208,16 @@ namespace WaveBox.Static {
             // Notes:
             //  - all settings must be converted to string
             //  - convert booleans using ToString().ToLower()
-            //  - convert lists using ToCSV(true) extension method, for quoted list
+            //  - convert lists using ToQuotedJsonCsv, so items re-parse as valid JSON strings
             //  - ... sorry that this is probably the best way to do this.
             try {
                 templateBuilder
                 .Replace("{setting-port}", settingsModel.Port.ToString())
                 .Replace("{setting-theme}", settingsModel.Theme)
-                .Replace("{setting-mediaFolders}", settingsModel.MediaFolders.ToCSV(true))
+                .Replace("{setting-mediaFolders}", ToQuotedJsonCsv(settingsModel.MediaFolders))
                 .Replace("{setting-sessionTimeout}", settingsModel.SessionTimeout.ToString())
                 .Replace("{setting-prettyJson}", settingsModel.PrettyJson.ToString().ToLower())
-                .Replace("{setting-folderArtNames}", settingsModel.FolderArtNames.ToCSV(true))
+                .Replace("{setting-folderArtNames}", ToQuotedJsonCsv(settingsModel.FolderArtNames))
                 // Advanced configuration
                 .Replace("{setting-crashReportEnable}", settingsModel.CrashReportEnable.ToString().ToLower());
 
@@ -246,6 +246,24 @@ namespace WaveBox.Static {
                 logger.Error("Could not write settings to file: " + SettingsPath());
                 logger.Error(e);
             }
+        }
+
+        // Render a list as comma-delimited quoted JSON strings for the conf template. A plain quoted
+        // CSV corrupts the conf on Windows: unescaped backslashes in paths are invalid JSON escapes,
+        // so the whole file silently fails to parse on the next reload
+        private static string ToQuotedJsonCsv(IList<string> list) {
+            if (list == null || list.Count == 0) {
+                return "\"\"";
+            }
+
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < list.Count; i++) {
+                if (i > 0) {
+                    builder.Append(", ");
+                }
+                builder.Append('"').Append(JsonEncodedText.Encode(list[i]).ToString()).Append('"');
+            }
+            return builder.ToString();
         }
 
         public void SettingsSetup() {

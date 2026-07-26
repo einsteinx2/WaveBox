@@ -108,8 +108,26 @@ namespace WaveBox.Server.Tests {
             Assert.True(settings.WriteSettings("{\"mediaFolders\": [\"" + escaped + "\"]}"));
             Assert.Equal(new[] { folder }, settings.MediaFolders);
 
+            // Reload re-parses the conf that FlushSettings wrote to disk. On Windows this is where
+            // unescaped backslashes in paths used to corrupt the file (regression test)
             settings.Reload();
             Assert.Equal(new[] { folder }, settings.MediaFolders);
+        }
+
+        [Fact]
+        public void FlushSettingsJsonEscapesFolderPaths() {
+            settings.SettingsSetup();
+
+            // A folder name containing a backslash and a quote: legal characters on Unix filenames,
+            // and on Windows the backslash simply nests a directory. Either way the flushed conf
+            // must escape them to survive the disk round trip on every OS
+            string tricky = Path.Combine(harness.Root.Path, "back\\slash \"quote\"");
+            Assert.True(settings.WriteSettings(
+                "{\"mediaFolders\": [\"" + tricky.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"]}"));
+            Assert.Equal(new[] { tricky }, settings.MediaFolders);
+
+            settings.Reload();
+            Assert.Equal(new[] { tricky }, settings.MediaFolders);
         }
     }
 }
