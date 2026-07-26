@@ -14,12 +14,14 @@ namespace WaveBox.Core {
         public static void EnsurePreserved() {
             Root<Album>();
             Root<AlbumArtist>();
+            Root<AlbumFolder>();
             Root<Art>();
             Root<ArtItem>();
             Root<Artist>();
             Root<Favorite>();
             Root<Folder>();
             Root<Genre>();
+            Root<GroupCount>();
             Root<MediaItem>();
             Root<Playlist>();
             Root<PlaylistItem>();

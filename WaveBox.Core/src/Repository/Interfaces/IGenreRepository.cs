@@ -10,6 +10,8 @@ namespace WaveBox.Core.Model.Repository {
         IList<Album> ListOfAlbums(int genreId);
         IList<Song> ListOfSongs(int genreId);
         IList<Folder> ListOfFolders(int genreId);
+        IList<GroupCount> SongCountsByGenre();
+        IList<GroupCount> AlbumCountsByGenre();
         bool InsertGenre(Genre genre, bool replace);
     }
 }

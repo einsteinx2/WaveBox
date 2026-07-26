@@ -46,6 +46,9 @@ namespace WaveBox {
             // Root ORM-mapped model types so trimming/NativeAOT preserves their reflection metadata
             ModelTypeRegistry.EnsurePreserved();
 
+            // Root Subsonic DTO types for the reflection-based Subsonic XML serializer
+            WaveBox.Core.ApiResponse.Subsonic.SubsonicDtoRegistry.EnsurePreserved();
+
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
             short port = ReadPortFromConf();
@@ -57,6 +60,7 @@ namespace WaveBox {
 
             builder.Services.AddWaveBoxCore().AddWaveBoxServer();
             builder.Services.AddSingleton<ApiDispatcher>();
+            builder.Services.AddSingleton<WaveBox.Subsonic.SubsonicDispatcher>();
             builder.Services.AddHostedService<WaveBoxLifecycleService>();
 
             // Standards-compliant gzip/deflate for text responses (replaces the hand-rolled negotiation)
@@ -87,6 +91,10 @@ namespace WaveBox {
             WaveBox.Core.Logging.LogManager.SetFactory(app.Services.GetRequiredService<Microsoft.Extensions.Logging.ILoggerFactory>());
 
             app.UseResponseCompression();
+
+            // Subsonic-compatible API branch; registered before the terminal legacy handler
+            WaveBox.Subsonic.SubsonicDispatcher subsonicDispatcher = app.Services.GetRequiredService<WaveBox.Subsonic.SubsonicDispatcher>();
+            app.Map("/rest", branch => branch.Run(subsonicDispatcher.ProcessAsync));
 
             // Single terminal handler: /api dispatch plus web UI, matching the legacy server's routing
             ApiDispatcher dispatcher = app.Services.GetRequiredService<ApiDispatcher>();

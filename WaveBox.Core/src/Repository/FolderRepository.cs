@@ -126,6 +126,16 @@ namespace WaveBox.Core.Model.Repository {
             return this.database.GetList<Folder>("SELECT * FROM Folder WHERE ParentFolderId = ? ORDER BY FolderName COLLATE NOCASE", folderId);
         }
 
+        // Substring search on folder name, media-folder roots excluded
+        public IList<Folder> SearchFolders(string query) {
+            if ((object)query == null) {
+                return new List<Folder>();
+            }
+            return this.database.GetList<Folder>(
+                       "SELECT * FROM Folder WHERE ParentFolderId IS NOT NULL AND FolderName LIKE ? ORDER BY FolderName COLLATE NOCASE",
+                       "%" + query + "%");
+        }
+
         public int? GetParentFolderId(string path) {
             string parentFolderPath = Directory.GetParent(path).FullName;
 

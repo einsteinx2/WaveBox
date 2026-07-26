@@ -92,6 +92,62 @@ namespace WaveBox.Core.Model.Repository {
             return this.database.GetList<Album>("SELECT * FROM Album WHERE MusicBrainzId IS NULL");
         }
 
+        // Albums by date added, newest first (Item.Timestamp is stamped when the item id is generated)
+        public IList<Album> NewestAlbums(int limit, int offset) {
+            return this.database.GetList<Album>(
+                       "SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Album " +
+                       "LEFT JOIN AlbumArtist ON Album.AlbumArtistId = AlbumArtist.AlbumArtistId " +
+                       "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
+                       "JOIN Item ON Item.ItemId = Album.AlbumId " +
+                       "ORDER BY Item.Timestamp DESC LIMIT ? OFFSET ?",
+                       limit, offset);
+        }
+
+        // Albums by last play time, most recent first (album-level PLAYED rows in the Stat table)
+        public IList<Album> RecentAlbums(int limit, int offset) {
+            return this.database.GetList<Album>(
+                       "SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Stat " +
+                       "JOIN Album ON Album.AlbumId = Stat.ItemId " +
+                       "LEFT JOIN AlbumArtist ON Album.AlbumArtistId = AlbumArtist.AlbumArtistId " +
+                       "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
+                       "WHERE Stat.StatType = ? " +
+                       "GROUP BY Album.AlbumId ORDER BY MAX(Stat.Timestamp) DESC LIMIT ? OFFSET ?",
+                       (int)StatType.PLAYED, limit, offset);
+        }
+
+        // Albums by play count, most played first
+        public IList<Album> FrequentAlbums(int limit, int offset) {
+            return this.database.GetList<Album>(
+                       "SELECT Album.*, AlbumArtist.AlbumArtistName, ArtItem.ArtId FROM Stat " +
+                       "JOIN Album ON Album.AlbumId = Stat.ItemId " +
+                       "LEFT JOIN AlbumArtist ON Album.AlbumArtistId = AlbumArtist.AlbumArtistId " +
+                       "LEFT JOIN ArtItem ON Album.AlbumId = ArtItem.ItemId " +
+                       "WHERE Stat.StatType = ? " +
+                       "GROUP BY Album.AlbumId ORDER BY COUNT(Stat.StatId) DESC LIMIT ? OFFSET ?",
+                       (int)StatType.PLAYED, limit, offset);
+        }
+
+        // Representative folder per album (the folder holding its songs), one row per AlbumId
+        public IList<AlbumFolder> FoldersByAlbum() {
+            return this.database.GetList<AlbumFolder>(
+                       "SELECT AlbumId, MIN(FolderId) AS FolderId FROM Song " +
+                       "WHERE AlbumId IS NOT NULL AND FolderId IS NOT NULL GROUP BY AlbumId");
+        }
+
+        // Song count and total duration per album, one row per AlbumId
+        public IList<GroupCount> SongCountsByAlbum() {
+            return this.database.GetList<GroupCount>(
+                       "SELECT AlbumId AS GroupId, COUNT(*) AS Count, IFNULL(SUM(Duration), 0) AS Total FROM Song " +
+                       "WHERE AlbumId IS NOT NULL GROUP BY AlbumId");
+        }
+
+        // Album count per album artist, one row per AlbumArtistId
+        public IList<GroupCount> AlbumCountsByAlbumArtist() {
+            return this.database.GetList<GroupCount>(
+                       "SELECT AlbumArtistId AS GroupId, COUNT(*) AS Count, 0 AS Total FROM Album " +
+                       "WHERE AlbumArtistId IS NOT NULL GROUP BY AlbumArtistId");
+        }
+
         public int CountAlbums() {
             return this.database.GetScalar<int>("SELECT COUNT(AlbumId) FROM Album");
         }

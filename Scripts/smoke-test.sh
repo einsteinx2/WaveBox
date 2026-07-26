@@ -121,6 +121,94 @@ else
     check "range request returns 206" 1 "(no song id)"
 fi
 
+# --- OpenSubsonic API (/rest) ---
+REST="http://localhost:$PORT/rest"
+SUB="u=test&p=test&f=json"
+
+# 7. ping: XML is the default response format
+curl -s "$REST/ping.view?u=test&p=test" | grep -q 'xmlns="http://subsonic.org/restapi"'
+check "subsonic ping returns XML envelope" $?
+curl -s "$REST/ping.view?u=test&p=test" | grep -q 'status="ok"'
+check "subsonic ping XML status ok" $?
+
+# 8. ping: JSON envelope on f=json
+curl -s "$REST/ping?$SUB" | python3 -c "import json,sys; d=json.load(sys.stdin)['subsonic-response']; assert d['status']=='ok' and d['openSubsonic'] is True, d"
+check "subsonic ping JSON envelope" $?
+
+# 9. Auth errors: wrong password -> 40, token auth -> 42
+curl -s "$REST/ping?u=test&p=wrong&f=json" | python3 -c "import json,sys; assert json.load(sys.stdin)['subsonic-response']['error']['code']==40"
+check "subsonic wrong password returns error 40" $?
+curl -s "$REST/ping?u=test&t=deadbeef&s=salt&f=json" | python3 -c "import json,sys; assert json.load(sys.stdin)['subsonic-response']['error']['code']==42"
+check "subsonic token auth returns error 42" $?
+
+# 10. ID3 browsing: getArtists -> getArtist -> getAlbum with the fixture song
+SUB_ARTIST_ID=$(curl -s "$REST/getArtists?$SUB" | python3 -c "import json,sys; d=json.load(sys.stdin)['subsonic-response']['artists']; print(d['index'][0]['artist'][0]['id'] if d.get('index') else '')")
+[ -n "$SUB_ARTIST_ID" ]; check "subsonic getArtists finds fixture artist" $?
+SUB_ALBUM_ID=$(curl -s "$REST/getArtist?$SUB&id=$SUB_ARTIST_ID" | python3 -c "import json,sys; d=json.load(sys.stdin)['subsonic-response']['artist']; print(d['album'][0]['id'] if d.get('album') else '')")
+[ -n "$SUB_ALBUM_ID" ]; check "subsonic getArtist lists fixture album" $?
+curl -s "$REST/getAlbum?$SUB&id=$SUB_ALBUM_ID" | python3 -c "import json,sys; d=json.load(sys.stdin)['subsonic-response']['album']; s=d['song'][0]; assert s['title']=='Test Song' and s['duration']>0 and isinstance(s['id'],str), s"
+check "subsonic getAlbum returns fixture song" $?
+
+# 11. search3 finds the fixture
+curl -s "$REST/search3?$SUB&query=Test" | python3 -c "import json,sys; d=json.load(sys.stdin)['subsonic-response']['searchResult3']; assert d.get('song') and d.get('album') and d.get('artist'), d"
+check "subsonic search3 finds fixture" $?
+
+# 12. getAlbumList2 newest
+curl -s "$REST/getAlbumList2?$SUB&type=newest" | python3 -c "import json,sys; d=json.load(sys.stdin)['subsonic-response']['albumList2']; assert len(d['album'])>0, d"
+check "subsonic getAlbumList2 newest" $?
+
+# 12b. getAlbumList (folder flavor) entries must be traversable directories in the folder tree
+LIST_DIR_ID=$(curl -s "$REST/getAlbumList?$SUB&type=newest" | python3 -c "import json,sys; d=json.load(sys.stdin)['subsonic-response']['albumList']; print(d['album'][0]['id'] if d.get('album') else '')")
+curl -s "$REST/getMusicDirectory?$SUB&id=$LIST_DIR_ID" | python3 -c "import json,sys; d=json.load(sys.stdin)['subsonic-response']['directory']; assert any(c['title']=='Test Song' for c in d['child']), d"
+check "subsonic getAlbumList entries browse as folders" $?
+
+# 13. Raw stream with Range -> 206
+STATUS=$(curl -s -o /dev/null -w "%{http_code}" -H "Range: bytes=100-199" "$REST/stream?u=test&p=test&id=$SONG_ID&format=raw")
+[ "$STATUS" = "206" ]; check "subsonic stream range returns 206" $? "(got $STATUS)"
+
+# 14. Transcoded stream (only when ffmpeg is available)
+if command -v ffmpeg >/dev/null 2>&1; then
+    SIZE=$(curl -s -o /dev/null -w "%{size_download}" "$REST/stream?u=test&p=test&id=$SONG_ID&maxBitRate=32&format=mp3")
+    [ "$SIZE" -gt 0 ]; check "subsonic transcoded stream returns audio" $? "(got $SIZE bytes)"
+else
+    echo "SKIP: subsonic transcoded stream (no ffmpeg)"
+fi
+
+# 15. Playlists: duplicate songId keys must both apply; update remove/add keeps counts right
+curl -s "$REST/createPlaylist?$SUB&name=SmokeList&songId=$SONG_ID&songId=$SONG_ID" | python3 -c "import json,sys; d=json.load(sys.stdin)['subsonic-response']['playlist']; assert d['songCount']==2 and len(d['entry'])==2, d"
+check "subsonic createPlaylist with duplicate ids" $?
+SUB_PL_ID=$(curl -s "$REST/getPlaylists?$SUB" | python3 -c "import json,sys; pl=[p for p in json.load(sys.stdin)['subsonic-response']['playlists']['playlist'] if p['name']=='SmokeList']; print(pl[0]['id'] if pl else '')")
+curl -s "$REST/updatePlaylist?$SUB&playlistId=$SUB_PL_ID&songIndexToRemove=0&songIdToAdd=$SONG_ID" > /dev/null
+curl -s "$REST/getPlaylist?$SUB&id=$SUB_PL_ID" | python3 -c "import json,sys; d=json.load(sys.stdin)['subsonic-response']['playlist']; assert d['songCount']==2 and len(d['entry'])==2, d"
+check "subsonic updatePlaylist remove+add" $?
+curl -s "$REST/deletePlaylist?$SUB&id=$SUB_PL_ID" | python3 -c "import json,sys; assert json.load(sys.stdin)['subsonic-response']['status']=='ok'"
+check "subsonic deletePlaylist" $?
+
+# 16. Star / getStarred2 round-trip
+curl -s "$REST/star?$SUB&id=$SONG_ID" > /dev/null
+curl -s "$REST/getStarred2?$SUB" | python3 -c "import json,sys; d=json.load(sys.stdin)['subsonic-response']['starred2']; assert len(d.get('song',[]))==1 and d['song'][0]['starred'], d"
+check "subsonic star/getStarred2 round-trip" $?
+curl -s "$REST/unstar?$SUB&id=$SONG_ID" > /dev/null
+
+# 17. Scrobble -> getNowPlaying + recent album list
+curl -s "$REST/scrobble?$SUB&id=$SONG_ID&time=$(($(date +%s) * 1000))" > /dev/null
+curl -s "$REST/getNowPlaying?$SUB" | python3 -c "import json,sys; d=json.load(sys.stdin)['subsonic-response']['nowPlaying']; assert d['entry'][0]['username']=='test', d"
+check "subsonic scrobble registers now playing" $?
+curl -s "$REST/getAlbumList2?$SUB&type=recent" | python3 -c "import json,sys; d=json.load(sys.stdin)['subsonic-response']['albumList2']; assert len(d['album'])>0, d"
+check "subsonic getAlbumList2 recent after scrobble" $?
+
+# 18. API key lifecycle: generate via legacy admin API, then apiKey auth + conflict detection
+ADMIN_SESSION=$(curl -s "http://localhost:$PORT/api/login?u=admin&p=admin" | python3 -c "import json,sys; print(json.load(sys.stdin).get('sessionId') or '')")
+ADMIN_ID=$(curl -s "http://localhost:$PORT/api/users?s=$ADMIN_SESSION" | python3 -c "import json,sys; us=json.load(sys.stdin)['users']; print([u for u in us if u['userName']=='admin'][0]['userId'])")
+APIKEY=$(curl -s "http://localhost:$PORT/api/users/$ADMIN_ID?s=$ADMIN_SESSION&action=generateApiKey" | python3 -c "import json,sys; print(json.load(sys.stdin)['users'][0].get('apiKey') or '')")
+[ -n "$APIKEY" ]; check "generateApiKey via legacy API" $?
+curl -s "$REST/ping?apiKey=$APIKEY&f=json" | python3 -c "import json,sys; assert json.load(sys.stdin)['subsonic-response']['status']=='ok'"
+check "subsonic apiKey auth" $?
+curl -s "$REST/tokenInfo?apiKey=$APIKEY&f=json" | python3 -c "import json,sys; assert json.load(sys.stdin)['subsonic-response']['tokenInfo']['username']=='admin'"
+check "subsonic tokenInfo" $?
+curl -s "$REST/ping?apiKey=$APIKEY&u=test&f=json" | python3 -c "import json,sys; assert json.load(sys.stdin)['subsonic-response']['error']['code']==43"
+check "subsonic conflicting auth returns error 43" $?
+
 echo ""
 if [ "$FAILURES" -gt 0 ]; then
     echo "$FAILURES smoke test(s) FAILED"

@@ -1,5 +1,45 @@
 # WaveBox API
 
+## OpenSubsonic API
+
+In addition to the custom API documented below, WaveBox exposes an
+[OpenSubsonic](https://opensubsonic.netlify.app/)-compatible API under `/rest/`, so any
+Subsonic client (Symfonium, DSub, play:Sub, substreamer, …) can browse, search, and stream
+from a WaveBox server.  Both response formats are supported: XML (the Subsonic default) and
+JSON (`f=json`), plus JSONP (`f=jsonp&callback=...`).
+
+**Authentication** — passwords are stored PBKDF2-hashed, so classic Subsonic *token* auth
+(`t`/`s`, an MD5 over the plaintext password) cannot be supported and returns error code 42.
+Clients must use one of:
+
+* **API key** (recommended, OpenSubsonic `apiKeyAuthentication` extension): `?apiKey=...`.
+  Generate a key with the custom API: `/api/users/{userId}?action=generateApiKey`
+  (self-service, or any user when admin); revoke with `action=revokeApiKey`.
+* **Password auth**: `?u=user&p=password` or `?u=user&p=enc:HEX` — enable
+  "legacy/plaintext authentication" in clients that default to token auth.  Successful
+  verifications are cached in memory for ten minutes so PBKDF2 doesn't run per request.
+
+**Supported endpoints** — ping, getLicense, getOpenSubsonicExtensions, tokenInfo,
+getScanStatus, getMusicFolders, getIndexes, getMusicDirectory, getArtists, getArtist,
+getAlbum, getSong, getGenres, getVideos, getArtistInfo(2) (empty), getLyrics, getCoverArt,
+stream (with `maxBitRate`/`format` transcoding via ffmpeg), download, getAlbumList(2)
+(random, newest, recent, frequent, alphabetical*, byYear, byGenre, starred), getRandomSongs,
+getSongsByGenre, getNowPlaying, getStarred(2), search2, search3, getPlaylists, getPlaylist,
+createPlaylist, updatePlaylist, deletePlaylist, star, unstar, scrobble (also forwards to
+Last.fm when linked), getUser, getUsers, changePassword, createUser, updateUser, deleteUser.
+
+Everything else (podcasts, ratings, jukebox, shares, internet radio, bookmarks, play queue,
+chat) returns Subsonic error code 0 with a "not supported" message.
+
+**Folder vs tag browsing** — the two Subsonic browse modes are kept separate, as clients
+expect: the folder-based endpoints (getIndexes, getMusicDirectory, getAlbumList, search2,
+getStarred) operate on the real directory tree — getAlbumList hands out the folder that
+holds each album's songs, and search2 matches folder names — while the ID3 endpoints
+(getArtists/getArtist/getAlbum, getAlbumList2, search3, getStarred2) use tag organization
+with WaveBox's AlbumArtist as the ID3 artist.  All ids are WaveBox's global item ids;
+`getMusicDirectory` primarily takes folder ids but also resolves album/artist ids as a
+fallback for clients that mix modes.
+
 ## The basics:
 Every call to the WaveBox API requires authentication data, whether it is the &quot;s&quot;
 session key parameter sent in GET or POST parameters, or the wavebox_session cookie
