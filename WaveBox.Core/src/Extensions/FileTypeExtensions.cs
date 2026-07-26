@@ -83,7 +83,7 @@ namespace WaveBox.Core.Extensions {
         /// Returns a FileType enumeration matching the input ID
         /// </summary>
         public static FileType FileTypeForId(this FileType ft, int id) {
-            foreach (FileType type in Enum.GetValues(typeof(FileType))) {
+            foreach (FileType type in Enum.GetValues<FileType>()) {
                 if (id == (int)type) {
                     return type;
                 }
