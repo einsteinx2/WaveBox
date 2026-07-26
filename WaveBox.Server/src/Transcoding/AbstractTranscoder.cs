@@ -7,7 +7,7 @@ using WaveBox.Core.Model;
 
 namespace WaveBox.Transcoding {
     public abstract class AbstractTranscoder : ITranscoder {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         protected ITranscoderDelegate TranscoderDelegate { get; set; }
 
@@ -52,7 +52,7 @@ namespace WaveBox.Transcoding {
         public string OutputPath {
             get {
                 if (Item != null) {
-                    string path = IsDirect ? "-" : WaveBoxService.TempFolder + Path.DirectorySeparatorChar + OutputFilename;
+                    string path = IsDirect ? "-" : ServerInfo.TempFolder + Path.DirectorySeparatorChar + OutputFilename;
                     return path;
                 }
 
@@ -87,8 +87,12 @@ namespace WaveBox.Transcoding {
             if (TranscodeProcess != null) {
                 logger.IfInfo("Cancelling transcode for " + Item.FileName);
 
-                // Kill the process
-                TranscodeProcess.Kill();
+                // Kill ffmpeg and any children it spawned
+                try {
+                    TranscodeProcess.Kill(entireProcessTree: true);
+                } catch (InvalidOperationException) {
+                    // Process already exited
+                }
                 TranscodeProcess = null;
 
                 // Wait for the thread to die
@@ -136,6 +140,11 @@ namespace WaveBox.Transcoding {
                 TranscodeProcess.StartInfo.RedirectStandardOutput = true;
                 TranscodeProcess.StartInfo.RedirectStandardError = true;
                 TranscodeProcess.Start();
+
+                // Drain stderr asynchronously so a chatty ffmpeg can't fill the pipe buffer and deadlock.
+                // stdout is left alone: direct transcodes stream it to the client.
+                TranscodeProcess.ErrorDataReceived += (sender, e) => { };
+                TranscodeProcess.BeginErrorReadLine();
 
                 logger.IfInfo("Waiting for '" + Command + "' to finish...");
 

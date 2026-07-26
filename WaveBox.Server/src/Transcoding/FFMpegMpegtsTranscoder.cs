@@ -19,7 +19,7 @@ namespace WaveBox.Transcoding {
         }
 
         protected override string GenerateArguments(uint abitrate, uint vbitrate, uint width, uint height) {
-            return " -ss " + OffsetSeconds + " -t " + LengthSeconds + " -i \"" + Item.FilePath() + "\" -async 1 -b " + vbitrate + " -s " + width + "x" + height + " -ar 44100 -ab " + abitrate + " -ac 2 -v 0 -f mpegts -vcodec " + Codec + " -preset superfast -strict experimental -acodec aac -threads 0 " + OutputPath;
+            return " -ss " + OffsetSeconds + " -t " + LengthSeconds + " -i \"" + Item.FilePath() + "\" -af aresample=async=1 -b:v " + vbitrate + " -s " + width + "x" + height + " -ar 44100 -b:a " + abitrate + " -ac 2 -v 0 -f mpegts -c:v " + Codec + " -preset superfast -c:a aac -threads 0 " + OutputPath;
         }
 
         // Estimate high

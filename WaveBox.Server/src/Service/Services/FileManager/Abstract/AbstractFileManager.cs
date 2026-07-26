@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
 using System.Threading;
-using Ninject;
 using WaveBox.Core;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
@@ -17,7 +16,7 @@ using WaveBox.Core.Model.Repository;
 
 namespace WaveBox.Service.Services.FileManager {
     public abstract class AbstractFileManager : IFileManager {
-        protected static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        protected static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         // Our list of media folders and the scanning queue which uses them
         protected DelayedOperationQueue scanQueue;

@@ -10,7 +10,7 @@ using WaveBox.Transcoding;
 
 namespace WaveBox.Service.Services {
     public class TranscodeService : IService {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         public string Name { get { return "transcode"; } set { } }
 
@@ -24,6 +24,28 @@ namespace WaveBox.Service.Services {
         }
 
         public bool Start() {
+            // Probe for ffmpeg so a missing install is diagnosed at startup rather than on first use
+            try {
+                using (var probe = new System.Diagnostics.Process()) {
+                    probe.StartInfo.FileName = "ffmpeg";
+                    probe.StartInfo.Arguments = "-version";
+                    probe.StartInfo.UseShellExecute = false;
+                    probe.StartInfo.RedirectStandardOutput = true;
+                    probe.StartInfo.RedirectStandardError = true;
+                    probe.Start();
+                    string firstLine = probe.StandardOutput.ReadLine();
+                    probe.StandardOutput.ReadToEnd();
+                    probe.StandardError.ReadToEnd();
+                    probe.WaitForExit();
+                    logger.IfInfo("Found transcoder: " + firstLine);
+                }
+            } catch (Exception) {
+                string hint = OperatingSystem.IsWindows() ? "winget install Gyan.FFmpeg"
+                    : OperatingSystem.IsMacOS() ? "brew install ffmpeg"
+                    : "apt install ffmpeg (or your distro's equivalent)";
+                logger.Warn("ffmpeg was not found on PATH; transcoding will fail until it is installed (" + hint + ")");
+            }
+
             // Ready to roll!
             this.Running = true;
             return true;
@@ -121,20 +143,21 @@ namespace WaveBox.Service.Services {
         }
 
         public void ConsumedTranscode(ITranscoder transcoder) {
+            // Do nothing if the transcoder is null
+            if ((object)transcoder == null) {
+                return;
+            }
+
             logger.IfInfo("Waiting on " + transcoder.Item.FileName + " for 30 more seconds... State: " + transcoder.State);
 
             for (int i = 30; i > 0; i--) {
                 Thread.Sleep(1000);
             }
-            // Do nothing if the transcoder is null or is a stdout transcoder
-            if ((object)transcoder == null) {
-                return;
-            }
 
             if (transcoder.IsDirect && transcoder.State == TranscodeState.Active) {
                 try {
-                    // Kill the running transcode
-                    transcoder.TranscodeProcess.Kill();
+                    // Kill the running transcode (and any child processes)
+                    transcoder.TranscodeProcess.Kill(entireProcessTree: true);
                 } catch {}
             }
 

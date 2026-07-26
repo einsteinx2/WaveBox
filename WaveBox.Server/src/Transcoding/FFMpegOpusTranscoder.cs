@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using Ninject;
 using WaveBox.Core;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
@@ -11,7 +10,7 @@ using WaveBox.Static;
 
 namespace WaveBox.Transcoding {
     public class FFMpegOpusTranscoder : AbstractTranscoder {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         public override TranscodeType Type { get { return TranscodeType.OPUS; } }
 
@@ -56,6 +55,10 @@ namespace WaveBox.Transcoding {
                 var buffer = new byte[8192];
                 FfmpegProcess.Start();
                 TranscodeProcess.Start();
+
+                // Drain ffmpeg's stderr so it can't fill the pipe buffer and stall the WAV pipe below
+                FfmpegProcess.ErrorDataReceived += (sender, e) => { };
+                FfmpegProcess.BeginErrorReadLine();
 
                 var input = new BinaryWriter(TranscodeProcess.StandardInput.BaseStream);
                 int totalWritten = 0;
@@ -182,7 +185,7 @@ namespace WaveBox.Transcoding {
         private string OpusencOptions(String codec, uint quality) {
             string theString = "--bitrate " + quality;
             theString += " --quiet";
-            Song song = Injection.Kernel.Get<ISongRepository>().SongForId(Item.ItemId.Value);
+            Song song = Injection.Get<ISongRepository>().SongForId(Item.ItemId.Value);
 
             theString += song.ArtistName == null ? String.Empty : " --comment ARTIST=\"" + song.ArtistName + "\"";
             theString += song.AlbumName == null ? String.Empty : " --comment ALBUM=\"" + song.AlbumName + "\"";
