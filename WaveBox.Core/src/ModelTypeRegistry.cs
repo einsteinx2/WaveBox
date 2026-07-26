@@ -14,6 +14,7 @@ namespace WaveBox.Core {
         public static void EnsurePreserved() {
             Root<Album>();
             Root<AlbumArtist>();
+            Root<AlbumFolder>();
             Root<Art>();
             Root<ArtItem>();
             Root<Artist>();

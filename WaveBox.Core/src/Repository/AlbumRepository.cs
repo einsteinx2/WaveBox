@@ -127,6 +127,13 @@ namespace WaveBox.Core.Model.Repository {
                        (int)StatType.PLAYED, limit, offset);
         }
 
+        // Representative folder per album (the folder holding its songs), one row per AlbumId
+        public IList<AlbumFolder> FoldersByAlbum() {
+            return this.database.GetList<AlbumFolder>(
+                       "SELECT AlbumId, MIN(FolderId) AS FolderId FROM Song " +
+                       "WHERE AlbumId IS NOT NULL AND FolderId IS NOT NULL GROUP BY AlbumId");
+        }
+
         // Song count and total duration per album, one row per AlbumId
         public IList<GroupCount> SongCountsByAlbum() {
             return this.database.GetList<GroupCount>(

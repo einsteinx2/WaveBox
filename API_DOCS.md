@@ -29,8 +29,16 @@ createPlaylist, updatePlaylist, deletePlaylist, star, unstar, scrobble (also for
 Last.fm when linked), getUser, getUsers, changePassword, createUser, updateUser, deleteUser.
 
 Everything else (podcasts, ratings, jukebox, shares, internet radio, bookmarks, play queue,
-chat) returns Subsonic error code 0 with a "not supported" message.  All ids are WaveBox's
-global item ids; `getMusicDirectory` accepts folder, album, and artist ids interchangeably.
+chat) returns Subsonic error code 0 with a "not supported" message.
+
+**Folder vs tag browsing** — the two Subsonic browse modes are kept separate, as clients
+expect: the folder-based endpoints (getIndexes, getMusicDirectory, getAlbumList, search2,
+getStarred) operate on the real directory tree — getAlbumList hands out the folder that
+holds each album's songs, and search2 matches folder names — while the ID3 endpoints
+(getArtists/getArtist/getAlbum, getAlbumList2, search3, getStarred2) use tag organization
+with WaveBox's AlbumArtist as the ID3 artist.  All ids are WaveBox's global item ids;
+`getMusicDirectory` primarily takes folder ids but also resolves album/artist ids as a
+fallback for clients that mix modes.
 
 ## The basics:
 Every call to the WaveBox API requires authentication data, whether it is the &quot;s&quot;

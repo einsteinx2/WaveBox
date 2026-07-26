@@ -12,6 +12,7 @@ namespace WaveBox.Core.Model.Repository {
         IList<Song> ListOfSongs(int folderId, bool recursive = false);
         IList<Video> ListOfVideos(int folderId, bool recursive = false);
         IList<Folder> ListOfSubFolders(int folderId);
+        IList<Folder> SearchFolders(string query);
         int? GetParentFolderId(string path);
         IList<Album> AlbumsForFolderId(int folderId);
     }

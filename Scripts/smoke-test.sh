@@ -157,6 +157,11 @@ check "subsonic search3 finds fixture" $?
 curl -s "$REST/getAlbumList2?$SUB&type=newest" | python3 -c "import json,sys; d=json.load(sys.stdin)['subsonic-response']['albumList2']; assert len(d['album'])>0, d"
 check "subsonic getAlbumList2 newest" $?
 
+# 12b. getAlbumList (folder flavor) entries must be traversable directories in the folder tree
+LIST_DIR_ID=$(curl -s "$REST/getAlbumList?$SUB&type=newest" | python3 -c "import json,sys; d=json.load(sys.stdin)['subsonic-response']['albumList']; print(d['album'][0]['id'] if d.get('album') else '')")
+curl -s "$REST/getMusicDirectory?$SUB&id=$LIST_DIR_ID" | python3 -c "import json,sys; d=json.load(sys.stdin)['subsonic-response']['directory']; assert any(c['title']=='Test Song' for c in d['child']), d"
+check "subsonic getAlbumList entries browse as folders" $?
+
 # 13. Raw stream with Range -> 206
 STATUS=$(curl -s -o /dev/null -w "%{http_code}" -H "Range: bytes=100-199" "$REST/stream?u=test&p=test&id=$SONG_ID&format=raw")
 [ "$STATUS" = "206" ]; check "subsonic stream range returns 206" $? "(got $STATUS)"

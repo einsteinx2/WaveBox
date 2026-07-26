@@ -14,6 +14,8 @@ namespace WaveBox.Subsonic.Handlers {
     public static class SubsonicListHandlers {
         private const int MaxListSize = 500;
 
+        // Folder-flavored list: entries carry the id of the folder holding each album's songs,
+        // so folder-mode clients browse the real directory tree (getAlbumList2 is the tag flavor)
         public static void GetAlbumList(SubsonicRequest req, HttpContextProcessor processor, User user) {
             IList<Album> albums = AlbumsForListType(req, user, out SubsonicError error);
             if (error != null) {
@@ -21,8 +23,10 @@ namespace WaveBox.Subsonic.Handlers {
                 return;
             }
 
+            IDictionary<int, int> folderByAlbum = SubsonicMapper.ToFolderLookup(Injection.Get<IAlbumRepository>().FoldersByAlbum());
+
             SubsonicResponseBody body = SubsonicWriter.Body();
-            body.AlbumList = new SubsonicAlbumList { Album = albums.Select(SubsonicMapper.ChildFromAlbum).ToList() };
+            body.AlbumList = new SubsonicAlbumList { Album = albums.Select(a => SubsonicMapper.ChildFromAlbumInFolder(a, folderByAlbum)).ToList() };
             SubsonicWriter.Write(req, processor, body);
         }
 
@@ -202,13 +206,22 @@ namespace WaveBox.Subsonic.Handlers {
             SubsonicWriter.Write(req, processor, body);
         }
 
+        // Folder flavor: starred folders appear directly, and tag-starred albums are mapped to
+        // the folders holding their songs (getStarred2 is the tag flavor and ignores folders)
         public static void GetStarred(SubsonicRequest req, HttpContextProcessor processor, User user) {
             StarredCollections starred = StarredItems(user);
+            IDictionary<int, int> folderByAlbum = SubsonicMapper.ToFolderLookup(Injection.Get<IAlbumRepository>().FoldersByAlbum());
+
+            List<SubsonicIndexArtist> artists = new List<SubsonicIndexArtist>(starred.FolderArtists);
+            artists.AddRange(starred.Artists.Select(a => new SubsonicIndexArtist { Id = a.Id, Name = a.Name, Starred = a.Starred }));
+
+            List<SubsonicChild> albums = new List<SubsonicChild>(starred.FolderAlbums);
+            albums.AddRange(starred.Albums.Select(a => WithStarred(SubsonicMapper.ChildFromAlbumInFolder(a, folderByAlbum), starred.StarredDate(a.AlbumId))));
 
             SubsonicResponseBody body = SubsonicWriter.Body();
             body.Starred = new SubsonicStarred {
-                Artist = starred.Artists.Select(a => new SubsonicIndexArtist { Id = a.Id, Name = a.Name, Starred = a.Starred }).ToList(),
-                Album = starred.Albums.Select(a => WithStarred(SubsonicMapper.ChildFromAlbum(a), starred.StarredDate(a.AlbumId))).ToList(),
+                Artist = artists,
+                Album = albums,
                 Song = starred.Songs
             };
             SubsonicWriter.Write(req, processor, body);
@@ -236,6 +249,9 @@ namespace WaveBox.Subsonic.Handlers {
             public List<SubsonicArtistID3> Artists = new List<SubsonicArtistID3>();
             public List<Album> Albums = new List<Album>();
             public List<SubsonicChild> Songs = new List<SubsonicChild>();
+            // Starred folders, only surfaced by the folder-flavored getStarred
+            public List<SubsonicIndexArtist> FolderArtists = new List<SubsonicIndexArtist>();
+            public List<SubsonicChild> FolderAlbums = new List<SubsonicChild>();
             public Dictionary<int, string> StarredDates = new Dictionary<int, string>();
 
             public string StarredDate(int? itemId) {
@@ -249,6 +265,11 @@ namespace WaveBox.Subsonic.Handlers {
             if (user.UserId == null) {
                 return result;
             }
+
+            HashSet<int> mediaRootIds = new HashSet<int>(
+                Injection.Get<IFolderRepository>().MediaFolders()
+                .Where(f => f.FolderId != null)
+                .Select(f => (int)f.FolderId));
 
             foreach (Favorite favorite in Injection.Get<IFavoriteRepository>().FavoritesForUserId((int)user.UserId)) {
                 if (favorite.FavoriteItemId == null || favorite.FavoriteItemType == null) {
@@ -298,6 +319,22 @@ namespace WaveBox.Subsonic.Handlers {
                             Name = artist.ArtistName,
                             Starred = starredDate
                         });
+                    }
+                    break;
+                }
+                case ItemType.Folder: {
+                    Folder folder = Injection.Get<IFolderRepository>().FolderForId(itemId);
+                    if (folder != null && folder.FolderId != null) {
+                        // Children of a media root read as "artists", deeper folders as "albums"
+                        if (folder.ParentFolderId != null && mediaRootIds.Contains((int)folder.ParentFolderId)) {
+                            result.FolderArtists.Add(new SubsonicIndexArtist {
+                                Id = folder.FolderId.ToString(),
+                                Name = folder.FolderName,
+                                Starred = starredDate
+                            });
+                        } else {
+                            result.FolderAlbums.Add(WithStarred(SubsonicMapper.ChildFromFolder(folder), starredDate));
+                        }
                     }
                     break;
                 }

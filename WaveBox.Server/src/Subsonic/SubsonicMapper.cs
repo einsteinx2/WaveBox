@@ -106,6 +106,32 @@ namespace WaveBox.Subsonic {
             };
         }
 
+        // Folder-flavored album entry for the non-ID3 endpoints (getAlbumList, getStarred):
+        // album metadata for display, but the browsable id is the folder holding the album's
+        // songs so folder-mode clients traverse the real directory tree
+        public static SubsonicChild ChildFromAlbumInFolder(Album album, IDictionary<int, int> folderByAlbum) {
+            SubsonicChild child = ChildFromAlbum(album);
+
+            int folderId;
+            if (folderByAlbum != null && album.AlbumId != null && folderByAlbum.TryGetValue((int)album.AlbumId, out folderId)) {
+                child.Id = folderId.ToString();
+                // The tag artist id would be wrong as a directory parent; leave it unset
+                child.Parent = null;
+            }
+
+            return child;
+        }
+
+        public static IDictionary<int, int> ToFolderLookup(IList<AlbumFolder> albumFolders) {
+            Dictionary<int, int> lookup = new Dictionary<int, int>();
+            foreach (AlbumFolder albumFolder in albumFolders) {
+                if (albumFolder.AlbumId != null && albumFolder.FolderId != null) {
+                    lookup[(int)albumFolder.AlbumId] = (int)albumFolder.FolderId;
+                }
+            }
+            return lookup;
+        }
+
         // counts: optional SongCountsByAlbum() lookup keyed by AlbumId
         public static SubsonicAlbumID3 AlbumID3FromAlbum(Album album, IDictionary<int, GroupCount> counts) {
             SubsonicAlbumID3 dto = new SubsonicAlbumID3();

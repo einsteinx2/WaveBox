@@ -18,6 +18,7 @@ namespace WaveBox.Core.Model.Repository {
         IList<Album> NewestAlbums(int limit, int offset);
         IList<Album> RecentAlbums(int limit, int offset);
         IList<Album> FrequentAlbums(int limit, int offset);
+        IList<AlbumFolder> FoldersByAlbum();
         IList<GroupCount> SongCountsByAlbum();
         IList<GroupCount> AlbumCountsByAlbumArtist();
     }

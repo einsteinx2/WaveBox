@@ -9,21 +9,51 @@ using WaveBox.Core.Model.Repository;
 
 namespace WaveBox.Subsonic.Handlers {
     public static class SubsonicSearchHandlers {
+        // Folder flavor: artist/album hits come from the folder tree by folder name — children
+        // of a media root read as "artists", deeper folders as "albums" (search3 is the tag flavor)
         public static void Search2(SubsonicRequest req, HttpContextProcessor processor, User user) {
-            SearchResults results = RunSearch(req, out SubsonicError error);
-            if (error != null) {
-                SubsonicWriter.WriteError(req, processor, error.Code, error.Message);
+            string query = CleanQuery(req.Get("query"));
+            if (query == null) {
+                SubsonicWriter.WriteError(req, processor, SubsonicError.MissingParameter, "Required parameter query is missing");
                 return;
+            }
+
+            int artistCount = req.GetInt("artistCount") ?? 20;
+            int artistOffset = req.GetInt("artistOffset") ?? 0;
+            int albumCount = req.GetInt("albumCount") ?? 20;
+            int albumOffset = req.GetInt("albumOffset") ?? 0;
+            int songCount = req.GetInt("songCount") ?? 20;
+            int songOffset = req.GetInt("songOffset") ?? 0;
+
+            IFolderRepository folderRepository = Injection.Get<IFolderRepository>();
+            HashSet<int> mediaRootIds = new HashSet<int>(
+                folderRepository.MediaFolders()
+                .Where(f => f.FolderId != null)
+                .Select(f => (int)f.FolderId));
+
+            IList<Folder> folderHits;
+            IList<Song> songs;
+            if (query.Length == 0) {
+                folderHits = folderRepository.SearchFolders("");
+                songs = Injection.Get<ISongRepository>().AllSongs();
+            } else {
+                folderHits = folderRepository.SearchFolders(query);
+                songs = Injection.Get<ISongRepository>().SearchSongs("SongName", query, false);
             }
 
             SubsonicResponseBody body = SubsonicWriter.Body();
             body.SearchResult2 = new SubsonicSearchResult2 {
-                Artist = results.Artists.Select(a => new SubsonicIndexArtist {
-                    Id = a.AlbumArtistId == null ? null : a.AlbumArtistId.ToString(),
-                    Name = a.AlbumArtistName
-                }).ToList(),
-                Album = results.Albums.Select(SubsonicMapper.ChildFromAlbum).ToList(),
-                Song = results.Songs.Select(SubsonicMapper.ChildFromSong).ToList()
+                Artist = folderHits
+                    .Where(f => f.ParentFolderId != null && mediaRootIds.Contains((int)f.ParentFolderId))
+                    .Skip(artistOffset).Take(artistCount)
+                    .Select(f => new SubsonicIndexArtist { Id = f.FolderId.ToString(), Name = f.FolderName })
+                    .ToList(),
+                Album = folderHits
+                    .Where(f => f.ParentFolderId == null || !mediaRootIds.Contains((int)f.ParentFolderId))
+                    .Skip(albumOffset).Take(albumCount)
+                    .Select(SubsonicMapper.ChildFromFolder)
+                    .ToList(),
+                Song = songs.Skip(songOffset).Take(songCount).Select(SubsonicMapper.ChildFromSong).ToList()
             };
             SubsonicWriter.Write(req, processor, body);
         }
@@ -57,17 +87,19 @@ namespace WaveBox.Subsonic.Handlers {
             public IList<Song> Songs;
         }
 
+        // Clients commonly send `foo*` or a quoted query; the repositories do substring LIKE matching
+        private static string CleanQuery(string query) {
+            return query == null ? null : query.Trim().Trim('"').TrimEnd('*');
+        }
+
         private static SearchResults RunSearch(SubsonicRequest req, out SubsonicError error) {
             error = null;
 
-            string query = req.Get("query");
+            string query = CleanQuery(req.Get("query"));
             if (query == null) {
                 error = new SubsonicError { Code = SubsonicError.MissingParameter, Message = "Required parameter query is missing" };
                 return null;
             }
-
-            // Clients commonly send `foo*` or a quoted query; the repositories do substring LIKE matching
-            query = query.Trim().Trim('"').TrimEnd('*');
 
             int artistCount = req.GetInt("artistCount") ?? 20;
             int artistOffset = req.GetInt("artistOffset") ?? 0;
