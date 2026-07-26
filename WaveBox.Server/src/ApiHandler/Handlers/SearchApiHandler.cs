@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using Newtonsoft.Json;
-using Ninject;
 using WaveBox.Core;
 using WaveBox.Core.ApiResponse;
 using WaveBox.Core.Extensions;
@@ -68,35 +66,35 @@ namespace WaveBox.ApiHandler.Handlers {
                     // Return results, populating lists depending on parameters specified
                     switch (type) {
                     case "artists":
-                        artists = Injection.Kernel.Get<IArtistRepository>().SearchArtists(field, query, exact);
+                        artists = Injection.Get<IArtistRepository>().SearchArtists(field, query, exact);
                         break;
                     case "albumartists":
-                        albumArtists = Injection.Kernel.Get<IAlbumArtistRepository>().SearchAlbumArtists(field, query, exact);
+                        albumArtists = Injection.Get<IAlbumArtistRepository>().SearchAlbumArtists(field, query, exact);
                         break;
                     case "albums":
-                        albums = Injection.Kernel.Get<IAlbumRepository>().SearchAlbums(field, query, exact);
+                        albums = Injection.Get<IAlbumRepository>().SearchAlbums(field, query, exact);
                         break;
                     case "songs":
-                        songs = Injection.Kernel.Get<ISongRepository>().SearchSongs(field, query, exact);
+                        songs = Injection.Get<ISongRepository>().SearchSongs(field, query, exact);
                         break;
                     case "videos":
-                        videos = Injection.Kernel.Get<IVideoRepository>().SearchVideos(field, query, exact);
+                        videos = Injection.Get<IVideoRepository>().SearchVideos(field, query, exact);
                         break;
                     default:
-                        artists = Injection.Kernel.Get<IArtistRepository>().SearchArtists(field, query, exact);
-                        albums = Injection.Kernel.Get<IAlbumRepository>().SearchAlbums(field, query, exact);
-                        songs = Injection.Kernel.Get<ISongRepository>().SearchSongs(field, query, exact);
-                        videos = Injection.Kernel.Get<IVideoRepository>().SearchVideos(field, query, exact);
+                        artists = Injection.Get<IArtistRepository>().SearchArtists(field, query, exact);
+                        albums = Injection.Get<IAlbumRepository>().SearchAlbums(field, query, exact);
+                        songs = Injection.Get<ISongRepository>().SearchSongs(field, query, exact);
+                        videos = Injection.Get<IVideoRepository>().SearchVideos(field, query, exact);
                         break;
                     }
                 }
             } else {
                 // For no type, provide all types of data
-                artists = Injection.Kernel.Get<IArtistRepository>().SearchArtists(field, query, exact);
-                albumArtists = Injection.Kernel.Get<IAlbumArtistRepository>().SearchAlbumArtists(field, query, exact);
-                albums = Injection.Kernel.Get<IAlbumRepository>().SearchAlbums(field, query, exact);
-                songs = Injection.Kernel.Get<ISongRepository>().SearchSongs(field, query, exact);
-                videos = Injection.Kernel.Get<IVideoRepository>().SearchVideos(field, query, exact);
+                artists = Injection.Get<IArtistRepository>().SearchArtists(field, query, exact);
+                albumArtists = Injection.Get<IAlbumArtistRepository>().SearchAlbumArtists(field, query, exact);
+                albums = Injection.Get<IAlbumRepository>().SearchAlbums(field, query, exact);
+                songs = Injection.Get<ISongRepository>().SearchSongs(field, query, exact);
+                videos = Injection.Get<IVideoRepository>().SearchVideos(field, query, exact);
             }
 
             // Check for a request to limit/paginate artists, like SQL

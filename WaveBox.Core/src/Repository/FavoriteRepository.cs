@@ -5,7 +5,7 @@ using WaveBox.Core.Extensions;
 
 namespace WaveBox.Core.Model.Repository {
     public class FavoriteRepository : IFavoriteRepository {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         private readonly IDatabase database;
         private readonly IAlbumArtistRepository albumArtistRepository;

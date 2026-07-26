@@ -5,8 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Cirrious.MvvmCross.Plugins.Sqlite;
-using Newtonsoft.Json;
-using Ninject;
 using WaveBox.Core;
 using WaveBox.Core.ApiResponse;
 using WaveBox.Core.Extensions;
@@ -16,7 +14,7 @@ using WaveBox.Static;
 
 namespace WaveBox.ApiHandler.Handlers {
     class DatabaseApiHandler : IApiHandler {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         public string Name { get { return "database"; } }
 
@@ -32,7 +30,7 @@ namespace WaveBox.ApiHandler.Handlers {
         public void Process(UriWrapper uri, IHttpProcessor processor, User user) {
             // If ID set, return all queries >= this id
             if (uri.Id != null) {
-                processor.WriteJson(new DatabaseResponse(null, Injection.Kernel.Get<IDatabase>().QueryLogsSinceId((int)uri.Id)));
+                processor.WriteJson(new DatabaseResponse(null, Injection.Get<IDatabase>().QueryLogsSinceId((int)uri.Id)));
                 return;
             }
 

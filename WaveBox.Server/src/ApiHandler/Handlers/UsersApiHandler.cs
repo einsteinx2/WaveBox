@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
-using Ninject;
 using WaveBox.Core;
 using WaveBox.Core.ApiResponse;
 using WaveBox.Core.Extensions;
@@ -13,7 +11,7 @@ using WaveBox.Static;
 
 namespace WaveBox.ApiHandler.Handlers {
     public class UsersApiHandler : IApiHandler {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         public string Name { get { return "users"; } }
 
@@ -75,7 +73,7 @@ namespace WaveBox.ApiHandler.Handlers {
                 }
 
                 // Create a test user and reply with the account info
-                User testUser = Injection.Kernel.Get<IUserRepository>().CreateTestUser(success ? (int?)durationSeconds : null);
+                User testUser = Injection.Get<IUserRepository>().CreateTestUser(success ? (int?)durationSeconds : null);
                 if (testUser == null) {
                     processor.WriteJson(new UsersResponse("Couldn't create user", listOfUsers));
                     return;
@@ -90,11 +88,11 @@ namespace WaveBox.ApiHandler.Handlers {
             if (uri.Action == null || uri.Action == "read") {
                 // On valid key, return a specific user, and their attributes
                 if (uri.Id != null) {
-                    User oneUser = Injection.Kernel.Get<IUserRepository>().UserForId((int)uri.Id);
+                    User oneUser = Injection.Get<IUserRepository>().UserForId((int)uri.Id);
                     listOfUsers.Add(oneUser);
                 } else {
                     // Else, return all users
-                    listOfUsers = Injection.Kernel.Get<IUserRepository>().AllUsers();
+                    listOfUsers = Injection.Get<IUserRepository>().AllUsers();
                 }
 
                 processor.WriteJson(new UsersResponse(null, listOfUsers));
@@ -118,10 +116,10 @@ namespace WaveBox.ApiHandler.Handlers {
                 }
 
                 // After all checks pass, delete this session, return user associated with it
-                var session = Injection.Kernel.Get<ISessionRepository>().SessionForRowId(rowId);
+                var session = Injection.Get<ISessionRepository>().SessionForRowId(rowId);
                 if (session != null) {
                     session.Delete();
-                    listOfUsers.Add(Injection.Kernel.Get<IUserRepository>().UserForId(Convert.ToInt32(session.UserId)));
+                    listOfUsers.Add(Injection.Get<IUserRepository>().UserForId(Convert.ToInt32(session.UserId)));
                 }
 
                 processor.WriteJson(new UsersResponse(null, listOfUsers));
@@ -137,7 +135,7 @@ namespace WaveBox.ApiHandler.Handlers {
                 }
 
                 // Attempt to create the user
-                User newUser = Injection.Kernel.Get<IUserRepository>().CreateUser(username, password, role, null);
+                User newUser = Injection.Get<IUserRepository>().CreateUser(username, password, role, null);
                 if (newUser == null) {
                     processor.WriteJson(new UsersResponse("Action 'create' failed to create new user", null));
                     return;
@@ -166,7 +164,7 @@ namespace WaveBox.ApiHandler.Handlers {
             // delete - remove a user
             if (uri.Action == "delete") {
                 // Attempt to fetch and delete user
-                User deleteUser = Injection.Kernel.Get<IUserRepository>().UserForId((int)uri.Id);
+                User deleteUser = Injection.Get<IUserRepository>().UserForId((int)uri.Id);
                 if (deleteUser.UserName == null || !deleteUser.Delete()) {
                     processor.WriteJson(new UsersResponse("Action 'delete' failed to delete user", null));
                     return;
@@ -183,7 +181,7 @@ namespace WaveBox.ApiHandler.Handlers {
             // update - update a user's username, password, or role
             if (uri.Action == "update") {
                 // Attempt to get user
-                User updateUser = Injection.Kernel.Get<IUserRepository>().UserForId((int)uri.Id);
+                User updateUser = Injection.Get<IUserRepository>().UserForId((int)uri.Id);
                 if (updateUser.UserName == null) {
                     processor.WriteJson(new UsersResponse("Invalid user ID for action 'update'", null));
                     return;

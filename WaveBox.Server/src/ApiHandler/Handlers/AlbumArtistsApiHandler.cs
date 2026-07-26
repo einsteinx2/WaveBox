@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Newtonsoft.Json;
-using Ninject;
 using WaveBox.Core;
 using WaveBox.Core.ApiResponse;
 using WaveBox.Core.Extensions;
@@ -15,7 +13,7 @@ using WaveBox.Static;
 
 namespace WaveBox.ApiHandler.Handlers {
     class AlbumArtistsApiHandler : IApiHandler {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         public string Name { get { return "albumartists"; } }
 
@@ -41,7 +39,7 @@ namespace WaveBox.ApiHandler.Handlers {
             // Check if an ID was passed
             if (uri.Id != null) {
                 // Add artist by ID to the list
-                AlbumArtist a = Injection.Kernel.Get<IAlbumArtistRepository>().AlbumArtistForId((int)uri.Id);
+                AlbumArtist a = Injection.Get<IAlbumArtistRepository>().AlbumArtistForId((int)uri.Id);
                 albumArtists.Add(a);
 
                 // Add artist's albums to response
@@ -70,7 +68,7 @@ namespace WaveBox.ApiHandler.Handlers {
 
                 // Get favorites count if available
                 if (a.AlbumArtistId != null) {
-                    int favoriteCount = Injection.Kernel.Get<IFavoriteRepository>().FavoritesForAlbumArtistId(a.AlbumArtistId, user.UserId).Count;
+                    int favoriteCount = Injection.Get<IFavoriteRepository>().FavoritesForAlbumArtistId(a.AlbumArtistId, user.UserId).Count;
                     counts.Add("favorites", favoriteCount);
                 } else {
                     counts.Add("favorites", 0);
@@ -94,7 +92,7 @@ namespace WaveBox.ApiHandler.Handlers {
                 }
 
                 // Grab range of artists
-                albumArtists = Injection.Kernel.Get<IAlbumArtistRepository>().RangeAlbumArtists(start, end);
+                albumArtists = Injection.Get<IAlbumArtistRepository>().RangeAlbumArtists(start, end);
             }
 
             // Check for a request to limit/paginate artists, like SQL
@@ -147,13 +145,13 @@ namespace WaveBox.ApiHandler.Handlers {
                     }
                 } else {
                     // If no artists in list, grab directly using model method
-                    albumArtists = Injection.Kernel.Get<IAlbumArtistRepository>().LimitAlbumArtists(index, duration);
+                    albumArtists = Injection.Get<IAlbumArtistRepository>().LimitAlbumArtists(index, duration);
                 }
             }
 
             // Finally, if no artists already in list, send the whole list
             if (albumArtists.Count == 0) {
-                albumArtists = Injection.Kernel.Get<IAlbumArtistRepository>().AllAlbumArtists();
+                albumArtists = Injection.Get<IAlbumArtistRepository>().AllAlbumArtists();
                 sectionPositions = Utility.SectionPositionsFromSortedList(new List<IGroupingItem>(albumArtists.Select(c => (IGroupingItem)c)));
             }
 

@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
-using Ninject;
 using WaveBox.Core.Model;
 using WaveBox.Service.Services.Http;
 using WaveBox.Static;
@@ -13,7 +11,7 @@ using System.Linq;
 
 namespace WaveBox.ApiHandler.Handlers {
     public class GenresApiHandler : IApiHandler {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         public string Name { get { return "genres"; } }
 
@@ -43,7 +41,7 @@ namespace WaveBox.ApiHandler.Handlers {
                 }
 
                 // Get single genre, add it for output
-                Genre genre = Injection.Kernel.Get<IGenreRepository>().GenreForId((int)uri.Id);
+                Genre genre = Injection.Get<IGenreRepository>().GenreForId((int)uri.Id);
                 listOfGenres.Add(genre);
 
                 switch (type) {
@@ -63,7 +61,7 @@ namespace WaveBox.ApiHandler.Handlers {
                 }
             } else {
                 // No id parameter
-                listOfGenres = Injection.Kernel.Get<IGenreRepository>().AllGenres();
+                listOfGenres = Injection.Get<IGenreRepository>().AllGenres();
                 sectionPositions = Utility.SectionPositionsFromSortedList(new List<IGroupingItem>(listOfGenres.Select(c => (IGroupingItem)c)));
             }
 

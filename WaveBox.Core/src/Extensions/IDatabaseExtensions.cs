@@ -4,7 +4,7 @@ using Cirrious.MvvmCross.Plugins.Sqlite;
 
 namespace WaveBox.Core.Extensions {
     public static class IDatabaseExtensions {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         // Note: this extension class exists so that we may provide more concise methods for accessing objects
         // using simple database queries, without having to complicate the interface.

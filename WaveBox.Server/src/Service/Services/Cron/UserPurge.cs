@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.IO;
-using Ninject;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
 using WaveBox.Core.OperationQueue;
@@ -16,7 +15,7 @@ namespace WaveBox.Service.Services.Cron {
     /// Purge all users and sessions which are out of date, using WaveBox settings
     /// </summary>
     public static class UserPurge {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         // Create operation queue for the session scrubber
         public static DelayedOperationQueue Queue = new DelayedOperationQueue();
@@ -26,7 +25,7 @@ namespace WaveBox.Service.Services.Cron {
         /// </summary>
         public static void Start() {
             // Delete all expired users
-            foreach (User u in Injection.Kernel.Get<IUserRepository>().ExpiredUsers()) {
+            foreach (User u in Injection.Get<IUserRepository>().ExpiredUsers()) {
                 if (u.Delete()) {
                     logger.IfInfo(String.Format("Purged expired user: [id: {0}, name: {1}]", u.UserId, u.UserName));
                 } else {
@@ -35,7 +34,7 @@ namespace WaveBox.Service.Services.Cron {
             }
 
             // Grab a list of all sessions
-            var sessions = Injection.Kernel.Get<ISessionRepository>().AllSessions();
+            var sessions = Injection.Get<ISessionRepository>().AllSessions();
 
             // Grab the current UNIX time
             long unixTime = DateTime.UtcNow.ToUnixTime();
@@ -43,7 +42,7 @@ namespace WaveBox.Service.Services.Cron {
             // Purge any sessions which have not been updated in a predefined period of time
             foreach (Session s in sessions) {
                 // Check current time and last update, purge if the diff is higher than SessionTimeout minutes
-                if ((unixTime - Convert.ToInt32(s.UpdateTime)) >= (Injection.Kernel.Get<IServerSettings>().SessionTimeout * 60)) {
+                if ((unixTime - Convert.ToInt32(s.UpdateTime)) >= (Injection.Get<IServerSettings>().SessionTimeout * 60)) {
                     if (s.Delete()) {
                         logger.IfInfo(String.Format("Purged session: [id: {0}, user: {1}]", s.RowId, s.UserId));
                     } else {

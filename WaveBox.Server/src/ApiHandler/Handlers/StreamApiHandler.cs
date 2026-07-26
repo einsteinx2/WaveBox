@@ -4,8 +4,6 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Threading;
-using Newtonsoft.Json;
-using Ninject;
 using WaveBox.Core;
 using WaveBox.Core.ApiResponse;
 using WaveBox.Core.Extensions;
@@ -20,7 +18,7 @@ using WaveBox.Transcoding;
 
 namespace WaveBox.ApiHandler.Handlers {
     public class StreamApiHandler : IApiHandler {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         public string Name { get { return "stream"; } }
 
@@ -49,13 +47,13 @@ namespace WaveBox.ApiHandler.Handlers {
 
             try {
                 // Get the media item associated with this id
-                ItemType itemType = Injection.Kernel.Get<IItemRepository>().ItemTypeForItemId((int)uri.Id);
+                ItemType itemType = Injection.Get<IItemRepository>().ItemTypeForItemId((int)uri.Id);
                 IMediaItem item = null;
                 if (itemType == ItemType.Song) {
-                    item = Injection.Kernel.Get<ISongRepository>().SongForId((int)uri.Id);
+                    item = Injection.Get<ISongRepository>().SongForId((int)uri.Id);
                     logger.IfInfo("Preparing audio stream: " + item.FileName);
                 } else if (itemType == ItemType.Video) {
-                    item = Injection.Kernel.Get<IVideoRepository>().VideoForId((int)uri.Id);
+                    item = Injection.Get<IVideoRepository>().VideoForId((int)uri.Id);
                     logger.IfInfo("Preparing video stream: " + item.FileName);
                 }
 

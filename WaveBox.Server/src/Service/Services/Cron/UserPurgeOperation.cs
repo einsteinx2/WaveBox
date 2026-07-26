@@ -1,5 +1,4 @@
 using System;
-using Ninject;
 using WaveBox.Core.OperationQueue;
 using WaveBox.Static;
 

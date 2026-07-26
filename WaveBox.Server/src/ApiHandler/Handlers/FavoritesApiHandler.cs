@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
-using Ninject;
 using WaveBox.Core;
 using WaveBox.Core.ApiResponse;
 using WaveBox.Core.Model;
@@ -10,7 +8,7 @@ using WaveBox.Service.Services.Http;
 
 namespace WaveBox.ApiHandler.Handlers {
     class FavoriteApiHandler : IApiHandler {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         public string Name { get { return "favorites"; } }
 
@@ -33,7 +31,7 @@ namespace WaveBox.ApiHandler.Handlers {
         /// </summary>
         public void Process(UriWrapper uri, IHttpProcessor processor, User user) {
             // Shortcut to favorites repository
-            IFavoriteRepository favoriteRepository = Injection.Kernel.Get<IFavoriteRepository>();
+            IFavoriteRepository favoriteRepository = Injection.Get<IFavoriteRepository>();
 
             // Lists of favorites and items associated
             IList<IItem> items = new List<IItem>();

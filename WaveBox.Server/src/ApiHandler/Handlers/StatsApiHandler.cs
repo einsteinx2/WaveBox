@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Newtonsoft.Json;
-using Ninject;
 using WaveBox.Core;
 using WaveBox.Core.ApiResponse;
 using WaveBox.Core.Model;
@@ -70,12 +68,12 @@ namespace WaveBox.ApiHandler {
                 }
                 if (success) {
                     // If all three are successful, generate an item type from the ID
-                    ItemType itemType = Injection.Kernel.Get<IItemRepository>().ItemTypeForItemId(itemIdInt);
+                    ItemType itemType = Injection.Get<IItemRepository>().ItemTypeForItemId(itemIdInt);
 
                     // Case: type is song, stat is playcount
                     if ((itemType == ItemType.Song) && (statTypeEnum == StatType.PLAYED)) {
                         // Also record a play for the artist, album, and folder
-                        Song song = Injection.Kernel.Get<ISongRepository>().SongForId(itemIdInt);
+                        Song song = Injection.Get<ISongRepository>().SongForId(itemIdInt);
 
                         // Trigger now playing service if available
                         NowPlayingService nowPlaying = (NowPlayingService)ServiceManager.GetInstance("nowplaying");
@@ -84,18 +82,18 @@ namespace WaveBox.ApiHandler {
                         }
 
                         if ((object)song.AlbumId != null) {
-                            Injection.Kernel.Get<IStatRepository>().RecordStat((int)song.AlbumId, statTypeEnum, timeStampLong);
+                            Injection.Get<IStatRepository>().RecordStat((int)song.AlbumId, statTypeEnum, timeStampLong);
                         }
                         if ((object)song.ArtistId != null) {
-                            Injection.Kernel.Get<IStatRepository>().RecordStat((int)song.ArtistId, statTypeEnum, timeStampLong);
+                            Injection.Get<IStatRepository>().RecordStat((int)song.ArtistId, statTypeEnum, timeStampLong);
                         }
                         if ((object)song.FolderId != null) {
-                            Injection.Kernel.Get<IStatRepository>().RecordStat((int)song.FolderId, statTypeEnum, timeStampLong);
+                            Injection.Get<IStatRepository>().RecordStat((int)song.FolderId, statTypeEnum, timeStampLong);
                         }
                     }
 
                     // Record stats for the generic item
-                    Injection.Kernel.Get<IStatRepository>().RecordStat(itemIdInt, statTypeEnum, timeStampLong);
+                    Injection.Get<IStatRepository>().RecordStat(itemIdInt, statTypeEnum, timeStampLong);
                 }
             }
 

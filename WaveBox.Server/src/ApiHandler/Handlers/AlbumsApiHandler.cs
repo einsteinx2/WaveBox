@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Newtonsoft.Json;
-using Ninject;
 using WaveBox.ApiHandler;
 using WaveBox.Core;
 using WaveBox.Core.ApiResponse;
@@ -16,7 +14,7 @@ using WaveBox.Core.Static;
 
 namespace WaveBox.ApiHandler.Handlers {
     class AlbumsApiHandler : IApiHandler {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         public string Name { get { return "albums"; } }
 
@@ -37,7 +35,7 @@ namespace WaveBox.ApiHandler.Handlers {
             // Check if an ID was passed
             if (uri.Id != null) {
                 // Add album by ID to the list
-                Album a = Injection.Kernel.Get<IAlbumRepository>().AlbumForId((int)uri.Id);
+                Album a = Injection.Get<IAlbumRepository>().AlbumForId((int)uri.Id);
                 albums.Add(a);
 
                 // Add album's songs to response
@@ -61,7 +59,7 @@ namespace WaveBox.ApiHandler.Handlers {
                 }
 
                 // Grab range of albums
-                albums = Injection.Kernel.Get<IAlbumRepository>().RangeAlbums(start, end);
+                albums = Injection.Get<IAlbumRepository>().RangeAlbums(start, end);
             }
 
             // Check for a request to limit/paginate songs, like SQL
@@ -117,13 +115,13 @@ namespace WaveBox.ApiHandler.Handlers {
                     }
                 } else {
                     // If no albums in list, grab directly using model method
-                    albums = Injection.Kernel.Get<IAlbumRepository>().LimitAlbums(index, duration);
+                    albums = Injection.Get<IAlbumRepository>().LimitAlbums(index, duration);
                 }
             }
 
             // Finally, if no albums already in list, send the whole list
             if (albums.Count == 0) {
-                albums = Injection.Kernel.Get<IAlbumRepository>().AllAlbums();
+                albums = Injection.Get<IAlbumRepository>().AllAlbums();
                 sectionPositions = Utility.SectionPositionsFromSortedList(new List<IGroupingItem>(albums.Select(c => (IGroupingItem)c)));
             }
 

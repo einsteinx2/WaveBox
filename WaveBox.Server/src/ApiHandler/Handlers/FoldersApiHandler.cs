@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Newtonsoft.Json;
-using Ninject;
 using WaveBox.Core;
 using WaveBox.Core.ApiResponse;
 using WaveBox.Core.Extensions;
@@ -15,7 +13,7 @@ using WaveBox.Static;
 
 namespace WaveBox.ApiHandler.Handlers {
     class FoldersApiHandler : IApiHandler {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         public string Name { get { return "folders"; } }
 
@@ -39,7 +37,7 @@ namespace WaveBox.ApiHandler.Handlers {
             // If ID present, return that folder
             if (uri.Id != null) {
                 // Return the folder for this id
-                containingFolder = Injection.Kernel.Get<IFolderRepository>().FolderForId((int)uri.Id);
+                containingFolder = Injection.Get<IFolderRepository>().FolderForId((int)uri.Id);
                 listOfFolders = containingFolder.ListOfSubFolders();
 
                 if (uri.Parameters.ContainsKey("recursiveMedia") && uri.Parameters["recursiveMedia"].IsTrue()) {
@@ -58,10 +56,10 @@ namespace WaveBox.ApiHandler.Handlers {
             // No id parameter
             if (uri.Parameters.ContainsKey("mediaFolders") && uri.Parameters["mediaFolders"].IsTrue()) {
                 // They asked for the media folders
-                listOfFolders = Injection.Kernel.Get<IFolderRepository>().MediaFolders();
+                listOfFolders = Injection.Get<IFolderRepository>().MediaFolders();
             } else {
                 // They didn't ask for media folders, so send top level folders
-                listOfFolders = Injection.Kernel.Get<IFolderRepository>().TopLevelFolders();
+                listOfFolders = Injection.Get<IFolderRepository>().TopLevelFolders();
                 sectionPositions = Utility.SectionPositionsFromSortedList(new List<IGroupingItem>(listOfFolders.Select(c => (IGroupingItem)c)));
             }
 

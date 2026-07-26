@@ -6,7 +6,7 @@ namespace WaveBox.Core.Extensions {
         /// <summary>
         /// Log only if logger.IsInfoEnabled
         /// </summary>
-        public static void IfInfo(this log4net.ILog logger, string message) {
+        public static void IfInfo(this WaveBox.Core.Logging.ILog logger, string message) {
             if (logger.IsInfoEnabled) { logger.Info(message); }
 
             return;
