@@ -1,27 +1,27 @@
 using System;
-using Ninject.Modules;
+using Microsoft.Extensions.DependencyInjection;
 using WaveBox.Core.Model.Repository;
 
 namespace WaveBox.Core {
-    public class CoreModule : NinjectModule {
-        public override void Load() {
+    public static class CoreModule {
+        public static IServiceCollection AddWaveBoxCore(this IServiceCollection services) {
             // Repositories
-            Bind<IAlbumArtistRepository>().To<AlbumArtistRepository>().InSingletonScope();
-            Bind<IAlbumRepository>().To<AlbumRepository>().InSingletonScope();
-            Bind<IArtRepository>().To<ArtRepository>().InSingletonScope();
-            Bind<IArtistRepository>().To<ArtistRepository>().InSingletonScope();
-            Bind<IFavoriteRepository>().To<FavoriteRepository>().InSingletonScope();
-            Bind<IFolderRepository>().To<FolderRepository>().InSingletonScope();
-            Bind<IGenreRepository>().To<GenreRepository>().InSingletonScope();
-            Bind<IItemRepository>().To<ItemRepository>().InSingletonScope();
-            Bind<IMediaItemRepository>().To<MediaItemRepository>().InSingletonScope();
-            Bind<IPlaylistRepository>().To<PlaylistRepository>().InSingletonScope();
-            Bind<ISessionRepository>().To<SessionRepository>().InSingletonScope();
-            Bind<ISongRepository>().To<SongRepository>().InSingletonScope();
-            Bind<IStatRepository>().To<StatRepository>().InSingletonScope();
-            Bind<IUserRepository>().To<UserRepository>().InSingletonScope();
-            Bind<IVideoRepository>().To<VideoRepository>().InSingletonScope();
+            services.AddSingleton<IAlbumArtistRepository, AlbumArtistRepository>();
+            services.AddSingleton<IAlbumRepository, AlbumRepository>();
+            services.AddSingleton<IArtRepository, ArtRepository>();
+            services.AddSingleton<IArtistRepository, ArtistRepository>();
+            services.AddSingleton<IFavoriteRepository, FavoriteRepository>();
+            services.AddSingleton<IFolderRepository, FolderRepository>();
+            services.AddSingleton<IGenreRepository, GenreRepository>();
+            services.AddSingleton<IItemRepository, ItemRepository>();
+            services.AddSingleton<IMediaItemRepository, MediaItemRepository>();
+            services.AddSingleton<IPlaylistRepository, PlaylistRepository>();
+            services.AddSingleton<ISessionRepository, SessionRepository>();
+            services.AddSingleton<ISongRepository, SongRepository>();
+            services.AddSingleton<IStatRepository, StatRepository>();
+            services.AddSingleton<IUserRepository, UserRepository>();
+            services.AddSingleton<IVideoRepository, VideoRepository>();
+            return services;
         }
     }
 }
-
