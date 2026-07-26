@@ -7,7 +7,7 @@ namespace WaveBox.Transcoding {
     public class FFMpegAACTranscoder : AbstractTranscoder {
         public override TranscodeType Type { get { return TranscodeType.AAC; } }
 
-        public override string Codec { get { return "libfaac"; } }
+        public override string Codec { get { return "aac"; } }
 
         public override string Command { get { return "ffmpeg"; } }
 
@@ -74,9 +74,9 @@ namespace WaveBox.Transcoding {
 
         private string FFMpegOptionsWith(uint quality) {
             if (quality > 12) {
-                return "-loglevel quiet -i \"" + Item.FilePath() + "\" -acodec " + Codec + " -strict -2 -ab " + (quality * 1024) + " " + OutputPath;
+                return "-loglevel quiet -i \"" + Item.FilePath() + "\" -c:a " + Codec + " -b:a " + (quality * 1024) + " " + OutputPath;
             } else {
-                return "-loglevel quiet -i \"" + Item.FilePath() + "\" -acodec " + Codec + " -strict -2 -aq " + quality + " " + OutputPath;
+                return "-loglevel quiet -i \"" + Item.FilePath() + "\" -c:a " + Codec + " -q:a " + quality + " " + OutputPath;
             }
         }
     }

@@ -3,10 +3,8 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Runtime.InteropServices;
-using Ninject;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
 using TagLib;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
@@ -19,7 +17,7 @@ using System.Diagnostics;
 
 namespace WaveBox.ApiHandler.Handlers {
     class ArtApiHandler : IApiHandler {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         public string Name { get { return "art"; } }
 
@@ -53,7 +51,7 @@ namespace WaveBox.ApiHandler.Handlers {
             }
 
             // Grab art stream
-            Art art = Injection.Kernel.Get<IArtRepository>().ArtForId((int)uri.Id);
+            Art art = Injection.Get<IArtRepository>().ArtForId((int)uri.Id);
             Stream stream = CreateStream(art);
 
             // If the stream could not be produced, return error
@@ -69,23 +67,13 @@ namespace WaveBox.ApiHandler.Handlers {
 
                 // Parse size if valid
                 if (size != Int32.MaxValue) {
-                    bool imageMagickFailed = false;
-                    if (ServerUtility.DetectOS() != ServerUtility.OS.Windows) {
-                        // First try ImageMagick
-                        try {
-                            Byte[] data = ResizeImageMagick(stream, size, blurSigma);
-                            stream = new MemoryStream(data, false);
-                        } catch {
-                            imageMagickFailed = true;
-                        }
-                    }
-
-                    // If ImageMagick dll isn't loaded, or this is Windows,
-                    if (imageMagickFailed || ServerUtility.DetectOS() == ServerUtility.OS.Windows) {
-                        // Resize image, put it in memory stream
-                        Image resized = ResizeImageGDI(new Bitmap(stream), new Size(size, size));
-                        stream = new MemoryStream();
-                        resized.Save(stream, System.Drawing.Imaging.ImageFormat.Jpeg);
+                    try {
+                        Stream resized = ResizeImage(stream, size, blurSigma);
+                        stream.Close();
+                        stream = resized;
+                    } catch (Exception e) {
+                        logger.Error("Error resizing art, returning original: ", e);
+                        stream.Position = 0;
                     }
                 }
             }
@@ -100,95 +88,30 @@ namespace WaveBox.ApiHandler.Handlers {
             stream.Close();
         }
 
-        private byte[] ResizeImageMagick(Stream stream, int width, double blurSigma) {
-            // new wand
-            IntPtr wand = ImageMagickInterop.NewWand();
-
-            // get original image
-            byte[] b = new byte[stream.Length];
-            stream.Read(b, 0, (int)stream.Length);
-            bool success = ImageMagickInterop.ReadImageBlob(wand, b);
-
-            if (success) {
-                int sourceWidth = (int)ImageMagickInterop.GetWidth(wand);
-                int sourceHeight = (int)ImageMagickInterop.GetHeight(wand);
-
-                float nPercent = 0;
-                float nPercentW = 0;
-                float nPercentH = 0;
-
-                nPercentW = ((float)width / (float)sourceWidth);
-                nPercentH = ((float)width / (float)sourceHeight);
-
-                if (nPercentH < nPercentW) {
-                    nPercent = nPercentH;
-                } else {
-                    nPercent = nPercentW;
-                }
-
-                int destWidth = (int)(sourceWidth * nPercent);
-                int destHeight = (int)(sourceHeight * nPercent);
-
-                Stopwatch s = new Stopwatch();
-                s.Start();
-                ImageMagickInterop.ResizeImage(wand, (IntPtr)destWidth, (IntPtr)destHeight, ImageMagickInterop.Filter.Lanczos, 1.0);
-                s.Stop();
-                logger.IfInfo("resize image time: " + s.ElapsedMilliseconds + "ms");
-
-                Stopwatch s1 = new Stopwatch();
-                if (blurSigma > 0.0) {
-                    s1.Start();
-                    ImageMagickInterop.BlurImage(wand, 0.0, blurSigma);
-                    s1.Stop();
-                    logger.IfInfo("blur image time: " + s1.ElapsedMilliseconds + "ms");
-                }
-
-                logger.IfInfo("total image time: " + (s.ElapsedMilliseconds + s1.ElapsedMilliseconds) + "ms");
-
-                byte[] newData = ImageMagickInterop.GetImageBlob(wand);
-
-                // cleanup
-                ImageMagickInterop.DestroyWand(wand);
-                return newData;
-            } else {
-                return b;
-            }
-        }
-
-        // Thanks to http://www.switchonthecode.com/tutorials/csharp-tutorial-image-editing-saving-cropping-and-resizing
         /// <summary>
-        /// Code which can resize an image and return it as requested
+        /// Aspect-fit resize into a size x size box (Lanczos), optional Gaussian blur, always re-encoded as JPEG
         /// </summary>
-        private Image ResizeImageGDI(Image imgToResize, Size size) {
-            int sourceWidth = imgToResize.Width;
-            int sourceHeight = imgToResize.Height;
+        private Stream ResizeImage(Stream stream, int size, double blurSigma) {
+            using (var image = SixLabors.ImageSharp.Image.Load(stream)) {
+                float nPercentW = ((float)size / (float)image.Width);
+                float nPercentH = ((float)size / (float)image.Height);
+                float nPercent = nPercentH < nPercentW ? nPercentH : nPercentW;
 
-            float nPercent = 0;
-            float nPercentW = 0;
-            float nPercentH = 0;
+                int destWidth = (int)(image.Width * nPercent);
+                int destHeight = (int)(image.Height * nPercent);
 
-            nPercentW = ((float)size.Width / (float)sourceWidth);
-            nPercentH = ((float)size.Height / (float)sourceHeight);
+                image.Mutate(x => {
+                    x.Resize(destWidth, destHeight, KnownResamplers.Lanczos3);
+                    if (blurSigma > 0.0) {
+                        x.GaussianBlur((float)blurSigma);
+                    }
+                });
 
-            if (nPercentH < nPercentW) {
-                nPercent = nPercentH;
-            } else {
-                nPercent = nPercentW;
+                MemoryStream output = new MemoryStream();
+                image.SaveAsJpeg(output);
+                output.Position = 0;
+                return output;
             }
-
-            int destWidth = (int)(sourceWidth * nPercent);
-            int destHeight = (int)(sourceHeight * nPercent);
-
-            Bitmap b = new Bitmap(destWidth, destHeight);
-            Graphics g = Graphics.FromImage((Image)b);
-            g.CompositingQuality = CompositingQuality.HighQuality;
-            g.SmoothingMode = SmoothingMode.HighQuality;
-            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-
-            g.DrawImage(imgToResize, 0, 0, destWidth, destHeight);
-            g.Dispose();
-
-            return (Image)b;
         }
 
         private Stream CreateStream(Art art) {
@@ -196,13 +119,13 @@ namespace WaveBox.ApiHandler.Handlers {
                 return null;
             }
 
-            int? itemId = Injection.Kernel.Get<IArtRepository>().ItemIdForArtId((int)art.ArtId);
+            int? itemId = Injection.Get<IArtRepository>().ItemIdForArtId((int)art.ArtId);
 
             if ((object)itemId == null) {
                 return null;
             }
 
-            ItemType type = Injection.Kernel.Get<IItemRepository>().ItemTypeForItemId((int)itemId);
+            ItemType type = Injection.Get<IItemRepository>().ItemTypeForItemId((int)itemId);
 
             Stream stream = null;
 
@@ -216,7 +139,7 @@ namespace WaveBox.ApiHandler.Handlers {
         }
 
         private Stream StreamForSong(int songId) {
-            Song song = Injection.Kernel.Get<ISongRepository>().SongForId(songId);
+            Song song = Injection.Get<ISongRepository>().SongForId(songId);
             Stream stream = null;
 
             // Open the image from the tag
@@ -236,7 +159,7 @@ namespace WaveBox.ApiHandler.Handlers {
         }
 
         private Stream StreamForFolder(int folderId) {
-            Folder folder = Injection.Kernel.Get<IFolderRepository>().FolderForId(folderId);
+            Folder folder = Injection.Get<IFolderRepository>().FolderForId(folderId);
             Stream stream = null;
 
             string artPath = FolderArtPath(folder);
@@ -251,7 +174,7 @@ namespace WaveBox.ApiHandler.Handlers {
         private string FolderArtPath(Folder folder) {
             string artPath = null;
 
-            foreach (string fileName in Injection.Kernel.Get<IServerSettings>().FolderArtNames) {
+            foreach (string fileName in Injection.Get<IServerSettings>().FolderArtNames) {
                 string path = folder.FolderPath + Path.DirectorySeparatorChar + fileName;
                 if (System.IO.File.Exists(path)) {
                     // Use this one
