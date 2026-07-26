@@ -34,10 +34,8 @@
 
 //////////// TEMP
 using WaveBox.Core.Static;
-using Newtonsoft.Json;
-using log4net;
+using System.Text.Json;
 ////////////
-using Ninject;
 using WaveBox.Core;
 
 
@@ -110,10 +108,10 @@ namespace SQLite {
          * WaveBox
          */
 
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         public int InsertLogged(object obj, InsertType insertType = InsertType.Insert) {
-            lock (Injection.Kernel.Get<IDatabase>().DbBackupLock) {
+            lock (Injection.Get<IDatabase>().DbBackupLock) {
                 int affectedRows = Insert(obj, insertType);
 
                 if (affectedRows > 0) {
@@ -130,12 +128,12 @@ namespace SQLite {
                     // Log the query
                     ISQLiteConnection conn = null;
                     try {
-                        conn = Injection.Kernel.Get<IDatabase>().GetQueryLogSqliteConnection();
-                        conn.Execute(insertType.QueryText() + " INTO QueryLog (QueryString, ValuesString) VALUES (?, ?)", insertCmd.CommandText, JsonConvert.SerializeObject(vals, Formatting.None));
+                        conn = Injection.Get<IDatabase>().GetQueryLogSqliteConnection();
+                        conn.Execute(insertType.QueryText() + " INTO QueryLog (QueryString, ValuesString) VALUES (?, ?)", insertCmd.CommandText, SerializeScalarsToJson(vals));
                     } catch(Exception e) {
                         logger.Error(e);
                     } finally {
-                        Injection.Kernel.Get<IDatabase>().CloseQueryLogSqliteConnection(conn);
+                        Injection.Get<IDatabase>().CloseQueryLogSqliteConnection(conn);
                     }
                 }
 
@@ -144,23 +142,81 @@ namespace SQLite {
         }
 
         public int ExecuteLogged(string query, params object[] args) {
-            lock (Injection.Kernel.Get<IDatabase>().DbBackupLock) {
+            lock (Injection.Get<IDatabase>().DbBackupLock) {
                 int affectedRows = Execute(query, args);
 
                 if (affectedRows > 0) {
                     // Log the query
                     ISQLiteConnection conn = null;
                     try {
-                        conn = Injection.Kernel.Get<IDatabase>().GetQueryLogSqliteConnection();
-                        conn.Execute("INSERT INTO QueryLog (QueryString, ValuesString) VALUES (?, ?)", query, JsonConvert.SerializeObject(args, Formatting.None));
+                        conn = Injection.Get<IDatabase>().GetQueryLogSqliteConnection();
+                        conn.Execute("INSERT INTO QueryLog (QueryString, ValuesString) VALUES (?, ?)", query, SerializeScalarsToJson(args));
                     } catch(Exception e) {
                         logger.Error(e);
                     } finally {
-                        Injection.Kernel.Get<IDatabase>().CloseQueryLogSqliteConnection(conn);
+                        Injection.Get<IDatabase>().CloseQueryLogSqliteConnection(conn);
                     }
                 }
 
                 return affectedRows;
+            }
+        }
+
+        // Serialize an array of scalar column values for the query log, producing the same JSON
+        // Newtonsoft did (e.g. [1,"abc",null]) without needing reflection-based serialization.
+        private static string SerializeScalarsToJson(object[] vals) {
+            using (var ms = new System.IO.MemoryStream())
+            using (var writer = new Utf8JsonWriter(ms)) {
+                writer.WriteStartArray();
+                foreach (object val in vals) {
+                    switch (val) {
+                    case null:
+                        writer.WriteNullValue();
+                        break;
+                    case string s:
+                        writer.WriteStringValue(s);
+                        break;
+                    case bool b:
+                        writer.WriteBooleanValue(b);
+                        break;
+                    case int i:
+                        writer.WriteNumberValue(i);
+                        break;
+                    case long l:
+                        writer.WriteNumberValue(l);
+                        break;
+                    case short sh:
+                        writer.WriteNumberValue(sh);
+                        break;
+                    case byte by:
+                        writer.WriteNumberValue(by);
+                        break;
+                    case float f:
+                        writer.WriteNumberValue(f);
+                        break;
+                    case double d:
+                        writer.WriteNumberValue(d);
+                        break;
+                    case decimal m:
+                        writer.WriteNumberValue(m);
+                        break;
+                    case byte[] bytes:
+                        writer.WriteBase64StringValue(bytes);
+                        break;
+                    case DateTime dt:
+                        writer.WriteStringValue(dt);
+                        break;
+                    case Enum e:
+                        writer.WriteNumberValue(Convert.ToInt64(e));
+                        break;
+                    default:
+                        writer.WriteStringValue(val.ToString());
+                        break;
+                    }
+                }
+                writer.WriteEndArray();
+                writer.Flush();
+                return System.Text.Encoding.UTF8.GetString(ms.ToArray());
             }
         }
 
@@ -1247,6 +1303,8 @@ namespace SQLite {
         private readonly Column _autoPk;
         private Column[] _insertColumns;
 
+        [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2075",
+            Justification = "All ORM-mapped model types are fully preserved via WaveBox.Core.ModelTypeRegistry.EnsurePreserved()")]
         public TableMapping(Type type, TableMappingType mappingType) {
             MappedType = type;
 
@@ -1580,6 +1638,8 @@ namespace SQLite {
             // Can be overridden.
         }
 
+        [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2072",
+            Justification = "All ORM-mapped model types are fully preserved via WaveBox.Core.ModelTypeRegistry.EnsurePreserved()")]
         public IEnumerable<T> ExecuteDeferredQuery<T>(ITableMapping map) {
             if (_conn.Trace) {
                 Debug.WriteLine("Executing Query: " + this);
@@ -2305,32 +2365,32 @@ namespace SQLite {
         }
 
 #if !WINDOWS_PHONE
-        [DllImport("sqlite3", EntryPoint = "sqlite3_open", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_open", CallingConvention = CallingConvention.Cdecl)]
         public static extern Result Open([MarshalAs(UnmanagedType.LPStr)] string filename, out IntPtr db);
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_open_v2", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_open_v2", CallingConvention = CallingConvention.Cdecl)]
         public static extern Result Open([MarshalAs(UnmanagedType.LPStr)] string filename, out IntPtr db, int flags,
                                          IntPtr zvfs);
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_open_v2", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_open_v2", CallingConvention = CallingConvention.Cdecl)]
         public static extern Result Open(byte[] filename, out IntPtr db, int flags, IntPtr zvfs);
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_open16", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_open16", CallingConvention = CallingConvention.Cdecl)]
         public static extern Result Open16([MarshalAs(UnmanagedType.LPWStr)] string filename, out IntPtr db);
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_close", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_close", CallingConvention = CallingConvention.Cdecl)]
         public static extern Result Close(IntPtr db);
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_config", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_config", CallingConvention = CallingConvention.Cdecl)]
         public static extern Result Config(ConfigOption option);
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_busy_timeout", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_busy_timeout", CallingConvention = CallingConvention.Cdecl)]
         public static extern Result BusyTimeout(IntPtr db, int milliseconds);
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_changes", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_changes", CallingConvention = CallingConvention.Cdecl)]
         public static extern int Changes(IntPtr db);
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_prepare_v2", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_prepare_v2", CallingConvention = CallingConvention.Cdecl)]
         public static extern Result Prepare2(IntPtr db, [MarshalAs(UnmanagedType.LPStr)] string sql, int numBytes,
                                              out IntPtr stmt, IntPtr pzTail);
 
@@ -2343,83 +2403,83 @@ namespace SQLite {
             return stmt;
         }
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_step", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_step", CallingConvention = CallingConvention.Cdecl)]
         public static extern Result Step(IntPtr stmt);
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_reset", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_reset", CallingConvention = CallingConvention.Cdecl)]
         public static extern Result Reset(IntPtr stmt);
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_finalize", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_finalize", CallingConvention = CallingConvention.Cdecl)]
         public static extern Result Finalize(IntPtr stmt);
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_last_insert_rowid", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_last_insert_rowid", CallingConvention = CallingConvention.Cdecl)]
         public static extern long LastInsertRowid(IntPtr db);
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_errmsg16", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_errmsg16", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr Errmsg(IntPtr db);
 
         public static string GetErrmsg(IntPtr db) {
             return Marshal.PtrToStringUni(Errmsg(db));
         }
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_bind_parameter_index", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_bind_parameter_index", CallingConvention = CallingConvention.Cdecl)]
         public static extern int BindParameterIndex(IntPtr stmt, [MarshalAs(UnmanagedType.LPStr)] string name);
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_bind_null", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_bind_null", CallingConvention = CallingConvention.Cdecl)]
         public static extern int BindNull(IntPtr stmt, int index);
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_bind_int", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_bind_int", CallingConvention = CallingConvention.Cdecl)]
         public static extern int BindInt(IntPtr stmt, int index, int val);
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_bind_int64", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_bind_int64", CallingConvention = CallingConvention.Cdecl)]
         public static extern int BindInt64(IntPtr stmt, int index, long val);
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_bind_double", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_bind_double", CallingConvention = CallingConvention.Cdecl)]
         public static extern int BindDouble(IntPtr stmt, int index, double val);
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_bind_text16", CallingConvention = CallingConvention.Cdecl,
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_bind_text16", CallingConvention = CallingConvention.Cdecl,
                    CharSet = CharSet.Unicode)]
         public static extern int BindText(IntPtr stmt, int index, [MarshalAs(UnmanagedType.LPWStr)] string val, int n,
                                           IntPtr free);
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_bind_blob", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_bind_blob", CallingConvention = CallingConvention.Cdecl)]
         public static extern int BindBlob(IntPtr stmt, int index, byte[] val, int n, IntPtr free);
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_column_count", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_column_count", CallingConvention = CallingConvention.Cdecl)]
         public static extern int ColumnCount(IntPtr stmt);
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_column_name", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_column_name", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr ColumnName(IntPtr stmt, int index);
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_column_name16", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_column_name16", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr ColumnName16Internal(IntPtr stmt, int index);
 
         public static string ColumnName16(IntPtr stmt, int index) {
             return Marshal.PtrToStringUni(ColumnName16Internal(stmt, index));
         }
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_column_type", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_column_type", CallingConvention = CallingConvention.Cdecl)]
         public static extern ColType ColumnType(IntPtr stmt, int index);
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_column_int", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_column_int", CallingConvention = CallingConvention.Cdecl)]
         public static extern int ColumnInt(IntPtr stmt, int index);
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_column_int64", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_column_int64", CallingConvention = CallingConvention.Cdecl)]
         public static extern long ColumnInt64(IntPtr stmt, int index);
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_column_double", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_column_double", CallingConvention = CallingConvention.Cdecl)]
         public static extern double ColumnDouble(IntPtr stmt, int index);
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_column_text", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_column_text", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr ColumnText(IntPtr stmt, int index);
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_column_text16", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_column_text16", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr ColumnText16(IntPtr stmt, int index);
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_column_blob", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_column_blob", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr ColumnBlob(IntPtr stmt, int index);
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_column_bytes", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_column_bytes", CallingConvention = CallingConvention.Cdecl)]
         public static extern int ColumnBytes(IntPtr stmt, int index);
 
         public static string ColumnString(IntPtr stmt, int index) {
