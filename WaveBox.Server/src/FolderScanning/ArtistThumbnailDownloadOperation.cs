@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
-using Ninject;
 using WaveBox.Core;
 using WaveBox.Core.Derived;
 using WaveBox.Core.Extensions;
@@ -14,7 +13,7 @@ using WaveBox.Core.OperationQueue;
 
 namespace WaveBox.FolderScanning {
     public class ArtistThumbnailDownloadOperation : AbstractOperation {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         public override string OperationType { get { return "ArtistThumbnailDownloadOperation"; } }
 
@@ -38,7 +37,7 @@ namespace WaveBox.FolderScanning {
             ISet<string> musicBrainzIds = new HashSet<string>();
 
             // Find artists and album artists missing art
-            IArtistRepository artistRepository = Injection.Kernel.Get<IArtistRepository>();
+            IArtistRepository artistRepository = Injection.Get<IArtistRepository>();
             IList<Artist> allArtists = artistRepository.AllArtists();
             foreach (Artist artist in allArtists) {
                 string musicBrainzId = artist.MusicBrainzId;
@@ -49,7 +48,7 @@ namespace WaveBox.FolderScanning {
                 }
             }
 
-            IAlbumArtistRepository albumArtistRepository = Injection.Kernel.Get<IAlbumArtistRepository>();
+            IAlbumArtistRepository albumArtistRepository = Injection.Get<IAlbumArtistRepository>();
             IList<AlbumArtist> allAlbumArtists = albumArtistRepository.AllAlbumArtists();
             foreach (AlbumArtist albumArtist in allAlbumArtists) {
                 string musicBrainzId = albumArtist.MusicBrainzId;
@@ -92,7 +91,7 @@ namespace WaveBox.FolderScanning {
                     string path = this.ArtPathForMusicBrainzId(musicBrainzId);
 
                     // Download file to specified path
-                    Injection.Kernel.Get<IWebClient>().DownloadFile(address, path);
+                    Injection.Get<IWebClient>().DownloadFile(address, path);
 
                     // Make sure the file has contents, otherwise delete it
                     FileInfo info = new FileInfo(path);

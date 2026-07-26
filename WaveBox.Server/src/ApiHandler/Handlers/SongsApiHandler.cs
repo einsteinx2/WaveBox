@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Newtonsoft.Json;
-using Ninject;
 using WaveBox.Core.Model;
 using WaveBox.Static;
 using WaveBox.Service.Services.Http;
@@ -14,7 +12,7 @@ using WaveBox.Core.Static;
 
 namespace WaveBox.ApiHandler.Handlers {
     class SongsApiHandler : IApiHandler {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         public string Name { get { return "songs"; } }
 
@@ -34,7 +32,7 @@ namespace WaveBox.ApiHandler.Handlers {
             // Check for valid ID
             if (uri.Id != null) {
                 // Add song by ID to the list
-                listOfSongs.Add(Injection.Kernel.Get<ISongRepository>().SongForId((int)uri.Id));
+                listOfSongs.Add(Injection.Get<ISongRepository>().SongForId((int)uri.Id));
             }
             // Check for a request for range of songs
             else if (uri.Parameters.ContainsKey("range")) {
@@ -54,7 +52,7 @@ namespace WaveBox.ApiHandler.Handlers {
                 }
 
                 // Grab range of songs
-                listOfSongs = Injection.Kernel.Get<ISongRepository>().RangeSongs(start, end);
+                listOfSongs = Injection.Get<ISongRepository>().RangeSongs(start, end);
             }
 
             // Check for a request to limit/paginate songs, like SQL
@@ -107,13 +105,13 @@ namespace WaveBox.ApiHandler.Handlers {
                     }
                 } else {
                     // If no songs in list, grab directly using model method
-                    listOfSongs = Injection.Kernel.Get<ISongRepository>().LimitSongs(index, duration);
+                    listOfSongs = Injection.Get<ISongRepository>().LimitSongs(index, duration);
                 }
             }
 
             // Finally, if no songs already in list, send the whole list
             if (listOfSongs.Count == 0) {
-                listOfSongs = Injection.Kernel.Get<ISongRepository>().AllSongs();
+                listOfSongs = Injection.Get<ISongRepository>().AllSongs();
                 sectionPositions = Utility.SectionPositionsFromSortedList(new List<IGroupingItem>(listOfSongs.Select(c => (IGroupingItem)c)));
             }
 

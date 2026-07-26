@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Newtonsoft.Json;
-using Ninject;
 using WaveBox.Core.Model;
 using WaveBox.Static;
 using WaveBox.Service.Services.Http;
@@ -13,7 +11,7 @@ using WaveBox.Core;
 
 namespace WaveBox.ApiHandler.Handlers {
     class VideosApiHandler : IApiHandler {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         public string Name { get { return "videos"; } }
 
@@ -32,7 +30,7 @@ namespace WaveBox.ApiHandler.Handlers {
             // Check if ID present
             if (uri.Id != null) {
                 // Add video by ID to the list
-                videos.Add(Injection.Kernel.Get<IVideoRepository>().VideoForId((int)uri.Id));
+                videos.Add(Injection.Get<IVideoRepository>().VideoForId((int)uri.Id));
             }
             // Check for a request for range of videos
             else if (uri.Parameters.ContainsKey("range")) {
@@ -52,7 +50,7 @@ namespace WaveBox.ApiHandler.Handlers {
                 }
 
                 // Grab range of videos
-                videos = Injection.Kernel.Get<IVideoRepository>().RangeVideos(start, end);
+                videos = Injection.Get<IVideoRepository>().RangeVideos(start, end);
             }
 
             // Check for a request to limit/paginate videos, like SQL
@@ -105,13 +103,13 @@ namespace WaveBox.ApiHandler.Handlers {
                     }
                 } else {
                     // If no videos in list, grab directly using model method
-                    videos = Injection.Kernel.Get<IVideoRepository>().LimitVideos(index, duration);
+                    videos = Injection.Get<IVideoRepository>().LimitVideos(index, duration);
                 }
             }
 
             // Finally, if no videos already in list, send the whole list
             if (videos.Count == 0) {
-                videos = Injection.Kernel.Get<IVideoRepository>().AllVideos();
+                videos = Injection.Get<IVideoRepository>().AllVideos();
             }
 
             // Send it!

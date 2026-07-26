@@ -2,13 +2,12 @@ using System;
 using WaveBox.Service.Services.Http;
 using WaveBox.Core.Model;
 using WaveBox.Core;
-using Ninject;
 using WaveBox.Core.Model.Repository;
 using System.IO;
 
 namespace WaveBox.ApiHandler.Handlers {
     public class FanArtThumbnailApiHandler : IApiHandler {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         public string Name { get { return "fanartthumb"; } }
 

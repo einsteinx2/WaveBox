@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
-using Ninject;
 using WaveBox.Core;
 using WaveBox.Core.Derived;
 using WaveBox.Core.Extensions;
@@ -19,7 +18,7 @@ using WaveBox.Core.OperationQueue;
 
 namespace WaveBox.FolderScanning {
     public class MusicBrainzScanOperation : AbstractOperation {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         public override string OperationType { get { return "MusicBrainzScanOperation"; } }
 
@@ -43,7 +42,7 @@ namespace WaveBox.FolderScanning {
             testTotalScanTime.Start();
 
             // Find artists and album artists missing ids, and all existing musicbrainz ids, to avoid extra lookups
-            IArtistRepository artistRepository = Injection.Kernel.Get<IArtistRepository>();
+            IArtistRepository artistRepository = Injection.Get<IArtistRepository>();
             IList<Artist> allArtists = artistRepository.AllArtists();
             foreach (Artist artist in allArtists) {
                 if (artist.MusicBrainzId == null) {
@@ -55,7 +54,7 @@ namespace WaveBox.FolderScanning {
 
             IList<AlbumArtist> albumArtistsMissingId = new List<AlbumArtist>();
 
-            IAlbumArtistRepository albumArtistRepository = Injection.Kernel.Get<IAlbumArtistRepository>();
+            IAlbumArtistRepository albumArtistRepository = Injection.Get<IAlbumArtistRepository>();
             IList<AlbumArtist> allAlbumArtists = albumArtistRepository.AllAlbumArtists();
 
             foreach (AlbumArtist albumArtist in allAlbumArtists) {
@@ -96,7 +95,7 @@ namespace WaveBox.FolderScanning {
                 string address = "http://musicbrainz.herpderp.me:5000/ws/2/artist?query=\"" + System.Web.HttpUtility.UrlEncode(artistName) + "\"";
 
                 // Capture XML response
-                string responseXML = Injection.Kernel.Get<IWebClient>().DownloadString(address);
+                string responseXML = Injection.Get<IWebClient>().DownloadString(address);
 
                 try {
                     XDocument doc = XDocument.Parse(responseXML);
@@ -146,7 +145,7 @@ namespace WaveBox.FolderScanning {
             // Count of number of IDs retrieved
             int count = 0;
 
-            IArtistRepository artistRepository = Injection.Kernel.Get<IArtistRepository>();
+            IArtistRepository artistRepository = Injection.Get<IArtistRepository>();
             Parallel.ForEach(artistsMissingId, artist => {
                 // First check if the id already exists
                 string musicBrainzId = null;
@@ -185,7 +184,7 @@ namespace WaveBox.FolderScanning {
             // Count of number of IDs retrieved
             int count = 0;
 
-            IAlbumArtistRepository albumArtistRepository = Injection.Kernel.Get<IAlbumArtistRepository>();
+            IAlbumArtistRepository albumArtistRepository = Injection.Get<IAlbumArtistRepository>();
             Parallel.ForEach(albumArtistsMissingId, albumArtist => {
                 // First check if the id already exists
                 string musicBrainzId = null;

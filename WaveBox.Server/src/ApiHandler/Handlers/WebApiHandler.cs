@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
-using Ninject;
 using WaveBox.Core;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
@@ -10,7 +9,7 @@ using WaveBox.Static;
 
 namespace WaveBox.ApiHandler.Handlers {
     public class WebApiHandler : IApiHandler {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         public string Name { get { return "web"; } }
 
@@ -30,7 +29,7 @@ namespace WaveBox.ApiHandler.Handlers {
             string path = webRoot;
 
             // Check for and apply theme path
-            if (Injection.Kernel.Get<IServerSettings>().Theme == null) {
+            if (Injection.Get<IServerSettings>().Theme == null) {
                 logger.Error("No theme set in WaveBox configuration, cannot serve Web UI");
 
                 // File not found
@@ -39,11 +38,11 @@ namespace WaveBox.ApiHandler.Handlers {
             }
 
             // Append theme path to web root
-            path += Injection.Kernel.Get<IServerSettings>().Theme;
+            path += Injection.Get<IServerSettings>().Theme;
 
             // Validate theme path
             if (!Directory.Exists(path)) {
-                logger.Error("Invalid theme '" + Injection.Kernel.Get<IServerSettings>().Theme + "' set in WaveBox configuration, cannot serve Web UI");
+                logger.Error("Invalid theme '" + Injection.Get<IServerSettings>().Theme + "' set in WaveBox configuration, cannot serve Web UI");
 
                 // File not found
                 processor.WriteErrorHeader();
@@ -56,7 +55,7 @@ namespace WaveBox.ApiHandler.Handlers {
 
                 // Ensure theme contains an index
                 if (!File.Exists(path)) {
-                    logger.Error("Theme '" + Injection.Kernel.Get<IServerSettings>().Theme + "' missing required file index.html");
+                    logger.Error("Theme '" + Injection.Get<IServerSettings>().Theme + "' missing required file index.html");
 
                     // File not found
                     processor.WriteErrorHeader();

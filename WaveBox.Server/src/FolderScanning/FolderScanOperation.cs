@@ -9,7 +9,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Cirrious.MvvmCross.Plugins.Sqlite;
-using Ninject;
 using TagLib;
 using WaveBox.Core;
 using WaveBox.Core.Extensions;
@@ -20,7 +19,7 @@ using WaveBox.Static;
 
 namespace WaveBox.FolderScanning {
     public class FolderScanOperation : AbstractOperation {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         public override string OperationType { get { return String.Format("FolderScanOperation: {0}", FolderPath); } }
 
@@ -57,7 +56,7 @@ namespace WaveBox.FolderScanning {
         }
 
         public void ProcessFolder(int folderId) {
-            Folder folder = Injection.Kernel.Get<IFolderRepository>().FolderForId(folderId);
+            Folder folder = Injection.Get<IFolderRepository>().FolderForId(folderId);
             this.ProcessFolder(folder.FolderPath);
         }
 
@@ -70,7 +69,7 @@ namespace WaveBox.FolderScanning {
                 // if the file is a directory
                 if (Directory.Exists(folderPath)) {
                     testFolderObjCreateTime.Start();
-                    Folder topFolder = Injection.Kernel.Get<IFolderRepository>().FolderForPath(folderPath);
+                    Folder topFolder = Injection.Get<IFolderRepository>().FolderForPath(folderPath);
                     testFolderObjCreateTime.Stop();
 
                     if (topFolder.FolderId == null) {
@@ -84,7 +83,7 @@ namespace WaveBox.FolderScanning {
                     foreach (string subfolder in directories) {
                         if (!subfolder.Contains(".AppleDouble")) {
                             testFolderObjCreateTime.Start();
-                            Folder folder = Injection.Kernel.Get<IFolderRepository>().FolderForPath(subfolder);
+                            Folder folder = Injection.Get<IFolderRepository>().FolderForPath(subfolder);
                             testFolderObjCreateTime.Stop();
 
                             // if the folder isn't already in the database, add it.
@@ -128,7 +127,7 @@ namespace WaveBox.FolderScanning {
             }
 
             try {
-                ItemType type = Injection.Kernel.Get<IItemRepository>().ItemTypeForFilePath(file);
+                ItemType type = Injection.Get<IItemRepository>().ItemTypeForFilePath(file);
 
                 if (type == ItemType.Song || type == ItemType.Video) {
                     testMediaItemNeedsUpdatingTime.Start();
@@ -164,7 +163,7 @@ namespace WaveBox.FolderScanning {
                                 if (isNew) {
                                     CreateSong(file, folderId, f).InsertMediaItem();
                                 } else if (itemId != null) {
-                                    var oldSong = Injection.Kernel.Get<ISongRepository>().SongForId((int)itemId);
+                                    var oldSong = Injection.Get<ISongRepository>().SongForId((int)itemId);
                                     var newSong = CreateSong(file, folderId, f);
                                     newSong.ItemId = oldSong.ItemId;
                                     newSong.InsertMediaItem();
@@ -173,7 +172,7 @@ namespace WaveBox.FolderScanning {
                                 if (isNew) {
                                     CreateVideo(file, folderId, f).InsertMediaItem();
                                 } else if (itemId != null) {
-                                    Injection.Kernel.Get<IVideoRepository>().VideoForId((int)itemId).InsertMediaItem();
+                                    Injection.Get<IVideoRepository>().VideoForId((int)itemId).InsertMediaItem();
                                 }
                             }
                         }
@@ -183,8 +182,8 @@ namespace WaveBox.FolderScanning {
                     }
                 } else if (type == ItemType.Art) {
                     if (ArtFileNeedsUpdating(file)) {
-                        Folder folder = Injection.Kernel.Get<IFolderRepository>().FolderForId((int)folderId);
-                        IList<Album> albumsForFolder = Injection.Kernel.Get<IFolderRepository>().AlbumsForFolderId((int)folderId);
+                        Folder folder = Injection.Get<IFolderRepository>().FolderForId((int)folderId);
+                        IList<Album> albumsForFolder = Injection.Get<IFolderRepository>().AlbumsForFolderId((int)folderId);
 
                         // Find the old art id, if it exists
                         int? oldArtId = folder.ArtId;
@@ -194,31 +193,31 @@ namespace WaveBox.FolderScanning {
                             logger.IfInfo("Adding new art for folderId: " + folderId);
 
                             // Insert the relationship
-                            Injection.Kernel.Get<IArtRepository>().UpdateArtItemRelationship(newArtId, folderId, true);
+                            Injection.Get<IArtRepository>().UpdateArtItemRelationship(newArtId, folderId, true);
 
                             // Update all matching albums, but only if they don't already have art (prefer song embedded for albums)
                             foreach (Album album in albumsForFolder) {
                                 // Insert the relationship for the album
-                                Injection.Kernel.Get<IArtRepository>().UpdateArtItemRelationship(newArtId, album.AlbumId, false);
+                                Injection.Get<IArtRepository>().UpdateArtItemRelationship(newArtId, album.AlbumId, false);
                             }
                         } else {
-                            Art oldArt = Injection.Kernel.Get<IArtRepository>().ArtForId((int)oldArtId);
+                            Art oldArt = Injection.Get<IArtRepository>().ArtForId((int)oldArtId);
 
                             // Check if the previous folder art was actually from embedded tag art
                             if ((object)oldArt.FilePath == null) {
                                 // This was embedded tag art, so only update the folder's relationship
-                                bool updated = Injection.Kernel.Get<IArtRepository>().UpdateArtItemRelationship(newArtId, folder.FolderId, true);
+                                bool updated = Injection.Get<IArtRepository>().UpdateArtItemRelationship(newArtId, folder.FolderId, true);
                                 logger.IfInfo(String.Format("It was embedded art, {0}, newArtId: {1}, folderId: {2}", updated, newArtId, folder.FolderId));
 
                                 // Update all matching albums, but only if they don't already have art (prefer song embedded for albums)
                                 foreach (Album album in albumsForFolder) {
                                     // Insert the relationship for the album
-                                    Injection.Kernel.Get<IArtRepository>().UpdateArtItemRelationship(newArtId, album.AlbumId, false);
+                                    Injection.Get<IArtRepository>().UpdateArtItemRelationship(newArtId, album.AlbumId, false);
                                 }
                             } else {
                                 // Update any existing references, that would include both this folder
                                 // and any songs or albums that were using this art in lieu of embedded art
-                                Injection.Kernel.Get<IArtRepository>().UpdateItemsToNewArtId(oldArtId, newArtId);
+                                Injection.Get<IArtRepository>().UpdateItemsToNewArtId(oldArtId, newArtId);
                             }
                         }
 
@@ -228,7 +227,7 @@ namespace WaveBox.FolderScanning {
                         foreach (MediaItem m in items) {
                             if (m.ArtId == null) {
                                 logger.IfInfo("Updating art id for item " + m.ItemId + ". (" + (m.ArtId == null ? "null" : m.ArtId.ToString()) + " -> " + newArtId + ")");
-                                Injection.Kernel.Get<IArtRepository>().UpdateArtItemRelationship(newArtId, m.ItemId, false);
+                                Injection.Get<IArtRepository>().UpdateArtItemRelationship(newArtId, m.ItemId, false);
                             }
                         }
                     }
@@ -247,7 +246,7 @@ namespace WaveBox.FolderScanning {
         }
 
         public Song CreateSong(string filePath, int? folderId, TagLib.File file) {
-            int? itemId = Injection.Kernel.Get<IItemRepository>().GenerateItemId(ItemType.Song);
+            int? itemId = Injection.Get<IItemRepository>().GenerateItemId(ItemType.Song);
             if (itemId == null) {
                 return new Song();
             }
@@ -262,7 +261,7 @@ namespace WaveBox.FolderScanning {
             try {
                 string firstPerformer = tag.FirstPerformer;
                 if (firstPerformer != null) {
-                    Artist artist = Injection.Kernel.Get<IArtistRepository>().ArtistForNameOrCreate(firstPerformer.Trim());
+                    Artist artist = Injection.Get<IArtistRepository>().ArtistForNameOrCreate(firstPerformer.Trim());
                     song.ArtistId = artist.ArtistId;
                     song.ArtistName = artist.ArtistName;
                 }
@@ -275,7 +274,7 @@ namespace WaveBox.FolderScanning {
             try {
                 string firstAlbumArtist = tag.FirstAlbumArtist;
                 if (firstAlbumArtist != null) {
-                    AlbumArtist albumArtist = Injection.Kernel.Get<IAlbumArtistRepository>().AlbumArtistForNameOrCreate(firstAlbumArtist.Trim());
+                    AlbumArtist albumArtist = Injection.Get<IAlbumArtistRepository>().AlbumArtistForNameOrCreate(firstAlbumArtist.Trim());
                     song.AlbumArtistId = albumArtist.AlbumArtistId;
                     song.AlbumArtistName = albumArtist.AlbumArtistName;
                 }
@@ -287,7 +286,7 @@ namespace WaveBox.FolderScanning {
 
             // If we have an artist, but not an albumArtist, then use the artist info for albumArtist
             if (song.AlbumArtistId == null && song.ArtistName != null) {
-                AlbumArtist albumArtist = Injection.Kernel.Get<IAlbumArtistRepository>().AlbumArtistForNameOrCreate(song.ArtistName);
+                AlbumArtist albumArtist = Injection.Get<IAlbumArtistRepository>().AlbumArtistForNameOrCreate(song.ArtistName);
                 song.AlbumArtistId = albumArtist.AlbumArtistId;
                 song.AlbumArtistName = albumArtist.AlbumArtistName;
             }
@@ -295,7 +294,7 @@ namespace WaveBox.FolderScanning {
             try {
                 string albumName = tag.Album;
                 if (albumName != null) {
-                    Album album = Injection.Kernel.Get<IAlbumRepository>().AlbumForName(albumName.Trim(), song.AlbumArtistId, Convert.ToInt32(tag.Year));
+                    Album album = Injection.Get<IAlbumRepository>().AlbumForName(albumName.Trim(), song.AlbumArtistId, Convert.ToInt32(tag.Year));
                     song.AlbumId = album.AlbumId;
                     song.AlbumName = album.AlbumName;
                     song.ReleaseYear = album.ReleaseYear;
@@ -366,7 +365,7 @@ namespace WaveBox.FolderScanning {
 
             if ((object)song.GenreName != null) {
                 // Retreive the genre id
-                song.GenreId = Injection.Kernel.Get<IGenreRepository>().GenreForName(song.GenreName).GenreId;
+                song.GenreId = Injection.Get<IGenreRepository>().GenreForName(song.GenreName).GenreId;
             }
 
             song.Duration = Convert.ToInt32(file.Properties.Duration.TotalSeconds);
@@ -392,10 +391,10 @@ namespace WaveBox.FolderScanning {
             file.Dispose();
 
             // If there was no embedded art, use the folder's art
-            artId = (object)artId == null ? Injection.Kernel.Get<IArtRepository>().ArtIdForItemId(song.FolderId) : artId;
+            artId = (object)artId == null ? Injection.Get<IArtRepository>().ArtIdForItemId(song.FolderId) : artId;
 
             // Create the art/item relationship
-            Injection.Kernel.Get<IArtRepository>().UpdateArtItemRelationship(artId, song.ItemId, true);
+            Injection.Get<IArtRepository>().UpdateArtItemRelationship(artId, song.ItemId, true);
 
             return song;
         }
@@ -407,7 +406,7 @@ namespace WaveBox.FolderScanning {
 
             // Verify file is one that we recognize as art
             FileInfo file = new FileInfo(filePath);
-            if (!Injection.Kernel.Get<IServerSettings>().FolderArtNames.Contains(file.Name)) {
+            if (!Injection.Get<IServerSettings>().FolderArtNames.Contains(file.Name)) {
                 return false;
             }
 
@@ -416,7 +415,7 @@ namespace WaveBox.FolderScanning {
 
             ISQLiteConnection conn = null;
             try {
-                conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+                conn = Injection.Get<IDatabase>().GetSqliteConnection();
                 string artId = conn.ExecuteScalar<string>("SELECT ArtId FROM Art WHERE LastModified = ? AND FilePath = ?", lastModified, filePath);
 
                 if (!ReferenceEquals(artId, null)) {
@@ -425,7 +424,7 @@ namespace WaveBox.FolderScanning {
             } catch (Exception e) {
                 logger.Error(e);
             } finally {
-                Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+                Injection.Get<IDatabase>().CloseSqliteConnection(conn);
             }
 
             return needsUpdating;
@@ -440,12 +439,12 @@ namespace WaveBox.FolderScanning {
             art.Md5Hash = fs.MD5();
             art.FileSize = fs.Length;
             art.LastModified = System.IO.File.GetLastWriteTime(fs.Name).ToUnixTime();
-            art.ArtId = Injection.Kernel.Get<IArtRepository>().ArtIdForMd5(art.Md5Hash);
+            art.ArtId = Injection.Get<IArtRepository>().ArtIdForMd5(art.Md5Hash);
             art.FilePath = filePath;
 
             if ((object)art.ArtId == null) {
-                art.ArtId = Injection.Kernel.Get<IItemRepository>().GenerateItemId(ItemType.Art);
-                Injection.Kernel.Get<IArtRepository>().InsertArt(art);
+                art.ArtId = Injection.Get<IItemRepository>().GenerateItemId(ItemType.Art);
+                Injection.Get<IArtRepository>().InsertArt(art);
             }
 
             // Dispose file stream
@@ -465,11 +464,11 @@ namespace WaveBox.FolderScanning {
                 art.FileSize = data.Length;
                 art.LastModified = System.IO.File.GetLastWriteTime(file.Name).ToUnixTime();
 
-                art.ArtId = Injection.Kernel.Get<IArtRepository>().ArtIdForMd5(art.Md5Hash);
+                art.ArtId = Injection.Get<IArtRepository>().ArtIdForMd5(art.Md5Hash);
                 if (art.ArtId == null) {
                     // This art isn't in the database yet, so add it
-                    art.ArtId = Injection.Kernel.Get<IItemRepository>().GenerateItemId(ItemType.Art);
-                    Injection.Kernel.Get<IArtRepository>().InsertArt(art);
+                    art.ArtId = Injection.Get<IItemRepository>().GenerateItemId(ItemType.Art);
+                    Injection.Get<IArtRepository>().InsertArt(art);
                 }
             }
 
@@ -480,7 +479,7 @@ namespace WaveBox.FolderScanning {
         }
 
         private bool FileNeedsUpdating(string filePath, int? folderId, out bool isNew, out int? itemId) {
-            ItemType type = Injection.Kernel.Get<IItemRepository>().ItemTypeForFilePath(filePath);
+            ItemType type = Injection.Get<IItemRepository>().ItemTypeForFilePath(filePath);
 
             bool needsUpdating = false;
             isNew = false;
@@ -504,7 +503,7 @@ namespace WaveBox.FolderScanning {
 
             ISQLiteConnection conn = null;
             try {
-                conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+                conn = Injection.Get<IDatabase>().GetSqliteConnection();
                 var result = conn.DeferredQuery<Video>("SELECT * FROM Video WHERE FolderId = ? AND FileName = ?", folderId, fileName);
 
                 foreach (Video video in result) {
@@ -520,7 +519,7 @@ namespace WaveBox.FolderScanning {
             } catch (Exception e) {
                 logger.Error(e);
             } finally {
-                Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+                Injection.Get<IDatabase>().CloseSqliteConnection(conn);
             }
 
             return needsUpdating;
@@ -536,7 +535,7 @@ namespace WaveBox.FolderScanning {
 
             ISQLiteConnection conn = null;
             try {
-                conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+                conn = Injection.Get<IDatabase>().GetSqliteConnection();
                 IEnumerable result = conn.Query<Song>("SELECT * FROM Song WHERE FolderId = ? AND FileName = ? LIMIT 1", folderId, fileName);
 
                 foreach (Song song in result) {
@@ -552,14 +551,14 @@ namespace WaveBox.FolderScanning {
             } catch (Exception e) {
                 logger.Error(e);
             } finally {
-                Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+                Injection.Get<IDatabase>().CloseSqliteConnection(conn);
             }
 
             return needsUpdating;
         }
 
         private Video CreateVideo(string filePath, int? folderId, TagLib.File file) {
-            int? itemId = Injection.Kernel.Get<IItemRepository>().GenerateItemId(ItemType.Video);
+            int? itemId = Injection.Get<IItemRepository>().GenerateItemId(ItemType.Video);
             if (itemId == null) {
                 return new Video();
             }
@@ -594,10 +593,10 @@ namespace WaveBox.FolderScanning {
             file.Dispose();
 
             // If there was no embedded art, use the folder's art
-            artId = (object)artId == null ? Injection.Kernel.Get<IArtRepository>().ArtIdForItemId(video.FolderId) : artId;
+            artId = (object)artId == null ? Injection.Get<IArtRepository>().ArtIdForItemId(video.FolderId) : artId;
 
             // Create the art/item relationship
-            Injection.Kernel.Get<IArtRepository>().UpdateArtItemRelationship(artId, video.ItemId, true);
+            Injection.Get<IArtRepository>().UpdateArtItemRelationship(artId, video.ItemId, true);
 
             return video;
         }

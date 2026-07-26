@@ -2,13 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Cirrious.MvvmCross.Plugins.Sqlite;
-using Ninject;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Static;
 
 namespace WaveBox.Core.Model.Repository {
     public class GenreRepository : IGenreRepository {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         private readonly IDatabase database;
 
@@ -45,7 +44,7 @@ namespace WaveBox.Core.Model.Repository {
 
                     // If this genre didn't exist, generate an id and insert it
                     Genre genre2 = new Genre();
-                    genre2.GenreId = Injection.Kernel.Get<IItemRepository>().GenerateItemId(ItemType.Genre);
+                    genre2.GenreId = Injection.Get<IItemRepository>().GenerateItemId(ItemType.Genre);
                     genre2.GenreName = genreName;
 
                     this.InsertGenre(genre2);

@@ -7,7 +7,7 @@ using WaveBox.Service.Services;
 
 namespace WaveBox.Service {
     public static class ServiceManager {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         // List of all services maintained by the manager
         private static IList<IService> Services = new List<IService>();

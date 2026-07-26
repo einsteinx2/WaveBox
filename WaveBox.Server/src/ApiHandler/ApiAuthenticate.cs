@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Ninject;
 using WaveBox.Core;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
@@ -16,9 +15,9 @@ namespace WaveBox.ApiHandler {
         /// Attempt to authenticate a user using a session ID
         /// </summary>
         public User AuthenticateSession(string session) {
-            int? userId = Injection.Kernel.Get<ISessionRepository>().UserIdForSessionid(session);
+            int? userId = Injection.Get<ISessionRepository>().UserIdForSessionid(session);
             if (userId != null) {
-                User user = Injection.Kernel.Get<IUserRepository>().UserForId((int)userId);
+                User user = Injection.Get<IUserRepository>().UserForId((int)userId);
                 if (user != null) {
                     // Update this user's session and return
                     user.UpdateSession(session);
@@ -51,7 +50,7 @@ namespace WaveBox.ApiHandler {
             // If logging in, we are creating a new session
             if (uri.ApiAction == "login") {
                 // Must use username and password, and create a session
-                User user = Injection.Kernel.Get<IUserRepository>().UserForName(username);
+                User user = Injection.Get<IUserRepository>().UserForName(username);
 
                 // Validate User ID, and ensure successful session creation
                 if (user.UserId != null && user.CreateSession(password, clientName)) {

@@ -8,7 +8,7 @@ using WaveBox.Core.Extensions;
 
 namespace WaveBox.Core.OperationQueue {
     public abstract class AbstractOperation : IDelayedOperation {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         public bool IsReady { get { return DateTime.UtcNow.CompareTo(RunDateTime) >= 0; } }
 

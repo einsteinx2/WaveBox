@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Cirrious.MvvmCross.Plugins.Sqlite;
-using Ninject;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
 using WaveBox.Core.OperationQueue;
@@ -18,7 +17,7 @@ using WaveBox.Core.Model.Repository;
 
 namespace WaveBox.FolderScanning {
     public class OrphanScanOperation : AbstractOperation {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         public override string OperationType { get { return "OrphanScanOperation"; } }
 
@@ -85,13 +84,13 @@ namespace WaveBox.FolderScanning {
             ArrayList mediaFolderIds = new ArrayList();
             ArrayList orphanFolderIds = new ArrayList();
 
-            foreach (Folder mediaFolder in Injection.Kernel.Get<IFolderRepository>().MediaFolders()) {
+            foreach (Folder mediaFolder in Injection.Get<IFolderRepository>().MediaFolders()) {
                 mediaFolderIds.Add (mediaFolder.FolderId);
             }
 
             ISQLiteConnection conn = null;
             try {
-                conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+                conn = Injection.Get<IDatabase>().GetSqliteConnection();
 
                 // Find the orphaned folders
                 var result = conn.DeferredQuery<Folder>("SELECT * FROM Folder");
@@ -106,7 +105,7 @@ namespace WaveBox.FolderScanning {
                     else {
                         // Check if it's in the list of root media folders.  If not, it's an orphan
                         bool success = false;
-                        foreach (Folder f in Injection.Kernel.Get<IFolderRepository>().MediaFolders()) {
+                        foreach (Folder f in Injection.Get<IFolderRepository>().MediaFolders()) {
                             if (f.FolderPath == folder.FolderPath) {
                                 success = true;
                                 break;
@@ -138,7 +137,7 @@ namespace WaveBox.FolderScanning {
             } catch (Exception e) {
                 logger.Error("Failed to delete orphan items : " + e);
             } finally {
-                Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+                Injection.Get<IDatabase>().CloseSqliteConnection(conn);
             }
         }
 
@@ -151,7 +150,7 @@ namespace WaveBox.FolderScanning {
 
             ISQLiteConnection conn = null;
             try {
-                conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+                conn = Injection.Get<IDatabase>().GetSqliteConnection();
 
                 // Find the orphaned songs
                 var result = conn.DeferredQuery<Song>("SELECT * FROM Song");
@@ -177,7 +176,7 @@ namespace WaveBox.FolderScanning {
             } catch (Exception e) {
                 logger.Error("Failed checking for orphan songs " + e);
             } finally {
-                Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+                Injection.Get<IDatabase>().CloseSqliteConnection(conn);
             }
         }
 
@@ -190,7 +189,7 @@ namespace WaveBox.FolderScanning {
 
             ISQLiteConnection conn = null;
             try {
-                conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+                conn = Injection.Get<IDatabase>().GetSqliteConnection();
 
                 // Find the orphaned artists
                 var result = conn.DeferredQuery<Artist>("SELECT Artist.ArtistId FROM Artist " +
@@ -212,7 +211,7 @@ namespace WaveBox.FolderScanning {
             } catch (Exception e) {
                 logger.Error("Failed checking for orphan artists : " + e);
             } finally {
-                Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+                Injection.Get<IDatabase>().CloseSqliteConnection(conn);
             }
         }
 
@@ -225,7 +224,7 @@ namespace WaveBox.FolderScanning {
 
             ISQLiteConnection conn = null;
             try {
-                conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+                conn = Injection.Get<IDatabase>().GetSqliteConnection();
 
                 // Find the orphaned album artists
                 var result = conn.DeferredQuery<AlbumArtist>("SELECT AlbumArtist.AlbumArtistId FROM AlbumArtist " +
@@ -247,7 +246,7 @@ namespace WaveBox.FolderScanning {
             } catch (Exception e) {
                 logger.Error("Failed checking for orphan album artists : " + e);
             } finally {
-                Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+                Injection.Get<IDatabase>().CloseSqliteConnection(conn);
             }
         }
 
@@ -261,7 +260,7 @@ namespace WaveBox.FolderScanning {
             ISQLiteConnection conn = null;
             try {
                 // Find the orphaned albums
-                conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+                conn = Injection.Get<IDatabase>().GetSqliteConnection();
                 var result = conn.DeferredQuery<Album>("SELECT Album.AlbumId FROM Album " +
                                                        "LEFT JOIN Song ON Album.AlbumId = Song.AlbumId " +
                                                        "WHERE Song.AlbumId IS NULL");
@@ -281,7 +280,7 @@ namespace WaveBox.FolderScanning {
             } catch (Exception e) {
                 logger.Error("Failed checking for orphan albums" + e);
             } finally {
-                Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+                Injection.Get<IDatabase>().CloseSqliteConnection(conn);
             }
         }
 
@@ -295,7 +294,7 @@ namespace WaveBox.FolderScanning {
             ISQLiteConnection conn = null;
             try {
                 // Find orphaned genres
-                conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+                conn = Injection.Get<IDatabase>().GetSqliteConnection();
                 var result = conn.DeferredQuery<Genre>("SELECT Genre.GenreId FROM Genre " +
                                                        "LEFT JOIN Song ON Genre.GenreId = Song.GenreId " +
                                                        "WHERE Song.GenreId IS NULL");
@@ -315,7 +314,7 @@ namespace WaveBox.FolderScanning {
             } catch (Exception e) {
                 logger.Error("Failed checking for orphan genres: " + e);
             } finally {
-                Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+                Injection.Get<IDatabase>().CloseSqliteConnection(conn);
             }
         }
 
@@ -329,7 +328,7 @@ namespace WaveBox.FolderScanning {
             ISQLiteConnection conn = null;
             try {
                 // Check for videos which don't have a folder path, meaning that they're orphaned
-                conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+                conn = Injection.Get<IDatabase>().GetSqliteConnection();
                 var result = conn.DeferredQuery<Video>("SELECT Video.ItemId FROM Video " +
                                                        "LEFT JOIN Folder ON Video.FolderId = Folder.FolderId " +
                                                        "WHERE Folder.FolderPath IS NULL");
@@ -350,7 +349,7 @@ namespace WaveBox.FolderScanning {
             } catch (Exception e) {
                 logger.Error("Failed checking for orphan videos " + e);
             } finally {
-                Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+                Injection.Get<IDatabase>().CloseSqliteConnection(conn);
             }
         }
     }

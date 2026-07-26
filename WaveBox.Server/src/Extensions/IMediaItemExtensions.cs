@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using Ninject;
 using WaveBox.Core;
 using WaveBox.Core.Model;
 using WaveBox.Core.Model.Repository;
@@ -16,7 +15,7 @@ namespace WaveBox.Server.Extensions {
                 return null;
             }
 
-            return Injection.Kernel.Get<IFolderRepository>().FolderForId((int)mediaItem.FolderId).FolderPath + Path.DirectorySeparatorChar + mediaItem.FileName;
+            return Injection.Get<IFolderRepository>().FolderForId((int)mediaItem.FolderId).FolderPath + Path.DirectorySeparatorChar + mediaItem.FileName;
         }
 
         /// <summary>

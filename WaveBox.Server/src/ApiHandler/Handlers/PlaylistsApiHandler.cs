@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using Newtonsoft.Json;
-using Ninject;
 using WaveBox.Core;
 using WaveBox.Core.ApiResponse;
 using WaveBox.Core.Extensions;
@@ -15,7 +13,7 @@ using WaveBox.Core.Static;
 
 namespace WaveBox.ApiHandler.Handlers {
     class PlaylistsApiHandler : IApiHandler {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         public string Name { get { return "playlists"; } }
 
@@ -64,7 +62,7 @@ namespace WaveBox.ApiHandler.Handlers {
                 }
 
                 // Verify name not already in use
-                playlist = Injection.Kernel.Get<IPlaylistRepository>().PlaylistForName(name);
+                playlist = Injection.Get<IPlaylistRepository>().PlaylistForName(name);
                 if (playlist.ItemId != null) {
                     processor.WriteJson(new PlaylistsResponse("Playlist name '" + name + "' already in use", null, null, null));
                     return;
@@ -90,14 +88,14 @@ namespace WaveBox.ApiHandler.Handlers {
 
             // If not creating playlist, and no ID, return all playlists
             if (uri.Id == null) {
-                listOfPlaylists = Injection.Kernel.Get<IPlaylistRepository>().AllPlaylists();
+                listOfPlaylists = Injection.Get<IPlaylistRepository>().AllPlaylists();
                 sectionPositions = Utility.SectionPositionsFromSortedList(new List<IGroupingItem>(listOfPlaylists.Select(c => (IGroupingItem)c)));
                 processor.WriteJson(new PlaylistsResponse(null, listOfPlaylists, listOfMediaItems, sectionPositions));
                 return;
             }
 
             // If ID, return the playlist for this ID
-            playlist = Injection.Kernel.Get<IPlaylistRepository>().PlaylistForId((int)uri.Id);
+            playlist = Injection.Get<IPlaylistRepository>().PlaylistForId((int)uri.Id);
             if (playlist.PlaylistId == null) {
                 processor.WriteJson(new PlaylistsResponse("Playlist does not exist", null, null, null));
                 return;
@@ -130,26 +128,26 @@ namespace WaveBox.ApiHandler.Handlers {
                     IList<IMediaItem> songs = null;
 
                     // Iterate each item type in the list, adding items
-                    switch (Injection.Kernel.Get<IItemRepository>().ItemTypeForItemId(itemId)) {
+                    switch (Injection.Get<IItemRepository>().ItemTypeForItemId(itemId)) {
                     case ItemType.Folder:
                         // get all the media items underneath this folder and add them
                         // Use Select instead of ConvertAll: http://stackoverflow.com/questions/1571819/difference-between-select-and-convertall-in-c-sharp
-                        songs = Injection.Kernel.Get<IFolderRepository>().FolderForId(itemId).ListOfSongs(true).Select(x => (IMediaItem)x).ToList();
+                        songs = Injection.Get<IFolderRepository>().FolderForId(itemId).ListOfSongs(true).Select(x => (IMediaItem)x).ToList();
                         playlist.AddMediaItems(songs);
                         break;
                     case ItemType.Artist:
-                        songs = Injection.Kernel.Get<IArtistRepository>().ArtistForId(itemId).ListOfSongs().Select(x => (IMediaItem)x).ToList();
+                        songs = Injection.Get<IArtistRepository>().ArtistForId(itemId).ListOfSongs().Select(x => (IMediaItem)x).ToList();
                         playlist.AddMediaItems(songs);
                         break;
                     case ItemType.Album:
-                        songs = Injection.Kernel.Get<IAlbumRepository>().AlbumForId(itemId).ListOfSongs().Select(x => (IMediaItem)x).ToList();
+                        songs = Injection.Get<IAlbumRepository>().AlbumForId(itemId).ListOfSongs().Select(x => (IMediaItem)x).ToList();
                         playlist.AddMediaItems(songs);
                         break;
                     case ItemType.Song:
-                        playlist.AddMediaItem(Injection.Kernel.Get<ISongRepository>().SongForId(itemId));
+                        playlist.AddMediaItem(Injection.Get<ISongRepository>().SongForId(itemId));
                         break;
                     case ItemType.Video:
-                        playlist.AddMediaItem(Injection.Kernel.Get<IVideoRepository>().VideoForId(itemId));
+                        playlist.AddMediaItem(Injection.Get<IVideoRepository>().VideoForId(itemId));
                         break;
                     default:
                         processor.WriteJson(new PlaylistsResponse("Invalid item type at index: " + i, null, null, null));
