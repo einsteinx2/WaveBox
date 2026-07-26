@@ -1,315 +1,46 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{1BD36BD2-A6D7-4332-A0F2-42AA2B34FC68}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>WaveBox</RootNamespace>
-    <AssemblyName>WaveBox.Server</AssemblyName>
-    <FileAlignment>512</FileAlignment>
-    <PublishUrl>publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <RuntimeIdentifiers>win-x64;win-arm64;osx-x64;osx-arm64;linux-x64;linux-arm64</RuntimeIdentifiers>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <PublishAot>true</PublishAot>
+    <IlcOptimizationPreference>Speed</IlcOptimizationPreference>
+    <StripSymbols>true</StripSymbols>
+    <!-- IL2104: TagLibSharp has internal trim warnings, but TrimmerRootAssembly preserves it whole -->
+    <NoWarn>$(NoWarn);IL2104</NoWarn>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>false</DebugSymbols>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug</OutputPath>
-    <WarningLevel>4</WarningLevel>
-    <IntermediateOutputPath></IntermediateOutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Release</OutputPath>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Transactions" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.ServiceProcess" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-    <Reference Include="Mono.Posix" />
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>lib\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="Bass.Net">
-      <HintPath>lib\Bass.Net.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web" />
-    <Reference Include="System.Web.Services" />
-    <Reference Include="Mono.Zeroconf.Providers.Bonjour">
-      <HintPath>lib\Mono.Zeroconf.Providers.Bonjour.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Zeroconf">
-      <HintPath>lib\Mono.Zeroconf.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Zeroconf.Providers.AvahiDBus">
-      <HintPath>lib\Mono.Zeroconf.Providers.AvahiDBus.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Nat">
-      <HintPath>lib\Mono.Nat.dll</HintPath>
-    </Reference>
-    <Reference Include="log4net">
-      <HintPath>lib\log4net.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AspNet.SignalR.Core">
-      <HintPath>lib\Microsoft.AspNet.SignalR.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AspNet.SignalR.Owin">
-      <HintPath>lib\Microsoft.AspNet.SignalR.Owin.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Owin.Host.HttpListener">
-      <HintPath>lib\Microsoft.Owin.Host.HttpListener.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Owin.Hosting">
-      <HintPath>lib\Microsoft.Owin.Hosting.dll</HintPath>
-    </Reference>
-    <Reference Include="Owin">
-      <HintPath>lib\Owin.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Owin.Diagnostics">
-      <HintPath>lib\Microsoft.Owin.Diagnostics.dll</HintPath>
-    </Reference>
-    <Reference Include="taglib-sharp">
-      <HintPath>lib\taglib-sharp.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Data.SQLite.Linq">
-      <HintPath>lib\System.Data.SQLite.Linq.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Data.SQLite">
-      <HintPath>lib\System.Data.SQLite.dll</HintPath>
-    </Reference>
-    <Reference Include="Ninject">
-      <HintPath>lib\Ninject.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Configuration.Install" />
-    <Reference Include="System.Net.Http" />
+    <!-- TagLibSharp discovers file-format handlers by scanning its own assembly for
+         [SupportedMimeType] types and Activator.CreateInstance'ing them; root the whole
+         assembly so trimming can't remove any format parser -->
+    <TrimmerRootAssembly Include="TagLibSharp" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-      <DependentUpon>Settings.settings</DependentUpon>
-    </Compile>
-    <Compile Include="src\ApiHandler\ApiAuthenticate.cs" />
-    <Compile Include="src\ApiHandler\ApiHandlerFactory.cs" />
-    <Compile Include="src\ApiHandler\Handlers\AlbumArtistsApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\AlbumsApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\ArtApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\ArtistsApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\DatabaseApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\ErrorApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\FanArtThumbnailApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\FavoritesApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\FoldersApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\GenresApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\LoginApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\LogoutApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\NowPlayingApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\PlaylistsApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\ScrobbleApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\SearchApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\SettingsApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\SongsApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\StatsApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\StatusApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\StreamApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\TranscodeApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\TranscodeHlsApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\UsersApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\VideosApiHandler.cs" />
-    <Compile Include="src\ApiHandler\Handlers\WebApiHandler.cs" />
-    <Compile Include="src\ApiHandler\IApiHandler.cs" />
-    <Compile Include="src\ApiHandler\UriWrapper.cs" />
-    <Compile Include="src\AssemblyInfo.cs" />
-    <Compile Include="src\Extensions\IMediaItemExtensions.cs" />
-    <Compile Include="src\Extensions\StreamExtensions.cs" />
-    <Compile Include="src\FolderScanning\FolderScanOperation.cs" />
-    <Compile Include="src\FolderScanning\OrphanScanOperation.cs" />
-    <Compile Include="src\ImageMagickInterop.cs" />
-    <Compile Include="src\Injection\Interfaces\IApiAuthenticate.cs" />
-    <Compile Include="src\Injection\Interfaces\IApiHandlerFactory.cs" />
-    <Compile Include="src\Injection\ServerModule.cs" />
-    <Compile Include="src\Lastfm.cs" />
-    <Compile Include="src\Service\IService.cs" />
-    <Compile Include="src\Service\ServiceFactory.cs" />
-    <Compile Include="src\Service\ServiceManager.cs" />
-    <Compile Include="src\Service\Services\CronService.cs" />
-    <Compile Include="src\Service\Services\Cron\UserPurge.cs" />
-    <Compile Include="src\Service\Services\Cron\UserPurgeOperation.cs" />
-    <Compile Include="src\Service\Services\FileManagerService.cs" />
-    <Compile Include="src\Service\Services\FileManager\Abstract\AbstractFileManager.cs" />
-    <Compile Include="src\Service\Services\FileManager\Interfaces\IFileManager.cs" />
-    <Compile Include="src\Service\Services\FileManager\FileManager.cs" />
-    <Compile Include="src\Service\Services\FileManager\MacOSXFileManager.cs" />
-    <Compile Include="src\Service\Services\HttpService.cs" />
-    <Compile Include="src\Service\Services\Http\HttpHeader.cs" />
-    <Compile Include="src\Service\Services\Http\HttpProcessor.cs" />
-    <Compile Include="src\Service\Services\Http\HttpProcessorPrivate.cs" />
-    <Compile Include="src\Service\Services\Http\IHttpProcessor.cs" />
-    <Compile Include="src\Service\Services\NatService.cs" />
-    <Compile Include="src\Service\Services\NowPlayingService.cs" />
-    <Compile Include="src\Service\Services\TranscodeService.cs" />
-    <Compile Include="src\Service\Services\ZeroConfService.cs" />
-    <Compile Include="src\Static\Database.cs" />
-    <Compile Include="src\Static\DatabaseBackup.cs" />
-    <Compile Include="src\Static\ServerSettings.cs" />
-    <Compile Include="src\Static\ServerUtility.cs" />
-    <Compile Include="src\Transcoding\AbstractTranscoder.cs" />
-    <Compile Include="src\Transcoding\FFMpegAACTranscoder.cs" />
-    <Compile Include="src\Transcoding\FFMpegMP3Transcoder.cs" />
-    <Compile Include="src\Transcoding\FFMpegMpegtsTranscoder.cs" />
-    <Compile Include="src\Transcoding\FFMpegOGGTranscoder.cs" />
-    <Compile Include="src\Transcoding\FFMpegOpusTranscoder.cs" />
-    <Compile Include="src\Transcoding\FFMpegX264Transcoder.cs" />
-    <Compile Include="src\Transcoding\ITranscoder.cs" />
-    <Compile Include="src\Transcoding\ITranscoderDelegate.cs" />
-    <Compile Include="src\Transcoding\VideoTranscoder.cs" />
-    <Compile Include="src\WaveBoxMain.cs" />
-    <Compile Include="src\WaveBoxService.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="src\FolderScanning\MusicBrainzScanOperation.cs" />
-    <Compile Include="src\FolderScanning\ArtistThumbnailDownloadOperation.cs" />
+    <ProjectReference Include="..\WaveBox.Core\WaveBox.Core.csproj" />
   </ItemGroup>
+
   <ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
-      <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4 Client Profile %28x86 and x64%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.SQL.Server.Compact.3.5">
-      <Visible>False</Visible>
-      <ProductName>SQL Server Compact 3.5 SP2</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
-      <Visible>False</Visible>
-      <ProductName>Windows Installer 3.1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
+    <PackageReference Include="TagLibSharp" Version="2.3.0" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
+    <PackageReference Include="Mono.Nat" Version="3.0.4" />
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.53.3" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.*" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="10.0.*" />
   </ItemGroup>
+
   <ItemGroup>
-    <None Include="app.config" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-    <None Include="res\wavebox.db">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="res\wavebox_querylog.db">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="res\wavebox.conf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="res\wavebox.conf.template">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Mono.Zeroconf.Providers.Bonjour.dll.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="log4net.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="Bass.Net.dll.config">
-      <Gettext-ScanForTranslations>False</Gettext-ScanForTranslations>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="lib_native\bass.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="lib_native\libMagickWand-6.Q16-Static.universal.dylib">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="lib_native\libMagickWand-6.Q16-Static.x64.so">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="lib_native\libMagickWand-6.Q16-Static.x86.so">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="lib_native\libbass.dylib">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="lib_native\libbass.x64.so">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="lib_native\libbass.x86.so">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="lib_native\libsqlite3.0.dylib">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="lib_native\libsqlite3.x64.so">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="lib_native\libsqlite3.x86.so">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="lib_native\sqlite3.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="System.Data.SQLite.dll.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="lib_native\libWaveBoxFSEvents.dylib">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <AssemblyMetadata Include="BuildDate" Value="$([System.DateTime]::UtcNow.ToString('o'))" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
-  <ItemGroup />
-  <ItemGroup />
+
   <ItemGroup>
-    <Folder Include="src\Static\" />
-    <Folder Include="src\Extensions\" />
+    <None Include="res\wavebox.db" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="res\wavebox_querylog.db" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="res\wavebox.conf" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="res\wavebox.conf.template" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\WaveBox.Core\WaveBox.Core.csproj">
-      <Project>{C6CEE72B-DBE2-4024-8F5C-D5C23E88194A}</Project>
-      <Name>WaveBox.Core</Name>
-    </ProjectReference>
-  </ItemGroup>
+
 </Project>
