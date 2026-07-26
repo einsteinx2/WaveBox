@@ -101,7 +101,10 @@ namespace WaveBox.Core.Extensions {
         public static string RemoveByteOrderMark(this string s) {
             string byteOrderMarkUtf8 = Encoding.UTF8.GetString(Encoding.UTF8.GetPreamble());
 
-            if (s.StartsWith(byteOrderMarkUtf8)) {
+            // Ordinal comparison is required: under culture-sensitive comparison U+FEFF is a
+            // zero-weight character, so every string would "start with" the BOM and lose its
+            // first character instead
+            if (s.StartsWith(byteOrderMarkUtf8, StringComparison.Ordinal)) {
                 return s.Remove(0, byteOrderMarkUtf8.Length);
             }
 

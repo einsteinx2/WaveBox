@@ -5,10 +5,10 @@ using System.Text.Json.Serialization;
 namespace WaveBox.Core.Model {
     public class ServerSettingsData {
         [JsonPropertyName("port")]
-        public short Port { get; set; }
+        public int Port { get; set; }
 
         [JsonPropertyName("wsPort")]
-        public short WsPort { get; set; }
+        public int WsPort { get; set; }
 
         [JsonPropertyName("theme")]
         public string Theme { get; set; }

@@ -1,0 +1,7 @@
+<Project>
+  <!-- A Directory.Build.props here stops MSBuild's upward search, so chain to the repo root one -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)..'))" />
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+</Project>

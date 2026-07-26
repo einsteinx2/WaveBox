@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>WaveBox.Server.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" Version="3.*" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.*" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
+    <PackageReference Include="NSubstitute" Version="5.*" />
+    <PackageReference Include="coverlet.collector" Version="6.*" />
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.53.3" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\WaveBox.Server\WaveBox.Server.csproj" />
+    <ProjectReference Include="..\WaveBox.TestFixtures\WaveBox.TestFixtures.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- ServerUtility.ExecutablePath() is the test output dir; the server expects res/ beside the
+         executable. None items don't flow through ProjectReference, so copy them explicitly.
+         res\** also brings wavebox.sql, used to build fresh schemas in integration fixtures. -->
+    <None Include="..\..\WaveBox.Server\res\**" LinkBase="res" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

@@ -2,37 +2,19 @@ name: Build
 
 on:
   push:
-    branches: [master]
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
 jobs:
-  publish:
-    name: ${{ matrix.rid }}
+  # Fast gate: unit + integration tests on JIT builds, before any expensive AOT publish
+  test:
+    name: tests (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        include:
-          # NativeAOT cannot cross-compile between operating systems, so each OS builds its own RIDs
-          - os: windows-latest
-            rid: win-x64
-            smoke: false
-          - os: windows-latest
-            rid: win-arm64
-            smoke: false
-          - os: macos-latest
-            rid: osx-arm64
-            smoke: true
-          - os: macos-latest
-            rid: osx-x64
-            smoke: false # Apple Silicon runner can't execute x64 AOT output without Rosetta
-          - os: ubuntu-latest
-            rid: linux-x64
-            smoke: true
-          - os: ubuntu-24.04-arm
-            rid: linux-arm64
-            smoke: true
+        os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
       - uses: actions/checkout@v4
@@ -41,13 +23,70 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Build.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Unit tests (Core)
+        run: dotnet test tests/WaveBox.Core.Tests -c Release
+
+      - name: Unit + integration tests (Server)
+        run: dotnet test tests/WaveBox.Server.Tests -c Release
+
+  publish:
+    name: ${{ matrix.rid }}
+    needs: test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # NativeAOT cannot cross-compile between operating systems, so each OS builds its own RIDs.
+          # e2e runs the black-box suite against the published AOT binary (JIT test runs can't catch
+          # trimming/rooting regressions); it's disabled only where the runner can't execute the output.
+          - os: windows-latest
+            rid: win-x64
+            e2e: true
+          - os: windows-latest
+            rid: win-arm64
+            e2e: false
+          - os: macos-latest
+            rid: osx-arm64
+            e2e: true
+          - os: macos-latest
+            rid: osx-x64
+            e2e: false # Apple Silicon runner can't execute x64 AOT output without Rosetta
+          - os: ubuntu-latest
+            rid: linux-x64
+            e2e: true
+          - os: ubuntu-24.04-arm
+            rid: linux-arm64
+            e2e: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Build.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+
       - name: Publish (NativeAOT)
         run: dotnet publish WaveBox.Server -c Release -r ${{ matrix.rid }}
 
-      - name: Smoke test
-        if: matrix.smoke
-        shell: bash
-        run: Scripts/smoke-test.sh WaveBox.Server/bin/Release/net10.0/${{ matrix.rid }}/publish/WaveBox.Server
+      - name: E2E tests (AOT binary)
+        if: matrix.e2e
+        env:
+          # The harness probes both the literal path and path + ".exe", so this stays RID-agnostic
+          WAVEBOX_E2E_BINARY: ${{ github.workspace }}/WaveBox.Server/bin/Release/net10.0/${{ matrix.rid }}/publish/WaveBox.Server
+        run: dotnet test tests/WaveBox.E2E.Tests -c Release
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

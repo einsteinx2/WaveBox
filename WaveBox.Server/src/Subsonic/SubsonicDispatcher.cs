@@ -162,7 +162,7 @@ namespace WaveBox.Subsonic {
         }
 
         // "/ping.view" -> "ping"; the branch middleware has already stripped the /rest prefix
-        private static string EndpointName(string path) {
+        internal static string EndpointName(string path) {
             if (String.IsNullOrEmpty(path)) {
                 return null;
             }

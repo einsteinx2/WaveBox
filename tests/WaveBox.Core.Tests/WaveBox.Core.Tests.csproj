@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>WaveBox.Core.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" Version="3.*" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.*" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
+    <PackageReference Include="NSubstitute" Version="5.*" />
+    <PackageReference Include="coverlet.collector" Version="6.*" />
+    <!-- The vendored sqlite-net in WaveBox.Core DllImports e_sqlite3; only WaveBox.Server carries the native -->
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.53.3" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\WaveBox.Core\WaveBox.Core.csproj" />
+    <ProjectReference Include="..\WaveBox.TestFixtures\WaveBox.TestFixtures.csproj" />
+  </ItemGroup>
+</Project>

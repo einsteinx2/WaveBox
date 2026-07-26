@@ -36,7 +36,7 @@ namespace WaveBox.Static {
 
         public bool PrettyJson { get { return settingsModel.PrettyJson; } }
 
-        public short Port { get { return settingsModel.Port; } }
+        public int Port { get { return settingsModel.Port; } }
 
         public string Theme { get { return settingsModel.Theme; } }
 
@@ -86,9 +86,9 @@ namespace WaveBox.Static {
             bool settingsChanged = false;
 
             try {
-                short? port = json["port"] != null ? json["port"].GetValue<short>() : (short?)null;
+                int? port = json["port"] != null ? json["port"].GetValue<int>() : (int?)null;
                 if (port != null) {
-                    settingsModel.Port = (short)port;
+                    settingsModel.Port = (int)port;
                     settingsChanged = true;
                     logger.IfInfo("Setting 'port': " + settingsModel.Port);
                 }

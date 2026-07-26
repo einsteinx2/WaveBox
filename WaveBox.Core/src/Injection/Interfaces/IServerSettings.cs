@@ -11,7 +11,7 @@ namespace WaveBox.Core {
 
         bool PrettyJson { get; }
 
-        short Port { get; }
+        int Port { get; }
 
         string Theme { get; }
 

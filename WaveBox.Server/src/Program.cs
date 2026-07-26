@@ -17,8 +17,8 @@ namespace WaveBox {
         // Kestrel's options are constructed during Build(), before the DI container or database are
         // ready, so the listen port is read here with a minimal, dependency-free parse of wavebox.conf.
         // The full settings load (which also touches the database) still happens in WaveBoxLifecycleService.
-        private static short ReadPortFromConf() {
-            const short defaultPort = 6500;
+        private static int ReadPortFromConf() {
+            const int defaultPort = 6500;
             try {
                 string confPath = ServerUtility.RootPath() + "wavebox.conf";
                 if (!File.Exists(confPath)) {
@@ -51,7 +51,7 @@ namespace WaveBox {
 
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-            short port = ReadPortFromConf();
+            int port = ReadPortFromConf();
 
             // Run as a Windows service / systemd unit when launched by the respective service manager;
             // both calls are no-ops in an interactive console.

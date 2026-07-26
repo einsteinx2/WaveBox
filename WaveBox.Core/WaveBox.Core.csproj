@@ -10,4 +10,9 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.*" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="WaveBox.Core.Tests" />
+    <InternalsVisibleTo Include="WaveBox.Server.Tests" />
+  </ItemGroup>
+
 </Project>
