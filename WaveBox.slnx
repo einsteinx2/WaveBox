@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="WaveBox.Core/WaveBox.Core.csproj" />
+  <Project Path="WaveBox.Server/WaveBox.Server.csproj" />
+</Solution>
