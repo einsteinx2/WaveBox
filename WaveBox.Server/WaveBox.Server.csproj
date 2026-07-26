@@ -41,8 +41,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="res\wavebox.db" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="res\wavebox_querylog.db" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="res\wavebox.sql" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="res\wavebox_querylog.sql" CopyToOutputDirectory="PreserveNewest" />
     <None Include="res\wavebox.conf" CopyToOutputDirectory="PreserveNewest" />
     <None Include="res\wavebox.conf.template" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
