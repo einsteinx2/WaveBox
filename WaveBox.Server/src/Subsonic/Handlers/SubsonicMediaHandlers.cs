@@ -144,7 +144,7 @@ namespace WaveBox.Subsonic.Handlers {
             TranscodeStreamer.Send(transcodeService, transcoder, processor, 0, null, estimateContentLength);
         }
 
-        private static TranscodeType TranscodeTypeForFormat(string format) {
+        internal static TranscodeType TranscodeTypeForFormat(string format) {
             switch ((format ?? "mp3").ToLowerInvariant()) {
             case "aac":
             case "m4a":

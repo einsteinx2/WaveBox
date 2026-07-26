@@ -76,7 +76,7 @@ namespace WaveBox.Core {
             }
 
             lock (connectionPoolLock) {
-                getConnectionsAllowed = false;
+                getConnectionsAllowed = true;
             }
         }
     }

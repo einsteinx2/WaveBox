@@ -225,7 +225,7 @@ namespace WaveBox.Transcoding {
 
         public override int GetHashCode() {
             int hash = 13;
-            hash = (hash * 7) + (Item == null ? Item.GetHashCode() : 0);
+            hash = (hash * 7) + (Item != null ? Item.GetHashCode() : 0);
             hash = (hash * 7) + Type.GetHashCode();
             hash = (hash * 7) + Quality.GetHashCode();
             return hash;

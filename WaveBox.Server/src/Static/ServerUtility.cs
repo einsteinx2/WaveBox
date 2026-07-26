@@ -189,6 +189,13 @@ namespace WaveBox {
         /// Detects WaveBox's root directory, for storing per-user configuration
         /// </summary>
         public static string RootPath() {
+            // WAVEBOX_ROOT overrides the per-OS default, primarily so tests can isolate the config
+            // and databases (the Windows default under CommonApplicationData can't be redirected via HOME)
+            string overrideRoot = Environment.GetEnvironmentVariable("WAVEBOX_ROOT");
+            if (!String.IsNullOrEmpty(overrideRoot)) {
+                return overrideRoot.EndsWith(Path.DirectorySeparatorChar) ? overrideRoot : overrideRoot + Path.DirectorySeparatorChar;
+            }
+
             // Note: SpecialFolder.Personal means $HOME/Documents on modern .NET, but meant $HOME under
             // Mono — use UserProfile so existing installs keep their config/database locations.
             switch (DetectOS()) {

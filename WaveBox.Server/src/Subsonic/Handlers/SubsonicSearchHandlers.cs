@@ -88,7 +88,7 @@ namespace WaveBox.Subsonic.Handlers {
         }
 
         // Clients commonly send `foo*` or a quoted query; the repositories do substring LIKE matching
-        private static string CleanQuery(string query) {
+        internal static string CleanQuery(string query) {
             return query == null ? null : query.Trim().Trim('"').TrimEnd('*');
         }
 

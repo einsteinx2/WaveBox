@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>WaveBox.E2E.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" Version="3.*" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.*" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
+    <PackageReference Include="coverlet.collector" Version="6.*" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Black-box suite: build the server before E2E runs, but don't link its assembly -->
+    <ProjectReference Include="..\..\WaveBox.Server\WaveBox.Server.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\WaveBox.TestFixtures\WaveBox.TestFixtures.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Used by WaveBoxServerFixture to locate a locally built server binary when WAVEBOX_E2E_BINARY is unset -->
+    <AssemblyMetadata Include="RepoRoot" Value="$(MSBuildProjectDirectory)/../../" />
+    <AssemblyMetadata Include="BuildConfiguration" Value="$(Configuration)" />
+  </ItemGroup>
+</Project>

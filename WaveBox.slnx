@@ -1,4 +1,10 @@
 <Solution>
   <Project Path="WaveBox.Core/WaveBox.Core.csproj" />
   <Project Path="WaveBox.Server/WaveBox.Server.csproj" />
+  <Folder Name="/tests/">
+    <Project Path="tests/WaveBox.TestFixtures/WaveBox.TestFixtures.csproj" />
+    <Project Path="tests/WaveBox.Core.Tests/WaveBox.Core.Tests.csproj" />
+    <Project Path="tests/WaveBox.Server.Tests/WaveBox.Server.Tests.csproj" />
+    <Project Path="tests/WaveBox.E2E.Tests/WaveBox.E2E.Tests.csproj" />
+  </Folder>
 </Solution>

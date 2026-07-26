@@ -9,22 +9,18 @@ namespace WaveBox.Core.Extensions {
         public static string ToTimeString(this int duration) {
             TimeSpan ts = TimeSpan.FromSeconds(duration);
 
-            string time = "";
-
-            // Hours
+            // With hours present the minutes must always appear (two-digit), even when zero,
+            // so 3600 seconds renders as "1:00:00" rather than "1:00"
             if (ts.Hours > 0) {
-                time += ts.Hours + ":";
+                return ts.Hours + ":" + ts.ToString("mm") + ":" + ts.ToString("ss");
             }
 
-            // Minutes
             if (ts.Minutes > 0) {
-                time += ts.Minutes + ":";
+                return ts.Minutes + ":" + ts.ToString("ss");
             }
 
-            // Seconds with leading zero and return
-            time += ts.ToString("ss");
-
-            return time;
+            // Seconds with leading zero
+            return ts.ToString("ss");
         }
     }
 }
