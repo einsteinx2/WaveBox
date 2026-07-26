@@ -28,7 +28,6 @@ namespace WaveBox.Server.Tests {
             Assert.NotNull(created.UserId);
             Assert.Equal("alice", created.UserName);
             Assert.NotNull(created.PasswordHash);
-            Assert.NotNull(created.PasswordSalt);
             Assert.NotNull(created.CreateTime);
 
             User fetched = users.UserForName("alice");

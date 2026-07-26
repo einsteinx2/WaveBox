@@ -136,7 +136,6 @@ CREATE TABLE "User" (
     "UserName" TEXT UNIQUE NOT NULL,
     "Role" INTEGER NOT NULL,
     "PasswordHash" TEXT NOT NULL,
-    "PasswordSalt" TEXT NOT NULL,
     "LastfmSession" TEXT,
     "CreateTime" INTEGER NOT NULL,
     "DeleteTime" INTEGER,

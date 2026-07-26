@@ -78,8 +78,10 @@ namespace WaveBox.Core.Model.Repository {
                 return new User();
             }
 
-            string salt = User.GeneratePasswordSalt();
-            string hash = User.ComputePasswordHash(password, salt);
+            string hash = PasswordHasher.Hash(password);
+            if (hash == null) {
+                return null;
+            }
 
             var u = new User();
             u.UserId = itemId;
@@ -87,7 +89,6 @@ namespace WaveBox.Core.Model.Repository {
             u.Role = role;
             u.Password = password;
             u.PasswordHash = hash;
-            u.PasswordSalt = salt;
             u.CreateTime = DateTime.UtcNow.ToUnixTime();
             u.DeleteTime = deleteTime;
 
