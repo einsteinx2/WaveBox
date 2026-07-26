@@ -6,9 +6,7 @@ using Xunit;
 namespace WaveBox.Core.Tests {
     public class ByteExtensionsTests {
         [Fact]
-        public void MD5_KnownVector_IsLowercaseHexWithoutDashes() {
-            // Note: byte[].MD5() is lowercase without dashes, unlike string.MD5() which is
-            // dash-separated uppercase — both formats are pinned deliberately
+        public void MD5_KnownVector_IsLowercaseHex() {
             byte[] input = Encoding.ASCII.GetBytes("test");
             Assert.Equal("098f6bcd4621d373cade4e832627b4f6", input.MD5());
         }

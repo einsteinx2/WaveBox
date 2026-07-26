@@ -1,4 +1,5 @@
 using System;
+using System.Text.RegularExpressions;
 using WaveBox.Core.Extensions;
 using Xunit;
 
@@ -32,12 +33,15 @@ namespace WaveBox.Core.Tests {
         }
 
         [Fact]
-        public void MD5_KnownVector_IsDashSeparatedUppercaseHex() {
-            // Pinned: string.MD5() returns BitConverter.ToString output (dash-separated uppercase
-            // hex), unlike SHA1() which strips the dashes.  The asymmetry is intentional pinning
-            // of current behavior — hashed values are compared against stored values in the same
-            // format, so changing it would break existing data.
-            Assert.Equal("09-8F-6B-CD-46-21-D3-73-CA-DE-4E-83-26-27-B4-F6", "test".MD5());
+        public void MD5_KnownVector_IsLowercaseHex() {
+            Assert.Equal("098f6bcd4621d373cade4e832627b4f6", "test".MD5());
+        }
+
+        [Fact]
+        public void MD5_IsPlain32CharLowercaseHex() {
+            // Last.fm's api_sig must be "a 32-character hexadecimal md5 hash", and Lastfm.cs
+            // builds it straight from this method, so the exact shape is externally load-bearing
+            Assert.Matches(new Regex("^[0-9a-f]{32}$"), "any input at all".MD5());
         }
 
         [Fact]
@@ -47,8 +51,8 @@ namespace WaveBox.Core.Tests {
         }
 
         [Fact]
-        public void SHA1_KnownVector_IsUppercaseHexWithoutDashes() {
-            Assert.Equal("A94A8FE5CCB19BA61C4C0873D391E987982FBBD3", "test".SHA1());
+        public void SHA1_KnownVector_IsLowercaseHex() {
+            Assert.Equal("a94a8fe5ccb19ba61c4c0873d391e987982fbbd3", "test".SHA1());
         }
 
         [Fact]

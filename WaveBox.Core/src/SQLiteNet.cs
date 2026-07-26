@@ -990,13 +990,7 @@ namespace SQLite {
                 if (Int32.TryParse(savepoint.Substring(firstLen + 1), out depth)) {
                     // TODO: Mild race here, but inescapable without locking almost everywhere.
                     if (0 <= depth && depth < _trasactionDepth) {
-#if NETFX_CORE
-                        Volatile.Write (ref _trasactionDepth, depth);
-#elif SILVERLIGHT
-                        _trasactionDepth = depth;
-#else
-                        Thread.VolatileWrite(ref _trasactionDepth, depth);
-#endif
+                        Volatile.Write(ref _trasactionDepth, depth);
                         Execute(cmd + savepoint);
                         return;
                     }
