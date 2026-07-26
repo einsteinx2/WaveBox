@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Security.Cryptography;
 using Cirrious.MvvmCross.Plugins.Sqlite;
 using System.Text.Json.Serialization;
 using WaveBox.Core.Extensions;
@@ -12,9 +10,6 @@ using WaveBox.Core.Static;
 
 namespace WaveBox.Core.Model {
     public class User : IGroupingItem {
-        // PBKDF2 iterations
-        public const int HashIterations = 2500;
-
         private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         [JsonPropertyName("userId")]
@@ -38,9 +33,6 @@ namespace WaveBox.Core.Model {
 
         [JsonIgnore]
         public string PasswordHash { get; set; }
-
-        [JsonIgnore]
-        public string PasswordSalt { get; set; }
 
         [JsonIgnore, IgnoreRead, IgnoreWrite]
         public string SessionId { get; set; }
@@ -106,17 +98,18 @@ namespace WaveBox.Core.Model {
         }
 
         public bool UpdatePassword(string password) {
-            string salt = GeneratePasswordSalt();
-            string hash = ComputePasswordHash(password, salt);
+            string hash = PasswordHasher.Hash(password);
+            if (hash == null) {
+                return false;
+            }
 
             ISQLiteConnection conn = null;
             try {
                 conn = Injection.Get<IDatabase>().GetSqliteConnection();
-                int affected = conn.Execute("UPDATE User SET PasswordHash = ?, PasswordSalt = ? WHERE UserId = ?", hash, salt, this.UserId);
+                int affected = conn.Execute("UPDATE User SET PasswordHash = ? WHERE UserId = ?", hash, this.UserId);
 
                 if (affected > 0) {
                     this.PasswordHash = hash;
-                    this.PasswordSalt = salt;
 
                     return Injection.Get<IUserRepository>().UpdateUserCache(this);
                 }
@@ -212,24 +205,9 @@ namespace WaveBox.Core.Model {
             return false;
         }
 
-        // Verify password, using timing attack resistant approach
-        // Credit to PHP5.5 Password API for this method
+        // Verify password; the comparison is timing attack resistant
         public bool Authenticate(string password) {
-            // Compute hash
-            string hash = ComputePasswordHash(password, this.PasswordSalt);
-
-            // Ensure hashes are same length
-            if (hash.Length != this.PasswordHash.Length) {
-                return false;
-            }
-
-            // Compare ASCII value of each character, bitwise OR any diff
-            int status = 0;
-            for (int i = 0; i < hash.Length; i++) {
-                status |= ((int)hash[i] ^ (int)this.PasswordHash[i]);
-            }
-
-            return status == 0;
+            return PasswordHasher.Verify(password, this.PasswordHash);
         }
 
         public bool CreateSession(string password, string clientName) {
@@ -281,30 +259,5 @@ namespace WaveBox.Core.Model {
             return StringComparer.OrdinalIgnoreCase.Compare(x.UserName, y.UserName);
         }
 
-        // Compute password hash using PBKDF2
-        public static string ComputePasswordHash(string password, string salt, int iterations = HashIterations) {
-            // Convert salt to byte array
-            byte[] saltBytes = Encoding.UTF8.GetBytes(salt);
-
-            // Hash using PBKDF2 with salt and predefined iterations
-            using (Rfc2898DeriveBytes pbkdf2 = new Rfc2898DeriveBytes(password, saltBytes, iterations)) {
-                var key = pbkdf2.GetBytes(64);
-                return Convert.ToBase64String(key);
-            }
-        }
-
-        // Use RNG crypto service to generate random bytes for salt
-        public static string GeneratePasswordSalt() {
-            // Create byte array to store salt
-            byte[] salt = new byte[32];
-
-            // Fill array using RNG
-            using (RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider()) {
-                rng.GetBytes(salt);
-            }
-
-            // Return string representation
-            return Convert.ToBase64String(salt);
-        }
     }
 }
