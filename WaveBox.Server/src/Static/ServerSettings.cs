@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Cirrious.MvvmCross.Plugins.Sqlite;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
-using Ninject;
 using WaveBox.Core;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
@@ -15,7 +14,18 @@ using WaveBox.Core.Static;
 
 namespace WaveBox.Static {
     public class ServerSettings : IServerSettings {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger(typeof(ServerSettings));
+
+        // wavebox.conf allows // and /* */ comments plus trailing commas; STJ handles both natively
+        private static readonly WaveBoxJsonContext readContext = new WaveBoxJsonContext(new JsonSerializerOptions {
+            ReadCommentHandling = JsonCommentHandling.Skip,
+            AllowTrailingCommas = true
+        });
+
+        private static readonly JsonDocumentOptions documentOptions = new JsonDocumentOptions {
+            CommentHandling = JsonCommentHandling.Skip,
+            AllowTrailingCommas = true
+        };
 
         private static readonly string settingsFileName = "wavebox.conf";
         public string SettingsTemplatePath() { return ServerUtility.ExecutablePath() + "res" + Path.DirectorySeparatorChar + settingsFileName; }
@@ -24,7 +34,7 @@ namespace WaveBox.Static {
         private ServerSettingsData settingsModel = new ServerSettingsData();
         public ServerSettingsData SettingsModel { get { return settingsModel; } }
 
-        public Formatting JsonFormatting { get { return settingsModel.PrettyJson ? Formatting.Indented : Formatting.None; } }
+        public bool PrettyJson { get { return settingsModel.PrettyJson; } }
 
         public short Port { get { return settingsModel.Port; } }
 
@@ -47,41 +57,36 @@ namespace WaveBox.Static {
         private void ParseSettings() {
             logger.IfInfo("Reading settings: " + SettingsPath());
 
-            string configFile = "";
             try {
-                StreamReader reader = new StreamReader(SettingsPath());
-                configFile = RemoveJsonComments(reader);
-                reader.Close();
+                string configFile = File.ReadAllText(SettingsPath());
+                settingsModel = JsonSerializer.Deserialize(configFile, readContext.ServerSettingsData) ?? new ServerSettingsData();
             } catch (Exception e) {
-                logger.Error("Could not open configuration file: " + SettingsPath());
+                logger.Error("Could not parse configuration file: " + SettingsPath());
                 logger.Error(e);
+                settingsModel = new ServerSettingsData();
             }
-
-            // Grab all settings from the file
-            settingsModel = JsonConvert.DeserializeObject<ServerSettingsData>(configFile);
 
             // Generate Folder objects from the media folders
             PrepareMediaFolders();
-
-            dynamic json = JsonConvert.DeserializeObject(configFile);
-            bool settingsChanged = false;
-
-            try {
-                string podcastFolderTemp = json.podcastFolderDoesntExist;
-                settingsModel.PodcastFolder = podcastFolderTemp;
-                settingsChanged = true;
-            } catch { }
-
-            logger.IfInfo("settings changed: " + settingsChanged);
         }
 
         public bool WriteSettings(string jsonString) {
-            dynamic json = JsonConvert.DeserializeObject(jsonString);
+            JsonNode json;
+            try {
+                json = JsonNode.Parse(jsonString, null, documentOptions);
+            } catch (Exception e) {
+                logger.Error("Could not parse settings update: " + e.Message);
+                return false;
+            }
+
+            if (json == null) {
+                return false;
+            }
 
             bool settingsChanged = false;
 
             try {
-                short? port = json.port;
+                short? port = json["port"] != null ? json["port"].GetValue<short>() : (short?)null;
                 if (port != null) {
                     settingsModel.Port = (short)port;
                     settingsChanged = true;
@@ -90,7 +95,7 @@ namespace WaveBox.Static {
             } catch { }
 
             try {
-                string themeTemp = json.theme;
+                string themeTemp = json["theme"] != null ? json["theme"].GetValue<string>() : null;
                 if (themeTemp != null) {
                     settingsModel.Theme = themeTemp;
                     settingsChanged = true;
@@ -99,10 +104,11 @@ namespace WaveBox.Static {
             } catch { }
 
             try {
-                if (json.mediaFolders != null) {
+                if (json["mediaFolders"] is JsonArray mediaFolders) {
                     List<string> mediaFoldersTemp = new List<string>();
                     logger.IfInfo("Setting 'mediaFolders':");
-                    foreach (string mediaFolderString in json.mediaFolders) {
+                    foreach (JsonNode mediaFolderNode in mediaFolders) {
+                        string mediaFolderString = mediaFolderNode.GetValue<string>();
                         mediaFoldersTemp.Add(mediaFolderString);
                         logger.IfInfo("\t" + mediaFolderString);
                     }
@@ -112,7 +118,7 @@ namespace WaveBox.Static {
             } catch { }
 
             try {
-                bool? prettyJsonTemp = json.prettyJson;
+                bool? prettyJsonTemp = json["prettyJson"] != null ? json["prettyJson"].GetValue<bool>() : (bool?)null;
                 if (prettyJsonTemp != null) {
                     settingsModel.PrettyJson = (bool)prettyJsonTemp;
                     settingsChanged = true;
@@ -121,7 +127,7 @@ namespace WaveBox.Static {
             } catch { }
 
             try {
-                int? sessionTimeoutTemp = json.sessionTimeout;
+                int? sessionTimeoutTemp = json["sessionTimeout"] != null ? json["sessionTimeout"].GetValue<int>() : (int?)null;
                 if (sessionTimeoutTemp != null) {
                     settingsModel.SessionTimeout = (int)sessionTimeoutTemp;
                     settingsChanged = true;
@@ -130,10 +136,11 @@ namespace WaveBox.Static {
             } catch { }
 
             try {
-                if (json.folderArtNames != null) {
+                if (json["folderArtNames"] is JsonArray folderArtNames) {
                     List<string> folderArtNamesTemp = new List<string>();
                     logger.IfInfo("Setting 'folderArtNames': ");
-                    foreach (string artName in json.folderArtNames) {
+                    foreach (JsonNode artNameNode in folderArtNames) {
+                        string artName = artNameNode.GetValue<string>();
                         folderArtNamesTemp.Add(artName);
                         logger.IfInfo("\t" + artName);
                     }
@@ -145,7 +152,7 @@ namespace WaveBox.Static {
             // Advanced configuration
 
             try {
-                bool? crashReportEnable = json.crashReportEnable;
+                bool? crashReportEnable = json["crashReportEnable"] != null ? json["crashReportEnable"].GetValue<bool>() : (bool?)null;
                 if (crashReportEnable != null) {
                     settingsModel.CrashReportEnable = (bool)crashReportEnable;
                     settingsChanged = true;
@@ -154,10 +161,11 @@ namespace WaveBox.Static {
             } catch { }
 
             try {
-                if (json.services != null) {
+                if (json["services"] is JsonArray servicesArray) {
                     List<string> servicesTemp = new List<string>();
                     logger.IfInfo("Setting 'services':");
-                    foreach (string service in json.services) {
+                    foreach (JsonNode serviceNode in servicesArray) {
+                        string service = serviceNode.GetValue<string>();
                         servicesTemp.Add(service);
                         logger.IfInfo("\t" + service);
                     }
@@ -287,7 +295,7 @@ namespace WaveBox.Static {
                 // Trim all trailing slashes from paths, to prevent potential constraint issues
                 path = path.TrimEnd('/', '\\');
 
-                conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+                conn = Injection.Get<IDatabase>().GetSqliteConnection();
                 IList<Folder> result = conn.Query<Folder>("SELECT * FROM Folder WHERE FolderPath = ? AND MediaFolderId IS NULL", path);
 
                 foreach (Folder f in result) {
@@ -298,7 +306,7 @@ namespace WaveBox.Static {
             } catch (Exception e) {
                 logger.Error(e);
             } finally {
-                Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+                Injection.Get<IDatabase>().CloseSqliteConnection(conn);
             }
 
             // If not in database, return a folder object with the specified parameters
@@ -308,71 +316,5 @@ namespace WaveBox.Static {
             return folder;
         }
 
-        private string RemoveJsonComments(StreamReader reader) {
-            StringBuilder js = new StringBuilder();
-            string line = null;
-            bool inBlockComment = false;
-            bool inStringLiteral = false;
-
-            Action<char> AppendDiscardingWhitespace = (c) => {
-                if (c != '\t' && c != ' ') {
-                    js.Append(c);
-                }
-            };
-
-            while ((line = reader.ReadLine()) != null) {
-                char curr, next;
-                for (int i = 0; i < line.Length; i++) {
-                    curr = line[i];
-
-                    try {
-                        next = line[i + 1];
-                    } catch {
-                        if (line.Length == 1 || !inBlockComment) {
-                            AppendDiscardingWhitespace(curr);
-                        }
-                        break;
-                    }
-
-                    if (!inBlockComment) {
-                        if (!inStringLiteral) {
-                            if (curr == '"') {
-                                inStringLiteral = true;
-                            } else if (curr == '/') {
-                                // this is a line comment. throw out the rest of the line.
-                                if (next == '/') {
-                                    break;
-                                }
-                                // this is a block comment.  flip the block comment switch and continue to the next char
-                                if (next == '*') {
-                                    inBlockComment = true;
-                                    continue;
-                                }
-                            }
-
-                            // if the combination of this char and the next char doesn't make a comment token, append to the string and continue.
-                            AppendDiscardingWhitespace(curr);
-                            continue;
-                        } else {
-                            if (curr == '"') {
-                                inStringLiteral = false;
-                            }
-                            js.Append(curr);
-                            continue;
-                        }
-                    } else {
-                        // if we are in a block comment, make sure that we shouldn't be ending the block comment
-                        if (curr == '*' && next == '/') {
-                            // advance the read position so we don't write the /
-                            i++;
-                            inBlockComment = false;
-                            continue;
-                        }
-                    }
-                }
-            }
-
-            return js.ToString();
-        }
     }
 }

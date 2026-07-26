@@ -1,17 +1,17 @@
 using System;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using WaveBox.Core.Model;
 using System.Collections.Generic;
 
 namespace WaveBox.Core.ApiResponse {
     public class JukeboxResponse : IApiResponse {
-        [JsonProperty("error")]
+        [JsonPropertyName("error")]
         public string Error { get; set; }
 
-        [JsonProperty("jukeboxStatus")]
+        [JsonPropertyName("jukeboxStatus")]
         public JukeboxStatus JukeboxStatus { get; set; }
 
-        [JsonProperty("jukeboxPlaylist")]
+        [JsonPropertyName("jukeboxPlaylist")]
         public IList<IMediaItem> JukeboxPlaylist { get; set; }
 
         public JukeboxResponse(string error, JukeboxStatus jukeboxStatus, IList<IMediaItem> jukeboxPlaylist) {

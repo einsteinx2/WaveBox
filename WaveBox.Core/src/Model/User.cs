@@ -4,8 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Security.Cryptography;
 using Cirrious.MvvmCross.Plugins.Sqlite;
-using Newtonsoft.Json;
-using Ninject;
+using System.Text.Json.Serialization;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
 using WaveBox.Core.Model.Repository;
@@ -16,25 +15,25 @@ namespace WaveBox.Core.Model {
         // PBKDF2 iterations
         public const int HashIterations = 2500;
 
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
-        [JsonProperty("userId")]
+        [JsonPropertyName("userId")]
         public int? UserId { get; set; }
 
-        [JsonProperty("userName")]
+        [JsonPropertyName("userName")]
         public string UserName { get; set; }
 
         // This is only used after test account creation
-        [JsonProperty("password"), IgnoreRead, IgnoreWrite]
+        [JsonPropertyName("password"), IgnoreRead, IgnoreWrite]
         public string Password { get; set; }
 
-        [JsonProperty("role")]
+        [JsonPropertyName("role")]
         public Role Role { get; set; }
 
-        [JsonProperty("currentSession"), IgnoreRead, IgnoreWrite]
+        [JsonPropertyName("currentSession"), IgnoreRead, IgnoreWrite]
         public Session CurrentSession { get; set; }
 
-        [JsonProperty("sessions"), IgnoreRead, IgnoreWrite]
+        [JsonPropertyName("sessions"), IgnoreRead, IgnoreWrite]
         public IList<Session> Sessions { get; set; }
 
         [JsonIgnore]
@@ -46,13 +45,13 @@ namespace WaveBox.Core.Model {
         [JsonIgnore, IgnoreRead, IgnoreWrite]
         public string SessionId { get; set; }
 
-        [JsonProperty("lastfmSession")]
+        [JsonPropertyName("lastfmSession")]
         public string LastfmSession { get; set; }
 
-        [JsonProperty("createTime")]
+        [JsonPropertyName("createTime")]
         public long? CreateTime { get; set; }
 
-        [JsonProperty("deleteTime")]
+        [JsonPropertyName("deleteTime")]
         public long? DeleteTime { get; set; }
 
         [JsonIgnore, IgnoreRead, IgnoreWrite]
@@ -65,7 +64,7 @@ namespace WaveBox.Core.Model {
 
         public bool UpdateSession(string sessionId) {
             // Update user's session based on its session ID
-            Session s = Injection.Kernel.Get<ISessionRepository>().SessionForSessionId(sessionId);
+            Session s = Injection.Get<ISessionRepository>().SessionForSessionId(sessionId);
 
             if (s != null) {
                 return s.Update();
@@ -76,7 +75,7 @@ namespace WaveBox.Core.Model {
 
         public bool DeleteSession(string sessionId) {
             // Delete user's session based on its session ID
-            Session s = Injection.Kernel.Get<ISessionRepository>().SessionForSessionId(sessionId);
+            Session s = Injection.Get<ISessionRepository>().SessionForSessionId(sessionId);
 
             // Ensure session actually belongs to this user
             if (s != null && s.UserId == this.UserId) {
@@ -89,12 +88,12 @@ namespace WaveBox.Core.Model {
         public IList<Session> ListOfSessions() {
             ISQLiteConnection conn = null;
             try {
-                conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+                conn = Injection.Get<IDatabase>().GetSqliteConnection();
                 return conn.Query<Session>("SELECT RowId AS RowId, * FROM Session WHERE UserId = ?", this.UserId);
             } catch (Exception e) {
                 logger.Error(e);
             } finally {
-                Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+                Injection.Get<IDatabase>().CloseSqliteConnection(conn);
             }
 
             return new List<Session>();
@@ -106,19 +105,19 @@ namespace WaveBox.Core.Model {
 
             ISQLiteConnection conn = null;
             try {
-                conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+                conn = Injection.Get<IDatabase>().GetSqliteConnection();
                 int affected = conn.Execute("UPDATE User SET PasswordHash = ?, PasswordSalt = ? WHERE UserId = ?", hash, salt, this.UserId);
 
                 if (affected > 0) {
                     this.PasswordHash = hash;
                     this.PasswordSalt = salt;
 
-                    return Injection.Kernel.Get<IUserRepository>().UpdateUserCache(this);
+                    return Injection.Get<IUserRepository>().UpdateUserCache(this);
                 }
             } catch (Exception e) {
                 logger.Error(e);
             } finally {
-                Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+                Injection.Get<IDatabase>().CloseSqliteConnection(conn);
             }
 
             return false;
@@ -127,18 +126,18 @@ namespace WaveBox.Core.Model {
         public bool UpdateLastfmSession(string sessionKey) {
             ISQLiteConnection conn = null;
             try {
-                conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+                conn = Injection.Get<IDatabase>().GetSqliteConnection();
                 int affected = conn.Execute("UPDATE User SET LastfmSession = ? WHERE UserName = ?", sessionKey, UserName);
 
                 if (affected > 0) {
                     this.LastfmSession = sessionKey;
 
-                    return Injection.Kernel.Get<IUserRepository>().UpdateUserCache(this);
+                    return Injection.Get<IUserRepository>().UpdateUserCache(this);
                 }
             } catch (Exception e) {
                 logger.Error(e);
             } finally {
-                Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+                Injection.Get<IDatabase>().CloseSqliteConnection(conn);
             }
 
             return false;
@@ -148,18 +147,18 @@ namespace WaveBox.Core.Model {
         public bool UpdateUsername(string username) {
             ISQLiteConnection conn = null;
             try {
-                conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+                conn = Injection.Get<IDatabase>().GetSqliteConnection();
                 int affected = conn.Execute("UPDATE User SET UserName = ? WHERE UserId = ?", username, this.UserId);
 
                 if (affected > 0) {
                     this.UserName = username;
 
-                    return Injection.Kernel.Get<IUserRepository>().UpdateUserCache(this);
+                    return Injection.Get<IUserRepository>().UpdateUserCache(this);
                 }
             } catch (Exception e) {
                 logger.Error(e);
             } finally {
-                Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+                Injection.Get<IDatabase>().CloseSqliteConnection(conn);
             }
 
             return false;
@@ -169,18 +168,18 @@ namespace WaveBox.Core.Model {
         public bool UpdateRole(Role role) {
             ISQLiteConnection conn = null;
             try {
-                conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+                conn = Injection.Get<IDatabase>().GetSqliteConnection();
                 int affected = conn.Execute("UPDATE User SET Role = ? WHERE UserId = ?", role, this.UserId);
 
                 if (affected > 0) {
                     this.Role = role;
 
-                    return Injection.Kernel.Get<IUserRepository>().UpdateUserCache(this);
+                    return Injection.Get<IUserRepository>().UpdateUserCache(this);
                 }
             } catch (Exception e) {
                 logger.Error(e);
             } finally {
-                Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+                Injection.Get<IDatabase>().CloseSqliteConnection(conn);
             }
 
             return false;
@@ -209,7 +208,7 @@ namespace WaveBox.Core.Model {
         public bool CreateSession(string password, string clientName) {
             // On successful authentication, create session!
             if (this.Authenticate(password)) {
-                Session s = Injection.Kernel.Get<ISessionRepository>().CreateSession(Convert.ToInt32(UserId), clientName);
+                Session s = Injection.Get<ISessionRepository>().CreateSession(Convert.ToInt32(UserId), clientName);
                 if (s != null) {
                     SessionId = s.SessionId;
                     return true;
@@ -227,21 +226,21 @@ namespace WaveBox.Core.Model {
             // Delete the user
             ISQLiteConnection conn = null;
             try {
-                conn = Injection.Kernel.Get<IDatabase>().GetSqliteConnection();
+                conn = Injection.Get<IDatabase>().GetSqliteConnection();
                 int affected = conn.Execute("DELETE FROM User WHERE UserId = ?", UserId);
 
                 if (affected > 0) {
                     // Delete associated sessions
-                    Injection.Kernel.Get<ISessionRepository>().DeleteSessionsForUserId((int)UserId);
+                    Injection.Get<ISessionRepository>().DeleteSessionsForUserId((int)UserId);
 
-                    return Injection.Kernel.Get<IUserRepository>().DeleteFromUserCache(this);
+                    return Injection.Get<IUserRepository>().DeleteFromUserCache(this);
                 }
 
                 return true;
             } catch (Exception e) {
                 logger.Error(e);
             } finally {
-                Injection.Kernel.Get<IDatabase>().CloseSqliteConnection(conn);
+                Injection.Get<IDatabase>().CloseSqliteConnection(conn);
             }
 
             return false;

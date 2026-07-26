@@ -1,14 +1,14 @@
 using System;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using System.Collections.Generic;
 using WaveBox.Core.Model;
 
 namespace WaveBox.Core.ApiResponse {
     public class UsersResponse : IApiResponse {
-        [JsonProperty("error")]
+        [JsonPropertyName("error")]
         public string Error { get; set; }
 
-        [JsonProperty("users")]
+        [JsonPropertyName("users")]
         public IList<User> Users { get; set; }
 
         public UsersResponse(string error, IList<User> users) {

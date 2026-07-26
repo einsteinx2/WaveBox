@@ -5,51 +5,50 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Cirrious.MvvmCross.Plugins.Sqlite;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using WaveBox.Core.Model;
 using WaveBox.Core.Static;
 using WaveBox.Core.Model.Repository;
-using Ninject;
 
 namespace WaveBox.Core.Model {
     public class MediaItem : IMediaItem, IGroupingItem {
         [JsonIgnore, IgnoreRead, IgnoreWrite]
         public virtual ItemType ItemType { get { return ItemType.Unknown; } }
 
-        [JsonProperty("itemTypeId"), IgnoreRead, IgnoreWrite]
+        [JsonPropertyName("itemTypeId"), IgnoreRead, IgnoreWrite]
         public virtual int ItemTypeId { get { return (int)ItemType; } }
 
-        [JsonProperty("itemId")]
+        [JsonPropertyName("itemId")]
         public int? ItemId { get; set; }
 
-        [JsonProperty("folderId")]
+        [JsonPropertyName("folderId")]
         public int? FolderId { get; set; }
 
-        [JsonProperty("fileType")]
+        [JsonPropertyName("fileType")]
         public FileType FileType { get; set; }
 
-        [JsonProperty("duration")]
+        [JsonPropertyName("duration")]
         public int? Duration { get; set; }
 
-        [JsonProperty("bitrate")]
+        [JsonPropertyName("bitrate")]
         public int? Bitrate { get; set; }
 
-        [JsonProperty("fileSize")]
+        [JsonPropertyName("fileSize")]
         public long? FileSize { get; set; }
 
-        [JsonProperty("lastModified")]
+        [JsonPropertyName("lastModified")]
         public long? LastModified { get; set; }
 
-        [JsonProperty("fileName")]
+        [JsonPropertyName("fileName")]
         public string FileName { get; set; }
 
-        [JsonProperty("genreId")]
+        [JsonPropertyName("genreId")]
         public int? GenreId { get; set; }
 
-        [JsonProperty("genreName"), IgnoreWrite]
+        [JsonPropertyName("genreName"), IgnoreWrite]
         public string GenreName { get; set; }
 
-        [JsonProperty("artId"), IgnoreWrite]
+        [JsonPropertyName("artId"), IgnoreWrite]
         public int? ArtId { get; set; }
 
         [JsonIgnore, IgnoreRead, IgnoreWrite]

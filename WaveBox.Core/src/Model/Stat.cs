@@ -5,8 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Cirrious.MvvmCross.Plugins.Sqlite;
-using Newtonsoft.Json;
-using Ninject;
 using WaveBox.Core.Model;
 using WaveBox.Core.Static;
 

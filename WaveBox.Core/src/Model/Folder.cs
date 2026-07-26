@@ -4,15 +4,14 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Cirrious.MvvmCross.Plugins.Sqlite;
-using Newtonsoft.Json;
-using Ninject;
+using System.Text.Json.Serialization;
 using WaveBox.Core.Model;
 using WaveBox.Core.Static;
 using WaveBox.Core.Model.Repository;
 
 namespace WaveBox.Core.Model {
     public class Folder : IItem, IGroupingItem {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         [JsonIgnore, IgnoreRead, IgnoreWrite]
         public int? ItemId { get { return FolderId; } set { FolderId = ItemId; } }
@@ -20,26 +19,26 @@ namespace WaveBox.Core.Model {
         [JsonIgnore, IgnoreRead, IgnoreWrite]
         public ItemType ItemType { get { return ItemType.Folder; } }
 
-        [JsonProperty("itemTypeId"), IgnoreRead, IgnoreWrite]
+        [JsonPropertyName("itemTypeId"), IgnoreRead, IgnoreWrite]
         public int ItemTypeId { get { return (int)ItemType; } }
 
-        [JsonProperty("folderId")]
+        [JsonPropertyName("folderId")]
         public int? FolderId { get; set; }
 
-        [JsonProperty("folderName")]
+        [JsonPropertyName("folderName")]
         public string FolderName { get; set; }
 
-        [JsonProperty("parentFolderId")]
+        [JsonPropertyName("parentFolderId")]
         public int? ParentFolderId { get; set; }
 
-        [JsonProperty("mediaFolderId")]
+        [JsonPropertyName("mediaFolderId")]
         public int? MediaFolderId { get; set; }
 
-        [JsonProperty("folderPath")]
+        [JsonPropertyName("folderPath")]
         public string FolderPath { get; set; }
 
-        [JsonProperty("artId"), IgnoreRead, IgnoreWrite]
-        public int? ArtId { get { return Injection.Kernel.Get<IArtRepository>().ArtIdForItemId(FolderId); } }
+        [JsonPropertyName("artId"), IgnoreRead, IgnoreWrite]
+        public int? ArtId { get { return Injection.Get<IArtRepository>().ArtIdForItemId(FolderId); } }
 
         [JsonIgnore, IgnoreRead, IgnoreWrite]
         public string GroupingName { get { return FolderName; } }
@@ -52,7 +51,7 @@ namespace WaveBox.Core.Model {
         }
 
         public Folder ParentFolder() {
-            return Injection.Kernel.Get<IFolderRepository>().FolderForId((int)ParentFolderId);
+            return Injection.Get<IFolderRepository>().FolderForId((int)ParentFolderId);
         }
 
         public void Scan() {
@@ -73,7 +72,7 @@ namespace WaveBox.Core.Model {
                 return new List<Song>();
             }
 
-            return Injection.Kernel.Get<IFolderRepository>().ListOfSongs((int)FolderId, recursive);
+            return Injection.Get<IFolderRepository>().ListOfSongs((int)FolderId, recursive);
         }
 
         public IList<Video> ListOfVideos(bool recursive = false) {
@@ -81,7 +80,7 @@ namespace WaveBox.Core.Model {
                 return new List<Video>();
             }
 
-            return Injection.Kernel.Get<IFolderRepository>().ListOfVideos((int)FolderId, recursive);
+            return Injection.Get<IFolderRepository>().ListOfVideos((int)FolderId, recursive);
         }
 
         public IList<Folder> ListOfSubFolders() {
@@ -89,7 +88,7 @@ namespace WaveBox.Core.Model {
                 return new List<Folder>();
             }
 
-            return Injection.Kernel.Get<IFolderRepository>().ListOfSubFolders((int)FolderId);
+            return Injection.Get<IFolderRepository>().ListOfSubFolders((int)FolderId);
         }
 
         public bool IsMediaFolder() {
@@ -103,7 +102,7 @@ namespace WaveBox.Core.Model {
         }
 
         private Folder MediaFolder() {
-            foreach (Folder mediaFolder in Injection.Kernel.Get<IFolderRepository>().MediaFolders()) {
+            foreach (Folder mediaFolder in Injection.Get<IFolderRepository>().MediaFolders()) {
                 if (FolderPath == mediaFolder.FolderPath) {
                     return mediaFolder;
                 }
@@ -113,17 +112,17 @@ namespace WaveBox.Core.Model {
         }
 
         public bool InsertFolder(bool isMediaFolder) {
-            int? itemId = Injection.Kernel.Get<IItemRepository>().GenerateItemId(ItemType.Folder);
+            int? itemId = Injection.Get<IItemRepository>().GenerateItemId(ItemType.Folder);
             if (itemId == null) {
                 return false;
             }
 
             this.FolderId = itemId;
             if (!isMediaFolder) {
-                this.ParentFolderId = Injection.Kernel.Get<IFolderRepository>().GetParentFolderId(this.FolderPath);
+                this.ParentFolderId = Injection.Get<IFolderRepository>().GetParentFolderId(this.FolderPath);
             }
 
-            return Injection.Kernel.Get<IFolderRepository>().InsertFolder(this);
+            return Injection.Get<IFolderRepository>().InsertFolder(this);
         }
 
         public override string ToString() {

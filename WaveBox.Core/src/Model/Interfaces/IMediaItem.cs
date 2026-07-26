@@ -1,35 +1,40 @@
 using System;
 using System.IO;
 using Cirrious.MvvmCross.Plugins.Sqlite;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace WaveBox.Core.Model {
+    // See IItem: polymorphic serialization without a discriminator, for Newtonsoft-compatible output
+    [JsonPolymorphic]
+    [JsonDerivedType(typeof(MediaItem))]
+    [JsonDerivedType(typeof(Song))]
+    [JsonDerivedType(typeof(Video))]
     public interface IMediaItem : IItem {
-        [JsonProperty("folderId")]
+        [JsonPropertyName("folderId")]
         int? FolderId { get; set; }
 
-        [JsonProperty("fileType"), IgnoreRead, IgnoreWrite]
+        [JsonPropertyName("fileType"), IgnoreRead, IgnoreWrite]
         FileType FileType { get; set; }
 
-        [JsonProperty("duration")]
+        [JsonPropertyName("duration")]
         int? Duration { get; set; }
 
-        [JsonProperty("bitrate")]
+        [JsonPropertyName("bitrate")]
         int? Bitrate { get; set; }
 
-        [JsonProperty("fileSize")]
+        [JsonPropertyName("fileSize")]
         long? FileSize { get; set; }
 
-        [JsonProperty("lastModified")]
+        [JsonPropertyName("lastModified")]
         long? LastModified { get; set; }
 
-        [JsonProperty("fileName")]
+        [JsonPropertyName("fileName")]
         string FileName { get; set; }
 
-        [JsonProperty("genreId")]
+        [JsonPropertyName("genreId")]
         int? GenreId { get; set; }
 
-        [JsonProperty("genreName")]
+        [JsonPropertyName("genreName")]
         string GenreName { get; set; }
 
         void AddToPlaylist(Playlist thePlaylist, int index);

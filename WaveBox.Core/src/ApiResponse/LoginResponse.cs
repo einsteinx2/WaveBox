@@ -1,12 +1,12 @@
 using System;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace WaveBox.Core.ApiResponse {
     public class LoginResponse : IApiResponse {
-        [JsonProperty("error")]
+        [JsonPropertyName("error")]
         public string Error { get; set; }
 
-        [JsonProperty("sessionId")]
+        [JsonPropertyName("sessionId")]
         public string SessionId { get; set; }
 
         public LoginResponse(string error, string sessionId) {

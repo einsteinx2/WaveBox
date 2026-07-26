@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Cirrious.MvvmCross.Plugins.Sqlite;
-using Ninject;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using WaveBox.Core.Static;
 using WaveBox.Core.Model.Repository;
 
@@ -16,28 +15,28 @@ namespace WaveBox.Core.Model {
         [JsonIgnore, IgnoreRead, IgnoreWrite]
         public ItemType ItemType { get { return ItemType.Album; } }
 
-        [JsonProperty("itemTypeId"), IgnoreRead, IgnoreWrite]
+        [JsonPropertyName("itemTypeId"), IgnoreRead, IgnoreWrite]
         public int ItemTypeId { get { return (int)ItemType; } }
 
-        [JsonProperty("albumArtistId")]
+        [JsonPropertyName("albumArtistId")]
         public int? AlbumArtistId { get; set; }
 
-        [JsonProperty("albumArtistName"), IgnoreWrite]
+        [JsonPropertyName("albumArtistName"), IgnoreWrite]
         public string AlbumArtistName { get; set; }
 
-        [JsonProperty("albumId")]
+        [JsonPropertyName("albumId")]
         public int? AlbumId { get; set; }
 
-        [JsonProperty("albumName")]
+        [JsonPropertyName("albumName")]
         public string AlbumName { get; set; }
 
-        [JsonProperty("releaseYear")]
+        [JsonPropertyName("releaseYear")]
         public int? ReleaseYear { get; set; }
 
-        [JsonProperty("musicBrainzId")]
+        [JsonPropertyName("musicBrainzId")]
         public string MusicBrainzId { get; set; }
 
-        [JsonProperty("artId"), IgnoreWrite]
+        [JsonPropertyName("artId"), IgnoreWrite]
         public int? ArtId { get; set; }
 
         [JsonIgnore, IgnoreRead, IgnoreWrite]
@@ -47,11 +46,11 @@ namespace WaveBox.Core.Model {
         }
 
         public AlbumArtist AlbumArtist() {
-            return Injection.Kernel.Get<IAlbumArtistRepository>().AlbumArtistForId(AlbumArtistId);
+            return Injection.Get<IAlbumArtistRepository>().AlbumArtistForId(AlbumArtistId);
         }
 
         public IList<Song> ListOfSongs() {
-            return Injection.Kernel.Get<ISongRepository>().SearchSongs("AlbumId", AlbumId.ToString());
+            return Injection.Get<ISongRepository>().SearchSongs("AlbumId", AlbumId.ToString());
         }
 
         public override string ToString() {

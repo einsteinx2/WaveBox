@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
 using WaveBox.Core.Model;
 
 namespace WaveBox.Core {
@@ -10,7 +9,7 @@ namespace WaveBox.Core {
 
         ServerSettingsData SettingsModel { get; }
 
-        Formatting JsonFormatting { get; }
+        bool PrettyJson { get; }
 
         short Port { get; }
 

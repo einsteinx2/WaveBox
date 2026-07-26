@@ -1,17 +1,17 @@
 using System;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using System.Collections.Generic;
 using WaveBox.Core.Model;
 
 namespace WaveBox.Core.ApiResponse {
     public class FavoritesResponse : IApiResponse {
-        [JsonProperty("error")]
+        [JsonPropertyName("error")]
         public string Error { get; set; }
 
-        [JsonProperty("items")]
+        [JsonPropertyName("items")]
         public IList<IItem> Items { get; set; }
 
-        [JsonProperty("favorites")]
+        [JsonPropertyName("favorites")]
         public IList<Favorite> Favorites { get; set; }
 
         public FavoritesResponse(string error, IList<IItem> items, IList<Favorite> favorites) {

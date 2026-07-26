@@ -1,18 +1,18 @@
 using System;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace WaveBox.Core.ApiResponse {
     public class JukeboxStatus : IApiResponse {
-        [JsonProperty("error")]
+        [JsonPropertyName("error")]
         public string Error { get; set; }
 
-        [JsonProperty("state")]
+        [JsonPropertyName("state")]
         public string State { get; set; }
 
-        [JsonProperty("currentIndex")]
+        [JsonPropertyName("currentIndex")]
         public int CurrentIndex { get; set; }
 
-        [JsonProperty("progress")]
+        [JsonPropertyName("progress")]
         public double Progress { get; set; }
 
         public JukeboxStatus(string error, string state, int currentIndex, double progress) {

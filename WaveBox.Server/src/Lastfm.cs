@@ -5,10 +5,8 @@ using System.Net.Sockets;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
-using System.Web.Services;
 using System.Web;
-using Newtonsoft.Json;
-using Ninject;
+using System.Text.Json.Nodes;
 using WaveBox.Core;
 using WaveBox.Core.Extensions;
 using WaveBox.Core.Model;
@@ -18,7 +16,7 @@ using WaveBox.Static;
 
 namespace WaveBox {
     public class Lastfm {
-        private static readonly log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         private static string apiKey = "6aec36725ab20cff28e8525cdf5fbd4a";
         private static string secret = "cd596009d199d51405a2477d4e65c5d7";
@@ -90,7 +88,7 @@ namespace WaveBox {
             long timestamp = DateTime.UtcNow.ToUnixTime();
 
             for (int i = 0; i < limit; i++) {
-                song = Injection.Kernel.Get<ISongRepository>().SongForId(scrobbles[i].SongId);
+                song = Injection.Get<ISongRepository>().SongForId(scrobbles[i].SongId);
                 parameters.Add("artist" + (scrobbleType == LfmScrobbleType.NOWPLAYING ? "" : string.Format("[{0}]", i)), HttpUtility.UrlEncode(song.ArtistName, Encoding.UTF8));
                 parameters.Add("timestamp" + (scrobbleType == LfmScrobbleType.NOWPLAYING ? "" : string.Format("[{0}]", i)), HttpUtility.UrlEncode(timestamp.ToString(), Encoding.UTF8));
                 parameters.Add("track" + (scrobbleType == LfmScrobbleType.NOWPLAYING ? "" : string.Format("[{0}]", i)), HttpUtility.UrlEncode(song.SongName, Encoding.UTF8));
@@ -137,7 +135,7 @@ namespace WaveBox {
         }
 
         public static string GetArtistInfo(int artistId) {
-            return GetArtistInfo(Injection.Kernel.Get<IArtistRepository>().ArtistForId(artistId));
+            return GetArtistInfo(Injection.Get<IArtistRepository>().ArtistForId(artistId));
         }
 
         public static string GetAlbumArtistInfo(AlbumArtist albumArtist) {
@@ -145,7 +143,7 @@ namespace WaveBox {
         }
 
         public static string GetAlbumArtistInfo(int albumArtistId) {
-            return GetAlbumArtistInfo(Injection.Kernel.Get<IAlbumArtistRepository>().AlbumArtistForId(albumArtistId));
+            return GetAlbumArtistInfo(Injection.Get<IAlbumArtistRepository>().AlbumArtistForId(albumArtistId));
         }
 
         private static string CompileApiCall(SortedDictionary<string, string> parameters) {
@@ -200,18 +198,18 @@ namespace WaveBox {
         private void GetSessionKeyAndUpdateUser(string token) {
             string apiSigSource = "api_key" + apiKey + "method" + "auth.getSession" + "token" + token + secret;
             string apiSig = apiSigSource.MD5();
-            dynamic jsonResponse;
+            JsonNode jsonResponse;
             string requestUrl = String.Format("http://ws.audioscrobbler.com/2.0/?method=auth.getSession&format=json&api_key={0}&token={1}&api_sig={2}", apiKey, token, apiSig);
 
             HttpWebRequest req = (HttpWebRequest)WebRequest.Create(requestUrl);
 
             using (HttpWebResponse response = req.GetResponse() as HttpWebResponse) {
                 StreamReader reader = new StreamReader(response.GetResponseStream());
-                jsonResponse = JsonConvert.DeserializeObject(reader.ReadToEnd());
+                jsonResponse = JsonNode.Parse(reader.ReadToEnd());
             }
 
-            if (jsonResponse.session != null) {
-                sessionKey = jsonResponse.session.key.ToString();
+            if (jsonResponse != null && jsonResponse["session"] != null) {
+                sessionKey = jsonResponse["session"]["key"].ToString();
                 sessionAuthenticated = true;
                 user.UpdateLastfmSession(sessionKey);
                 logger.IfInfo("(" + user.UserName + ") Obtain last.fm session key: success");
@@ -223,7 +221,7 @@ namespace WaveBox {
         /// </summary>
         private void CreateAuthUrl() {
             string requestToken = null;
-            dynamic jsonResponse;
+            JsonNode jsonResponse;
 
             // Get a last.fm request token
             string requestUrl = String.Format("http://ws.audioscrobbler.com/2.0/?method=auth.gettoken&format=json&api_key={0}", apiKey);
@@ -232,10 +230,10 @@ namespace WaveBox {
 
             using (HttpWebResponse response = req.GetResponse() as HttpWebResponse) {
                 StreamReader reader = new StreamReader(response.GetResponseStream());
-                jsonResponse = JsonConvert.DeserializeObject(reader.ReadToEnd());
+                jsonResponse = JsonNode.Parse(reader.ReadToEnd());
             }
 
-            requestToken = jsonResponse.token.ToString();
+            requestToken = jsonResponse != null && jsonResponse["token"] != null ? jsonResponse["token"].ToString() : null;
 
             if (requestToken != null) {
                 user.UpdateLastfmSession("token:" + requestToken);
