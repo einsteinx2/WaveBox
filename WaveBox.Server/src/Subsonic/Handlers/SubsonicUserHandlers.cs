@@ -154,7 +154,7 @@ namespace WaveBox.Subsonic.Handlers {
         private static string DecodePassword(string password) {
             if (password != null && password.StartsWith("enc:", StringComparison.OrdinalIgnoreCase)) {
                 try {
-                    return Encoding.UTF8.GetString(Convert.FromHexString(password.Substring(4)));
+                    return Encoding.UTF8.GetString(Convert.FromHexString(password.AsSpan(4)));
                 } catch (FormatException) {
                     return password;
                 }

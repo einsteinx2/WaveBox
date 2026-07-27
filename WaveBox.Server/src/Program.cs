@@ -14,6 +14,11 @@ using WaveBox.Static;
 
 namespace WaveBox {
     public static class Program {
+        private static readonly string[] compressedMimeTypes = new string[] {
+            "application/json", "text/html", "text/css", "text/plain",
+            "text/javascript", "application/javascript", "application/xml"
+        };
+
         // Kestrel's options are constructed during Build(), before the DI container or database are
         // ready, so the listen port is read here with a minimal, dependency-free parse of wavebox.conf.
         // The full settings load (which also touches the database) still happens in WaveBoxLifecycleService.
@@ -65,10 +70,7 @@ namespace WaveBox {
 
             // Standards-compliant gzip/deflate for text responses (replaces the hand-rolled negotiation)
             builder.Services.AddResponseCompression(options => {
-                options.MimeTypes = new[] {
-                    "application/json", "text/html", "text/css", "text/plain",
-                    "text/javascript", "application/javascript", "application/xml"
-                };
+                options.MimeTypes = compressedMimeTypes;
             });
 
             builder.WebHost.ConfigureKestrel(options => {

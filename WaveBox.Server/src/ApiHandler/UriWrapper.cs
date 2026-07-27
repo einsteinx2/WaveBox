@@ -104,7 +104,7 @@ namespace WaveBox.ApiHandler {
             if (UriString.Contains('?')) {
                 // if we split the uri by the question mark, the second part of the split will be the params
                 string parametersString = this.UriString.Split('?')[1];
-                string[] splitParams = parametersString.Split(new char[] {'=', '&'});
+                string[] splitParams = parametersString.Split('=', '&');
 
                 // Add parameters to the dictionary as we parse the parameters array
                 for (int i = 0; i <= splitParams.Length - 2; i = i + 2) {

@@ -61,7 +61,7 @@ namespace WaveBox.Core.Model {
 
                 foreach (PlaylistItem playlistItem in result) {
                     itemIds.Append(playlistItem.ItemId);
-                    itemIds.Append("|");
+                    itemIds.Append('|');
                 }
             } catch (Exception e) {
                 logger.Error(e);

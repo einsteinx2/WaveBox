@@ -7,6 +7,8 @@ using Xunit;
 
 namespace WaveBox.Server.Tests {
     public class SubsonicRequestTests {
+        private static readonly string[] formSongIds = new string[] { "2", "3" };
+
         private static SubsonicRequest Request(string queryString, Dictionary<string, StringValues> formValues = null) {
             DefaultHttpContext context = new DefaultHttpContext();
             context.Request.QueryString = new QueryString(queryString);
@@ -33,7 +35,7 @@ namespace WaveBox.Server.Tests {
         [Fact]
         public void GetAllMergesQueryThenForm() {
             SubsonicRequest req = Request("?songId=1", new Dictionary<string, StringValues> {
-                { "songId", new StringValues(new[] { "2", "3" }) }
+                { "songId", new StringValues(formSongIds) }
             });
 
             Assert.Equal(new List<string> { "1", "2", "3" }, req.GetAll("songId"));

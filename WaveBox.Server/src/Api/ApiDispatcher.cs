@@ -18,6 +18,8 @@ namespace WaveBox.Api {
     public class ApiDispatcher {
         private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger(typeof(ApiDispatcher));
 
+        private static readonly char[] cookieSplitChars = new char[] { ';', ',', '=' };
+
         public async Task ProcessAsync(HttpContext context) {
             string method = context.Request.Method.ToUpperInvariant();
 
@@ -125,7 +127,7 @@ namespace WaveBox.Api {
         private static string GetSessionCookie(HttpContextProcessor processor) {
             if (processor.HttpHeaders.ContainsKey("Cookie")) {
                 // Split each cookie into pairs
-                string[] cookies = processor.HttpHeaders["Cookie"].ToString().Split(new[] { ';', ',', '=' }, StringSplitOptions.RemoveEmptyEntries);
+                string[] cookies = processor.HttpHeaders["Cookie"].ToString().Split(cookieSplitChars, StringSplitOptions.RemoveEmptyEntries);
 
                 // Iterate all cookies
                 for (int i = 0; i < cookies.Length - 1; i += 2) {

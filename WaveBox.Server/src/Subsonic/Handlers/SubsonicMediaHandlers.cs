@@ -106,7 +106,7 @@ namespace WaveBox.Subsonic.Handlers {
 
                 if (processor.HttpHeaders.ContainsKey("Range")) {
                     string range = (string)processor.HttpHeaders["Range"];
-                    var split = range.Split(new char[] { '-', '=' });
+                    var split = range.Split('-', '=');
                     string start = split[1];
                     string end = split.Length > 2 ? split[2] : null;
 
