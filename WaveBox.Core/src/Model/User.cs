@@ -60,7 +60,7 @@ namespace WaveBox.Core.Model {
             return this.Role >= role ? true : false;
         }
 
-        public bool UpdateSession(string sessionId) {
+        public static bool UpdateSession(string sessionId) {
             // Update user's session based on its session ID
             Session s = Injection.Get<ISessionRepository>().SessionForSessionId(sessionId);
 

@@ -399,7 +399,7 @@ namespace WaveBox.FolderScanning {
             return song;
         }
 
-        private bool ArtFileNeedsUpdating(string filePath) {
+        private static bool ArtFileNeedsUpdating(string filePath) {
             if (filePath == null) {
                 return false;
             }
@@ -431,7 +431,7 @@ namespace WaveBox.FolderScanning {
         }
 
         // used for getting art from a file.
-        private Art CreateArt(string filePath) {
+        private static Art CreateArt(string filePath) {
             FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read);
 
             // compute the hash of the file stream
@@ -455,7 +455,7 @@ namespace WaveBox.FolderScanning {
 
         // used for getting art from a tag.
         // We don't set the FilePath here, because that is only used for actual art files on disk
-        private Art CreateArt(TagLib.File file) {
+        private static Art CreateArt(TagLib.File file) {
             Art art = new Art();
 
             if (file.Tag.Pictures.Length > 0) {
@@ -494,7 +494,7 @@ namespace WaveBox.FolderScanning {
             return needsUpdating;
         }
 
-        private bool VideoNeedsUpdating(string filePath, int? folderId, out bool isNew, out int? itemId) {
+        private static bool VideoNeedsUpdating(string filePath, int? folderId, out bool isNew, out int? itemId) {
             string fileName = Path.GetFileName(filePath);
             long lastModified = System.IO.File.GetLastWriteTime(filePath).ToUnixTime();
             bool needsUpdating = true;
@@ -557,7 +557,7 @@ namespace WaveBox.FolderScanning {
             return needsUpdating;
         }
 
-        private Video CreateVideo(string filePath, int? folderId, TagLib.File file) {
+        private static Video CreateVideo(string filePath, int? folderId, TagLib.File file) {
             int? itemId = Injection.Get<IItemRepository>().GenerateItemId(ItemType.Video);
             if (itemId == null) {
                 return new Video();

@@ -143,7 +143,7 @@ namespace WaveBox.Subsonic.Handlers {
             SubsonicWriter.Write(req, processor, SubsonicWriter.Body());
         }
 
-        private static IList<int> MediaFolderIds() {
+        private static List<int> MediaFolderIds() {
             return Injection.Get<IFolderRepository>().MediaFolders()
                    .Where(f => f.FolderId != null)
                    .Select(f => (int)f.FolderId)

@@ -234,7 +234,7 @@ namespace WaveBox.Api {
             }
         }
 
-        private DateTime CleanLastModified(DateTime? lastModified) {
+        private static DateTime CleanLastModified(DateTime? lastModified) {
             // If null, use current time
             if (lastModified == null) {
                 return DateTime.UtcNow;

@@ -46,7 +46,7 @@ namespace WaveBox.ApiHandler.Handlers {
 
             try {
                 // Read in entire database file
-                Stream stream = new FileStream(ServerUtility.RootPath() + databaseFileName, FileMode.Open, FileAccess.Read);
+                FileStream stream = new FileStream(ServerUtility.RootPath() + databaseFileName, FileMode.Open, FileAccess.Read);
                 long length = stream.Length;
                 int startOffset = 0;
 
@@ -59,7 +59,7 @@ namespace WaveBox.ApiHandler.Handlers {
                 }
 
                 // We send the last query id as a custom header
-                IDictionary<string, string> customHeader = new Dictionary<string, string>();
+                Dictionary<string, string> customHeader = new Dictionary<string, string>();
                 customHeader["WaveBox-LastQueryId"] = databaseLastQueryId.ToString();
 
                 // Send the database file

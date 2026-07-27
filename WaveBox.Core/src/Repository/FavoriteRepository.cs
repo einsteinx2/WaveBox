@@ -117,7 +117,7 @@ namespace WaveBox.Core.Model.Repository {
                 return null;
             }
 
-            IList<IItem> items = new List<IItem>();
+            List<IItem> items = new List<IItem>();
             foreach (Favorite fav in favorites) {
                 switch (fav.FavoriteItemType) {
                 case ItemType.AlbumArtist:

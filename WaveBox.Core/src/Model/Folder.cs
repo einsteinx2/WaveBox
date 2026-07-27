@@ -54,7 +54,7 @@ namespace WaveBox.Core.Model {
             return Injection.Get<IFolderRepository>().FolderForId((int)ParentFolderId);
         }
 
-        public void Scan() {
+        public static void Scan() {
             // TO DO: scanning!  yay!
         }
 

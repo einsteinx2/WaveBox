@@ -47,7 +47,7 @@ namespace WaveBox.ApiHandler.Handlers {
         public void Process(UriWrapper uri, IHttpProcessor processor, User user) {
             try {
                 // Allocate an array of various statistics about the running process
-                IDictionary<string, object> status = new Dictionary<string, object>();
+                Dictionary<string, object> status = new Dictionary<string, object>();
 
                 // Gather data about WaveBox process
                 global::System.Diagnostics.Process proc = global::System.Diagnostics.Process.GetCurrentProcess();
@@ -140,7 +140,7 @@ namespace WaveBox.ApiHandler.Handlers {
         /// Returns the CPU usage of the WaveBox process at this instant in time, as a percentage of
         /// total machine capacity (PerformanceCounter was Windows-only, so this samples process time instead)
         /// </summary>
-        private float CpuUsage() {
+        private static float CpuUsage() {
             using (System.Diagnostics.Process process = System.Diagnostics.Process.GetCurrentProcess()) {
                 TimeSpan startCpuTime = process.TotalProcessorTime;
                 Stopwatch wallClock = Stopwatch.StartNew();

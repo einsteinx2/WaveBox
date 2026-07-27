@@ -27,7 +27,7 @@ namespace WaveBox {
         /// The main instance of WaveBox which runs the server.  Creates necessary directories, initializes
         /// database and settings, and starts all associated services.
         /// </summary>
-        public void Start() {
+        public static void Start() {
             logger.IfInfo("Initializing WaveBox " + ServerInfo.BuildVersion + " on " + ServerInfo.OS.ToDescription() + " platform...");
 
             // Create directory for WaveBox's root path, if it doesn't exist
@@ -84,7 +84,7 @@ namespace WaveBox {
         /// <summary>
         /// Stop the WaveBox main
         /// </summary>
-        public void Stop() {
+        public static void Stop() {
             // Stop all running services
             ServiceManager.StopAll();
             ServiceManager.Clear();
@@ -93,9 +93,9 @@ namespace WaveBox {
         /// <summary>
         /// Restart the WaveBox main
         /// </summary>
-        public void Restart() {
-            this.Stop();
-            this.Start();
+        public static void Restart() {
+            Stop();
+            Start();
         }
     }
 }

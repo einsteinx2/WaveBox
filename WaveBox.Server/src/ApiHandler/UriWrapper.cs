@@ -119,8 +119,8 @@ namespace WaveBox.ApiHandler {
         /// <summary>
         /// Purge the empty elements in an array of strings, returning a list of strings
         /// </summary>
-        private IList<string> RemoveEmptyElements(string[] input) {
-            IList<string> result = new List<string>();
+        private static List<string> RemoveEmptyElements(string[] input) {
+            List<string> result = new List<string>();
 
             foreach (string s in input) {
                 if (s != null && s != "") {

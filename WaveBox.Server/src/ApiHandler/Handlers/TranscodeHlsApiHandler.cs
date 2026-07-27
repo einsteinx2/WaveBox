@@ -61,10 +61,10 @@ namespace WaveBox.ApiHandler.Handlers {
                 string[] transQualities = uri.Parameters.TryGetValue("transQuality", out string transQualityParam) ? transQualityParam.Split(',') : new string[] {"Medium"};
                 if (transQualities.Length == 1) {
                     // This is a single playlist
-                    response = this.GeneratePlaylist(item, transQualities[0], uri);
+                    response = GeneratePlaylist(item, transQualities[0], uri);
                 } else {
                     // This is a multi playlist
-                    response = this.GenerateMultiPlaylist(item, transQualities, uri);
+                    response = GenerateMultiPlaylist(item, transQualities, uri);
                 }
 
                 processor.WriteText(response, "application/x-mpegURL");
@@ -77,7 +77,7 @@ namespace WaveBox.ApiHandler.Handlers {
         /// <summary>
         /// Generates multiple item playlist
         /// <summary>
-        private string GenerateMultiPlaylist(IMediaItem item, string[] transQualities, UriWrapper uri) {
+        private static string GenerateMultiPlaylist(IMediaItem item, string[] transQualities, UriWrapper uri) {
             // Ensure duration is set
             if ((object)item.Duration == null) {
                 return null;
@@ -133,7 +133,7 @@ namespace WaveBox.ApiHandler.Handlers {
         /// <summary>
         /// Generate playlist for a single item
         /// </summary>
-        private string GeneratePlaylist(IMediaItem item, string transQuality, UriWrapper uri) {
+        private static string GeneratePlaylist(IMediaItem item, string transQuality, UriWrapper uri) {
             // If duration not set, null!
             if ((object)item.Duration == null) {
                 return null;

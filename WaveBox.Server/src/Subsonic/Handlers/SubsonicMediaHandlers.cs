@@ -99,7 +99,7 @@ namespace WaveBox.Subsonic.Handlers {
         // Direct byte-for-byte file streaming with Range support (same semantics as /api/stream)
         private static void SendDirect(SubsonicRequest req, HttpContextProcessor processor, IMediaItem item) {
             try {
-                System.IO.Stream stream = item.File();
+                System.IO.FileStream stream = item.File();
                 long length = stream.Length;
                 int startOffset = 0;
                 long? limitToSize = null;

@@ -34,7 +34,7 @@ namespace WaveBox.FolderScanning {
             }
 
             // Keep a set of all MusicBrainz IDs known to WaveBox
-            ISet<string> musicBrainzIds = new HashSet<string>();
+            HashSet<string> musicBrainzIds = new HashSet<string>();
 
             // Find artists and album artists missing art
             IArtistRepository artistRepository = Injection.Get<IArtistRepository>();

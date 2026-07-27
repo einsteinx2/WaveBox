@@ -24,13 +24,13 @@ namespace WaveBox.ApiHandler.Handlers {
         /// Overload for IApiHandler interface
         /// </summary>
         public void Process(UriWrapper uri, IHttpProcessor processor, User user) {
-            this.Process(uri, processor, user, "Invalid API call");
+            Process(uri, processor, user, "Invalid API call");
         }
 
         /// <summary>
         /// Process logs the error, creates a JSON response, and send it back to the user on bad API call
         /// </summary>
-        public void Process(UriWrapper uri, IHttpProcessor processor, User user, string error) {
+        public static void Process(UriWrapper uri, IHttpProcessor processor, User user, string error) {
             logger.Error(error);
 
             ErrorResponse response = new ErrorResponse(error);

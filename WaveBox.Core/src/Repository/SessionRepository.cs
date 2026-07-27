@@ -11,7 +11,7 @@ namespace WaveBox.Core.Model.Repository {
 
         private readonly IDatabase database;
 
-        private IDictionary<string, Session> Sessions { get; set; }
+        private Dictionary<string, Session> Sessions { get; set; }
 
         public SessionRepository(IDatabase database) {
             if (database == null) {
