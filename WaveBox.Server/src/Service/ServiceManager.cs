@@ -10,7 +10,7 @@ namespace WaveBox.Service {
         private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         // List of all services maintained by the manager
-        private static IList<IService> Services = new List<IService>();
+        private static List<IService> Services = new List<IService>();
 
         /// <summary>
         /// Add a new service, by name, to the manager, optionally starting it automatically

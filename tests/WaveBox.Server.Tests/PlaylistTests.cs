@@ -10,7 +10,7 @@ namespace WaveBox.Server.Tests {
     [Collection("Integration")]
     public class PlaylistTests : IDisposable {
         private readonly IntegrationHarness harness;
-        private readonly IList<Song> songs;
+        private readonly List<Song> songs;
 
         public PlaylistTests() {
             harness = new IntegrationHarness();
@@ -29,7 +29,7 @@ namespace WaveBox.Server.Tests {
             return playlist;
         }
 
-        private static IList<int?> ItemIds(Playlist playlist) {
+        private static List<int?> ItemIds(Playlist playlist) {
             return playlist.ListOfMediaItems().Select(i => i.ItemId).ToList();
         }
 

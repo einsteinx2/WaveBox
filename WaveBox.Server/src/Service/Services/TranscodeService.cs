@@ -18,7 +18,7 @@ namespace WaveBox.Service.Services {
 
         public bool Running { get; set; }
 
-        private IList<ITranscoder> transcoders = new List<ITranscoder>();
+        private List<ITranscoder> transcoders = new List<ITranscoder>();
 
         public TranscodeService() {
         }

@@ -32,10 +32,10 @@ namespace WaveBox.FolderScanning {
             Stopwatch testAlbumArtistScanTime = new Stopwatch();
 
             // Dictionary of artists and existing IDs
-            IDictionary<string, string> existingIds = new Dictionary<string, string>();
+            Dictionary<string, string> existingIds = new Dictionary<string, string>();
 
             // List of artists who don't have IDs
-            IList<Artist> artistsMissingId = new List<Artist>();
+            List<Artist> artistsMissingId = new List<Artist>();
 
             logger.IfInfo("------------- MUSICBRAINZ SCAN -------------");
 
@@ -52,7 +52,7 @@ namespace WaveBox.FolderScanning {
                 }
             }
 
-            IList<AlbumArtist> albumArtistsMissingId = new List<AlbumArtist>();
+            List<AlbumArtist> albumArtistsMissingId = new List<AlbumArtist>();
 
             IAlbumArtistRepository albumArtistRepository = Injection.Get<IAlbumArtistRepository>();
             IList<AlbumArtist> allAlbumArtists = albumArtistRepository.AllAlbumArtists();
@@ -85,7 +85,7 @@ namespace WaveBox.FolderScanning {
             logger.IfInfo("---------------------------------------------");
         }
 
-        private string MusicBrainzIdForArtistName(string artistName) {
+        private static string MusicBrainzIdForArtistName(string artistName) {
             if (artistName == null) {
                 return null;
             }
@@ -134,7 +134,7 @@ namespace WaveBox.FolderScanning {
             return null;
         }
 
-        private int ScanArtists(IDictionary<string, string> existingIds, IList<Artist> artistsMissingId) {
+        private int ScanArtists(Dictionary<string, string> existingIds, IList<Artist> artistsMissingId) {
             if (isRestart) {
                 return 0;
             }
@@ -153,7 +153,7 @@ namespace WaveBox.FolderScanning {
 
                 // If ID not found, try to fetch it
                 if (musicBrainzId == null) {
-                    musicBrainzId = this.MusicBrainzIdForArtistName(artist.ArtistName);
+                    musicBrainzId = MusicBrainzIdForArtistName(artist.ArtistName);
                 }
 
                 if (musicBrainzId != null) {
@@ -173,7 +173,7 @@ namespace WaveBox.FolderScanning {
             return count;
         }
 
-        private int ScanAlbumArtists(IDictionary<string, string> existingIds, IList<AlbumArtist> albumArtistsMissingId) {
+        private int ScanAlbumArtists(Dictionary<string, string> existingIds, IList<AlbumArtist> albumArtistsMissingId) {
             if (isRestart) {
                 return 0;
             }
@@ -192,7 +192,7 @@ namespace WaveBox.FolderScanning {
 
                 // If ID not found, try to fetch it
                 if (musicBrainzId == null) {
-                    musicBrainzId = this.MusicBrainzIdForArtistName(albumArtist.AlbumArtistName);
+                    musicBrainzId = MusicBrainzIdForArtistName(albumArtist.AlbumArtistName);
                 }
 
                 if (musicBrainzId != null) {

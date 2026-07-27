@@ -86,7 +86,7 @@ namespace WaveBox.Static {
         /// tables rather than for the file means an empty database left behind by an earlier
         /// connection still gets its schema, and makes repeat calls a no-op.
         /// </summary>
-        private void ApplySchemaIfEmpty(string name, string schemaPath, Func<ISQLiteConnection> open, Action<ISQLiteConnection> close) {
+        private static void ApplySchemaIfEmpty(string name, string schemaPath, Func<ISQLiteConnection> open, Action<ISQLiteConnection> close) {
             ISQLiteConnection conn = null;
             try {
                 conn = open();
@@ -119,7 +119,7 @@ namespace WaveBox.Static {
             if (isPoolingEnabled) {
                 return mainPool.GetSqliteConnection();
             } else {
-                ISQLiteConnection conn = new SQLite.SQLiteConnection(DatabasePath);
+                SQLite.SQLiteConnection conn = new SQLite.SQLiteConnection(DatabasePath);
                 conn.Execute("PRAGMA synchronous = OFF");
                 // Five second busy timeout
                 conn.BusyTimeout = new TimeSpan(0, 0, 5);
@@ -139,7 +139,7 @@ namespace WaveBox.Static {
             if (isPoolingEnabled) {
                 return logPool.GetSqliteConnection();
             } else {
-                ISQLiteConnection conn = new SQLite.SQLiteConnection(QuerylogPath);
+                SQLite.SQLiteConnection conn = new SQLite.SQLiteConnection(QuerylogPath);
                 conn.Execute("PRAGMA synchronous = OFF");
                 // Five second busy timeout
                 conn.BusyTimeout = new TimeSpan(0, 0, 5);

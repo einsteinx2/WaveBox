@@ -20,7 +20,7 @@ namespace WaveBox.ApiHandler {
                 User user = Injection.Get<IUserRepository>().UserForId((int)userId);
                 if (user != null) {
                     // Update this user's session and return
-                    user.UpdateSession(session);
+                    User.UpdateSession(session);
                     return user;
                 }
             }

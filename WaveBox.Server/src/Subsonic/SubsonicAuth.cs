@@ -46,13 +46,13 @@ namespace WaveBox.Subsonic {
                     return null;
                 }
 
-                User keyUser = this.UserForApiKey(apiKey);
+                User keyUser = UserForApiKey(apiKey);
                 if (keyUser == null) {
                     error = new SubsonicError { Code = SubsonicError.InvalidApiKey, Message = "Invalid API key" };
                     return null;
                 }
 
-                return this.Authenticated(keyUser, req);
+                return Authenticated(keyUser, req);
             }
 
             if (token != null || salt != null) {
@@ -96,7 +96,7 @@ namespace WaveBox.Subsonic {
             // Cache the successful verification with a sliding expiry
             this.verified[username] = new VerifiedAuth { PasswordSha256 = presented, Expires = DateTime.UtcNow + CacheTtl };
 
-            return this.Authenticated(user, req);
+            return Authenticated(user, req);
         }
 
         // Drop a user's cached verification (call after password change, user update, or delete)
@@ -107,7 +107,7 @@ namespace WaveBox.Subsonic {
             }
         }
 
-        private User UserForApiKey(string apiKey) {
+        private static User UserForApiKey(string apiKey) {
             if (String.IsNullOrEmpty(apiKey)) {
                 return null;
             }
@@ -128,7 +128,7 @@ namespace WaveBox.Subsonic {
 
         // Repository users are shared cache instances; hand each request its own copy so the
         // synthesized session (and its client name) can't leak across concurrent requests
-        private User Authenticated(User user, SubsonicRequest req) {
+        private static User Authenticated(User user, SubsonicRequest req) {
             return new User {
                 UserId = user.UserId,
                 UserName = user.UserName,

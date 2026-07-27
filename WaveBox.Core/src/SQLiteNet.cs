@@ -1720,7 +1720,7 @@ namespace SQLite {
             return stmt;
         }
 
-        private void Finalize(Sqlite3Statement stmt) {
+        private static void Finalize(Sqlite3Statement stmt) {
             SQLite3.Finalize(stmt);
         }
 
@@ -2264,7 +2264,7 @@ namespace SQLite {
         /// Compiles a BinaryExpression where one of the parameters is null.
         /// </summary>
         /// <param name="parameter">The non-null parameter</param>
-        private string CompileNullBinaryExpression(BinaryExpression expression, CompileResult parameter) {
+        private static string CompileNullBinaryExpression(BinaryExpression expression, CompileResult parameter) {
             if (expression.NodeType == ExpressionType.Equal) {
                 return "(" + parameter.CommandText + " is ?)";
             } else if (expression.NodeType == ExpressionType.NotEqual) {
@@ -2274,7 +2274,7 @@ namespace SQLite {
                                                 expression.NodeType.ToString());
         }
 
-        private string GetSqlName(Expression expr) {
+        private static string GetSqlName(BinaryExpression expr) {
             var n = expr.NodeType;
             if (n == ExpressionType.GreaterThan) {
                 return ">";

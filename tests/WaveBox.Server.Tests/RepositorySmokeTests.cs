@@ -12,7 +12,7 @@ namespace WaveBox.Server.Tests {
     [Collection("Integration")]
     public class RepositorySmokeTests : IDisposable {
         private readonly IntegrationHarness harness;
-        private readonly IList<Song> songs;
+        private readonly List<Song> songs;
 
         public RepositorySmokeTests() {
             harness = new IntegrationHarness();
@@ -45,7 +45,7 @@ namespace WaveBox.Server.Tests {
             Assert.Equal("Test Album", album.AlbumName);
             Assert.Equal(album.AlbumName, repo.AlbumForId((int)album.AlbumId).AlbumName);
 
-            IDictionary<int, GroupCount> counts = repo.SongCountsByAlbum().ToDictionary(c => (int)c.GroupId);
+            Dictionary<int, GroupCount> counts = repo.SongCountsByAlbum().ToDictionary(c => (int)c.GroupId);
             Assert.Equal(3, counts[(int)album.AlbumId].Count);
         }
 

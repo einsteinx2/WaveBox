@@ -156,11 +156,11 @@ namespace WaveBox.Core.Model.Repository {
             try {
                 conn = database.GetSqliteConnection();
 
-                IList<Song> songs;
+                List<Song> songs;
                 songs = conn.Query<Song>("SELECT ItemId FROM Song WHERE AlbumArtistId = ? AND AlbumId IS NULL", albumArtistId);
 
                 if (songs.Count > 0) {
-                    IList<int> songIds = new List<int>();
+                    List<int> songIds = new List<int>();
                     foreach (Song song in songs) {
                         songIds.Add((int)song.ItemId);
                     }

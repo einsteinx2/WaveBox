@@ -302,7 +302,7 @@ namespace WaveBox.Static {
             }
         }
 
-        private Folder CreateFolder(string path, bool mediafolder) {
+        private static Folder CreateFolder(string path, bool mediafolder) {
             if (path == null || path == "") {
                 // No path so just return a folder
                 return new Folder();

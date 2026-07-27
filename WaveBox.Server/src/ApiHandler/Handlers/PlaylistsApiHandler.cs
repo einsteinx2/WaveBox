@@ -73,7 +73,7 @@ namespace WaveBox.ApiHandler.Handlers {
                 playlist.CreatePlaylist();
 
                 // Try to get the itemIds to add them to the playlist if necessary
-                IList<int> itemIds = this.ParseItemIds(uri);
+                List<int> itemIds = ParseItemIds(uri);
                 if (itemIds.Count > 0) {
                     playlist.AddMediaItems(itemIds);
                 }
@@ -113,7 +113,7 @@ namespace WaveBox.ApiHandler.Handlers {
             // add - add items to a playlist
             if (uri.Action == "add") {
                 // Try to get the itemIds to add them to the playlist if necessary
-                IList<int> itemIds = this.ParseItemIds(uri);
+                List<int> itemIds = ParseItemIds(uri);
                 if (itemIds.Count == 0) {
                     processor.WriteJson(new PlaylistsResponse("No item IDs found in URL", null, null, null));
                     return;
@@ -174,8 +174,8 @@ namespace WaveBox.ApiHandler.Handlers {
 
             // insert - insert item in playlist at specified index
             if (uri.Action == "insert") {
-                IList<int> insertItemIds = this.ParseItemIds(uri);
-                IList<int> insertIndexes = this.ParseIndexes(uri);
+                List<int> insertItemIds = ParseItemIds(uri);
+                List<int> insertIndexes = ParseIndexes(uri);
                 if (insertItemIds.Count == 0 || insertItemIds.Count != insertIndexes.Count) {
                     processor.WriteJson(new PlaylistsResponse("Incorrect number of items and indices supplied for action 'insert'", null, null, null));
                     return;
@@ -198,7 +198,7 @@ namespace WaveBox.ApiHandler.Handlers {
 
             // move - move an item in the playlist
             if (uri.Action == "move") {
-                IList<int> moveIndexes = this.ParseIndexes(uri);
+                List<int> moveIndexes = ParseIndexes(uri);
                 if (moveIndexes.Count == 0 || moveIndexes.Count % 2 != 0) {
                     processor.WriteJson(new PlaylistsResponse("Incorrect number of indices supplied for action 'move'", null, null, null));
                     return;
@@ -220,7 +220,7 @@ namespace WaveBox.ApiHandler.Handlers {
 
             // remove - remove items from playlist
             if (uri.Action == "remove") {
-                IList<int> removeIndexes = this.ParseIndexes(uri);
+                List<int> removeIndexes = ParseIndexes(uri);
                 if (removeIndexes.Count == 0) {
                     processor.WriteJson(new PlaylistsResponse("No indices supplied for action 'remove'", null, null, null));
                     return;
@@ -240,9 +240,9 @@ namespace WaveBox.ApiHandler.Handlers {
             return;
         }
 
-        private IList<int> ParseItemIds(UriWrapper uri) {
+        private static List<int> ParseItemIds(UriWrapper uri) {
             // Try to get the itemIds
-            IList<int> itemIds = new List<int>();
+            List<int> itemIds = new List<int>();
             if (uri.Parameters.TryGetValue("itemIds", out string itemIdsParam)) {
                 string[] itemIdStrings = itemIdsParam.Split(',');
 
@@ -257,9 +257,9 @@ namespace WaveBox.ApiHandler.Handlers {
             return itemIds;
         }
 
-        private IList<int> ParseIndexes(UriWrapper uri) {
+        private static List<int> ParseIndexes(UriWrapper uri) {
             // Try to get the itemIds
-            IList<int> itemIds = new List<int>();
+            List<int> itemIds = new List<int>();
             if (uri.Parameters.TryGetValue("indexes", out string indexesParam)) {
                 string[] itemIdStrings = indexesParam.Split(',');
 

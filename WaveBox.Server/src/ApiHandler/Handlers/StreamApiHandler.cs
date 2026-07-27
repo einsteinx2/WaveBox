@@ -64,7 +64,7 @@ namespace WaveBox.ApiHandler.Handlers {
                 }
 
                 // Prepare file stream
-                Stream stream = item.File();
+                FileStream stream = item.File();
                 long length = stream.Length;
                 int startOffset = 0;
                 long? limitToSize = null;

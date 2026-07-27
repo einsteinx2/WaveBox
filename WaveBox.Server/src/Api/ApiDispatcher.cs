@@ -41,10 +41,10 @@ namespace WaveBox.Api {
 
             // Handlers are synchronous and may block (e.g. tailing a running transcode), so run the
             // legacy dispatch on a worker thread rather than tying up the request loop synchronously.
-            await Task.Run(() => this.Dispatch(context, rawUrl, method), context.RequestAborted);
+            await Task.Run(() => Dispatch(context, rawUrl, method), context.RequestAborted);
         }
 
-        private void Dispatch(HttpContext context, string rawUrl, string method) {
+        private static void Dispatch(HttpContext context, string rawUrl, string method) {
             UriWrapper uri = new UriWrapper(rawUrl, method);
             HttpContextProcessor processor = new HttpContextProcessor(context);
 
@@ -63,7 +63,7 @@ namespace WaveBox.Api {
 
             // Check for valid API action ("web" and "error" are technically valid, but can't be used in this way)
             if (uri.ApiAction == null || uri.ApiAction == "web" || uri.ApiAction == "error") {
-                this.WriteError(uri, processor, apiUser, "Invalid API call");
+                WriteError(uri, processor, apiUser, "Invalid API call");
                 logger.IfInfo(String.Format("[{0}] API: {1}", ip, rawUrl));
                 return;
             }
@@ -71,7 +71,7 @@ namespace WaveBox.Api {
             // Check for session cookie authentication, unless this is a login request
             string sessionId = null;
             if (uri.ApiAction != "login") {
-                sessionId = this.GetSessionCookie(processor);
+                sessionId = GetSessionCookie(processor);
                 apiUser = Injection.Get<IApiAuthenticate>().AuthenticateSession(sessionId);
             }
 
@@ -81,7 +81,7 @@ namespace WaveBox.Api {
 
                 // If user still null, failed authentication, so serve error
                 if (apiUser == null) {
-                    this.WriteError(uri, processor, apiUser, "Authentication failed");
+                    WriteError(uri, processor, apiUser, "Authentication failed");
                     logger.IfInfo(String.Format("[{0}] API: {1}", ip, rawUrl));
                     return;
                 }
@@ -89,7 +89,7 @@ namespace WaveBox.Api {
 
             // apiUser.SessionId will be generated on new login, so that takes precedence for new session cookie
             apiUser.SessionId = apiUser.SessionId ?? sessionId;
-            this.SetSessionCookie(processor, apiUser.SessionId);
+            SetSessionCookie(processor, apiUser.SessionId);
 
             // Store user's current session object
             apiUser.CurrentSession = Injection.Get<ISessionRepository>().SessionForSessionId(apiUser.SessionId);
@@ -99,7 +99,7 @@ namespace WaveBox.Api {
 
             // Check for valid API action
             if (apiHandler == null) {
-                this.WriteError(uri, processor, apiUser, "Invalid API call");
+                WriteError(uri, processor, apiUser, "Invalid API call");
                 logger.IfInfo(String.Format("[{0}] API: {1}", ip, rawUrl));
                 return;
             }
@@ -109,7 +109,7 @@ namespace WaveBox.Api {
 
             // Check if user has appropriate permissions for this action on this API handler
             if (!apiHandler.CheckPermission(apiUser, uri.Action)) {
-                this.WriteError(uri, processor, apiUser, "Permission denied");
+                WriteError(uri, processor, apiUser, "Permission denied");
                 return;
             }
 
@@ -117,13 +117,12 @@ namespace WaveBox.Api {
             apiHandler.Process(uri, processor, apiUser);
         }
 
-        private void WriteError(UriWrapper uri, HttpContextProcessor processor, User user, string message) {
-            ErrorApiHandler errorApi = (ErrorApiHandler)Injection.Get<IApiHandlerFactory>().CreateApiHandler("error");
-            errorApi.Process(uri, processor, user, message);
+        private static void WriteError(UriWrapper uri, HttpContextProcessor processor, User user, string message) {
+            ErrorApiHandler.Process(uri, processor, user, message);
         }
 
         // If a cookie is found, grab it and use it for authentication (legacy naive parsing, bug-compatible)
-        private string GetSessionCookie(HttpContextProcessor processor) {
+        private static string GetSessionCookie(HttpContextProcessor processor) {
             if (processor.HttpHeaders.ContainsKey("Cookie")) {
                 // Split each cookie into pairs
                 string[] cookies = processor.HttpHeaders["Cookie"].ToString().Split(new[] { ';', ',', '=' }, StringSplitOptions.RemoveEmptyEntries);
@@ -141,7 +140,7 @@ namespace WaveBox.Api {
         }
 
         // Set a new session cookie to be set when the HTTP response is sent
-        private void SetSessionCookie(HttpContextProcessor processor, string sessionId) {
+        private static void SetSessionCookie(HttpContextProcessor processor, string sessionId) {
             if (sessionId != null) {
                 // Calculate session timeout time (DateTime.UtcNow UTC + SessionTimeout minutes)
                 DateTime expire = DateTime.UtcNow.ToUniversalTime().AddMinutes(Injection.Get<IServerSettings>().SessionTimeout);

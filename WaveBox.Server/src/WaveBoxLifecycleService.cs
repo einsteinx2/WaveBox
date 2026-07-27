@@ -40,7 +40,7 @@ namespace WaveBox {
             Core.Injection.Get<Server.IApiHandlerFactory>().Initialize();
 
             this.wavebox = new WaveBoxMain();
-            this.wavebox.Start();
+            WaveBoxMain.Start();
 
             logger.IfInfo("Started!");
             return Task.CompletedTask;
@@ -62,7 +62,7 @@ namespace WaveBox {
 
             // Stop the server
             if (this.wavebox != null) {
-                this.wavebox.Stop();
+                WaveBoxMain.Stop();
                 this.wavebox = null;
             }
 
