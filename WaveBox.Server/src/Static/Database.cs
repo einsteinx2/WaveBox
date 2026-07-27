@@ -78,9 +78,7 @@ namespace WaveBox.Static {
 
                 conn.BeginTransaction();
                 try {
-                    foreach (string statement in ReadSchemaStatements(schemaPath)) {
-                        conn.Execute(statement);
-                    }
+                    conn.ExecuteScript(File.ReadAllText(schemaPath));
                     conn.Commit();
                 } catch (Exception) {
                     conn.Rollback();
@@ -94,32 +92,6 @@ namespace WaveBox.Static {
             } finally {
                 close(conn);
             }
-        }
-
-        /// <summary>
-        /// Splits a schema script into individual statements. The vendored sqlite-net only executes
-        /// one statement per call and exposes no sqlite3_exec, so the script has to be split here.
-        /// Naive splitting on ';' is safe only because these files are sqlite3 .dump output whose
-        /// string literals contain no semicolons -- do not point this at hand-written SQL.
-        ///
-        /// A .dump also wraps itself in BEGIN TRANSACTION/COMMIT; those are dropped so the caller
-        /// owns the transaction and a failure part way through rolls the whole thing back.
-        /// </summary>
-        private static IEnumerable<string> ReadSchemaStatements(string schemaPath) {
-            foreach (string statement in File.ReadAllText(schemaPath).Split(';')) {
-                string trimmed = statement.Trim();
-                if (trimmed.Length == 0 || IsTransactionControl(trimmed)) {
-                    continue;
-                }
-
-                yield return trimmed;
-            }
-        }
-
-        private static bool IsTransactionControl(string statement) {
-            return statement.StartsWith("BEGIN", StringComparison.OrdinalIgnoreCase)
-                || statement.StartsWith("COMMIT", StringComparison.OrdinalIgnoreCase)
-                || statement.StartsWith("ROLLBACK", StringComparison.OrdinalIgnoreCase);
         }
 
         public ISQLiteConnection GetSqliteConnection() {

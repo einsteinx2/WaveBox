@@ -1,6 +1,4 @@
 
-PRAGMA foreign_keys=OFF;
-BEGIN TRANSACTION;
 CREATE TABLE ItemType (
     "ItemTypeId" INTEGER PRIMARY KEY ASC AUTOINCREMENT,
     "Name" TEXT UNIQUE
@@ -164,6 +162,8 @@ CREATE TABLE "Song" (
 CREATE TABLE "Version" (
     "VersionNumber" INTEGER NOT NULL
 );
+-- Schema baseline. This file is frozen; further changes go in res/migrations/.
+INSERT INTO "Version" VALUES(0);
 CREATE TABLE "Favorite" (
     "FavoriteId" INTEGER NOT NULL UNIQUE,
     "FavoriteUserId" INTEGER NOT NULL,
@@ -209,4 +209,3 @@ CREATE INDEX "song_ItemId" ON "Song" ("ItemId");
 CREATE INDEX "favorite_userId" ON "Favorite" ("FavoriteUserId");
 CREATE UNIQUE INDEX "user_ApiKey" ON "User" ("ApiKey");
 CREATE UNIQUE INDEX "album_AlbumNameArtistId" ON "Album" ("AlbumName", "AlbumArtistId");
-COMMIT;

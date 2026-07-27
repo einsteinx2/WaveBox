@@ -597,6 +597,15 @@ namespace SQLite {
         /// <returns>
         /// The number of rows modified in the database as a result of this execution.
         /// </returns>
+        /// <summary>
+        /// WaveBox addition: executes every statement in a SQL script. Execute() above only ever
+        /// runs the first, since sqlite3_prepare_v2 compiles one statement at a time.
+        /// Takes no parameters -- this is for schema and migration scripts, not queries.
+        /// </summary>
+        public void ExecuteScript(string script) {
+            SQLite3.ExecuteScript(Handle, script);
+        }
+
         public int Execute(string query, params object[] args) {
             var cmd = CreateCommand(query, args);
 
@@ -2395,6 +2404,87 @@ namespace SQLite {
                 throw SQLiteException.New(r, query + "\n" + GetErrmsg(db));
             }
             return stmt;
+        }
+
+        // WaveBox addition: the overload above discards pzTail, so it only ever compiles the
+        // first statement of a script. This one hands back the pointer to the remaining SQL,
+        // which is what lets ExecuteScript walk a multi-statement file.
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_prepare_v2", CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result Prepare2(IntPtr db, IntPtr sql, int numBytes,
+                                             out IntPtr stmt, out IntPtr pzTail);
+
+        /// <summary>
+        /// WaveBox addition: runs every statement in a SQL script.
+        ///
+        /// SQLite's parser does the tokenizing, so semicolons inside string literals, comments
+        /// and trigger bodies are all handled correctly -- unlike splitting the text on ';'.
+        /// The script is marshalled as an explicit UTF-8 buffer and walked by byte offset,
+        /// avoiding the ANSI marshalling and char-vs-byte length bugs in the string overload
+        /// of Prepare2 above.
+        ///
+        /// Transactions are the caller's business; scripts should not contain BEGIN or COMMIT.
+        /// </summary>
+        public static void ExecuteScript(IntPtr db, string script) {
+            if (String.IsNullOrEmpty(script)) {
+                return;
+            }
+
+            byte[] utf8 = System.Text.Encoding.UTF8.GetBytes(script);
+            // sqlite3_prepare_v2 wants a NUL-terminated buffer when it reads past numBytes
+            Array.Resize(ref utf8, utf8.Length + 1);
+
+            GCHandle pin = GCHandle.Alloc(utf8, GCHandleType.Pinned);
+            try {
+                IntPtr start = pin.AddrOfPinnedObject();
+                int offset = 0;
+
+                // utf8.Length - 1 excludes the NUL we appended
+                while (offset < utf8.Length - 1) {
+                    IntPtr stmt;
+                    IntPtr tail;
+                    Result r = Prepare2(db, start + offset, utf8.Length - 1 - offset, out stmt, out tail);
+
+                    if (r != Result.OK) {
+                        throw SQLiteException.New(r, GetErrmsg(db) + "\n" + RemainingText(utf8, offset));
+                    }
+
+                    int nextOffset = (int)(tail.ToInt64() - start.ToInt64());
+
+                    // A trailing run of whitespace or comments compiles to no statement at all
+                    if (stmt == IntPtr.Zero) {
+                        if (nextOffset <= offset) {
+                            break;
+                        }
+                        offset = nextOffset;
+                        continue;
+                    }
+
+                    try {
+                        Result step = Step(stmt);
+                        if (step != Result.Done && step != Result.Row) {
+                            throw SQLiteException.New(step, GetErrmsg(db) + "\n" + StatementText(utf8, offset, nextOffset));
+                        }
+                    } finally {
+                        Finalize(stmt);
+                    }
+
+                    if (nextOffset <= offset) {
+                        break;
+                    }
+                    offset = nextOffset;
+                }
+            } finally {
+                pin.Free();
+            }
+        }
+
+        private static string StatementText(byte[] utf8, int offset, int end) {
+            return System.Text.Encoding.UTF8.GetString(utf8, offset, Math.Max(0, end - offset)).Trim();
+        }
+
+        private static string RemainingText(byte[] utf8, int offset) {
+            // On a compile failure there is no tail to bound the statement, so show what is left
+            return System.Text.Encoding.UTF8.GetString(utf8, offset, utf8.Length - 1 - offset).Trim();
         }
 
         [DllImport("e_sqlite3", EntryPoint = "sqlite3_step", CallingConvention = CallingConvention.Cdecl)]

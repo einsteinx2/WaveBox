@@ -107,6 +107,12 @@ namespace Cirrious.MvvmCross.Plugins.Sqlite {
 
         int Execute(string query, params object[] args);
 
+        /// <summary>
+        /// Executes every statement in a SQL script, for schema and migration files. Execute()
+        /// only ever runs the first statement it is given.
+        /// </summary>
+        void ExecuteScript(string script);
+
         T ExecuteScalar<T>(string query, params object[] args);
 
         List<T> Query<T>(string query, params object[] args) where T : new();
