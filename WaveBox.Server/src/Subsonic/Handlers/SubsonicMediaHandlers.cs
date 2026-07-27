@@ -44,7 +44,7 @@ namespace WaveBox.Subsonic.Handlers {
             }
 
             DateTime? lastModified = null;
-            if (!ReferenceEquals(art.LastModified, null)) {
+            if (art.LastModified != null) {
                 lastModified = ((long)art.LastModified).ToDateTime();
             }
             processor.WriteFile(stream, 0, stream.Length, "image/jpeg", null, true, lastModified);
