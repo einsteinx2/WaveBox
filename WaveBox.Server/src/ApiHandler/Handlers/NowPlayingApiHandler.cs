@@ -37,13 +37,13 @@ namespace WaveBox.ApiHandler.Handlers {
             IList<NowPlaying> nowPlaying = nowPlayingService.Playing;
 
             // Filter by user name
-            if (uri.Parameters.ContainsKey("user")) {
-                nowPlaying = nowPlaying.Where(x => x.User.UserName == uri.Parameters["user"]).ToList();
+            if (uri.Parameters.TryGetValue("user", out string userName)) {
+                nowPlaying = nowPlaying.Where(x => x.User.UserName == userName).ToList();
             }
 
             // Filter by client name
-            if (uri.Parameters.ContainsKey("client")) {
-                nowPlaying = nowPlaying.Where(x => x.User.CurrentSession.ClientName == uri.Parameters["client"]).ToList();
+            if (uri.Parameters.TryGetValue("client", out string clientName)) {
+                nowPlaying = nowPlaying.Where(x => x.User.CurrentSession.ClientName == clientName).ToList();
             }
 
             // Return list of now playing items

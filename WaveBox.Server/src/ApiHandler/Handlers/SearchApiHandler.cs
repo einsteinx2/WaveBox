@@ -32,13 +32,13 @@ namespace WaveBox.ApiHandler.Handlers {
             IList<Video> videos = new List<Video>();
 
             // If no query is provided, error
-            if (!uri.Parameters.ContainsKey("query")) {
+            if (!uri.Parameters.TryGetValue("query", out string queryParam)) {
                 processor.WriteJson(new SearchResponse("No search query provided", artists, albumArtists, albums, songs, videos));
                 return;
             }
 
             // URL decode to strip any URL-encoded characters
-            string query = HttpUtility.UrlDecode(uri.Parameters["query"]);
+            string query = HttpUtility.UrlDecode(queryParam);
 
             // Ensure query is not blank
             if (query.Length < 1) {
@@ -48,21 +48,21 @@ namespace WaveBox.ApiHandler.Handlers {
 
             // Check for query field
             string field = null;
-            if (uri.Parameters.ContainsKey("field")) {
+            if (uri.Parameters.TryGetValue("field", out string fieldParam)) {
                 // Use input field for query
-                field = HttpUtility.UrlDecode(uri.Parameters["field"]);
+                field = HttpUtility.UrlDecode(fieldParam);
             }
 
             // Check for exact match parameter
             bool exact = false;
-            if (uri.Parameters.ContainsKey("exact") && uri.Parameters["exact"].IsTrue()) {
+            if (uri.Parameters.TryGetValue("exact", out string exactParam) && exactParam.IsTrue()) {
                 exact = true;
             }
 
             // If a query type is provided...
-            if (uri.Parameters.ContainsKey("type")) {
+            if (uri.Parameters.TryGetValue("type", out string typeParam)) {
                 // Iterate all comma-separated values in query type
-                foreach (string type in uri.Parameters["type"].Split(',')) {
+                foreach (string type in typeParam.Split(',')) {
                     // Return results, populating lists depending on parameters specified
                     switch (type) {
                     case "artists":
@@ -99,8 +99,8 @@ namespace WaveBox.ApiHandler.Handlers {
 
             // Check for a request to limit/paginate artists, like SQL
             // Note: can be combined with range or all artists
-            if (uri.Parameters.ContainsKey("limit")) {
-                string[] limit = uri.Parameters["limit"].Split(',');
+            if (uri.Parameters.TryGetValue("limit", out string limitParam)) {
+                string[] limit = limitParam.Split(',');
 
                 // Ensure valid limit was parsed
                 if (limit.Length < 1 || limit.Length > 2) {

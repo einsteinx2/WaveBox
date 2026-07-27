@@ -48,8 +48,8 @@ namespace WaveBox.Core.Model.Repository {
 
         public User UserForId(int userId) {
             lock (this.Users) {
-                if (this.Users.ContainsKey(userId)) {
-                    return this.Users[userId];
+                if (this.Users.TryGetValue(userId, out User user)) {
+                    return user;
                 }
 
                 return new User() { UserId = userId };

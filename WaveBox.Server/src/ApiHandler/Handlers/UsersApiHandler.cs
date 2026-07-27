@@ -47,20 +47,20 @@ namespace WaveBox.ApiHandler.Handlers {
             // Parse common parameters
             // Username
             string username = null;
-            if (uri.Parameters.ContainsKey("username")) {
-                username = uri.Parameters["username"];
+            if (uri.Parameters.TryGetValue("username", out string usernameParam)) {
+                username = usernameParam;
             }
 
             // Password
             string password = null;
-            if (uri.Parameters.ContainsKey("password")) {
-                password = uri.Parameters["password"];
+            if (uri.Parameters.TryGetValue("password", out string passwordParam)) {
+                password = passwordParam;
             }
 
             // Role
             Role role = Role.User;
             int roleInt = 0;
-            if (uri.Parameters.ContainsKey("role") && Int32.TryParse(uri.Parameters["role"], out roleInt)) {
+            if (uri.Parameters.TryGetValue("role", out string roleParam) && Int32.TryParse(roleParam, out roleInt)) {
                 // Validate role
                 if (Enum.IsDefined(typeof(Role), roleInt)) {
                     role = (Role)roleInt;
@@ -68,11 +68,11 @@ namespace WaveBox.ApiHandler.Handlers {
             }
 
             // See if we need to make a test user
-            if (uri.Parameters.ContainsKey("testUser") && uri.Parameters["testUser"].IsTrue()) {
+            if (uri.Parameters.TryGetValue("testUser", out string testUserParam) && testUserParam.IsTrue()) {
                 bool success = false;
                 int durationSeconds = 0;
-                if (uri.Parameters.ContainsKey("durationSeconds")) {
-                    success = Int32.TryParse(uri.Parameters["durationSeconds"], out durationSeconds);
+                if (uri.Parameters.TryGetValue("durationSeconds", out string durationSecondsParam)) {
+                    success = Int32.TryParse(durationSecondsParam, out durationSeconds);
                 }
 
                 // Create a test user and reply with the account info
@@ -107,13 +107,13 @@ namespace WaveBox.ApiHandler.Handlers {
             if (uri.Action == "killSession") {
                 // Try to pull rowId from parameters for session management
                 int rowId = 0;
-                if (!uri.Parameters.ContainsKey("rowId")) {
+                if (!uri.Parameters.TryGetValue("rowId", out string rowIdParam)) {
                     processor.WriteJson(new UsersResponse("Missing parameter 'rowId' for action 'killSession'", null));
                     return;
                 }
 
                 // Try to parse rowId integer
-                if (!Int32.TryParse(uri.Parameters["rowId"], out rowId)) {
+                if (!Int32.TryParse(rowIdParam, out rowId)) {
                     processor.WriteJson(new UsersResponse("Invalid integer for 'rowId' for action 'killSession'", null));
                     return;
                 }

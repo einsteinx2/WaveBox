@@ -58,7 +58,7 @@ namespace WaveBox.ApiHandler.Handlers {
 
                 // Generate the playlist file
                 string response = null;
-                string[] transQualities = uri.Parameters.ContainsKey("transQuality") ? uri.Parameters["transQuality"].Split(',') : new string[] {"Medium"};
+                string[] transQualities = uri.Parameters.TryGetValue("transQuality", out string transQualityParam) ? transQualityParam.Split(',') : new string[] {"Medium"};
                 if (transQualities.Length == 1) {
                     // This is a single playlist
                     response = this.GeneratePlaylist(item, transQualities[0], uri);
@@ -86,8 +86,8 @@ namespace WaveBox.ApiHandler.Handlers {
             // Grab URI parameters
             string s = uri.Parameters["s"];
             string id = uri.Parameters["id"];
-            string width = uri.Parameters.ContainsKey("width") ? uri.Parameters["width"] : null;
-            string height = uri.Parameters.ContainsKey("height") ? uri.Parameters["height"] : null;
+            string width = uri.Parameters.TryGetValue("width", out string widthParam) ? widthParam : null;
+            string height = uri.Parameters.TryGetValue("height", out string heightParam) ? heightParam : null;
 
             // Create new string, write M3U header
             StringBuilder builder = new StringBuilder();
@@ -142,8 +142,8 @@ namespace WaveBox.ApiHandler.Handlers {
             // Set default parameters from URL
             string s = uri.Parameters["s"];
             string id = uri.Parameters["id"];
-            string width = uri.Parameters.ContainsKey("width") ? uri.Parameters["width"] : null;
-            string height = uri.Parameters.ContainsKey("height") ? uri.Parameters["height"] : null;
+            string width = uri.Parameters.TryGetValue("width", out string widthParam) ? widthParam : null;
+            string height = uri.Parameters.TryGetValue("height", out string heightParam) ? heightParam : null;
 
             // Begin creating M3U playlist
             StringBuilder builder = new StringBuilder();

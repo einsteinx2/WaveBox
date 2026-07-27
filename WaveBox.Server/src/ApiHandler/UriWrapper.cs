@@ -52,8 +52,8 @@ namespace WaveBox.ApiHandler {
 
             // Set action to read unless a valid one is found
             this.Action = "read";
-            if (this.Parameters.ContainsKey("action")) {
-                this.Action = this.Parameters["action"];
+            if (this.Parameters.TryGetValue("action", out string actionParam)) {
+                this.Action = actionParam;
             }
 
             // Check for RESTful HTTP method, and set action accordingly, overriding parameter action

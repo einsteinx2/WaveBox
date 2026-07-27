@@ -25,13 +25,13 @@ namespace WaveBox.ApiHandler {
         /// </summary>
         public void Process(UriWrapper uri, IHttpProcessor processor, User user) {
             // Ensure an event is present
-            if (!uri.Parameters.ContainsKey("event")) {
+            if (!uri.Parameters.TryGetValue("event", out string eventParam)) {
                 processor.WriteJson(new StatsResponse("Please specify an event parameter with comma separated list of events"));
                 return;
             }
 
             // Split events into id, stat type, UNIX timestamp triples
-            string[] events = uri.Parameters["event"].Split(',');
+            string[] events = eventParam.Split(',');
 
             // Ensure data sent
             if (events.Length < 1) {

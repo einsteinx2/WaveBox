@@ -36,8 +36,8 @@ namespace WaveBox.ApiHandler.Handlers {
             if (uri.Id != null) {
                 // Default: artists
                 string type = "artists";
-                if (uri.Parameters.ContainsKey("type")) {
-                    type = uri.Parameters["type"];
+                if (uri.Parameters.TryGetValue("type", out string typeParam)) {
+                    type = typeParam;
                 }
 
                 // Get single genre, add it for output
