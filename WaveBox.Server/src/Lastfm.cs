@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
 using System.Net;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web;
@@ -20,6 +21,7 @@ namespace WaveBox {
 
         private static string apiKey = "6aec36725ab20cff28e8525cdf5fbd4a";
         private static string secret = "cd596009d199d51405a2477d4e65c5d7";
+        private static readonly HttpClient httpClient = new HttpClient();
         private string sessionKey = null;
         private User user;
 
@@ -201,12 +203,7 @@ namespace WaveBox {
             JsonNode jsonResponse;
             string requestUrl = String.Format("http://ws.audioscrobbler.com/2.0/?method=auth.getSession&format=json&api_key={0}&token={1}&api_sig={2}", apiKey, token, apiSig);
 
-            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(requestUrl);
-
-            using (HttpWebResponse response = req.GetResponse() as HttpWebResponse) {
-                StreamReader reader = new StreamReader(response.GetResponseStream());
-                jsonResponse = JsonNode.Parse(reader.ReadToEnd());
-            }
+            jsonResponse = JsonNode.Parse(httpClient.GetStringAsync(requestUrl).GetAwaiter().GetResult());
 
             if (jsonResponse != null && jsonResponse["session"] != null) {
                 sessionKey = jsonResponse["session"]["key"].ToString();
@@ -226,12 +223,7 @@ namespace WaveBox {
             // Get a last.fm request token
             string requestUrl = String.Format("http://ws.audioscrobbler.com/2.0/?method=auth.gettoken&format=json&api_key={0}", apiKey);
 
-            HttpWebRequest req = (HttpWebRequest)WebRequest.Create(requestUrl);
-
-            using (HttpWebResponse response = req.GetResponse() as HttpWebResponse) {
-                StreamReader reader = new StreamReader(response.GetResponseStream());
-                jsonResponse = JsonNode.Parse(reader.ReadToEnd());
-            }
+            jsonResponse = JsonNode.Parse(httpClient.GetStringAsync(requestUrl).GetAwaiter().GetResult());
 
             requestToken = jsonResponse != null && jsonResponse["token"] != null ? jsonResponse["token"].ToString() : null;
 

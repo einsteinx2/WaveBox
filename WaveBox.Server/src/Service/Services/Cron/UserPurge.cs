@@ -18,7 +18,7 @@ namespace WaveBox.Service.Services.Cron {
         private static readonly WaveBox.Core.Logging.ILog logger = WaveBox.Core.Logging.LogManager.GetLogger();
 
         // Create operation queue for the session scrubber
-        public static DelayedOperationQueue Queue = new DelayedOperationQueue();
+        public static DelayedOperationQueue Queue { get; set; } = new DelayedOperationQueue();
 
         /// <summary>
         /// Start user purge operation

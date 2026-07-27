@@ -6,7 +6,7 @@ namespace WaveBox {
     public static class ServerInfo {
         // WaveBox temporary folder, for transcodes and such; WAVEBOX_TEMP overrides the shared
         // default so test runs (and concurrent instances) don't delete each other's files
-        public static string TempFolder = Environment.GetEnvironmentVariable("WAVEBOX_TEMP") is string overrideTemp && overrideTemp.Length > 0
+        public static string TempFolder { get; } = Environment.GetEnvironmentVariable("WAVEBOX_TEMP") is string overrideTemp && overrideTemp.Length > 0
             ? overrideTemp
             : Path.Combine(Path.GetTempPath(), "wavebox");
 
