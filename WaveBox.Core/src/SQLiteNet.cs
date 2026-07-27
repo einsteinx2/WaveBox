@@ -414,7 +414,7 @@ namespace SQLite {
         /// Executes a "drop table" on the database.  This is non-recoverable.
         /// </summary>
         public int DropTable<T>() {
-            var map = GetMapping(typeof (T), TableMappingType.Write);
+            var map = GetMapping<T>(TableMappingType.Write);
 
             var query = string.Format("drop table if exists \"{0}\"", map.TableName);
 
@@ -778,7 +778,7 @@ namespace SQLite {
         /// if the object is not found.
         /// </returns>
         public T Get<T>(object pk) where T : new() {
-            var map = GetMapping(typeof (T), TableMappingType.Read);
+            var map = GetMapping<T>(TableMappingType.Read);
             return Query<T>(map.GetByPrimaryKeySql, pk).First();
         }
 
@@ -810,7 +810,7 @@ namespace SQLite {
         /// if the object is not found.
         /// </returns>
         public T Find<T>(object pk) where T : new() {
-            var map = GetMapping(typeof (T), TableMappingType.Read);
+            var map = GetMapping<T>(TableMappingType.Read);
             return Query<T>(map.GetByPrimaryKeySql, pk).FirstOrDefault();
         }
 
@@ -996,7 +996,7 @@ namespace SQLite {
             int firstLen = savepoint.IndexOf('D');
             if (firstLen >= 2 && savepoint.Length > firstLen + 1) {
                 int depth;
-                if (Int32.TryParse(savepoint.Substring(firstLen + 1), out depth)) {
+                if (Int32.TryParse(savepoint.AsSpan(firstLen + 1), out depth)) {
                     // TODO: Mild race here, but inescapable without locking almost everywhere.
                     if (0 <= depth && depth < _trasactionDepth) {
                         Volatile.Write(ref _trasactionDepth, depth);
@@ -1006,8 +1006,8 @@ namespace SQLite {
                 }
             }
 
-            throw new ArgumentException("savePoint",
-                                        "savePoint is not valid, and should be the result of a call to SaveTransactionPoint.");
+            throw new ArgumentException("savePoint is not valid, and should be the result of a call to SaveTransactionPoint.",
+                                        nameof(savepoint));
         }
 
         /// <summary>
@@ -1208,7 +1208,7 @@ namespace SQLite {
         /// The type of object.
         /// </typeparam>
         public int Delete<T>(object primaryKey) {
-            var map = GetMapping(typeof (T), TableMappingType.Write);
+            var map = GetMapping<T>(TableMappingType.Write);
             var pk = map.PK;
             if (pk == null) {
                 throw new NotSupportedException("Cannot delete " + map.TableName + ": it has no PK");
@@ -1229,7 +1229,7 @@ namespace SQLite {
         /// The type of objects to delete.
         /// </typeparam>
         public int DeleteAll<T>() {
-            var map = GetMapping(typeof (T), TableMappingType.Write);
+            var map = GetMapping<T>(TableMappingType.Write);
             var query = string.Format("delete from \"{0}\"", map.TableName);
             return Execute(query);
         }
@@ -1405,7 +1405,7 @@ namespace SQLite {
         private PreparedSqlLiteInsertCommand CreateInsertCommand(SQLiteConnection conn, string extra, InsertType insertType) {
             var cols = InsertColumns;
             string insertSql;
-            if (!cols.Any() && Columns.Count() == 1 && Columns[0].IsAutoInc) {
+            if (cols.Length == 0 && Columns.Length == 1 && Columns[0].IsAutoInc) {
                 insertSql = string.Format(insertType.QueryText() + " {1} INTO \"{0}\" DEFAULT VALUES", TableName, extra);
             } else {
                 insertSql = string.Format(insertType.QueryText() + " {3} INTO \"{0}\"({1}) VALUES ({2})", TableName,
@@ -1614,11 +1614,11 @@ namespace SQLite {
         }
 
         public IEnumerable<T> ExecuteDeferredQuery<T>() {
-            return ExecuteDeferredQuery<T>(_conn.GetMapping(typeof (T), TableMappingType.Read));
+            return ExecuteDeferredQuery<T>(_conn.GetMapping<T>(TableMappingType.Read));
         }
 
         public List<T> ExecuteQuery<T>() {
-            return ExecuteDeferredQuery<T>(_conn.GetMapping(typeof (T), TableMappingType.Read)).ToList();
+            return ExecuteDeferredQuery<T>(_conn.GetMapping<T>(TableMappingType.Read)).ToList();
         }
 
         public List<T> ExecuteQuery<T>(ITableMapping map) {
@@ -1741,35 +1741,35 @@ namespace SQLite {
 
         internal static void BindParameter(Sqlite3Statement stmt, int index, object value, bool storeDateTimeAsTicks) {
             if (value == null) {
-                SQLite3.BindNull(stmt, index);
+                _ = SQLite3.BindNull(stmt, index);
             } else {
                 if (value is Int32) {
-                    SQLite3.BindInt(stmt, index, (int) value);
+                    _ = SQLite3.BindInt(stmt, index, (int) value);
                 } else if (value is String) {
-                    SQLite3.BindText(stmt, index, (string) value, -1, NegativePointer);
+                    _ = SQLite3.BindText(stmt, index, (string) value, -1, NegativePointer);
                 } else if (value is Byte || value is UInt16 || value is SByte || value is Int16) {
-                    SQLite3.BindInt(stmt, index, Convert.ToInt32(value));
+                    _ = SQLite3.BindInt(stmt, index, Convert.ToInt32(value));
                 } else if (value is Boolean) {
-                    SQLite3.BindInt(stmt, index, (bool) value ? 1 : 0);
+                    _ = SQLite3.BindInt(stmt, index, (bool) value ? 1 : 0);
                 } else if (value is UInt32 || value is Int64) {
-                    SQLite3.BindInt64(stmt, index, Convert.ToInt64(value));
+                    _ = SQLite3.BindInt64(stmt, index, Convert.ToInt64(value));
                 } else if (value is Single || value is Double || value is Decimal) {
-                    SQLite3.BindDouble(stmt, index, Convert.ToDouble(value));
+                    _ = SQLite3.BindDouble(stmt, index, Convert.ToDouble(value));
                 } else if (value is DateTime) {
                     if (storeDateTimeAsTicks) {
-                        SQLite3.BindInt64(stmt, index, ((DateTime) value).Ticks);
+                        _ = SQLite3.BindInt64(stmt, index, ((DateTime) value).Ticks);
                     } else {
-                        SQLite3.BindText(stmt, index, ((DateTime) value).ToString("yyyy-MM-dd HH:mm:ss"), -1,
-                                         NegativePointer);
+                        _ = SQLite3.BindText(stmt, index, ((DateTime) value).ToString("yyyy-MM-dd HH:mm:ss"), -1,
+                                             NegativePointer);
                     }
 #if !NETFX_CORE
                 } else if (value.GetType().IsEnum) {
 #else
                 } else if (value.GetType().GetTypeInfo().IsEnum) {
 #endif
-                    SQLite3.BindInt(stmt, index, Convert.ToInt32(value));
+                    _ = SQLite3.BindInt(stmt, index, Convert.ToInt32(value));
                 } else if (value is byte[]) {
-                    SQLite3.BindBlob(stmt, index, (byte[]) value, ((byte[]) value).Length, NegativePointer);
+                    _ = SQLite3.BindBlob(stmt, index, (byte[]) value, ((byte[]) value).Length, NegativePointer);
 #if SQLITE_SUPPORT_GUID
                 } else if (value is Guid) {
                     SQLite3.BindText(stmt, index, ((Guid)value).ToString(), 72, NegativePointer);
@@ -1846,7 +1846,7 @@ namespace SQLite {
     /// <summary>
     /// Since the insert never changed, we only need to prepare once.
     /// </summary>
-    public class PreparedSqlLiteInsertCommand : ISQLiteCommand {
+    public class PreparedSqlLiteInsertCommand : ISQLiteCommand, IDisposable {
         public bool Initialized { get; set; }
 
         protected SQLiteConnection Connection { get; set; }
@@ -1957,7 +1957,7 @@ namespace SQLite {
 
         public TableQuery(SQLiteConnection conn) {
             Connection = conn;
-            Table = Connection.GetMapping(typeof (T), TableMappingType.Read);
+            Table = Connection.GetMapping<T>(TableMappingType.Read);
         }
 
         public TableQuery<U> Clone<U>()
@@ -2060,7 +2060,7 @@ namespace SQLite {
             Expression<Func<T, TInner, TResult>> resultSelector)
         where TInner : new()
         where TResult : new() {
-            var q = new TableQuery<TResult>(Connection, Connection.GetMapping(typeof (TResult), TableMappingType.Read)) {
+            var q = new TableQuery<TResult>(Connection, Connection.GetMapping<TResult>(TableMappingType.Read)) {
                 _joinOuter = this,
                 _joinOuterKeySelector = outerKeySelector,
                 _joinInner = inner,
@@ -2235,15 +2235,15 @@ namespace SQLite {
                     //
                     if (val != null && val is System.Collections.IEnumerable && !(val is string)) {
                         var sb = new System.Text.StringBuilder();
-                        sb.Append("(");
+                        sb.Append('(');
                         var head = "";
                         foreach (var a in (System.Collections.IEnumerable) val) {
                             queryArgs.Add(a);
                             sb.Append(head);
-                            sb.Append("?");
+                            sb.Append('?');
                             head = ",";
                         }
-                        sb.Append(")");
+                        sb.Append(')');
                         return new CompileResult {
                             CommandText = sb.ToString(),
                             Value = val
@@ -2368,33 +2368,36 @@ namespace SQLite {
         }
 
 #if !WINDOWS_PHONE
-        [DllImport("e_sqlite3", EntryPoint = "sqlite3_open", CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result Open([MarshalAs(UnmanagedType.LPStr)] string filename, out IntPtr db);
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_open", CallingConvention = CallingConvention.Cdecl,
+                   BestFitMapping = false)]
+        internal static extern Result Open([MarshalAs(UnmanagedType.LPStr)] string filename, out IntPtr db);
 
-        [DllImport("e_sqlite3", EntryPoint = "sqlite3_open_v2", CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result Open([MarshalAs(UnmanagedType.LPStr)] string filename, out IntPtr db, int flags,
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_open_v2", CallingConvention = CallingConvention.Cdecl,
+                   BestFitMapping = false)]
+        internal static extern Result Open([MarshalAs(UnmanagedType.LPStr)] string filename, out IntPtr db, int flags,
                                          IntPtr zvfs);
 
         [DllImport("e_sqlite3", EntryPoint = "sqlite3_open_v2", CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result Open(byte[] filename, out IntPtr db, int flags, IntPtr zvfs);
+        internal static extern Result Open(byte[] filename, out IntPtr db, int flags, IntPtr zvfs);
 
         [DllImport("e_sqlite3", EntryPoint = "sqlite3_open16", CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result Open16([MarshalAs(UnmanagedType.LPWStr)] string filename, out IntPtr db);
+        internal static extern Result Open16([MarshalAs(UnmanagedType.LPWStr)] string filename, out IntPtr db);
 
         [DllImport("e_sqlite3", EntryPoint = "sqlite3_close", CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result Close(IntPtr db);
+        internal static extern Result Close(IntPtr db);
 
         [DllImport("e_sqlite3", EntryPoint = "sqlite3_config", CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result Config(ConfigOption option);
+        internal static extern Result Config(ConfigOption option);
 
         [DllImport("e_sqlite3", EntryPoint = "sqlite3_busy_timeout", CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result BusyTimeout(IntPtr db, int milliseconds);
+        internal static extern Result BusyTimeout(IntPtr db, int milliseconds);
 
         [DllImport("e_sqlite3", EntryPoint = "sqlite3_changes", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int Changes(IntPtr db);
+        internal static extern int Changes(IntPtr db);
 
-        [DllImport("e_sqlite3", EntryPoint = "sqlite3_prepare_v2", CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result Prepare2(IntPtr db, [MarshalAs(UnmanagedType.LPStr)] string sql, int numBytes,
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_prepare_v2", CallingConvention = CallingConvention.Cdecl,
+                   BestFitMapping = false)]
+        internal static extern Result Prepare2(IntPtr db, [MarshalAs(UnmanagedType.LPStr)] string sql, int numBytes,
                                              out IntPtr stmt, IntPtr pzTail);
 
         public static IntPtr Prepare2(IntPtr db, string query) {
@@ -2410,7 +2413,7 @@ namespace SQLite {
         // first statement of a script. This one hands back the pointer to the remaining SQL,
         // which is what lets ExecuteScript walk a multi-statement file.
         [DllImport("e_sqlite3", EntryPoint = "sqlite3_prepare_v2", CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result Prepare2(IntPtr db, IntPtr sql, int numBytes,
+        internal static extern Result Prepare2(IntPtr db, IntPtr sql, int numBytes,
                                              out IntPtr stmt, out IntPtr pzTail);
 
         /// <summary>
@@ -2488,52 +2491,53 @@ namespace SQLite {
         }
 
         [DllImport("e_sqlite3", EntryPoint = "sqlite3_step", CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result Step(IntPtr stmt);
+        internal static extern Result Step(IntPtr stmt);
 
         [DllImport("e_sqlite3", EntryPoint = "sqlite3_reset", CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result Reset(IntPtr stmt);
+        internal static extern Result Reset(IntPtr stmt);
 
         [DllImport("e_sqlite3", EntryPoint = "sqlite3_finalize", CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result Finalize(IntPtr stmt);
+        internal static extern Result Finalize(IntPtr stmt);
 
         [DllImport("e_sqlite3", EntryPoint = "sqlite3_last_insert_rowid", CallingConvention = CallingConvention.Cdecl)]
-        public static extern long LastInsertRowid(IntPtr db);
+        internal static extern long LastInsertRowid(IntPtr db);
 
         [DllImport("e_sqlite3", EntryPoint = "sqlite3_errmsg16", CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr Errmsg(IntPtr db);
+        internal static extern IntPtr Errmsg(IntPtr db);
 
         public static string GetErrmsg(IntPtr db) {
             return Marshal.PtrToStringUni(Errmsg(db));
         }
 
-        [DllImport("e_sqlite3", EntryPoint = "sqlite3_bind_parameter_index", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int BindParameterIndex(IntPtr stmt, [MarshalAs(UnmanagedType.LPStr)] string name);
+        [DllImport("e_sqlite3", EntryPoint = "sqlite3_bind_parameter_index", CallingConvention = CallingConvention.Cdecl,
+                   BestFitMapping = false)]
+        internal static extern int BindParameterIndex(IntPtr stmt, [MarshalAs(UnmanagedType.LPStr)] string name);
 
         [DllImport("e_sqlite3", EntryPoint = "sqlite3_bind_null", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int BindNull(IntPtr stmt, int index);
+        internal static extern int BindNull(IntPtr stmt, int index);
 
         [DllImport("e_sqlite3", EntryPoint = "sqlite3_bind_int", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int BindInt(IntPtr stmt, int index, int val);
+        internal static extern int BindInt(IntPtr stmt, int index, int val);
 
         [DllImport("e_sqlite3", EntryPoint = "sqlite3_bind_int64", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int BindInt64(IntPtr stmt, int index, long val);
+        internal static extern int BindInt64(IntPtr stmt, int index, long val);
 
         [DllImport("e_sqlite3", EntryPoint = "sqlite3_bind_double", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int BindDouble(IntPtr stmt, int index, double val);
+        internal static extern int BindDouble(IntPtr stmt, int index, double val);
 
         [DllImport("e_sqlite3", EntryPoint = "sqlite3_bind_text16", CallingConvention = CallingConvention.Cdecl,
                    CharSet = CharSet.Unicode)]
-        public static extern int BindText(IntPtr stmt, int index, [MarshalAs(UnmanagedType.LPWStr)] string val, int n,
+        internal static extern int BindText(IntPtr stmt, int index, [MarshalAs(UnmanagedType.LPWStr)] string val, int n,
                                           IntPtr free);
 
         [DllImport("e_sqlite3", EntryPoint = "sqlite3_bind_blob", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int BindBlob(IntPtr stmt, int index, byte[] val, int n, IntPtr free);
+        internal static extern int BindBlob(IntPtr stmt, int index, byte[] val, int n, IntPtr free);
 
         [DllImport("e_sqlite3", EntryPoint = "sqlite3_column_count", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ColumnCount(IntPtr stmt);
+        internal static extern int ColumnCount(IntPtr stmt);
 
         [DllImport("e_sqlite3", EntryPoint = "sqlite3_column_name", CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr ColumnName(IntPtr stmt, int index);
+        internal static extern IntPtr ColumnName(IntPtr stmt, int index);
 
         [DllImport("e_sqlite3", EntryPoint = "sqlite3_column_name16", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr ColumnName16Internal(IntPtr stmt, int index);
@@ -2543,28 +2547,28 @@ namespace SQLite {
         }
 
         [DllImport("e_sqlite3", EntryPoint = "sqlite3_column_type", CallingConvention = CallingConvention.Cdecl)]
-        public static extern ColType ColumnType(IntPtr stmt, int index);
+        internal static extern ColType ColumnType(IntPtr stmt, int index);
 
         [DllImport("e_sqlite3", EntryPoint = "sqlite3_column_int", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ColumnInt(IntPtr stmt, int index);
+        internal static extern int ColumnInt(IntPtr stmt, int index);
 
         [DllImport("e_sqlite3", EntryPoint = "sqlite3_column_int64", CallingConvention = CallingConvention.Cdecl)]
-        public static extern long ColumnInt64(IntPtr stmt, int index);
+        internal static extern long ColumnInt64(IntPtr stmt, int index);
 
         [DllImport("e_sqlite3", EntryPoint = "sqlite3_column_double", CallingConvention = CallingConvention.Cdecl)]
-        public static extern double ColumnDouble(IntPtr stmt, int index);
+        internal static extern double ColumnDouble(IntPtr stmt, int index);
 
         [DllImport("e_sqlite3", EntryPoint = "sqlite3_column_text", CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr ColumnText(IntPtr stmt, int index);
+        internal static extern IntPtr ColumnText(IntPtr stmt, int index);
 
         [DllImport("e_sqlite3", EntryPoint = "sqlite3_column_text16", CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr ColumnText16(IntPtr stmt, int index);
+        internal static extern IntPtr ColumnText16(IntPtr stmt, int index);
 
         [DllImport("e_sqlite3", EntryPoint = "sqlite3_column_blob", CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr ColumnBlob(IntPtr stmt, int index);
+        internal static extern IntPtr ColumnBlob(IntPtr stmt, int index);
 
         [DllImport("e_sqlite3", EntryPoint = "sqlite3_column_bytes", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int ColumnBytes(IntPtr stmt, int index);
+        internal static extern int ColumnBytes(IntPtr stmt, int index);
 
         public static string ColumnString(IntPtr stmt, int index) {
             return Marshal.PtrToStringUni(SQLite3.ColumnText16(stmt, index));
