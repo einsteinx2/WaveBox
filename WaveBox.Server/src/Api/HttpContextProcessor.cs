@@ -163,11 +163,11 @@ namespace WaveBox.Api {
             }
 
             long contentLength = length - actualStartOffset;
-            if (!ReferenceEquals(limitToBytes, null) && contentLength > limitToBytes) {
+            if (limitToBytes != null && contentLength > limitToBytes) {
                 contentLength = (long)limitToBytes;
             }
 
-            bool isPartial = startOffset != 0 || !ReferenceEquals(limitToBytes, null);
+            bool isPartial = startOffset != 0 || limitToBytes != null;
             if (isPartial) {
                 if (ReferenceEquals(customHeaders, null)) {
                     customHeaders = new Dictionary<string, string>();
@@ -188,7 +188,7 @@ namespace WaveBox.Api {
                     }
 
                     int thisChunkSize = chunkSize;
-                    if (!ReferenceEquals(limitToBytes, null)) {
+                    if (limitToBytes != null) {
                         // Make sure we don't send too much data on the last (potentially) partial chunk
                         if (bytesWritten + chunkSize > limitToBytes) {
                             thisChunkSize = (int)(limitToBytes - bytesWritten);
@@ -205,7 +205,7 @@ namespace WaveBox.Api {
                     totalBytesWritten += bytesRead;
 
                     // See if we need to stop the transfer to limit the size
-                    if (!ReferenceEquals(limitToBytes, null) && bytesWritten == limitToBytes) {
+                    if (limitToBytes != null && bytesWritten == limitToBytes) {
                         break;
                     }
 
@@ -236,7 +236,7 @@ namespace WaveBox.Api {
 
         private DateTime CleanLastModified(DateTime? lastModified) {
             // If null, use current time
-            if (ReferenceEquals(lastModified, null)) {
+            if (lastModified == null) {
                 return DateTime.UtcNow;
             }
 
