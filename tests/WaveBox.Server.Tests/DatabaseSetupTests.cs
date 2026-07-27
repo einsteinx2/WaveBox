@@ -84,6 +84,27 @@ namespace WaveBox.Server.Tests {
         }
 
         [Fact]
+        public void SetupLeavesTheDatabaseAtTheNewestBundledMigration() {
+            // The seed is a frozen baseline at 0, so a fresh database ends up at whatever the
+            // highest migration in res/migrations is -- 0 while that directory is still empty
+            int expected = 0;
+            foreach (string path in Directory.GetFiles(Injection.Get<IDatabase>().MigrationsPath, "*.sql")) {
+                expected = Math.Max(expected, Int32.Parse(Path.GetFileName(path).Substring(0, 5)));
+            }
+
+            Assert.Equal(1, Scalar("SELECT COUNT(*) FROM Version"));
+            Assert.Equal(expected, Scalar("SELECT VersionNumber FROM Version"));
+        }
+
+        [Fact]
+        public void SetupFindsTheBundledMigrationsDirectory() {
+            // Guards the csproj copy: if res/migrations stops being deployed next to the binary,
+            // migrations would silently never run rather than failing
+            Assert.True(Directory.Exists(Injection.Get<IDatabase>().MigrationsPath),
+                        "res/migrations was not copied to the output directory");
+        }
+
+        [Fact]
         public void ApiKeyUniqueIndexRejectsDuplicateKeys() {
             IUserRepository users = Injection.Get<IUserRepository>();
             User first = users.CreateUser("first", "pw", Role.User, null);

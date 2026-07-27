@@ -19,6 +19,9 @@ namespace WaveBox.Static {
         public string DatabaseSchemaPath { get { return ServerUtility.ExecutablePath() + "res" + Path.DirectorySeparatorChar + DATABASE_SCHEMA_FILE_NAME; } }
         public string DatabasePath { get { return ServerUtility.RootPath() + DATABASE_FILE_NAME; } }
 
+        private static readonly string MIGRATIONS_DIR_NAME = "migrations";
+        public string MigrationsPath { get { return ServerUtility.ExecutablePath() + "res" + Path.DirectorySeparatorChar + MIGRATIONS_DIR_NAME; } }
+
         private static readonly string QUERY_LOG_FILE_NAME = "wavebox_querylog.db";
         private static readonly string QUERY_LOG_SCHEMA_FILE_NAME = "wavebox_querylog.sql";
         public string QuerylogSchemaPath { get { return ServerUtility.ExecutablePath() + "res" + Path.DirectorySeparatorChar + QUERY_LOG_SCHEMA_FILE_NAME; } }
@@ -57,7 +60,25 @@ namespace WaveBox.Static {
 
         public void DatabaseSetup() {
             ApplySchemaIfEmpty(DATABASE_FILE_NAME, DatabaseSchemaPath, GetSqliteConnection, CloseSqliteConnection);
+            ApplyMigrations();
+
+            // The query log is a single table that has never changed, so it has no migrations
             ApplySchemaIfEmpty(QUERY_LOG_FILE_NAME, QuerylogSchemaPath, GetQueryLogSqliteConnection, CloseQueryLogSqliteConnection);
+        }
+
+        private void ApplyMigrations() {
+            ISQLiteConnection conn = null;
+            try {
+                conn = GetSqliteConnection();
+                DatabaseMigrator.Apply(conn, MigrationsPath);
+            } catch (Exception e) {
+                // Same reasoning as the schema apply: a half-migrated database only produces
+                // confusing errors later, so surface it now
+                logger.Error(e);
+                throw;
+            } finally {
+                CloseSqliteConnection(conn);
+            }
         }
 
         /// <summary>
