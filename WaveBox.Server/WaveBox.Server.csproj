@@ -42,6 +42,9 @@
 
   <ItemGroup>
     <None Include="res\wavebox.sql" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Whole directory, not just *.sql, so res/migrations exists in a deployment even while it
+         holds nothing but its README -->
+    <None Include="res\migrations\**" CopyToOutputDirectory="PreserveNewest" />
     <None Include="res\wavebox_querylog.sql" CopyToOutputDirectory="PreserveNewest" />
     <None Include="res\wavebox.conf" CopyToOutputDirectory="PreserveNewest" />
     <None Include="res\wavebox.conf.template" CopyToOutputDirectory="PreserveNewest" />

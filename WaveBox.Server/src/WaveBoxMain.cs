@@ -43,7 +43,17 @@ namespace WaveBox {
             }
 
             // Perform initial setup of Settings, Database
-            Injection.Get<IDatabase>().DatabaseSetup();
+            try {
+                Injection.Get<IDatabase>().DatabaseSetup();
+            } catch (Exception e) {
+                // The database is unusable, so there is nothing to serve. Report it as a plain
+                // message rather than letting a stack trace be the whole story -- these failures
+                // are things an operator can act on, like a misnamed or broken migration.
+                logger.Error("Database setup failed: " + e.Message);
+                Console.Error.WriteLine("WaveBox cannot start: " + e.Message);
+                Environment.Exit(1);
+            }
+
             Injection.Get<IServerSettings>().SettingsSetup();
 
             // Start services

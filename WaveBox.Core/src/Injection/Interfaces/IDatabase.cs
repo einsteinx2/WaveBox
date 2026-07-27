@@ -12,6 +12,8 @@ namespace WaveBox.Core {
         string DatabaseSchemaPath { get; }
         string DatabasePath { get; }
 
+        string MigrationsPath { get; }
+
         string QuerylogSchemaPath { get; }
         string QuerylogPath { get; }
 
