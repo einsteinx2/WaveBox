@@ -51,8 +51,8 @@ namespace WaveBox.ApiHandler.Handlers {
             if (uri.Action == "create") {
                 // Try to get the name
                 string name = null;
-                if (uri.Parameters.ContainsKey("name")) {
-                    name = HttpUtility.UrlDecode(uri.Parameters["name"]);
+                if (uri.Parameters.TryGetValue("name", out string nameParam)) {
+                    name = HttpUtility.UrlDecode(nameParam);
                 }
 
                 // Verify non-null name
@@ -243,8 +243,8 @@ namespace WaveBox.ApiHandler.Handlers {
         private IList<int> ParseItemIds(UriWrapper uri) {
             // Try to get the itemIds
             IList<int> itemIds = new List<int>();
-            if (uri.Parameters.ContainsKey("itemIds")) {
-                string[] itemIdStrings = uri.Parameters["itemIds"].Split(',');
+            if (uri.Parameters.TryGetValue("itemIds", out string itemIdsParam)) {
+                string[] itemIdStrings = itemIdsParam.Split(',');
 
                 foreach (string itemIdString in itemIdStrings) {
                     int itemId;
@@ -260,8 +260,8 @@ namespace WaveBox.ApiHandler.Handlers {
         private IList<int> ParseIndexes(UriWrapper uri) {
             // Try to get the itemIds
             IList<int> itemIds = new List<int>();
-            if (uri.Parameters.ContainsKey("indexes")) {
-                string[] itemIdStrings = uri.Parameters["indexes"].Split(',');
+            if (uri.Parameters.TryGetValue("indexes", out string indexesParam)) {
+                string[] itemIdStrings = indexesParam.Split(',');
 
                 foreach (string itemIdString in itemIdStrings) {
                     int itemId;

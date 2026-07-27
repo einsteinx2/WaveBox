@@ -39,7 +39,7 @@ namespace WaveBox.ApiHandler {
             }
 
             // Check for required JSON parameter
-            if (!uri.Parameters.ContainsKey("json")) {
+            if (!uri.Parameters.TryGetValue("json", out string jsonParam)) {
                 processor.WriteJson(new SettingsResponse("Missing required parameter 'json'", null));
                 return;
             }
@@ -48,7 +48,7 @@ namespace WaveBox.ApiHandler {
             if (uri.Action == "update") {
                 // Take in settings in the JSON format (same as it is stored on disk),
                 // pass it on to the Settings class for processing
-                string json = HttpUtility.UrlDecode(uri.Parameters["json"]);
+                string json = HttpUtility.UrlDecode(jsonParam);
 
                 // Attempt to write settings
                 bool success = false;

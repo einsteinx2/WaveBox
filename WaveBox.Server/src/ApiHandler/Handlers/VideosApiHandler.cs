@@ -33,8 +33,8 @@ namespace WaveBox.ApiHandler.Handlers {
                 videos.Add(Injection.Get<IVideoRepository>().VideoForId((int)uri.Id));
             }
             // Check for a request for range of videos
-            else if (uri.Parameters.ContainsKey("range")) {
-                string[] range = uri.Parameters["range"].Split(',');
+            else if (uri.Parameters.TryGetValue("range", out string rangeParam)) {
+                string[] range = rangeParam.Split(',');
 
                 // Ensure valid range was parsed
                 if (range.Length != 2) {
@@ -55,8 +55,8 @@ namespace WaveBox.ApiHandler.Handlers {
 
             // Check for a request to limit/paginate videos, like SQL
             // Note: can be combined with range or all videos
-            if (uri.Parameters.ContainsKey("limit") && uri.Id == null) {
-                string[] limit = uri.Parameters["limit"].Split(',');
+            if (uri.Parameters.TryGetValue("limit", out string limitParam) && uri.Id == null) {
+                string[] limit = limitParam.Split(',');
 
                 // Ensure valid limit was parsed
                 if (limit.Length < 1 || limit.Length > 2 ) {

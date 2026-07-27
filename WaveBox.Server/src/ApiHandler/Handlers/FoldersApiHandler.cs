@@ -40,7 +40,7 @@ namespace WaveBox.ApiHandler.Handlers {
                 containingFolder = Injection.Get<IFolderRepository>().FolderForId((int)uri.Id);
                 listOfFolders = containingFolder.ListOfSubFolders();
 
-                if (uri.Parameters.ContainsKey("recursiveMedia") && uri.Parameters["recursiveMedia"].IsTrue()) {
+                if (uri.Parameters.TryGetValue("recursiveMedia", out string recursiveMediaParam) && recursiveMediaParam.IsTrue()) {
                     recursive = true;
                 }
 
@@ -54,7 +54,7 @@ namespace WaveBox.ApiHandler.Handlers {
             }
 
             // No id parameter
-            if (uri.Parameters.ContainsKey("mediaFolders") && uri.Parameters["mediaFolders"].IsTrue()) {
+            if (uri.Parameters.TryGetValue("mediaFolders", out string mediaFoldersParam) && mediaFoldersParam.IsTrue()) {
                 // They asked for the media folders
                 listOfFolders = Injection.Get<IFolderRepository>().MediaFolders();
             } else {

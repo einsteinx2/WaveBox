@@ -67,8 +67,8 @@ namespace WaveBox.ApiHandler.Handlers {
                 bool estimateContentLength = false;
 
                 // Optionally estimate content length
-                if (uri.Parameters.ContainsKey("estimateContentLength")) {
-                    estimateContentLength = uri.Parameters["estimateContentLength"].IsTrue();
+                if (uri.Parameters.TryGetValue("estimateContentLength", out string estimateContentLengthParam)) {
+                    estimateContentLength = estimateContentLengthParam.IsTrue();
                 }
 
                 // Get the media item associated with this id
@@ -93,8 +93,8 @@ namespace WaveBox.ApiHandler.Handlers {
                 }
 
                 // Optionally add isDirect parameter
-                if (uri.Parameters.ContainsKey("isDirect")) {
-                    isDirect = uri.Parameters["isDirect"].IsTrue();
+                if (uri.Parameters.TryGetValue("isDirect", out string isDirectParam)) {
+                    isDirect = isDirectParam.IsTrue();
                 }
 
                 if (seconds > 0) {
@@ -147,8 +147,7 @@ namespace WaveBox.ApiHandler.Handlers {
 
                 // Get the quality, default to medium
                 uint quality = (uint)TranscodeQuality.Medium;
-                if (uri.Parameters.ContainsKey("transQuality")) {
-                    string qualityString = uri.Parameters["transQuality"];
+                if (uri.Parameters.TryGetValue("transQuality", out string qualityString)) {
                     TranscodeQuality qualityEnum;
                     uint qualityValue;
                     // First try and parse a word enum value

@@ -47,7 +47,7 @@ namespace WaveBox.ApiHandler.Handlers {
                 counts.Add("albums", albums.Count);
 
                 // If requested, add artist's songs to response
-                if (uri.Parameters.ContainsKey("includeSongs") && uri.Parameters["includeSongs"].IsTrue()) {
+                if (uri.Parameters.TryGetValue("includeSongs", out string includeSongsParam) && includeSongsParam.IsTrue()) {
                     songs = a.ListOfSongs();
                     counts.Add("songs", songs.Count);
                 } else {
@@ -55,7 +55,7 @@ namespace WaveBox.ApiHandler.Handlers {
                 }
 
                 // If requested, add artist's Last.fm info to response
-                if (uri.Parameters.ContainsKey("lastfmInfo") && uri.Parameters["lastfmInfo"].IsTrue()) {
+                if (uri.Parameters.TryGetValue("lastfmInfo", out string lastfmInfoParam) && lastfmInfoParam.IsTrue()) {
                     logger.IfInfo("Querying Last.fm for artist: " + a.AlbumArtistName);
                     try {
                         lastfmInfo = Lastfm.GetAlbumArtistInfo(a);
@@ -75,8 +75,8 @@ namespace WaveBox.ApiHandler.Handlers {
                 }
             }
             // Check for a request for range of artists
-            else if (uri.Parameters.ContainsKey("range")) {
-                string[] range = uri.Parameters["range"].Split(',');
+            else if (uri.Parameters.TryGetValue("range", out string rangeParam)) {
+                string[] range = rangeParam.Split(',');
 
                 // Ensure valid range was parsed
                 if (range.Length != 2) {
@@ -97,8 +97,8 @@ namespace WaveBox.ApiHandler.Handlers {
 
             // Check for a request to limit/paginate artists, like SQL
             // Note: can be combined with range or all artists
-            if (uri.Parameters.ContainsKey("limit") && uri.Id == null) {
-                string[] limit = uri.Parameters["limit"].Split(',');
+            if (uri.Parameters.TryGetValue("limit", out string limitParam) && uri.Id == null) {
+                string[] limit = limitParam.Split(',');
 
                 // Ensure valid limit was parsed
                 if (limit.Length < 1 || limit.Length > 2 ) {

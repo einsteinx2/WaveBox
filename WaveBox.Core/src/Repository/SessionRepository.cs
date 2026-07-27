@@ -42,8 +42,8 @@ namespace WaveBox.Core.Model.Repository {
 
         public Session SessionForSessionId(string sessionId) {
             lock (this.Sessions) {
-                if (this.Sessions.ContainsKey(sessionId)) {
-                    return this.Sessions[sessionId];
+                if (this.Sessions.TryGetValue(sessionId, out Session session)) {
+                    return session;
                 }
 
                 return null;
@@ -147,8 +147,8 @@ namespace WaveBox.Core.Model.Repository {
             }
 
             lock (this.Sessions) {
-                if (this.Sessions.ContainsKey(sessionId)) {
-                    return this.Sessions[sessionId].UserId;
+                if (this.Sessions.TryGetValue(sessionId, out Session session)) {
+                    return session.UserId;
                 }
 
                 return null;
