@@ -36,6 +36,7 @@ namespace WaveBox.Server.Tests {
                 Directory.Delete(workDir, true);
             } catch (IOException) {
             }
+            GC.SuppressFinalize(this);
         }
 
         private void WriteMigration(string name, string sql) {

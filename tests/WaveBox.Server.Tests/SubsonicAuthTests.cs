@@ -23,6 +23,7 @@ namespace WaveBox.Server.Tests {
 
         public void Dispose() {
             harness.Dispose();
+            GC.SuppressFinalize(this);
         }
 
         private static SubsonicRequest Request(string queryString) {

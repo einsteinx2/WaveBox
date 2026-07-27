@@ -18,7 +18,7 @@ namespace WaveBox.E2E.Tests {
             HttpRequestMessage request = new HttpRequestMessage(
                 HttpMethod.Get, "rest/stream?u=test&p=test&id=" + server.SongId + "&format=raw");
             request.Headers.Range = new RangeHeaderValue(100, 199);
-            using (HttpResponseMessage response = await server.Client.SendAsync(request)) {
+            using (HttpResponseMessage response = await server.Client.SendAsync(request, TestContext.Current.CancellationToken)) {
                 Assert.Equal(HttpStatusCode.PartialContent, response.StatusCode);
             }
         }
@@ -28,7 +28,7 @@ namespace WaveBox.E2E.Tests {
             Assert.SkipUnless(WaveBoxServerFixture.FfmpegPresent, "ffmpeg is not installed");
 
             byte[] audio = await server.Client.GetByteArrayAsync(
-                "rest/stream?u=test&p=test&id=" + server.SongId + "&maxBitRate=32&format=mp3");
+                "rest/stream?u=test&p=test&id=" + server.SongId + "&maxBitRate=32&format=mp3", TestContext.Current.CancellationToken);
             Assert.True(audio.Length > 0, "expected transcoded audio bytes, got none");
         }
     }
