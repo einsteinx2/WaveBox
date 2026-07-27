@@ -15,18 +15,10 @@ namespace WaveBox.Core.Model.Repository {
         private readonly IVideoRepository videoRepository;
 
         public FolderRepository(IDatabase database, IServerSettings serverSettings, ISongRepository songRepository, IVideoRepository videoRepository) {
-            if (database == null) {
-                throw new ArgumentNullException("database");
-            }
-            if (serverSettings == null) {
-                throw new ArgumentNullException("serverSettings");
-            }
-            if (songRepository == null) {
-                throw new ArgumentNullException("songRepository");
-            }
-            if (videoRepository == null) {
-                throw new ArgumentNullException("videoRepository");
-            }
+            ArgumentNullException.ThrowIfNull(database);
+            ArgumentNullException.ThrowIfNull(serverSettings);
+            ArgumentNullException.ThrowIfNull(songRepository);
+            ArgumentNullException.ThrowIfNull(videoRepository);
 
             this.database = database;
             this.serverSettings = serverSettings;

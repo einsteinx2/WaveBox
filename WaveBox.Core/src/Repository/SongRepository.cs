@@ -13,9 +13,7 @@ namespace WaveBox.Core.Model.Repository {
         private readonly IDatabase database;
 
         public SongRepository(IDatabase database) {
-            if (database == null) {
-                throw new ArgumentNullException("database");
-            }
+            ArgumentNullException.ThrowIfNull(database);
 
             this.database = database;
         }

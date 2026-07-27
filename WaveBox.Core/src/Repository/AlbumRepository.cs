@@ -14,12 +14,8 @@ namespace WaveBox.Core.Model.Repository {
         private readonly IItemRepository itemRepository;
 
         public AlbumRepository(IDatabase database, IItemRepository itemRepository) {
-            if (database == null) {
-                throw new ArgumentNullException("database");
-            }
-            if (itemRepository == null) {
-                throw new ArgumentNullException("itemRepository");
-            }
+            ArgumentNullException.ThrowIfNull(database);
+            ArgumentNullException.ThrowIfNull(itemRepository);
 
             this.database = database;
             this.itemRepository = itemRepository;

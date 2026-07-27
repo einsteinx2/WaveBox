@@ -19,36 +19,16 @@ namespace WaveBox.Core.Model.Repository {
         private readonly IItemRepository itemRepository;
 
         public FavoriteRepository(IDatabase database, IAlbumArtistRepository albumArtistRepository, IAlbumRepository albumRepository, IArtistRepository artistRepository, IFolderRepository folderRepository, IGenreRepository genreRepository, IPlaylistRepository playlistRepository, ISongRepository songRepository, IVideoRepository videoRepository, IItemRepository itemRepository) {
-            if (database == null) {
-                throw new ArgumentNullException("database");
-            }
-            if (albumRepository == null) {
-                throw new ArgumentNullException("albumRepository");
-            }
-            if (albumArtistRepository == null) {
-                throw new ArgumentNullException("albumArtistRepository");
-            }
-            if (artistRepository == null) {
-                throw new ArgumentNullException("artistRepository");
-            }
-            if (folderRepository == null) {
-                throw new ArgumentNullException("folderRepository");
-            }
-            if (genreRepository == null) {
-                throw new ArgumentNullException("genreRepository");
-            }
-            if (playlistRepository == null) {
-                throw new ArgumentNullException("playlistRepository");
-            }
-            if (songRepository == null) {
-                throw new ArgumentNullException("songRepository");
-            }
-            if (videoRepository == null) {
-                throw new ArgumentNullException("videoRepository");
-            }
-            if (itemRepository == null) {
-                throw new ArgumentNullException("itemRepository");
-            }
+            ArgumentNullException.ThrowIfNull(database);
+            ArgumentNullException.ThrowIfNull(albumRepository);
+            ArgumentNullException.ThrowIfNull(albumArtistRepository);
+            ArgumentNullException.ThrowIfNull(artistRepository);
+            ArgumentNullException.ThrowIfNull(folderRepository);
+            ArgumentNullException.ThrowIfNull(genreRepository);
+            ArgumentNullException.ThrowIfNull(playlistRepository);
+            ArgumentNullException.ThrowIfNull(songRepository);
+            ArgumentNullException.ThrowIfNull(videoRepository);
+            ArgumentNullException.ThrowIfNull(itemRepository);
 
             this.database = database;
             this.albumArtistRepository = albumArtistRepository;
@@ -94,9 +74,10 @@ namespace WaveBox.Core.Model.Repository {
 
         public IList<Favorite> FavoritesForArtistId(int? artistId, int? userId) {
             if (artistId == null) {
-                throw new ArgumentNullException("artistId");
-            } else if (userId == null) {
-                throw new ArgumentNullException("userId");
+                throw new ArgumentNullException(nameof(artistId));
+            }
+            if (userId == null) {
+                throw new ArgumentNullException(nameof(userId));
             }
 
             return this.database.GetList<Favorite>("SELECT * FROM Favorite LEFT JOIN Song ON Song.ItemId = Favorite.FavoriteItemId WHERE Song.ArtistId = ? AND Favorite.FavoriteUserId = ?", artistId, userId);
@@ -105,8 +86,9 @@ namespace WaveBox.Core.Model.Repository {
         public IList<Favorite> FavoritesForAlbumArtistId(int? albumArtistId, int? userId) {
             if (albumArtistId == null) {
                 throw new ArgumentNullException(nameof(albumArtistId));
-            } else if (userId == null) {
-                throw new ArgumentNullException("userId");
+            }
+            if (userId == null) {
+                throw new ArgumentNullException(nameof(userId));
             }
 
             return this.database.GetList<Favorite>("SELECT * FROM Favorite LEFT JOIN Song ON Song.ItemId = Favorite.FavoriteItemId WHERE Song.AlbumArtistId = ? AND Favorite.FavoriteUserId = ?", albumArtistId, userId);
