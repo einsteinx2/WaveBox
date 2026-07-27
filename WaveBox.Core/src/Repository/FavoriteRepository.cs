@@ -104,7 +104,7 @@ namespace WaveBox.Core.Model.Repository {
 
         public IList<Favorite> FavoritesForAlbumArtistId(int? albumArtistId, int? userId) {
             if (albumArtistId == null) {
-                throw new ArgumentNullException("artistId");
+                throw new ArgumentNullException(nameof(albumArtistId));
             } else if (userId == null) {
                 throw new ArgumentNullException("userId");
             }

@@ -72,7 +72,9 @@ namespace WaveBox.Core.Logging {
         private void Write(LogLevel level, object message, Exception exception) {
             Microsoft.Extensions.Logging.ILogger current = Logger;
             if (current != null) {
-                current.Log(level, exception, "{Message}", message);
+                if (current.IsEnabled(level)) {
+                    current.Log(level, exception, "{Message}", message);
+                }
             } else {
                 // Host not built yet; write straight to the console so early startup isn't silent
                 Console.WriteLine(DateTime.Now.ToString("HH:mm:ss,fff") + " " + level + " " + category + " - " + message + (exception != null ? Environment.NewLine + exception : ""));

@@ -101,7 +101,7 @@ namespace WaveBox.Core.Model.Repository {
 
         public User CreateTestUser(long? durationSeconds) {
             // Create a new user with random username and password, that lasts for the specified duration
-            if (ReferenceEquals(durationSeconds, null)) {
+            if (durationSeconds == null) {
                 // If no duration specified, use 24 hours
                 durationSeconds = 60 * 60 * 24;
             }

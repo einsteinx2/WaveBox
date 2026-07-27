@@ -197,7 +197,7 @@ namespace Cirrious.MvvmCross.Plugins.Sqlite {
             case InsertType.Replace:
                 return "REPLACE";
             default:
-                throw new ArgumentOutOfRangeException("InsertType");
+                throw new ArgumentOutOfRangeException(nameof(insertType));
             }
         }
     }

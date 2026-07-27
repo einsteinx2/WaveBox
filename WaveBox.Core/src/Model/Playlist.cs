@@ -154,7 +154,7 @@ namespace WaveBox.Core.Model {
 
                 List<IMediaItem> items = new List<IMediaItem>();
                 foreach (PlaylistItem playlistItem in result) {
-                    if (!ReferenceEquals(playlistItem.ItemId, null)) {
+                    if (playlistItem.ItemId != null) {
                         IMediaItem item = Injection.Get<IMediaItemRepository>().MediaItemForId((int)playlistItem.ItemId);
                         if (!ReferenceEquals(item, null)) {
                             items.Add(item);
@@ -376,7 +376,7 @@ namespace WaveBox.Core.Model {
 
         public void InsertMediaItem(IMediaItem item, int index) {
             // make sure the input is within bounds and is not null
-            if (ReferenceEquals(item, null) || index > PlaylistCount || index < 0 || ReferenceEquals(PlaylistId, null)) {
+            if (ReferenceEquals(item, null) || index > PlaylistCount || index < 0 || PlaylistId == null) {
                 return;
             }
 
@@ -384,7 +384,7 @@ namespace WaveBox.Core.Model {
             try {
                 int? id = Injection.Get<IItemRepository>().GenerateItemId(ItemType.PlaylistItem);
 
-                if (!ReferenceEquals(id, null)) {
+                if (id != null) {
                     // to do - better way of knowing whether or not a query has been successfully completed.
                     conn = Injection.Get<IDatabase>().GetSqliteConnection();
                     conn.BeginTransaction();
@@ -446,13 +446,13 @@ namespace WaveBox.Core.Model {
         }
 
         public void CreatePlaylist() {
-            if (ReferenceEquals(PlaylistId, null)) {
+            if (PlaylistId == null) {
                 UpdateDatabase();
             }
         }
 
         public void DeletePlaylist() {
-            if (ReferenceEquals(PlaylistId, null)) {
+            if (PlaylistId == null) {
                 return;
             }
 
