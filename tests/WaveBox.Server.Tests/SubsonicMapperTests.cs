@@ -8,6 +8,9 @@ using Xunit;
 
 namespace WaveBox.Server.Tests {
     public class SubsonicMapperTests {
+        private static readonly string[] expectedLetterKeys = new string[] { "A", "B", "Z" };
+        private static readonly string[] expectedHashBucketKeys = new string[] { "#", "M" };
+
         [Fact]
         public void Iso8601FormatsKnownValues() {
             Assert.Equal("1970-01-01T00:00:00Z", SubsonicMapper.Iso8601(0));
@@ -25,7 +28,7 @@ namespace WaveBox.Server.Tests {
 
             List<KeyValuePair<string, List<string>>> groups = SubsonicMapper.GroupByIndex(names, s => s);
 
-            Assert.Equal(new[] { "A", "B", "Z" }, groups.Select(g => g.Key).ToArray());
+            Assert.Equal(expectedLetterKeys, groups.Select(g => g.Key).ToArray());
             Assert.Equal(new List<string> { "apple", "Avocado" }, groups[0].Value);
             Assert.Equal(new List<string> { "banana" }, groups[1].Value);
         }
@@ -37,7 +40,7 @@ namespace WaveBox.Server.Tests {
             List<KeyValuePair<string, List<string>>> groups = SubsonicMapper.GroupByIndex(names, s => s);
 
             // '#' sorts before letters ordinally, so it comes first
-            Assert.Equal(new[] { "#", "M" }, groups.Select(g => g.Key).ToArray());
+            Assert.Equal(expectedHashBucketKeys, groups.Select(g => g.Key).ToArray());
             Assert.Equal(new List<string> { "1999", "Éclair", "", null }, groups[0].Value);
         }
 

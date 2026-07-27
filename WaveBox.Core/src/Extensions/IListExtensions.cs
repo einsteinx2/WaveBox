@@ -65,7 +65,7 @@ namespace WaveBox.Core.Extensions {
                 }
             }
 
-            return buffer.Trim(new char[] {' ', ','});
+            return buffer.Trim(' ', ',');
         }
     }
 }

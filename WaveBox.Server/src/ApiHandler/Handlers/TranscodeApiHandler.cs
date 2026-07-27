@@ -109,7 +109,7 @@ namespace WaveBox.ApiHandler.Handlers {
                 } else if (processor.HttpHeaders.ContainsKey("Range")) {
                     // Handle the Range header to start from later in the file
                     string range = (string)processor.HttpHeaders["Range"];
-                    var split = range.Split(new char[] {'-', '='});
+                    var split = range.Split('-', '=');
                     string start = split[1];
                     string end = split.Length > 2 ? split[2] : null;
                     logger.IfInfo("Range header: " + range + "  Resuming from " + start + " end: " + end);

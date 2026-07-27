@@ -91,7 +91,7 @@ namespace WaveBox.ApiHandler.Handlers {
             // Handle the Range header to start from later in the file
             if (processor.HttpHeaders.ContainsKey("Range")) {
                 string range = (string)processor.HttpHeaders["Range"];
-                string start = range.Split(new char[] {'-', '='})[1];
+                string start = range.Split('-', '=')[1];
                 logger.IfInfo("Connection retried.  Resuming from " + start);
                 startOffset = Convert.ToInt32(start);
             }

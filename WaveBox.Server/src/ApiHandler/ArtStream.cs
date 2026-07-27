@@ -125,7 +125,7 @@ namespace WaveBox.ApiHandler {
 
             foreach (string file in Directory.GetFiles(dir)) {
                 ext = Path.GetExtension(file).ToLower();
-                if (validImageExtensions.Contains(ext) && !Path.GetFileName(file).StartsWith(".")) {
+                if (validImageExtensions.Contains(ext) && !Path.GetFileName(file).StartsWith('.')) {
                     firstImageFoundPath = file;
                 }
             }

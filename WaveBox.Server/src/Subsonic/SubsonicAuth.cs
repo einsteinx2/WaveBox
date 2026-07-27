@@ -68,7 +68,7 @@ namespace WaveBox.Subsonic {
             // Hex-encoded password variant: p=enc:48656c6c6f
             if (password.StartsWith("enc:", StringComparison.OrdinalIgnoreCase)) {
                 try {
-                    password = Encoding.UTF8.GetString(Convert.FromHexString(password.Substring(4)));
+                    password = Encoding.UTF8.GetString(Convert.FromHexString(password.AsSpan(4)));
                 } catch (FormatException) {
                     error = new SubsonicError { Code = SubsonicError.WrongCredentials, Message = "Wrong username or password" };
                     return null;

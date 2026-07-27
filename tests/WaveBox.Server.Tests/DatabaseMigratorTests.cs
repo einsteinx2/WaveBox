@@ -12,6 +12,9 @@ namespace WaveBox.Server.Tests {
     /// none of this depends on the bundled res/migrations content (which is empty today).
     /// </summary>
     public class DatabaseMigratorTests : IDisposable {
+        private static readonly int[] expectedNumericOrder = new int[] { 1, 2, 10 };
+        private static readonly int[] expectedVersionsWithGap = new int[] { 1, 7 };
+
         private readonly string workDir;
         private readonly string migrationsDir;
         private readonly string dbPath;
@@ -54,7 +57,7 @@ namespace WaveBox.Server.Tests {
 
             IList<DatabaseMigrator.Migration> found = DatabaseMigrator.Discover(migrationsDir);
 
-            Assert.Equal(new int[] { 1, 2, 10 }, found.Select(m => m.Version).ToArray());
+            Assert.Equal(expectedNumericOrder, found.Select(m => m.Version).ToArray());
         }
 
         [Fact]
@@ -102,7 +105,7 @@ namespace WaveBox.Server.Tests {
             WriteMigration("00001_one.sql", "SELECT 1;");
             WriteMigration("00007_seven.sql", "SELECT 1;");
 
-            Assert.Equal(new int[] { 1, 7 }, DatabaseMigrator.Discover(migrationsDir).Select(m => m.Version).ToArray());
+            Assert.Equal(expectedVersionsWithGap, DatabaseMigrator.Discover(migrationsDir).Select(m => m.Version).ToArray());
         }
 
         // --- Apply ----------------------------------------------------------

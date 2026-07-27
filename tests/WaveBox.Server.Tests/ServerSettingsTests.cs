@@ -7,6 +7,8 @@ using Xunit;
 namespace WaveBox.Server.Tests {
     [Collection("Integration")]
     public class ServerSettingsTests : IDisposable {
+        private static readonly string[] expectedMediaFolders = new string[] { "/nonexistent" };
+
         private readonly IntegrationHarness harness;
         private readonly IServerSettings settings;
 
@@ -47,7 +49,7 @@ namespace WaveBox.Server.Tests {
 
             Assert.Equal(7777, settings.Port);
             Assert.Equal("dark", settings.Theme);
-            Assert.Equal(new[] { "/nonexistent" }, settings.MediaFolders);
+            Assert.Equal(expectedMediaFolders, settings.MediaFolders);
         }
 
         [Fact]
