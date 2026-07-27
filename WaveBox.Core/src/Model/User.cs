@@ -224,7 +224,7 @@ namespace WaveBox.Core.Model {
         }
 
         public bool Delete() {
-            if (ReferenceEquals(UserId, null)) {
+            if (UserId == null) {
                 return true;
             }
 
