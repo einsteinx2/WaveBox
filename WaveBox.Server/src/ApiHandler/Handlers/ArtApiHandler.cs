@@ -38,9 +38,7 @@ namespace WaveBox.ApiHandler.Handlers {
 
             // Check for blur (value between 0 and 100)
             double blurSigma = 0;
-            if (uri.Parameters.ContainsKey("blur")) {
-                int blur = 0;
-                Int32.TryParse(uri.Parameters["blur"], out blur);
+            if (uri.Parameters.TryGetValue("blur", out string blurParam) && Int32.TryParse(blurParam, out int blur)) {
                 if (blur < 0) {
                     blur = 0;
                 } else if (blur > 100) {
@@ -60,21 +58,15 @@ namespace WaveBox.ApiHandler.Handlers {
                 return;
             }
 
-            // If art size requested...
-            if (uri.Parameters.ContainsKey("size")) {
-                int size = Int32.MaxValue;
-                Int32.TryParse(uri.Parameters["size"], out size);
-
-                // Parse size if valid
-                if (size != Int32.MaxValue) {
-                    try {
-                        Stream resized = ArtStream.ResizeImage(stream, size, blurSigma);
-                        stream.Close();
-                        stream = resized;
-                    } catch (Exception e) {
-                        logger.Error("Error resizing art, returning original: ", e);
-                        stream.Position = 0;
-                    }
+            // If a valid art size requested, resize
+            if (uri.Parameters.TryGetValue("size", out string sizeParam) && Int32.TryParse(sizeParam, out int size)) {
+                try {
+                    Stream resized = ArtStream.ResizeImage(stream, size, blurSigma);
+                    stream.Close();
+                    stream = resized;
+                } catch (Exception e) {
+                    logger.Error("Error resizing art, returning original: ", e);
+                    stream.Position = 0;
                 }
             }
 

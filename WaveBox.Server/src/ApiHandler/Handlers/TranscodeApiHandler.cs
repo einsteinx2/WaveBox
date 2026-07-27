@@ -46,8 +46,8 @@ namespace WaveBox.ApiHandler.Handlers {
 
             // Get seconds offset
             float seconds = 0f;
-            if (uri.Parameters.ContainsKey("seconds")) {
-                float.TryParse(uri.Parameters["seconds"], out seconds);
+            if (uri.Parameters.TryGetValue("seconds", out string secondsParam) && float.TryParse(secondsParam, out float parsedSeconds)) {
+                seconds = parsedSeconds;
             }
 
             // Verify ID received
@@ -62,10 +62,8 @@ namespace WaveBox.ApiHandler.Handlers {
                 IMediaItem item = null;
                 TranscodeType transType = TranscodeType.MP3;
                 bool isDirect = false;
-                Stream stream = null;
                 int startOffset = 0;
                 long? limitToSize = null;
-                long length = 0;
                 bool estimateContentLength = false;
 
                 // Optionally estimate content length
@@ -191,13 +189,13 @@ namespace WaveBox.ApiHandler.Handlers {
 
                     // Check for offset seconds and length seconds parameters
                     uint offsetSeconds = 0;
-                    if (uri.Parameters.ContainsKey("offsetSeconds")) {
-                        UInt32.TryParse(uri.Parameters["offsetSeconds"], out offsetSeconds);
+                    if (uri.Parameters.TryGetValue("offsetSeconds", out string offsetSecondsParam) && UInt32.TryParse(offsetSecondsParam, out uint parsedOffsetSeconds)) {
+                        offsetSeconds = parsedOffsetSeconds;
                     }
 
                     uint lengthSeconds = 0;
-                    if (uri.Parameters.ContainsKey("lengthSeconds")) {
-                        UInt32.TryParse(uri.Parameters["lengthSeconds"], out lengthSeconds);
+                    if (uri.Parameters.TryGetValue("lengthSeconds", out string lengthSecondsParam) && UInt32.TryParse(lengthSecondsParam, out uint parsedLengthSeconds)) {
+                        lengthSeconds = parsedLengthSeconds;
                     }
 
                     // Either stream the rest of the file, or the duration specified
