@@ -7,15 +7,9 @@ namespace WaveBox.Core.Model.Repository {
         private readonly IVideoRepository videoRepository;
 
         public MediaItemRepository(IItemRepository itemRepository, ISongRepository songRepository, IVideoRepository videoRepository) {
-            if (itemRepository == null) {
-                throw new ArgumentNullException("itemRepository");
-            }
-            if (songRepository == null) {
-                throw new ArgumentNullException("songRepository");
-            }
-            if (videoRepository == null) {
-                throw new ArgumentNullException("videoRepository");
-            }
+            ArgumentNullException.ThrowIfNull(itemRepository);
+            ArgumentNullException.ThrowIfNull(songRepository);
+            ArgumentNullException.ThrowIfNull(videoRepository);
 
             this.itemRepository = itemRepository;
             this.songRepository = songRepository;
