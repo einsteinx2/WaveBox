@@ -41,8 +41,8 @@ namespace WaveBox.ApiHandler.Handlers {
 
             // Try to get seconds
             float seconds = 0f;
-            if (uri.Parameters.ContainsKey("seconds")) {
-                float.TryParse(uri.Parameters["seconds"], out seconds);
+            if (uri.Parameters.TryGetValue("seconds", out string secondsParam) && float.TryParse(secondsParam, out float parsedSeconds)) {
+                seconds = parsedSeconds;
             }
 
             try {
