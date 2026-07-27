@@ -20,6 +20,7 @@ namespace WaveBox.Server.Tests {
         public void Dispose() {
             conn.Dispose();
             File.Delete(dbPath);
+            GC.SuppressFinalize(this);
         }
 
         [Fact]

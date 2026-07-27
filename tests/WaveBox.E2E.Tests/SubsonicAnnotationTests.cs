@@ -18,7 +18,7 @@ namespace WaveBox.E2E.Tests {
             try {
                 JsonNode starred = await SubsonicClient.Rest(server.Client, "getStarred2", SubsonicClient.Auth);
                 JsonArray songs = (JsonArray)starred["starred2"]["song"];
-                Assert.Equal(1, songs.Count);
+                Assert.Single(songs);
                 Assert.NotNull(songs[0]["starred"]);
             } finally {
                 await SubsonicClient.Rest(server.Client, "unstar", SubsonicClient.Auth + "&id=" + server.SongId);

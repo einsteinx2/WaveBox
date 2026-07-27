@@ -45,7 +45,7 @@ namespace WaveBox.E2E.Tests {
         public async Task StreamRangeRequestReturns206() {
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, "api/stream/" + server.SongId + "?s=" + server.Session);
             request.Headers.Range = new RangeHeaderValue(100, 199);
-            using (HttpResponseMessage response = await server.Client.SendAsync(request)) {
+            using (HttpResponseMessage response = await server.Client.SendAsync(request, TestContext.Current.CancellationToken)) {
                 Assert.Equal(HttpStatusCode.PartialContent, response.StatusCode);
             }
         }

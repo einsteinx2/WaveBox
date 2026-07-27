@@ -14,7 +14,7 @@ namespace WaveBox.E2E.Tests {
 
         [Fact]
         public async Task PingDefaultsToXmlEnvelope() {
-            string body = await server.Client.GetStringAsync("rest/ping.view?u=test&p=test");
+            string body = await server.Client.GetStringAsync("rest/ping.view?u=test&p=test", TestContext.Current.CancellationToken);
             XDocument doc = XDocument.Parse(body);
             XNamespace ns = "http://subsonic.org/restapi";
             Assert.Equal(ns + "subsonic-response", doc.Root.Name);
