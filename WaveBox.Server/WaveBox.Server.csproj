@@ -29,7 +29,7 @@
 
   <ItemGroup>
     <PackageReference Include="TagLibSharp" Version="2.3.0" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="4.1.2" />
     <PackageReference Include="Mono.Nat" Version="3.0.4" />
     <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.53.3" />
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.*" />
